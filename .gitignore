@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.log
+*.tgz
+.DS_Store
+.env
+.env.local
+.env.*.local
+coverage/
+.cache/
+.claude/
+.aider*
+.cursor/
+.continue/
+.codeium/
+.windsurf/
