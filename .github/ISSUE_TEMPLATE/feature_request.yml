@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a capability or API addition.
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        unitforge aims for a small, coherent API. Features are evaluated against "does this earn its weight in the bundle and the docs?"; lead with the problem you're solving.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that unitforge doesn't let you do today? A concrete use case is far more useful than a proposed API.
+      placeholder: "I'm building X and need to Y. Today I have to work around it by Z."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would the API look like? Pseudo-code is fine. If you're not sure, say so; the problem statement is what matters most.
+      render: ts
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other libraries, userland workarounds, or API shapes you've already ruled out.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Fits the project scope?
+      description: unitforge is a units-of-measure library built around three free functions and three additive registries (dimensions, kits, conversions). Custom dimensions, BYO units, and packaging conversions are in scope. Algebraic dimensional analysis (auto-deriving m² from m × m) and multi-hop conversion path-finding are deliberately out of scope.
+      options:
+        - label: I've read the README and believe this fits unitforge's scope.
+          required: true
