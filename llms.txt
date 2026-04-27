@@ -1,0 +1,23 @@
+# unitforge
+
+> A units-of-measure library for arbitrary domains. Three free functions (`convert`, `defineUnit`, `defineConversion`) work against three additive registries: dimensions, kits, conversions. First-class custom dimensions for non-physical domains (game state, business metrics, simulation), first-class packaging units for inventory (`definePack`), tree-shakeable per-unit imports. Not just a physics library.
+
+## Status
+
+Pre-1.0. Design is captured in [PLANNING.md](./PLANNING.md). Code, README, and demo are in scaffolding.
+
+## Key files
+
+- [PLANNING.md](./PLANNING.md) — design intent, three-registry model, API shape, kit strategy, discipline rules
+- [AGENTS.md](./AGENTS.md) — agent/contributor orientation
+- [CONTRIBUTING.md](./CONTRIBUTING.md) — setup, commands, commit conventions
+- [SECURITY.md](./SECURITY.md) — security policy and reporting
+- [NOTICE.md](./NOTICE.md) — third-party attributions (currently empty; populated as kits ship)
+
+## Thesis
+
+Units, dimensions, and conversions are all values you import. Within-dimension conversions are free; cross-dimensional conversions are explicit, single-hop, and registered via `defineConversion`. Custom dimensions and units are first-class, the same shape as the library's own.
+
+## Reference
+
+Sibling project [chromonym](https://github.com/simiancraft/chromonym) is the architectural specimen for boilerplate, CI, release tooling, and documentation patterns.
