@@ -372,6 +372,8 @@ export const fahrenheit = defineUnit({
 
 `linear(scale)` is the sugar helper for the common linear case; expands to `{ toBase: (v) => v * scale, fromBase: (b) => b / scale }`. Saves ~50% boilerplate on every linear unit (which is most of them). Ships from the main barrel alongside `defineUnit`. Non-linear units write the two functions explicitly; the type stays uniform.
 
+**`linear(scale)` is `T = number`-only sugar.** Its signature is `linear(scale: number) => { toBase: (v: number) => number; fromBase: (b: number) => number }`. It uses native `*` and `/` and only makes sense for the native-number case. Future precision-typed kits (Decimal-typed `usd`, etc.) write `toBase`/`fromBase` longhand using their precision library; they do not use `linear`.
+
 The output of `defineUnit` is interface-shaped data. Anything that satisfies the `Unit` interface is a unit, whether it was kit-shipped or user-defined a minute ago in app code. End-user custom units are first-class for this reason.
 
 ### `defineConversion`
@@ -513,6 +515,7 @@ These are not part of the public contract; they are notes to future-implementer-
 - **Pre-baked cache-key builder at `forge()` construction time.** The converter knows its input prop names from the conversion's `inputs` declaration. At construction, build a closure like `(input) => round(input.density, p) + '\x00' + round(input.volume, p)` once; reuse per cache lookup. Do NOT call `Object.keys(input).sort()` per call.
 - **Pre-computed precision multiplier.** If `precision: 2`, rounding uses `Math.round(value * 100) / 100`. Compute `10 ** precision` once at `forge()` time and bind it in the closure; never call `Math.pow` per call.
 - **Lazy `ValidationError.message` via self-overwriting getter.** Build the templated `[unitforge] validation failed for inputs ... ` string on first read of `.message`, not in the constructor; cache via `Object.defineProperty` on first access. Saves work when consumers handle errors programmatically (`instanceof ValidationError` + `.failures`) and never read `.message`. ~5 extra lines; standard memoized-getter pattern.
+- **Validator-purity contract on the `validate` field's JSDoc.** PLANNING already requires validators to be pure (cache-first pipeline; validators-on-miss-only). When `src/types.ts` is written, the JSDoc on `ValidatorMap`'s value-position function type must include the purity requirement so IDE hover surfaces it to consumers writing validators. Suggested wording: *"Must be a pure function of its input. Validators are skipped on cache hits; a validator that depends on external state (clocks, counters, request context) will silently behave wrong on memoized converters."*
 
 If real-world benchmarks ever show one of these matters more (or less) than expected, revise the implementation; the doc only commits to the call-time pipeline above, not to how it's structured internally.
 
@@ -820,7 +823,7 @@ The substantive divergence from chromonym lives in `src/`, where the registries 
 
 The following items must be resolved on paper before `src/` scaffolding begins. They shape the type machinery and the public surface; deferring them produces rework, not iteration.
 
-1. **Lock `src/types.ts` first.** All public types (`Dimension`, `Unit<D>`, `Conversion<I, O>`, `ValidatorMap<I>`, `ForgeConfig`, `ValidationError`) must be sketched in a TypeScript playground with `expect-type` style checks before any implementation file ships. Generic inference for `forge` is the load-bearing concern: confirm that an object-shaped `from` literal narrows correctly, that `inputs` keys constrain `from` keys (extra keys rejected), and that dimension brands thread through. The TypeScript-DX review provided concrete signatures; adopt them as the starting point.
+1. **Lock `src/types.ts` first.** All public types (`Dimension`, `Unit<D, T = number>`, `Conversion<I, O, T = number>`, `ValidatorMap<I, T>`, `ForgeConfig<T>`, `ValidationError`) must be sketched in a TypeScript playground with `expect-type` style checks before any implementation file ships. Generic inference for `forge` is the load-bearing concern: confirm that an object-shaped `from` literal narrows correctly, that `inputs` keys constrain `from` keys (extra keys rejected), that dimension brands thread through, and that `T` is uniform across one `forge` call (mixing `Decimal`-typed and `number`-typed units in one call is a type error). The two TypeScript-DX review passes provided concrete signatures (lock `T` as uniform per call; pass-2 supplied the full `forge` overload set with object-shape `from` constrained to `{ [K in keyof Inputs]: Unit<Inputs[K], T> }`); adopt those as the starting point.
 
 2. **~~`definePack` re-resolution.~~ Resolved 2026-05-09: dropped.** A packaging unit is just a `defineUnit` in the COUNT dimension (a spool of tape IS a unit, not a wrapper around feet), paired optionally with a `defineConversion` to the inner dimension when conversion is needed. No special primitive; the library stays at three factories.
 
