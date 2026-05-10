@@ -326,7 +326,7 @@ Three primitives form the public surface:
 import { defineUnit, defineConversion, forge } from 'unitforge';
 ```
 
-`forge` is the call-site verb. `defineUnit` and `defineConversion` are the value-producing factories. The library does conversion; display is the view's job. (The original PLANNING.md included a standalone `format` primitive with singular/plural/locale/abbreviation logic; resolved 2026-05-09 to drop it. The library exposes an optional `format: (value: number) => string` field in `ForgeConfig` for consumer-supplied output formatting; see `forge` below. Also dropped: a `definePack` sugar; packaging is just a `defineUnit` in the COUNT dimension paired with a `defineConversion` to the inner dimension; no special sugar needed.)
+`forge` is the call-site verb. `defineUnit` and `defineConversion` are the value-producing factories. The library does conversion; display is entirely the view's job. (The original PLANNING.md included a standalone `format` primitive with singular/plural/locale/abbreviation logic; dropped 2026-05-09. A subsequent attempt to keep `format` as an optional `ForgeConfig` field was also dropped; the convenience saved one userland `const` line at the cost of a branched return type and a fuzzier library identity. Consumers who want formatted output write a one-line wrapper around the converter; the library does no string work. Also dropped: a `definePack` sugar; packaging is just a `defineUnit` in the COUNT dimension paired with a `defineConversion` to the inner dimension; no special sugar needed.)
 
 ### `defineUnit`
 
@@ -439,7 +439,7 @@ const cupPpgToG = forge(
 );
 ```
 
-`ForgeConfig` is an open extensibility surface, a plain TypeScript interface that consumers construct as an object literal at the call site (no `defineForgeConfig` ceremony). It carries any forge-behavior modifier: significant digits, clamping, high-precision mode, numeric adapter choice, memoization (cache repeated inputs for hot-path performance), call-site validators (additive on top of the conversion's own validators), an optional `format: (value: number) => string` for consumer-supplied output formatting (the library does no plural/locale/abbreviation logic itself; that is the view's job), and the cross-dim conversion value itself, passed via the `via:` field.
+`ForgeConfig` is an open extensibility surface, a plain TypeScript interface that consumers construct as an object literal at the call site (no `defineForgeConfig` ceremony). It carries any forge-behavior modifier: significant digits, clamping, high-precision mode, numeric adapter choice, memoization (cache repeated inputs for hot-path performance), call-site validators (additive on top of the conversion's own validators), and the cross-dim conversion value itself, passed via the `via:` field. The library does no string work; output formatting (plural, locale, abbreviation, or anything else view-shaped) is consumer code wrapping the converter.
 
 ```ts
 forge(
@@ -456,20 +456,17 @@ forge(
 
 `ForgeConfig.validate` accepts the same per-property + `all` shape as `defineConversion.validate`; call-site validators are *additive*, not overriding. The conversion's own invariants always run.
 
-When `ForgeConfig.format` is supplied, the forged converter exposes a `.format(input)` method that runs the conversion AND applies the formatter, returning a string. The converter itself still returns `number`; the format method is opt-in convenience and is absent if `format` was not supplied:
+The library ships no formatting machinery. Consumers who need formatted output wrap the converter in a one-line userland helper:
 
 ```ts
 const toInches = forge(foot, inch);
-toInches(5);                                                     // 60 (number)
+const formatInches = (v: number) => `${toInches(v).toFixed(0)} in`;
 
-const toInchesPretty = forge(foot, inch, {
-  format: (v) => `${v.toFixed(0)} in`,
-});
-toInchesPretty(5);                                                // 60 (still a number; type unchanged)
-toInchesPretty.format(5);                                         // "60 in" (convert + format)
+formatInches(5);  // "60 in"
+toInches(5);      // 60
 ```
 
-The library ships no plural-handling, locale, abbreviation, or ICU machinery; consumers who need those reach for `Intl.NumberFormat`, `Intl.PluralRules`, or a dedicated i18n library in their view layer. Format is a one-line escape hatch, not a feature.
+Singular/plural rules, locale, abbreviation, and i18n live entirely in the consumer's view layer (`Intl.NumberFormat`, `Intl.PluralRules`, or a dedicated i18n library). The library converts numbers; display is the view's job, full stop.
 
 `ForgeConfig.via:` carries the cross-dimensional conversion. (The field was briefly renamed `with:` during design; reverted to `via:` 2026-05-09 because `with` is SQL-shaped, is a reserved word in JS strict mode, and reads as "construct with this thing" in a way that overstates how complex the right-hand side is. The right-hand side is a `defineConversion` value, and `via` reads as "convert via this rule," which is the intent.)
 
@@ -773,7 +770,7 @@ The following items must be resolved on paper before `src/` scaffolding begins. 
 1. **~~`ForgeConfig` field name for the cross-dim conversion.~~ Resolved 2026-05-09: `with:`.** `via:` was the working name while the value was a single function reference. Once the value became a structured spec (validators + compute + future fields), `with:` reads more naturally ("forge this converter *with* this conversion spec"). Reserved word in JS strict mode but legal as an object key.
 2. **Vocabulary review across the whole API surface.** Settle on a unified vocabulary for the `define*` factories, the `Forge*` types, and the field names inside `ForgeConfig`. Goal is internal consistency, not just per-symbol rightness. Working instinct: keep `defineConversion`; everything else open.
 3. **~~`definePack` re-resolution.~~ Resolved 2026-05-09: dropped.** See pre-coding blocker #2.
-4. **~~`format` API surface.~~ Resolved 2026-05-09: collapsed to an optional `ForgeConfig.format: (value: number) => string` field.** No standalone `format` primitive; no plural/locale/abbreviation logic in the library. When supplied, the forged converter exposes a `.format(input)` convenience method that runs convert + format. Display is the view's job; the library does conversion.
+4. **~~`format` API surface.~~ Resolved 2026-05-09: dropped entirely.** No standalone `format` primitive, no `ForgeConfig.format` field, no `.format()` method on the converter. The library does no string work. Consumers who need formatted output wrap the converter in a one-line userland helper. Sharper library identity than the half-step "optional convenience" version.
 5. **Custom dimension scoping.** Two third-party kits both export `MANA = 'mana'`. The library currently trusts strings. Document the prefix-your-custom-dimensions convention; do not enforce.
 6. **TypeScript inference and generics for `forge`.** Confirm that the type system narrows the converter's argument and return types correctly for both single-Unit `from` and object-of-Units `from`, and that key/dimension misalignment between `from` and the supplied conversion's `inputs` surfaces as a compile error rather than a runtime crash.
 7. **Subpath exports for size variants of large kits.** Pharmacy and inventory in particular could ship `core` vs `full` variants. Mirror chromonym Munsell #22's approach.
