@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { areaFromLengthAndWidth } from '../src/conversions/areaFromLengthAndWidth.js';
 import { AREA, LENGTH } from '../src/dimensions.js';
 import { defineConversion, defineUnit, forge, linear, ValidationError } from '../src/index.js';
-import { centimeter, meter, squareMeter } from '../src/kits/geometry/index.js';
+import {
+  areaFromLengthAndWidth,
+  centimeter,
+  meter,
+  squareMeter,
+} from '../src/kits/geometry/index.js';
 
 describe('linear()', () => {
   it('returns a toBase/fromBase pair that round-trips', () => {

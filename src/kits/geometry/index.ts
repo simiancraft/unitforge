@@ -1,5 +1,4 @@
-/** geometry kit barrel. Re-exports each unit defined under this folder. */
+/** geometry kit barrel. Re-exports every unit and conversion shipped by this kit. */
 
-export { centimeter } from './centimeter.js';
-export { meter } from './meter.js';
-export { squareMeter } from './squareMeter.js';
+export * from './conversions.js';
+export * from './units.js';

@@ -129,19 +129,19 @@ This way, adding a new constant to `dimensions.ts` automatically updates the aut
 
 ### (2) Kits: domain-organized bundles of units
 
-A kit is a folder under `src/kits/<domain>/` containing one file per unit, plus an `index.ts` barrel. Kits depend on dimensions but not on conversions. A kit may declare new dimensions inline if it introduces a domain not yet in the built-in dimension list (e.g., a `gaming` kit might export `AFFINITY`, `LOYALTY` alongside its units).
+A kit is a folder under `src/kits/<domain>/` containing exactly three files: `units.ts` (every unit shipped by the kit), `conversions.ts` (every cross-dim conversion shipped by the kit), and `index.ts` (a barrel re-exporting both). Kits depend on dimensions but not on each other. A kit may declare new dimensions inline if it introduces a domain not yet in the built-in dimension list (e.g., a `gaming` kit might export `AFFINITY`, `LOYALTY` alongside its units).
 
 Two import patterns supported:
 
 ```ts
-// Granular: best tree-shaking, named imports
+// Named imports from the kit barrel (best tree-shaking with sideEffects: false)
 import { meter, foot } from 'unitforge/kits/imperial';
 
-// Whole domain: convenience, barrel import
+// Whole-kit namespace (convenience)
 import * as cooking from 'unitforge/kits/cooking';
 ```
 
-Each unit is a value produced by `defineUnit` (full spec under "API shape > `defineUnit`" below).
+Each unit is a value produced by `defineUnit` (full spec under "API shape > `defineUnit`" below); each cross-dim conversion is a value produced by `defineConversion`.
 
 #### Polysemy and kit composition
 
@@ -151,20 +151,20 @@ Three layers of disambiguation are available, any one sufficient on its own:
 
 ```ts
 // Call-site rename (consumer code).
-import { weight as physicalWeight }     from 'unitforge/conversions/mechanics';
-import { weight as statisticalWeight }  from 'unitforge/conversions/statistics';
+import { weight as physicalWeight }     from 'unitforge/kits/mechanics';
+import { weight as statisticalWeight }  from 'unitforge/kits/statistics';
 
 // Export-side rename (kit-author code; src/kits/everything-w/index.ts).
-export { weight as physicalWeight }    from '../mechanics/weight';
-export { weight as statisticalWeight } from '../statistics/weight';
+export { weight as physicalWeight }    from '../mechanics/units.js';
+export { weight as statisticalWeight } from '../statistics/units.js';
 
 // Namespace import (verbose but explicit).
-import * as Classical    from 'unitforge/conversions/classical';
-import * as Relativistic from 'unitforge/conversions/relativistic';
+import * as Classical    from 'unitforge/kits/classical';
+import * as Relativistic from 'unitforge/kits/relativistic';
 forge({mass: kg, velocity: mps}, joule, { via: Classical.kineticEnergy });
 ```
 
-Tree-shaking is preserved at all three layers. Per-unit-per-file modules under `sideEffects: false` mean consumers only pay for the units they actually import, even when a barrel re-exports many. Composition costs no bytes the consumer didn't ask for. Namespace import requires **static** member access (`Classical.kineticEnergy`); dynamic access (`Classical[someVar]`) defeats tree-shaking.
+Tree-shaking is preserved at all three layers. The kit barrel re-exports named values from `units.ts` and `conversions.ts`; `"sideEffects": false` lets the consumer's bundler drop everything the call site does not reference, even when the barrel re-exports many values. Composition costs no bytes the consumer didn't ask for. Namespace import requires **static** member access (`Classical.kineticEnergy`); dynamic access (`Classical[someVar]`) defeats tree-shaking.
 
 #### Packaging units (worked example)
 
@@ -702,23 +702,23 @@ unitforge/
 │   ├── index.ts                    // public API barrel: defineUnit, defineConversion, forge, linear, DEFAULT_MEMO_CAP, ValidationError
 │   ├── dimensions.ts               // flat file; all built-in dimension constants
 │   ├── forge.ts
-│   ├── defineUnit.ts
-│   ├── defineConversion.ts
+│   ├── define.ts                   // co-located: defineUnit, defineConversion, linear (small forge-y helpers)
+│   ├── errors.ts                   // ValidationError + ValidationFailure
 │   ├── types.ts                    // Dimension, Unit<D, T=number>, Conversion<I, O, T=number>, ForgeConfig interfaces
-│   ├── internal/
-│   │   └── safeCopy.ts             // proto-pollution-rejecting shallow copy used by all factory entry points
 │   ├── lib/
-│   │   └── decimal.ts              // peer-dep wrapper for decimal.js (validates pattern at v1; no kit uses it yet)
-│   ├── kits/
-│   │   ├── si/
-│   │   ├── imperial/
-│   │   ├── cooking/
-│   │   ├── inventory/
-│   │   ├── pharmacy/
-│   │   └── ...
-│   └── conversions/
-│       ├── massFromVolumeAndDensity.ts
-│       ├── pressureFromForceAndArea.ts
+│   │   ├── safeCopy.ts             // proto-pollution-rejecting shallow copy used by all factory entry points
+│   │   ├── constants.ts            // RESERVED_PROTO_KEYS, CACHE_KEY_SEP, MEMO_CAP_MAX, DEFAULT_MEMO_CAP
+│   │   └── decimal.ts              // (future) peer-dep wrapper for decimal.js; no kit uses it yet
+│   └── kits/
+│       ├── geometry/
+│       │   ├── units.ts            // every unit shipped by the kit (meter, centimeter, squareMeter, ...)
+│       │   ├── conversions.ts      // every conversion shipped by the kit (areaFromLengthAndWidth, ...)
+│       │   └── index.ts            // barrel: re-exports units + conversions
+│       ├── si/
+│       ├── imperial/
+│       ├── cooking/
+│       ├── inventory/
+│       ├── pharmacy/
 │       └── ...
 ├── demo/                           // vite-based demo page (chromonym pattern)
 ├── test/                           // bun test suite
@@ -729,11 +729,11 @@ unitforge/
 ├── biome.json, bunfig.toml, codecov.yml, knip.json, llms.txt, package.json, tsconfig.json, .releaserc.json
 ```
 
-This layout mirrors chromonym's structure. Substantive divergences: `src/conversions/` carries cross-dim conversions (chromonym carried color-space transforms); `src/dimensions.ts` is unique to unitforge (chromonym color spaces ship as named entities, not flat constants); `src/kits/` plays the role chromonym's `src/palettes/` plays.
+This layout mirrors chromonym's structure. Substantive divergences: each kit folder carries its own cross-dim conversions in `conversions.ts` (chromonym carried color-space transforms in a parallel tree); `src/dimensions.ts` is unique to unitforge (chromonym color spaces ship as named entities, not flat constants); `src/kits/` plays the role chromonym's `src/palettes/` plays.
 
 ### `package.json#exports` shape
 
-Granular per-unit-per-file requires a wildcard `exports` map; a hand-maintained entry-per-file table will rot. Target shape:
+Each kit ships a single barrel per kit; the wildcard map keeps maintenance to one entry. Target shape:
 
 ```json
 {
@@ -741,8 +741,7 @@ Granular per-unit-per-file requires a wildcard `exports` map; a hand-maintained 
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
     "./dimensions": { "types": "./dist/dimensions.d.ts", "import": "./dist/dimensions.js" },
     "./kits/*": { "types": "./dist/kits/*/index.d.ts", "import": "./dist/kits/*/index.js" },
-    "./kits/*/*": { "types": "./dist/kits/*/*.d.ts", "import": "./dist/kits/*/*.js" },
-    "./conversions/*": { "types": "./dist/conversions/*.d.ts", "import": "./dist/conversions/*.js" },
+    "./errors": { "types": "./dist/errors.d.ts", "import": "./dist/errors.js" },
     "./package.json": "./package.json"
   }
 }
@@ -750,7 +749,7 @@ Granular per-unit-per-file requires a wildcard `exports` map; a hand-maintained 
 
 ESM-only (`"type": "module"`, no `require` condition). Floor `engines.node: ">=20"` and `moduleResolution: "node16" | "nodenext" | "bundler"` for consumers; document loudly in README.
 
-**Wildcard specificity.** Node's exports resolver prefers the more-specific pattern. `unitforge/kits/imperial` matches `./kits/*` (resolves to the kit's barrel `dist/kits/imperial/index.js`); `unitforge/kits/imperial/foot` matches `./kits/*/*` (resolves to the per-unit file `dist/kits/imperial/foot.js`). The two patterns coexist because the resolver picks the longer-matching one; `publint` and `attw` checks should assert both call shapes resolve correctly.
+**Tree-shaking is the seam, not subpath count.** Consumers import named values from `unitforge/kits/<name>` and rely on bundler dead-code elimination (`"sideEffects": false`) to drop the unit and conversion definitions they do not use. Per-unit subpath imports are deliberately not part of the public surface; the bundler reads the same kit barrel either way, and the smaller exports map cuts a class of `publint`/`attw` failure modes seen in earlier drafts. `publint` and `attw` checks assert that every declared subpath resolves and surfaces correct `.d.ts`.
 
 v1 ships with **no peer dependencies**. When a future precision-requiring kit ships, that kit declares its precision library as `peerDependenciesMeta.optional: true` (see "Numeric precision > Peer-dependency wrapper pattern" below). Without `optional: true`, every default `npm install unitforge` user would see a missing-peer warning.
 
@@ -767,12 +766,12 @@ These rules are non-negotiable through v1; they are what holds the design togeth
 7. **Type-agnostic value layer.** v1 ships entirely native `number`. `Unit<D, T = number>` and `Conversion<I, O, T = number>` are parameterized for forward-compat; future precision-sensitive kits specialize `T` (e.g., to `Decimal`) without library changes. No `NumericAdapter` interface. (See "Numeric precision".)
 8. **Per-unit precision is a property of the unit definition, not a global config.**
 9. **No instance factory.** Public API is free functions. Period.
-10. **Granular per-unit files.** Each kit is a folder of one-unit-per-file modules with a barrel `index.ts`.
-11. **Naming convention enforced by lint.** A small dev-only checker greps for `defineUnit`/`defineConversion` calls and the export they're assigned to, verifying the export name matches the filename in camelCase. `defineUnit`'s `name:` field must also match. (`defineConversion` carries no `name:` field.) Initial form: ~50 lines of regex; ship as project pre-commit hook + CI step; extract as `unitforge-lint` if it earns its keep.
+10. **Per-kit `units.ts` + `conversions.ts` + `index.ts` barrel.** Each kit is a folder containing exactly three source files: `units.ts` (every unit shipped by the kit, one named export per unit), `conversions.ts` (every cross-dim conversion shipped by the kit, one named export per conversion), and `index.ts` (a barrel that re-exports both). Per-unit-per-file is rejected: it inflated file count without buying tree-shaking (bundler-driven dead-code elimination via `sideEffects: false` does that work) and forced a brittle wildcard subpath map that consistently failed `publint`/`attw`.
+11. **Naming convention enforced by lint.** A small dev-only checker greps for `defineUnit`/`defineConversion` calls in `units.ts`/`conversions.ts` and verifies that each export name matches the value's `name:` field (when present) in camelCase. `defineUnit`'s `name:` field is the source of truth for unit identity; `defineConversion` carries no `name:` field, so its check is export-name-only. Initial form: ~50 lines of regex; ship as project pre-commit hook + CI step; extract as `unitforge-lint` if it earns its keep.
 12. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO, BIPM) cite source and version-pin in source comments. NOTICE.md tracks attribution.
-13. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/internal/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable string keys and throws a clear definition-time error if any key is reserved (`__proto__`, `constructor`, `prototype`). **`safeCopy` is shallow by design**: it screens only own-enumerable string keys at the top level. It does NOT recurse into function values (validator functions, `compute` functions) or nested data structures; the trust boundary is "we trust `defineUnit`/`defineConversion`-produced values that already passed `safeCopy` at their own definition time." All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus `Object.create(null)` target on the failure path. The hot-path converter does NOT call `safeCopy` (no vector to guard against; no mutation, no prototype-chain assignment). Cost lands on definition, forge-creation, and validation-failure paths; per-call overhead unchanged.
+13. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/lib/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable string keys and throws a clear definition-time error if any key is reserved (`__proto__`, `constructor`, `prototype`). **`safeCopy` is shallow by design**: it screens only own-enumerable string keys at the top level. It does NOT recurse into function values (validator functions, `compute` functions) or nested data structures; the trust boundary is "we trust `defineUnit`/`defineConversion`-produced values that already passed `safeCopy` at their own definition time." All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus `Object.create(null)` target on the failure path. The hot-path converter does NOT call `safeCopy` (no vector to guard against; no mutation, no prototype-chain assignment). Cost lands on definition, forge-creation, and validation-failure paths; per-call overhead unchanged.
 
-    Reserved-key constants (the proto-pollution list and the `_all` cross-property validator key) ship as named exports from `src/internal/safeCopy.ts` and the Public type sketch respectively, NOT inline string literals at every call site; this prevents drift between the runtime check and the test suite that asserts the rejection. `MEMO_CAP_MAX = 1_048_576` likewise ships as a named constant alongside `DEFAULT_MEMO_CAP = 1024`. The cache-key separator (`\x00` at v1) is exported from `internal/forge.ts` as `CACHE_KEY_SEP` so any future serializer or debug-print uses the same byte.
+    Reserved-key constants (the proto-pollution list and the `_all` cross-property validator key) ship as named exports from `src/lib/constants.ts` and the Public type sketch respectively, NOT inline string literals at every call site; this prevents drift between the runtime check and the test suite that asserts the rejection. `MEMO_CAP_MAX = 1_048_576` likewise ships as a named constant alongside `DEFAULT_MEMO_CAP = 1024`. The cache-key separator (`\x00` at v1) is exported from `src/lib/constants.ts` as `CACHE_KEY_SEP` so any future serializer or debug-print uses the same byte.
 
 ## v1 kit roster
 
@@ -798,7 +797,7 @@ The forward-compatible type shape (locked at v1 in `src/types.ts`) parameterizes
 
 - v1 consumers writing native-number units never see the `T` parameter; it defaults from the function signatures.
 - `T` must be uniform across one `forge` call (mixing Decimal-typed and number-typed units in one call is a type error).
-- A future `kits/finance/usd.ts` specializes `T = Decimal` explicitly:
+- A future `kits/finance/units.ts` specializes `T = Decimal` explicitly for entries like `usd`:
   ```ts
   import Decimal from '../../lib/decimal';  // wrapper, not direct decimal.js import
   export const usd = defineUnit<typeof CURRENCY, Decimal>({
@@ -940,7 +939,7 @@ Only one item remains genuinely open before `src/` scaffolding can begin; the re
 Repo, license, community-health files, and CI workflows are already in place. Remaining:
 
 1. Resolve pre-coding blocker #1 (lock `src/types.ts` in a playground with `expect-type` checks).
-2. Scaffold `src/` skeleton: `index.ts` barrel, `dimensions.ts`, `types.ts`, stub `forge.ts`, `defineUnit.ts`, `defineConversion.ts`, `errors.ts`, `internal/safeCopy.ts`, `lib/decimal.ts`, and empty `kits/` and `conversions/` folders.
+2. Scaffold `src/` skeleton: `index.ts` barrel, `dimensions.ts`, `types.ts`, stub `forge.ts`, `define.ts` (combined `defineUnit` + `defineConversion` + `linear`), `errors.ts`, `lib/safeCopy.ts`, `lib/constants.ts`, future `lib/decimal.ts`, and empty `kits/` folder. (Done: `geometry` kit and core types/forge landed in commit `7687cc3` and reorganized to per-kit `units.ts` + `conversions.ts` shortly after.)
 3. Scaffold `demo/` as a vite app with placeholder content.
 4. Wire `--provenance` into `.releaserc.json` and CI publish step (currently only documented).
 5. **Wire the wildcard `exports` map into `package.json`** alongside the first kit scaffold (currently `package.json` only ships `.` and `./package.json`; the documented map under "package.json#exports shape" must land in the same PR as the first kit so consumers can resolve `unitforge/kits/<name>` paths).

@@ -1,6 +1,6 @@
 import { ValidationError, type ValidationFailure } from './errors.js';
-import { CACHE_KEY_SEP, MEMO_CAP_MAX } from './internal/constants.js';
-import { safeCopy } from './internal/safeCopy.js';
+import { CACHE_KEY_SEP, MEMO_CAP_MAX } from './lib/constants.js';
+import { safeCopy } from './lib/safeCopy.js';
 import type { Conversion, Dimension, ForgeConfig, Unit, ValidatorMap } from './types.js';
 
 // ─── Public overload set ─────────────────────────────────────────────────
