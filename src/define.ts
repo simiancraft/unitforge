@@ -1,7 +1,6 @@
-// Factory primitives + the `linear` sugar, co-located. All three are tiny
-// and almost always imported together by kit authors and consumers; keeping
-// them in one file reduces the import graph without affecting tree-shaking
-// (each is a named export under `sideEffects: false`).
+// Factory primitives. `defineUnit` and `defineConversion` are co-located
+// because they share `safeCopy` and are almost always imported together by
+// kit authors. Pure helpers like `linear` live under `lib/math.ts`.
 
 import { safeCopy } from './lib/safeCopy.js';
 import type { Conversion, Dimension, Unit } from './types.js';
@@ -55,26 +54,5 @@ export function defineConversion<
     ...safeSpec,
     inputs: safeInputs,
     ...(safeValidate ? { validate: safeValidate } : {}),
-  };
-}
-
-/**
- * Sugar for the common linear-unit case.
- *
- * Returns the `{ toBase, fromBase }` pair for a unit whose conversion to its
- * dimension's base is multiplication by a constant scale. `T = number`-only:
- * uses native `*` and `/`. Future precision-typed kits write `toBase` /
- * `fromBase` longhand using their precision library; they do not use `linear`.
- *
- * @example
- *   defineUnit({ name: 'foot', dimension: LENGTH, ...linear(0.3048) });
- */
-export function linear(scale: number): {
-  toBase: (v: number) => number;
-  fromBase: (b: number) => number;
-} {
-  return {
-    toBase: (v) => v * scale,
-    fromBase: (b) => b / scale,
   };
 }

@@ -1,9 +1,9 @@
 /** unitforge public API barrel. */
 
-export { defineConversion, defineUnit, linear } from './define.js';
-export { ValidationError, type ValidationFailure } from './errors.js';
-export { forge } from './forge.js';
-export { DEFAULT_MEMO_CAP, MEMO_CAP_MAX } from './lib/constants.js';
+export { defineConversion, defineUnit } from './define.js';
+export { DEFAULT_MEMO_CAP, forge, MEMO_CAP_MAX } from './forge.js';
+export { linear } from './lib/math.js';
+export { ValidationError, type ValidationFailure } from './lib/validation.js';
 
 export type {
   Conversion,

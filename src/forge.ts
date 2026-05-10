@@ -1,7 +1,15 @@
-import { ValidationError, type ValidationFailure } from './errors.js';
-import { CACHE_KEY_SEP, MEMO_CAP_MAX } from './lib/constants.js';
 import { safeCopy } from './lib/safeCopy.js';
+import { ValidationError, type ValidationFailure } from './lib/validation.js';
 import type { Conversion, Dimension, ForgeConfig, Unit, ValidatorMap } from './types.js';
+
+/** NUL byte; used as the cache-key field separator. */
+const CACHE_KEY_SEP = '\x00';
+
+/** Hard upper bound on `ForgeConfig.memoize` LRU cap. */
+export const MEMO_CAP_MAX = 1_048_576;
+
+/** Default LRU cap for ergonomic opt-in: `forge(a, b, { memoize: DEFAULT_MEMO_CAP })`. */
+export const DEFAULT_MEMO_CAP = 1024;
 
 // ─── Public overload set ─────────────────────────────────────────────────
 // (See PLANNING.md "Public type sketch (canonical)" for the source of truth.)

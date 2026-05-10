@@ -1,4 +1,5 @@
-import { RESERVED_PROTO_KEYS } from './constants.js';
+/** Reserved JS keys that prototype-pollution attacks rely on. */
+const RESERVED_PROTO_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'prototype']);
 
 /**
  * Returns a sanitized shallow copy of `spec`.

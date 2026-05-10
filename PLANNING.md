@@ -699,20 +699,22 @@ Where this earns its keep: scaling functions that genuinely benefit from the uni
 ```
 unitforge/
 ├── src/
-│   ├── index.ts                    // public API barrel: defineUnit, defineConversion, forge, linear, DEFAULT_MEMO_CAP, ValidationError
+│   ├── index.ts                    // public API barrel
+│   ├── types.ts                    // Dimension, Unit<D, T=number>, Conversion<I, O, T=number>, ForgeConfig
 │   ├── dimensions.ts               // flat file; all built-in dimension constants
-│   ├── forge.ts
-│   ├── define.ts                   // co-located: defineUnit, defineConversion, linear (small forge-y helpers)
-│   ├── errors.ts                   // ValidationError + ValidationFailure
-│   ├── types.ts                    // Dimension, Unit<D, T=number>, Conversion<I, O, T=number>, ForgeConfig interfaces
-│   ├── lib/
-│   │   ├── safeCopy.ts             // proto-pollution-rejecting shallow copy used by all factory entry points
-│   │   ├── constants.ts            // RESERVED_PROTO_KEYS, CACHE_KEY_SEP, MEMO_CAP_MAX, DEFAULT_MEMO_CAP
+│   ├── define.ts                   // defineUnit + defineConversion (factory primitives)
+│   ├── forge.ts                    // forge() and its module-local constants (CACHE_KEY_SEP, MEMO_CAP_MAX, DEFAULT_MEMO_CAP)
+│   ├── lib/                        // root-level tooling, grouped by purpose
+│   │   ├── math.ts                 // domain-agnostic math helpers (linear, ...)
+│   │   ├── safeCopy.ts             // proto-pollution-rejecting shallow copy + its reserved-key set
+│   │   ├── validation.ts           // ValidationError + ValidationFailure (and any future validation helpers)
 │   │   └── decimal.ts              // (future) peer-dep wrapper for decimal.js; no kit uses it yet
-│   └── kits/
+│   └── kits/                       // self-contained domain bundles
 │       ├── geometry/
 │       │   ├── units.ts            // every unit shipped by the kit (meter, centimeter, squareMeter, ...)
 │       │   ├── conversions.ts      // every conversion shipped by the kit (areaFromLengthAndWidth, ...)
+│       │   ├── math.ts             // (optional) kit-local reusable math; only added when a kit needs it
+│       │   ├── types.ts            // (optional) kit-local type vocabulary; only added when a kit needs it
 │       │   └── index.ts            // barrel: re-exports units + conversions
 │       ├── si/
 │       ├── imperial/
@@ -730,6 +732,11 @@ unitforge/
 ```
 
 This layout mirrors chromonym's structure. Substantive divergences: each kit folder carries its own cross-dim conversions in `conversions.ts` (chromonym carried color-space transforms in a parallel tree); `src/dimensions.ts` is unique to unitforge (chromonym color spaces ship as named entities, not flat constants); `src/kits/` plays the role chromonym's `src/palettes/` plays.
+
+**Three tiers, with one rule each:**
+1. **Root of `src/`** (`define`, `dimensions`, `forge`, `types`, `index`): the irreducible public-facing surface. Adding a file at this tier requires a strong reason; new helpers default to `lib/`.
+2. **`src/lib/`**: root-level tooling grouped by purpose, one file per concern (math, safeCopy, validation). Files are allowed to dog-food the library's own primitives. If a kit-local helper turns out to be polymorphic enough that two or more kits use it, it gets elevated to `lib/` (analog of the classical-vs-relativistic polysemy story: shared mechanics elevate; kit-specific stays put).
+3. **`src/kits/<domain>/`**: self-contained. `units.ts` + `conversions.ts` + `index.ts` (barrel) are always present. `math.ts` and `types.ts` are added on demand when the kit needs reusable internal math or a private type vocabulary.
 
 ### `package.json#exports` shape
 
@@ -771,7 +778,7 @@ These rules are non-negotiable through v1; they are what holds the design togeth
 12. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO, BIPM) cite source and version-pin in source comments. NOTICE.md tracks attribution.
 13. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/lib/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable string keys and throws a clear definition-time error if any key is reserved (`__proto__`, `constructor`, `prototype`). **`safeCopy` is shallow by design**: it screens only own-enumerable string keys at the top level. It does NOT recurse into function values (validator functions, `compute` functions) or nested data structures; the trust boundary is "we trust `defineUnit`/`defineConversion`-produced values that already passed `safeCopy` at their own definition time." All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus `Object.create(null)` target on the failure path. The hot-path converter does NOT call `safeCopy` (no vector to guard against; no mutation, no prototype-chain assignment). Cost lands on definition, forge-creation, and validation-failure paths; per-call overhead unchanged.
 
-    Reserved-key constants (the proto-pollution list and the `_all` cross-property validator key) ship as named exports from `src/lib/constants.ts` and the Public type sketch respectively, NOT inline string literals at every call site; this prevents drift between the runtime check and the test suite that asserts the rejection. `MEMO_CAP_MAX = 1_048_576` likewise ships as a named constant alongside `DEFAULT_MEMO_CAP = 1024`. The cache-key separator (`\x00` at v1) is exported from `src/lib/constants.ts` as `CACHE_KEY_SEP` so any future serializer or debug-print uses the same byte.
+    Reserved-key constants are co-located with the helper that uses them, not piled into a shared `constants.ts`. The proto-pollution list lives at the top of `src/lib/safeCopy.ts` (module-local; the only consumer is `safeCopy` itself). `MEMO_CAP_MAX = 1_048_576`, `DEFAULT_MEMO_CAP = 1024`, and `CACHE_KEY_SEP = '\x00'` live at the top of `src/forge.ts`; the first two are publicly re-exported from the root barrel. The `_all` cross-property validator key is documented in the Public type sketch. This grouping rule prevents drift between a check and the test that asserts it (both reside in the same file) and avoids the trap of a generic "constants" pile that accumulates unrelated values.
 
 ## v1 kit roster
 
@@ -939,7 +946,7 @@ Only one item remains genuinely open before `src/` scaffolding can begin; the re
 Repo, license, community-health files, and CI workflows are already in place. Remaining:
 
 1. Resolve pre-coding blocker #1 (lock `src/types.ts` in a playground with `expect-type` checks).
-2. Scaffold `src/` skeleton: `index.ts` barrel, `dimensions.ts`, `types.ts`, stub `forge.ts`, `define.ts` (combined `defineUnit` + `defineConversion` + `linear`), `errors.ts`, `lib/safeCopy.ts`, `lib/constants.ts`, future `lib/decimal.ts`, and empty `kits/` folder. (Done: `geometry` kit and core types/forge landed in commit `7687cc3` and reorganized to per-kit `units.ts` + `conversions.ts` shortly after.)
+2. Scaffold `src/` skeleton: `index.ts` barrel, `types.ts`, `dimensions.ts`, `define.ts` (defineUnit + defineConversion), `forge.ts`, `lib/math.ts`, `lib/safeCopy.ts`, `lib/validation.ts`, future `lib/decimal.ts`, and empty `kits/` folder. (Done: scaffold + `geometry` kit landed in commit `7687cc3`; reorganized to per-kit `units.ts` + `conversions.ts` and three-tier `root / lib / kits` structure in subsequent commits.)
 3. Scaffold `demo/` as a vite app with placeholder content.
 4. Wire `--provenance` into `.releaserc.json` and CI publish step (currently only documented).
 5. **Wire the wildcard `exports` map into `package.json`** alongside the first kit scaffold (currently `package.json` only ships `.` and `./package.json`; the documented map under "package.json#exports shape" must land in the same PR as the first kit so consumers can resolve `unitforge/kits/<name>` paths).

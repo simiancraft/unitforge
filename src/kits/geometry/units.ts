@@ -2,8 +2,9 @@
 // tree-shaking under `sideEffects: false` means consumers who import only
 // `meter` from the kit barrel pay no bytes for `centimeter` or `squareMeter`.
 
-import { defineUnit, linear } from '../../define.js';
+import { defineUnit } from '../../define.js';
 import { AREA, LENGTH } from '../../dimensions.js';
+import { linear } from '../../lib/math.js';
 
 /** The base unit of LENGTH. */
 export const meter = defineUnit({
