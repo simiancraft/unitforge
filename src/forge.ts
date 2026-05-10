@@ -3,8 +3,6 @@ import { CACHE_KEY_SEP, MEMO_CAP_MAX } from './internal/constants.js';
 import { safeCopy } from './internal/safeCopy.js';
 import type { Conversion, Dimension, ForgeConfig, Unit, ValidatorMap } from './types.js';
 
-// biome-ignore lint/suspicious/noExplicitAny: overloads are the strict surface; impl uses any for shape polymorphism
-
 // ─── Public overload set ─────────────────────────────────────────────────
 // (See PLANNING.md "Public type sketch (canonical)" for the source of truth.)
 
@@ -44,86 +42,84 @@ export function forge<
 ): (input: { [K in keyof Inputs]: T }) => { [K in keyof Output]: T };
 
 // ─── Runtime implementation ──────────────────────────────────────────────
-
-export function forge(
-  // biome-ignore lint/suspicious/noExplicitAny: shape polymorphism inside impl
-  from: any,
-  // biome-ignore lint/suspicious/noExplicitAny: shape polymorphism inside impl
-  to: any,
-  // biome-ignore lint/suspicious/noExplicitAny: shape polymorphism inside impl
-  config?: any,
-  // biome-ignore lint/suspicious/noExplicitAny: variadic shape; per-call narrowing happens in overloads
-): (input: any) => any {
-  const safeConfig = config ? safeCopy(config) : undefined;
+//
+// The impl signature uses `any` ONLY because TypeScript requires the
+// implementation signature of an overloaded function to be assignable to every
+// overload simultaneously, and no single non-`any` type is assignable to the
+// three overload return shapes. The impl signature is invisible to callers
+// (TypeScript only surfaces the three overloads above); inside the body we
+// use `unknown` and narrow with type guards. This is the conventional
+// TypeScript escape hatch for overloaded functions, not a generalized `any`.
+// biome-ignore lint/suspicious/noExplicitAny: see comment above
+export function forge(from: any, to: any, config?: any): any {
+  const safeConfig: SafeConfig | undefined = config
+    ? (safeCopy(config as Record<string, unknown>) as SafeConfig)
+    : undefined;
   const memoCap = validateMemoCap(safeConfig?.memoize);
   const precision = validatePrecision(safeConfig?.precision);
   const precisionMul = precision != null ? 10 ** precision : null;
 
   if (isUnitLike(from) && isUnitLike(to)) {
-    return buildUnaryConverter(
-      from as Unit<Dimension, unknown>,
-      to as Unit<Dimension, unknown>,
-      memoCap,
-      precision,
-      precisionMul,
-    );
+    return buildUnaryConverter(from, to, memoCap, precisionMul);
   }
 
   // Cross-dim path: object input.
-  if (!safeConfig || !safeConfig.via) {
+  if (!safeConfig?.via) {
+    const fromObj = from as Record<string, unknown>;
     throw new Error(
       `[unitforge] forge() received an object-shaped \`from\` with no \`via:\` in ForgeConfig.\n` +
-        `\`from\` keys: { ${Object.keys(from).join(', ')} }\n` +
+        `\`from\` keys: { ${Object.keys(fromObj).join(', ')} }\n` +
         `Cross-dimensional forging requires a defineConversion value passed as \`via:\`.`,
     );
   }
 
   return buildCrossDimConverter(
     from as Record<string, Unit<Dimension, unknown>>,
-    to,
+    to as Unit<Dimension, unknown> | Record<string, Unit<Dimension, unknown>>,
     safeConfig,
     memoCap,
-    precision,
     precisionMul,
   );
 }
 
+// ─── Internal types for the runtime impl ─────────────────────────────────
+
+interface SafeConfig {
+  via?: Conversion<Record<string, Dimension>, Dimension | Record<string, Dimension>, unknown>;
+  validate?: ValidatorMap<Record<string, Dimension>, unknown>;
+  precision?: unknown;
+  memoize?: unknown;
+}
+
+type AnyUnit = Unit<Dimension, unknown>;
+type AnyConverter = (input: unknown) => unknown;
+
 // ─── Within-dimension converter ──────────────────────────────────────────
 
 function buildUnaryConverter(
-  fromUnit: Unit<Dimension, unknown>,
-  toUnit: Unit<Dimension, unknown>,
+  fromUnit: AnyUnit,
+  toUnit: AnyUnit,
   memoCap: number,
-  precision: number | null,
   precisionMul: number | null,
-  // biome-ignore lint/suspicious/noExplicitAny: T-polymorphic at the value layer
-): (value: any) => any {
+): AnyConverter {
   // Memoize off: hot path is two function calls + optional rounding.
   if (memoCap === 0) {
     if (precisionMul == null) {
-      // biome-ignore lint/suspicious/noExplicitAny: T-polymorphic
-      return (value: any) =>
-        // biome-ignore lint/suspicious/noExplicitAny: T-polymorphic
-        toUnit.fromBase(fromUnit.toBase(value as any) as any);
+      return (value) => toUnit.fromBase(fromUnit.toBase(value));
     }
-    // biome-ignore lint/suspicious/noExplicitAny: T-polymorphic
-    return (value: any) =>
-      // biome-ignore lint/suspicious/noExplicitAny: T-polymorphic
-      roundNumber(toUnit.fromBase(fromUnit.toBase(value as any) as any), precisionMul);
+    return (value) => roundIfNumber(toUnit.fromBase(fromUnit.toBase(value)), precisionMul);
   }
 
   // Memoize on.
-  // biome-ignore lint/suspicious/noExplicitAny: cache values are T-polymorphic
-  const cache = new Map<string, any>();
+  const cache = new Map<string, unknown>();
 
-  // biome-ignore lint/suspicious/noExplicitAny: T-polymorphic
-  return (value: any) => {
-    const keyVal = precisionMul != null ? roundNumber(value, precisionMul) : value;
+  return (value) => {
+    const keyVal = precisionMul != null ? roundIfNumber(value, precisionMul) : value;
     const key = String(keyVal);
     if (cache.has(key)) return cache.get(key);
 
     let result = toUnit.fromBase(fromUnit.toBase(value));
-    if (precisionMul != null) result = roundNumber(result, precisionMul);
+    if (precisionMul != null) result = roundIfNumber(result, precisionMul);
 
     writeCache(cache, key, result, memoCap);
     return result;
@@ -133,51 +129,40 @@ function buildUnaryConverter(
 // ─── Cross-dimensional converter ─────────────────────────────────────────
 
 function buildCrossDimConverter(
-  fromUnits: Record<string, Unit<Dimension, unknown>>,
-  // biome-ignore lint/suspicious/noExplicitAny: to is Unit | Record<string,Unit>
-  to: any,
-  // biome-ignore lint/suspicious/noExplicitAny: validated config
-  safeConfig: any,
+  fromUnits: Record<string, AnyUnit>,
+  to: AnyUnit | Record<string, AnyUnit>,
+  safeConfig: SafeConfig,
   memoCap: number,
-  precision: number | null,
   precisionMul: number | null,
-  // biome-ignore lint/suspicious/noExplicitAny: T-polymorphic
-): (input: Record<string, any>) => any {
-  const conversion: Conversion<
-    Record<string, Dimension>,
-    Dimension | Record<string, Dimension>,
-    unknown
-  > = safeConfig.via;
+): (input: Record<string, unknown>) => unknown {
+  const conversion = safeConfig.via;
+  if (!conversion) {
+    // Defensive: caller (forge) already guards this path, but narrow for TS.
+    throw new Error('[unitforge] internal: cross-dim build called without conversion.via');
+  }
 
-  // safeCopy nested user-controlled key maps (call-site validators).
-  const callSiteValidate: ValidatorMap<Record<string, Dimension>, unknown> | undefined =
-    safeConfig.validate ? safeCopy(safeConfig.validate) : undefined;
+  // safeCopy nested user-controlled key map (call-site validators).
+  const callSiteValidate = safeConfig.validate ? safeCopy(safeConfig.validate) : undefined;
 
   // Pre-bake input key list (sorted for stable cache-key order).
   const inputKeys = Object.keys(conversion.inputs).sort();
 
   // Pre-bake output shape detection.
   const outputIsObject = !isUnitLike(to);
-  const outputKeys = outputIsObject ? Object.keys(to as Record<string, unknown>) : null;
+  const outputKeys = outputIsObject ? Object.keys(to as Record<string, AnyUnit>) : null;
 
-  // biome-ignore lint/suspicious/noExplicitAny: cache is T-polymorphic
-  const cache = memoCap > 0 ? new Map<string, any>() : null;
+  const cache = memoCap > 0 ? new Map<string, unknown>() : null;
 
   const buildKey = (input: Record<string, unknown>): string => {
-    if (precisionMul == null) {
-      const parts: string[] = [];
-      for (const k of inputKeys) parts.push(String(input[k]));
-      return parts.join(CACHE_KEY_SEP);
-    }
     const parts: string[] = [];
     for (const k of inputKeys) {
       const v = input[k];
-      parts.push(String(typeof v === 'number' ? roundNumber(v, precisionMul) : v));
+      parts.push(String(precisionMul != null ? roundIfNumber(v, precisionMul) : v));
     }
     return parts.join(CACHE_KEY_SEP);
   };
 
-  return (input: Record<string, unknown>) => {
+  return (input) => {
     // 1-2: cache check (memoize-on only)
     let key: string | null = null;
     if (cache) {
@@ -196,8 +181,7 @@ function buildCrossDimConverter(
     }
 
     // 5: normalize inputs to base units
-    // biome-ignore lint/suspicious/noExplicitAny: base values are T-polymorphic
-    const baseValues: Record<string, any> = {};
+    const baseValues: Record<string, unknown> = {};
     for (const k of inputKeys) {
       const u = fromUnits[k];
       if (!u) {
@@ -209,34 +193,23 @@ function buildCrossDimConverter(
     }
 
     // 6: run compute in base units
-    // biome-ignore lint/suspicious/noExplicitAny: compute return is T or {[K]:T}
-    const baseResult: any = (conversion.compute as (vals: Record<string, unknown>) => unknown)(
-      baseValues,
-    );
+    const compute = conversion.compute as (vals: Record<string, unknown>) => unknown;
+    const baseResult = compute(baseValues);
 
     // 7: denormalize to target unit(s)
-    // biome-ignore lint/suspicious/noExplicitAny: result is T or {[K]:T}
-    let result: any;
+    let result: unknown;
     if (outputIsObject && outputKeys) {
-      // biome-ignore lint/suspicious/noExplicitAny: object-output mirroring
-      const out: Record<string, any> = {};
-      const toMap = to as Record<string, Unit<Dimension, unknown>>;
+      const out: Record<string, unknown> = {};
+      const toMap = to as Record<string, AnyUnit>;
       const baseMap = baseResult as Record<string, unknown>;
       for (const k of outputKeys) {
         const u = toMap[k];
         if (!u) continue;
-        let v = u.fromBase(baseMap[k]);
-        if (precisionMul != null && typeof v === 'number') {
-          v = roundNumber(v, precisionMul);
-        }
-        out[k] = v;
+        out[k] = roundIfNumber(u.fromBase(baseMap[k]), precisionMul);
       }
       result = out;
     } else {
-      result = (to as Unit<Dimension, unknown>).fromBase(baseResult);
-      if (precisionMul != null && typeof result === 'number') {
-        result = roundNumber(result, precisionMul);
-      }
+      result = roundIfNumber((to as AnyUnit).fromBase(baseResult), precisionMul);
     }
 
     // 8: write to cache (memoize-on only)
@@ -251,7 +224,7 @@ function buildCrossDimConverter(
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
-function isUnitLike(x: unknown): x is Unit<Dimension, unknown> {
+function isUnitLike(x: unknown): x is AnyUnit {
   return (
     typeof x === 'object' &&
     x !== null &&
@@ -285,20 +258,14 @@ function validatePrecision(precision: unknown): number | null {
   return precision;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: numeric utility
-function roundNumber(v: any, mul: number): any {
+/** Rounds `v` if it is a finite number; otherwise returns `v` unchanged. */
+function roundIfNumber(v: unknown, mul: number | null): unknown {
+  if (mul == null) return v;
   if (typeof v !== 'number' || !Number.isFinite(v)) return v;
   return Math.round(v * mul) / mul;
 }
 
-function writeCache(
-  // biome-ignore lint/suspicious/noExplicitAny: cache is T-polymorphic
-  cache: Map<string, any>,
-  key: string,
-  // biome-ignore lint/suspicious/noExplicitAny: cache value is T-polymorphic
-  value: any,
-  cap: number,
-): void {
+function writeCache(cache: Map<string, unknown>, key: string, value: unknown, cap: number): void {
   if (cache.size >= cap) {
     const oldest = cache.keys().next().value;
     if (oldest !== undefined) cache.delete(oldest);

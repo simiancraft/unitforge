@@ -22,15 +22,24 @@ describe('defineUnit', () => {
   });
 
   it('rejects reserved keys at definition time', () => {
-    expect(() =>
-      defineUnit({
-        // biome-ignore lint/suspicious/noExplicitAny: deliberate misuse for the test
-        ['__proto__' as string]: { polluted: true },
-        name: 'evil',
-        dimension: LENGTH,
-        ...linear(1),
-      } as any),
-    ).toThrow(/Reserved key/);
+    // Construct a deliberately-misshaped spec with `__proto__` as an OWN
+    // enumerable data property (the JSON.parse / Object.defineProperty path).
+    // `Object.assign` would invoke the prototype SETTER rather than copying
+    // an own property, defeating the test setup.
+    const evilSpec: Record<string, unknown> = {
+      name: 'evil',
+      dimension: LENGTH,
+      ...linear(1),
+    };
+    Object.defineProperty(evilSpec, '__proto__', {
+      value: { polluted: true },
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+    expect(() => defineUnit(evilSpec as unknown as Parameters<typeof defineUnit>[0])).toThrow(
+      /Reserved key/,
+    );
   });
 });
 
@@ -145,9 +154,11 @@ describe('forge: cross-dimensional (object input, single output)', () => {
 
 describe('forge: configuration validation', () => {
   it('throws on object-shape from without via', () => {
+    // The overloaded forge() signature would correctly reject this at compile
+    // time; @ts-expect-error documents the deliberate runtime misuse.
     expect(() =>
-      // biome-ignore lint/suspicious/noExplicitAny: deliberate misuse
-      forge({ length: meter, width: meter } as any, squareMeter as any),
+      // @ts-expect-error: object-shape from requires `via:` in ForgeConfig
+      forge({ length: meter, width: meter }, squareMeter),
     ).toThrow(/no `via:`/);
   });
 
