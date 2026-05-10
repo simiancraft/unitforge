@@ -474,16 +474,18 @@ Singular/plural rules, locale, abbreviation, and i18n live entirely in the consu
 
 ### Call-time pipeline
 
+**Memoization is opt-in.** Every cache step below (key construction, cache check, cache write) runs ONLY for converters whose `ForgeConfig.memoize` was set at construction time. For converters without memoize, the cache pathway does not exist at runtime; the hot path is just validators (if any) → normalize → compute → denormalize → return.
+
 When the forged converter is invoked with input values, the library runs them through:
 
-1. **Compute cache key** from the input (sort prop names, apply precision rounding if set, join with `\x00`).
-2. **Cache check** (if `memoize` is enabled and the key is present): return the cached value. Done.
+1. **(Memoize-on only)** Compute cache key from the input (sort prop names, apply precision rounding if set, join with `\x00`).
+2. **(Memoize-on only)** Cache check: if the key is present, return the cached value. Done.
 3. **All validators run, no short-circuit.** Per-property and `all` validators from both `ForgeConfig.validate` and `Conversion.validate` run together; every failure is collected.
 4. **If any failures, throw a `ValidationError`** carrying the full input object and an array of `{ key, stage, value, message }` records. The error's `.message` auto-templates the inputs and failures into a readable block. No cache write.
 5. **Normalize inputs to base units** via each `from` Unit's `toBase` function.
 6. **Run `compute`** (in base units).
 7. **Denormalize** the result to the `to` Unit via `toUnit.fromBase`.
-8. **Write to cache** (if `memoize` is enabled).
+8. **(Memoize-on only)** Write to cache.
 9. **Return.**
 
 **Cache-first, validators-on-miss-only** is intentional. Validators are required to be pure functions of their inputs (no external state, no side effects). A validator that passed once for a given input passes every time; the cached result is therefore validation-correct for that bucket. Re-running validators on cache hits would be duplicate work.
