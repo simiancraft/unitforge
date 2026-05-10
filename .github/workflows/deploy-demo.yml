@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     # Only rebuild the demo when things that could affect it change.
+    # Tightened to demo-only paths until the demo/ directory is scaffolded
+    # (planning Next steps #3); src/package.json triggers can come back when
+    # demo/ exists and would actually consume them.
     paths:
       - 'demo/**'
-      - 'src/**'
-      - '.github/assets/**'
-      - 'package.json'
       - '.github/workflows/deploy-demo.yml'
   workflow_dispatch:
 
