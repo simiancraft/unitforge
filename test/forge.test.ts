@@ -258,3 +258,136 @@ describe('forge: configuration validation', () => {
     expect(() => forge(meter, centimeter, { precision: -1 })).toThrow(/precision/);
   });
 });
+
+describe('forge: within-dim memoize-on (closes coverage on buildUnaryConverter cache path)', () => {
+  it('repeated calls with the same value return cached result', () => {
+    let toBaseCalls = 0;
+    // Tracks only toBase (the FROM unit's `toBase` is what runs in the
+    // `fromUnit.toBase(value)` half of the unary path). The TO unit's
+    // `fromBase` runs too but that's centimeter, which is shared kit code;
+    // verifying toBase-side is sufficient to prove cache hit.
+    const trackedMeter = defineUnit({
+      name: 'tracked-meter',
+      dimension: LENGTH,
+      toBase: (v: number) => {
+        toBaseCalls++;
+        return v;
+      },
+      fromBase: (b: number) => b,
+      base: true,
+    });
+    const fn = forge(trackedMeter, centimeter, { memoize: 4 });
+    expect(fn(1)).toBeCloseTo(100, 9);
+    expect(fn(1)).toBeCloseTo(100, 9); // cache hit
+    expect(fn(1)).toBeCloseTo(100, 9); // cache hit
+    expect(toBaseCalls).toBe(1);
+  });
+
+  it('cache key honors precision rounding (rounded inputs collide)', () => {
+    let toBaseCalls = 0;
+    const trackedMeter = defineUnit({
+      name: 'tracked-meter-2',
+      dimension: LENGTH,
+      toBase: (v: number) => {
+        toBaseCalls++;
+        return v;
+      },
+      fromBase: (b: number) => b,
+      base: true,
+    });
+    // precision: 0 rounds to integer; 1.4 and 1.3 both round to 1.
+    const fn = forge(trackedMeter, centimeter, { memoize: 4, precision: 0 });
+    expect(fn(1.4)).toBeCloseTo(140, 9);
+    expect(fn(1.3)).toBeCloseTo(140, 9); // cache hit because key rounds to '1'
+    expect(toBaseCalls).toBe(1);
+  });
+
+  it('writeCache evicts the oldest entry when at cap (FIFO)', () => {
+    let toBaseCalls = 0;
+    const trackedMeter = defineUnit({
+      name: 'tracked-meter-3',
+      dimension: LENGTH,
+      toBase: (v: number) => {
+        toBaseCalls++;
+        return v;
+      },
+      fromBase: (b: number) => b,
+      base: true,
+    });
+    const fn = forge(trackedMeter, centimeter, { memoize: 2 });
+    fn(1);
+    fn(2);
+    fn(3); // evicts '1'
+    expect(toBaseCalls).toBe(3);
+    fn(2); // still cached
+    expect(toBaseCalls).toBe(3);
+    fn(1); // re-computed (was evicted)
+    expect(toBaseCalls).toBe(4);
+  });
+});
+
+describe('forge: object-shaped output (closes coverage on cross-dim object-output branch)', () => {
+  // A synthetic conversion with object output, only used here. The geometry
+  // kit's shipped conversions all have scalar output; to exercise the
+  // object-output denormalization loop we need a conversion that returns
+  // a record. A polar-to-Cartesian (r, θ) → (x, y) split is the canonical
+  // shape: takes a single LENGTH input plus a unitless angle (we use a
+  // dimensionless scalar by passing it as a LENGTH that just falls through),
+  // returns `{ x: LENGTH, y: LENGTH }`.
+  // Explicit type parameters force the object-output conditional branch.
+  // Without them, Output infers to `string | object` via the loose
+  // `Dimension | Record<string, Dimension>` constraint and the conditional
+  // collapses to scalar return.
+  const splitInHalf = defineConversion<
+    { whole: typeof LENGTH },
+    { half1: typeof LENGTH; half2: typeof LENGTH }
+  >({
+    inputs: { whole: LENGTH },
+    output: { half1: LENGTH, half2: LENGTH },
+    compute: ({ whole }) => ({ half1: whole / 2, half2: whole / 2 }),
+  });
+
+  it('produces an object-shaped output with each field independently denormalized', () => {
+    const fn = forge({ whole: meter }, { half1: meter, half2: centimeter }, { via: splitInHalf });
+    const out = fn({ whole: 2 });
+    expect(out.half1).toBeCloseTo(1, 9); // 1 m
+    expect(out.half2).toBeCloseTo(100, 9); // 1 m → 100 cm
+  });
+
+  it('honors mixed input units on the way in', () => {
+    const fn = forge({ whole: centimeter }, { half1: meter, half2: meter }, { via: splitInHalf });
+    const out = fn({ whole: 200 }); // 200 cm = 2 m → halves are 1 m each
+    expect(out.half1).toBeCloseTo(1, 9);
+    expect(out.half2).toBeCloseTo(1, 9);
+  });
+
+  it('honors precision rounding on each output field', () => {
+    const fn = forge(
+      { whole: meter },
+      { half1: centimeter, half2: centimeter },
+      { via: splitInHalf, precision: 1 },
+    );
+    const out = fn({ whole: 1 }); // halves = 0.5 m = 50.0 cm
+    expect(out.half1).toBe(50);
+    expect(out.half2).toBe(50);
+  });
+});
+
+describe('forge: shape-mismatch defensive throw (closes coverage on input-keys guard)', () => {
+  it('throws when conversion expects a key not declared in `from`', () => {
+    // Type system rejects this at compile time; cast bypasses for runtime test.
+    const conv = defineConversion({
+      inputs: { length: LENGTH, width: LENGTH },
+      output: AREA,
+      compute: ({ length, width }) => length * width,
+    });
+    // `from` only declares `length`; `width` is missing. Cross-dim normalization
+    // walks `conversion.inputs` keys and throws when `from[k]` is absent.
+    const fn = forge(
+      { length: meter } as unknown as { length: typeof meter; width: typeof meter },
+      squareMeter,
+      { via: conv },
+    );
+    expect(() => fn({ length: 1, width: 1 })).toThrow(/input shape mismatch/);
+  });
+});
