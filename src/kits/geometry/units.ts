@@ -89,3 +89,59 @@ export const squareMeter = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b,
   base: true,
 });
+
+/** 1 mm² = 1e-6 m² (= (1e-3)²). */
+export const squareMillimeter = /*#__PURE__*/ defineUnit({
+  name: 'square-millimeter',
+  dimension: AREA,
+  toBase: (v) => v * 1e-6,
+  fromBase: (b) => b / 1e-6,
+});
+
+/** 1 cm² = 1e-4 m² (= (1e-2)²). */
+export const squareCentimeter = /*#__PURE__*/ defineUnit({
+  name: 'square-centimeter',
+  dimension: AREA,
+  toBase: (v) => v * 1e-4,
+  fromBase: (b) => b / 1e-4,
+});
+
+/** 1 km² = 1e6 m² (= (1e3)²). */
+export const squareKilometer = /*#__PURE__*/ defineUnit({
+  name: 'square-kilometer',
+  dimension: AREA,
+  toBase: (v) => v * 1e6,
+  fromBase: (b) => b / 1e6,
+});
+
+/** 1 in² = 0.00064516 m² (= 0.0254²; exact). */
+export const squareInch = /*#__PURE__*/ defineUnit({
+  name: 'square-inch',
+  dimension: AREA,
+  toBase: (v) => v * 0.00064516,
+  fromBase: (b) => b / 0.00064516,
+});
+
+/** 1 ft² = 0.09290304 m² (= 0.3048² = 144 in²; exact). */
+export const squareFoot = /*#__PURE__*/ defineUnit({
+  name: 'square-foot',
+  dimension: AREA,
+  toBase: (v) => v * 0.09290304,
+  fromBase: (b) => b / 0.09290304,
+});
+
+/** 1 acre = 4046.8564224 m² (= 4840 yd²; exact). */
+export const acre = /*#__PURE__*/ defineUnit({
+  name: 'acre',
+  dimension: AREA,
+  toBase: (v) => v * 4046.8564224,
+  fromBase: (b) => b / 4046.8564224,
+});
+
+/** 1 ha = 10 000 m² (= 100 m × 100 m; exact). */
+export const hectare = /*#__PURE__*/ defineUnit({
+  name: 'hectare',
+  dimension: AREA,
+  toBase: (v) => v * 10_000,
+  fromBase: (b) => b / 10_000,
+});
