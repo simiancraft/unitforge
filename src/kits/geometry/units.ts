@@ -14,7 +14,7 @@
 // regress per-unit tree-shake.
 
 import { defineUnit } from '../../define.js';
-import { AREA, LENGTH } from '../../dimensions.js';
+import { AREA, LENGTH, VOLUME } from '../../dimensions.js';
 
 /** The base unit of LENGTH. */
 export const meter = /*#__PURE__*/ defineUnit({
@@ -144,4 +144,55 @@ export const hectare = /*#__PURE__*/ defineUnit({
   dimension: AREA,
   toBase: (v) => v * 10_000,
   fromBase: (b) => b / 10_000,
+});
+
+// ─── VOLUME ──────────────────────────────────────────────────────────────
+
+/** The base unit of VOLUME. */
+export const cubicMeter = /*#__PURE__*/ defineUnit({
+  name: 'cubic-meter',
+  dimension: VOLUME,
+  toBase: (v) => v,
+  fromBase: (b) => b,
+  base: true,
+});
+
+/** 1 cm³ = 1e-6 m³ (= (1e-2)³). */
+export const cubicCentimeter = /*#__PURE__*/ defineUnit({
+  name: 'cubic-centimeter',
+  dimension: VOLUME,
+  toBase: (v) => v * 1e-6,
+  fromBase: (b) => b / 1e-6,
+});
+
+/** 1 in³ = 0.000016387064 m³ (= 0.0254³; exact). */
+export const cubicInch = /*#__PURE__*/ defineUnit({
+  name: 'cubic-inch',
+  dimension: VOLUME,
+  toBase: (v) => v * 0.000016387064,
+  fromBase: (b) => b / 0.000016387064,
+});
+
+/** 1 ft³ = 0.028316846592 m³ (= 0.3048³ = 1728 in³; exact). */
+export const cubicFoot = /*#__PURE__*/ defineUnit({
+  name: 'cubic-foot',
+  dimension: VOLUME,
+  toBase: (v) => v * 0.028316846592,
+  fromBase: (b) => b / 0.028316846592,
+});
+
+/** 1 L = 0.001 m³ (= 1 dm³ = 1000 cm³; exact). */
+export const liter = /*#__PURE__*/ defineUnit({
+  name: 'liter',
+  dimension: VOLUME,
+  toBase: (v) => v * 0.001,
+  fromBase: (b) => b / 0.001,
+});
+
+/** 1 mL = 1e-6 m³ (= 1 cm³; exact). */
+export const milliliter = /*#__PURE__*/ defineUnit({
+  name: 'milliliter',
+  dimension: VOLUME,
+  toBase: (v) => v * 1e-6,
+  fromBase: (b) => b / 1e-6,
 });

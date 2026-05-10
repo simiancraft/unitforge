@@ -1,14 +1,20 @@
 import { describe, expect, it } from 'bun:test';
-import { AREA, LENGTH } from '../../src/dimensions.js';
+import { AREA, LENGTH, VOLUME } from '../../src/dimensions.js';
 import {
   acre,
   centimeter,
+  cubicCentimeter,
+  cubicFoot,
+  cubicInch,
+  cubicMeter,
   foot,
   hectare,
   inch,
   kilometer,
+  liter,
   meter,
   mile,
+  milliliter,
   millimeter,
   squareCentimeter,
   squareFoot,
@@ -280,6 +286,105 @@ describe('geometry/units: AREA', () => {
     it('fromBase is identity', () => {
       expect(squareMeter.fromBase(0)).toBe(0);
       expect(squareMeter.fromBase(7)).toBe(7);
+    });
+  });
+});
+
+describe('geometry/units: VOLUME', () => {
+  describe('cubicMeter (base)', () => {
+    it('has the right shape', () => {
+      expect(cubicMeter.name).toBe('cubic-meter');
+      expect(cubicMeter.dimension).toBe(VOLUME);
+      expect(cubicMeter.base).toBe(true);
+    });
+    it('toBase is identity', () => {
+      expect(cubicMeter.toBase(0)).toBe(0);
+      expect(cubicMeter.toBase(2.5)).toBe(2.5);
+    });
+    it('fromBase is identity', () => {
+      expect(cubicMeter.fromBase(0)).toBe(0);
+      expect(cubicMeter.fromBase(2.5)).toBe(2.5);
+    });
+  });
+
+  describe('cubicCentimeter', () => {
+    it('has the right shape', () => {
+      expect(cubicCentimeter.name).toBe('cubic-centimeter');
+      expect(cubicCentimeter.dimension).toBe(VOLUME);
+      expect(cubicCentimeter.base).toBeUndefined();
+    });
+    it('1 cm³ = 1e-6 m³ via toBase (= (1e-2)³)', () => {
+      expect(cubicCentimeter.toBase(1)).toBeCloseTo(1e-6, 18);
+      expect(cubicCentimeter.toBase(1_000_000)).toBeCloseTo(1, 9);
+    });
+    it('1 m³ = 1e6 cm³ via fromBase', () => {
+      expect(cubicCentimeter.fromBase(1)).toBeCloseTo(1_000_000, 6);
+      expect(cubicCentimeter.fromBase(1e-6)).toBeCloseTo(1, 12);
+    });
+  });
+
+  describe('cubicInch', () => {
+    it('has the right shape', () => {
+      expect(cubicInch.name).toBe('cubic-inch');
+      expect(cubicInch.dimension).toBe(VOLUME);
+      expect(cubicInch.base).toBeUndefined();
+    });
+    it('1 in³ = 0.000016387064 m³ via toBase (= 0.0254³, exact)', () => {
+      expect(cubicInch.toBase(1)).toBeCloseTo(0.000016387064, 15);
+      expect(cubicInch.toBase(1728)).toBeCloseTo(0.028316846592, 12); // 1728 in³ = 1 ft³
+    });
+    it('0.000016387064 m³ = 1 in³ via fromBase', () => {
+      expect(cubicInch.fromBase(0.000016387064)).toBeCloseTo(1, 12);
+    });
+  });
+
+  describe('cubicFoot', () => {
+    it('has the right shape', () => {
+      expect(cubicFoot.name).toBe('cubic-foot');
+      expect(cubicFoot.dimension).toBe(VOLUME);
+      expect(cubicFoot.base).toBeUndefined();
+    });
+    it('1 ft³ = 0.028316846592 m³ via toBase (= 0.3048³ = 1728 in³, exact)', () => {
+      expect(cubicFoot.toBase(1)).toBeCloseTo(0.028316846592, 12);
+      expect(cubicFoot.toBase(27)).toBeCloseTo(0.764554857984, 12); // 27 ft³ = 1 yd³
+    });
+    it('0.028316846592 m³ = 1 ft³ via fromBase', () => {
+      expect(cubicFoot.fromBase(0.028316846592)).toBeCloseTo(1, 12);
+    });
+  });
+
+  describe('liter', () => {
+    it('has the right shape', () => {
+      expect(liter.name).toBe('liter');
+      expect(liter.dimension).toBe(VOLUME);
+      expect(liter.base).toBeUndefined();
+    });
+    it('1 L = 0.001 m³ via toBase (= 1 dm³ = 1000 cm³; exact)', () => {
+      expect(liter.toBase(1)).toBeCloseTo(0.001, 15);
+      expect(liter.toBase(1000)).toBeCloseTo(1, 9);
+    });
+    it('1 m³ = 1000 L via fromBase', () => {
+      expect(liter.fromBase(1)).toBeCloseTo(1000, 9);
+      expect(liter.fromBase(0.001)).toBeCloseTo(1, 12);
+    });
+  });
+
+  describe('milliliter', () => {
+    it('has the right shape', () => {
+      expect(milliliter.name).toBe('milliliter');
+      expect(milliliter.dimension).toBe(VOLUME);
+      expect(milliliter.base).toBeUndefined();
+    });
+    it('1 mL = 1e-6 m³ via toBase (= 1 cm³; exact)', () => {
+      expect(milliliter.toBase(1)).toBeCloseTo(1e-6, 18);
+      expect(milliliter.toBase(1_000_000)).toBeCloseTo(1, 6);
+    });
+    it('1 m³ = 1e6 mL via fromBase', () => {
+      expect(milliliter.fromBase(1)).toBeCloseTo(1_000_000, 6);
+      expect(milliliter.fromBase(1e-6)).toBeCloseTo(1, 12);
+    });
+    it('1 mL = 1 cm³ (cross-verify with cubicCentimeter)', () => {
+      expect(milliliter.toBase(1)).toBeCloseTo(cubicCentimeter.toBase(1), 18);
     });
   });
 });
