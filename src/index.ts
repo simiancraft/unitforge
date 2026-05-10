@@ -17,7 +17,6 @@ export type {
   ValidatorMap,
 } from './types.js';
 
-// Note: no VERSION export. A hard-coded `'0.0.0'` would silently drift the
-// moment semantic-release bumps package.json#version. Consumers who need the
-// version at runtime can use their bundler's package.json substitution, or
-// `import pkg from 'unitforge/package.json' with { type: 'json' }` (Node 22+).
+// VERSION lives on its own subpath (`unitforge/version`) so the JSON-import
+// cost (~2 kB inlined package.json in consumer bundles) is paid only by
+// consumers who explicitly want it. The main barrel stays bloat-free.

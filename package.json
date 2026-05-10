@@ -55,6 +55,10 @@
       "types": "./dist/lib/validation.d.ts",
       "import": "./dist/lib/validation.js"
     },
+    "./version": {
+      "types": "./dist/version.d.ts",
+      "import": "./dist/version.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -92,6 +96,6 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }
