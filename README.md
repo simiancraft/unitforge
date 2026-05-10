@@ -11,10 +11,14 @@ A units library that does not assume you are doing physics. Inventory, lab assay
 ## Planned API
 
 ```ts
-import { convert, defineUnit, defineConversion } from 'unitforge';
+import { defineUnit, defineConversion, forge } from 'unitforge';
+import { foot, inch } from 'unitforge/kits/imperial';
+
+const toInches = forge(foot, inch);
+toInches(5); // 60
 ```
 
-Three free functions, three additive registries (dimensions, kits, conversions), first-class custom dimensions and packaging units, fully tree-shakeable.
+Three primitives, three additive registries (dimensions, kits, conversions), first-class custom dimensions and packaging units, fully tree-shakeable. The `forge(from, to, ForgeConfig?)` verb returns a converter function; cross-dimensional conversions pass a `defineConversion` value via `ForgeConfig.via`.
 
 ## License
 

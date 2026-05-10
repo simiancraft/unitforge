@@ -34,7 +34,7 @@ The npm landscape was surveyed before commit:
 Gaps the surveyed libraries do not fill, all of which unitforge addresses:
 
 1. **End-user (not library-author) custom units at runtime.** Define a unit in app settings, persist it, convert with it.
-2. **Packaging units bridging count to dimension.** "1 spool of THHN-14 = 500 ft" expressed as a first-class primitive (`definePack`).
+2. **Packaging units bridging count to dimension.** A spool of tape is a UNIT (in the COUNT dimension), not a wrapper around inches or feet. `defineUnit({ name: 'spool-thhn-14', dimension: COUNT, ... })` defines the unit; a separate `defineConversion` expresses "1 spool = 500 ft" only when conversion to length is needed. No special primitive; the library's first-class support for `COUNT` plus arbitrary cross-dim conversions makes packaging a natural use case rather than a special-cased one.
 3. **Function-first ergonomics that survive runtime extension.** `convert` (jonahsnider) has the feel; nothing else has the feel plus extensibility.
 4. **Custom dimensions for non-physical domains.** Game-state (`AFFINITY`, `MANA`, `LOYALTY`), business (`RISK_SCORE`, `LEAD_TEMPERATURE`), simulation (`MORALE`). Existing libs assume SI-physics dimensions and reject everything else.
 5. **Configurable atomic per dimension** without instance machinery (consumer picks via which kit they import).
@@ -53,7 +53,7 @@ dimensions   →   kits   →   conversions
 
 ### (1) Dimensions — flat list, no dependencies
 
-A dimension is a string constant. Every unit declares its dimension. Conversions only happen within a dimension by default; cross-dimensional conversions require an explicit registered conversion.
+A dimension is a string constant. Every unit declares its dimension. Conversions only happen within a dimension by default; cross-dimensional conversions require an explicit `defineConversion` value passed at the call site via `ForgeConfig.with`.
 
 Built-in dimensions ship in `src/dimensions.ts` as a flat file of `as const` exports:
 
@@ -84,11 +84,18 @@ export const ANGLE = 'angle' as const;
 export const FREQUENCY = 'frequency' as const;
 ```
 
-Users define their own dimensions inline as plain string constants. The `Dimension` type unions the built-ins with `string` to allow arbitrary custom dimensions:
+Users define their own dimensions inline as plain string constants. The `Dimension` type unions the built-ins with a branded `string` to allow arbitrary custom dimensions WITHOUT collapsing autocomplete on the built-ins:
 
 ```ts
-export type Dimension = typeof LENGTH | typeof MASS | /* ... */ | string;
+export type Dimension =
+  | typeof LENGTH
+  | typeof MASS
+  | /* ... */
+  | typeof FREQUENCY
+  | (string & {}); // branded string preserves literal autocomplete
 ```
+
+The naive `| string` union collapses the entire union to `string` in TypeScript's eyes, killing autocomplete for the built-in dimensions. The `(string & {})` brand is a known TS idiom that keeps the literals visible in the autocomplete dropdown while still accepting arbitrary strings at the call site.
 
 ### (2) Kits — domain-organized bundles of units
 
@@ -112,9 +119,8 @@ src/kits/
 │   ├── tablespoon.ts
 │   ├── cup.ts
 │   └── ...
-├── astronomy/
 ├── inventory/
-└── electrical/
+└── pharmacy/
 ```
 
 Two import patterns supported:
@@ -131,18 +137,61 @@ Each unit is a value produced by `defineUnit`:
 
 ```ts
 // src/kits/si/meter.ts
-import { defineUnit } from 'unitforge';
+import { defineUnit, linear } from 'unitforge';
 import { LENGTH } from 'unitforge/dimensions';
 
 export const meter = defineUnit({
   name: 'meter',
   dimension: LENGTH,
-  toBase: 1,
+  ...linear(1),
   base: true,
 });
 ```
 
+`linear(scale)` is a sugar helper that expands to `{ toBase: (v) => v * scale, fromBase: (b) => b / scale }`. The full shape is shown under "API shape > `defineUnit`" below.
+
 Kits depend on dimensions but not on conversions. A kit may declare new dimensions inline if the kit introduces a domain not yet in the built-in dimension list (e.g., a `gaming` kit might export `AFFINITY`, `LOYALTY` alongside its units).
+
+#### Polysemy and kit composition
+
+Many domains reuse the same word for different concepts: `weight` (mass-under-gravity vs statistical significance), `stress` (mechanical vs psychological vs financial), `flux` (electromagnetic vs heat vs flow rate). The library does not invent a global naming scheme to disambiguate; it leans on standard ESM mechanics. This is a **strength**, not a hazard: kit authors curate, end users always know what menu they're building.
+
+Two layers of disambiguation are available, either sufficient on its own:
+
+**Call-site rename (consumer code).** When two modules export the same name, consumers use ordinary import-as-rename:
+
+```ts
+import { weight as physicalWeight }     from 'unitforge/conversions/mechanics';
+import { weight as statisticalWeight }  from 'unitforge/conversions/statistics';
+
+forge({ mass: kg }, newton, { via: physicalWeight });
+// statisticalWeight available distinctly at the same site
+```
+
+**Export-side rename (kit-author code).** When composing a "remix kit" that pulls from multiple sources, the kit's `index.ts` barrel re-exports with the rename baked in:
+
+```ts
+// src/kits/everything-w/index.ts
+export { weight as physicalWeight }    from '../mechanics/weight';
+export { weight as statisticalWeight } from '../statistics/weight';
+export { wattage }                      from '../electrical/wattage';
+```
+
+End users importing from `everything-w` see disambiguated names without doing any work themselves.
+
+**Namespace import (third pattern).** Verbose at the call site but legible if the consumer prefers explicit qualification:
+
+```ts
+import * as Classical    from 'unitforge/conversions/classical';
+import * as Relativistic from 'unitforge/conversions/relativistic';
+
+forge({mass: kg, velocity: mps}, joule, { via: Classical.kineticEnergy });
+forge({mass: kg, velocity: mps}, joule, { via: Relativistic.kineticEnergy });
+```
+
+Tree-shaking still works under modern bundlers as long as member access is **static** (`Classical.kineticEnergy`); dynamic access (`Classical[someVar]`) defeats it.
+
+**Tree-shaking is preserved at both layers.** Per-unit-per-file modules under `sideEffects: false` mean consumers only pay for the units they actually import, even when a barrel re-exports many. Composition costs no bytes the consumer didn't ask for.
 
 ### (3) Conversions — flat folder of single-purpose files
 
@@ -163,9 +212,71 @@ Naming convention: `<output>From<input1>And<input2>And<...>`. The filename is th
 Conversions are explicit, single-hop from the library's perspective, and never traversed by the library. If a developer wants a multi-step path (volume → mass → weight), they either:
 
 1. Define the multi-step path as a single conversion with a compute function that internally composes the steps (e.g., `weightFromVolumeAndDensity = volume × density × g`), or
-2. Chain `convert` calls in userland.
+2. Chain forged converters in userland (call the output of one `forge` as input to another).
 
 The library never searches for paths. The library never composes conversions automatically. Every cross-dimensional conversion is something a developer wrote down on purpose.
+
+The full `defineConversion` shape and a worked example appear under "API shape" above. Filename, export name, and the dimensional contract together form the per-file contract; there is no separate `name:` field in the conversion value.
+
+## API shape
+
+Three primitives form the public surface:
+
+```ts
+import { defineUnit, defineConversion, forge } from 'unitforge';
+```
+
+`forge` is the call-site verb. `defineUnit` and `defineConversion` are the value-producing factories. A `format` helper still survives as a render concern (plural, abbrev, locale, precision rounding); it is orthogonal to the conversion machinery and is documented separately under open questions until its surface is re-resolved against the new shape. (The original PLANNING.md included a `definePack` sugar; resolved 2026-05-09 to drop it. Packaging is just a `defineUnit` in the COUNT dimension paired with a `defineConversion` to the inner dimension; no special sugar needed.)
+
+### `defineUnit`
+
+A unit is a value produced by `defineUnit`. Kits export these.
+
+The `Unit` interface carries two functions: `toBase` (this unit's value → base unit's value) and `fromBase` (base unit's value → this unit's value). Both are always functions; neither is auto-derived from the other. This matches the principle that each direction of a relationship is its own declared thing (the same principle that says cross-dim conversions declare each direction as a separate `defineConversion`).
+
+```ts
+// src/kits/si/meter.ts (the base unit; trivial)
+import { defineUnit, linear } from 'unitforge';
+import { LENGTH } from 'unitforge/dimensions';
+
+export const meter = defineUnit({
+  name: 'meter',
+  dimension: LENGTH,
+  ...linear(1),
+  base: true,
+});
+
+// src/kits/imperial/foot.ts (linear, non-base)
+export const foot = defineUnit({
+  name: 'foot',
+  dimension: LENGTH,
+  ...linear(0.3048),
+});
+
+// src/kits/si/celsius.ts (non-linear: offset)
+export const celsius = defineUnit({
+  name: 'celsius',
+  dimension: TEMPERATURE,
+  toBase:   (c) => c + 273.15,
+  fromBase: (k) => k - 273.15,
+});
+
+// src/kits/imperial/fahrenheit.ts (non-linear: offset + scale)
+export const fahrenheit = defineUnit({
+  name: 'fahrenheit',
+  dimension: TEMPERATURE,
+  toBase:   (f) => (f - 32) * 5/9 + 273.15,
+  fromBase: (k) => (k - 273.15) * 9/5 + 32,
+});
+```
+
+`linear(scale)` is the sugar helper for the common linear case; expands to `{ toBase: (v) => v * scale, fromBase: (b) => b / scale }`. Saves ~50% boilerplate on every linear unit (which is most of them). Ships from the main barrel alongside `defineUnit`. Non-linear units write the two functions explicitly; the type stays uniform.
+
+The output of `defineUnit` is interface-shaped data. Anything that satisfies the `Unit` interface is a unit, whether it was kit-shipped or user-defined a minute ago in app code. End-user custom units are first-class for this reason.
+
+### `defineConversion`
+
+A conversion is a value produced by `defineConversion`. It declares a dimensional contract, optional input validators, and the base-unit math that fulfills it. Conversions live under `src/conversions/` and are imported on demand.
 
 ```ts
 // src/conversions/massFromVolumeAndDensity.ts
@@ -173,84 +284,156 @@ import { defineConversion } from 'unitforge';
 import { VOLUME, DENSITY, MASS } from 'unitforge/dimensions';
 
 export const massFromVolumeAndDensity = defineConversion({
-  name: 'mass-from-volume-and-density',
-  inputs: [{ dimension: VOLUME }, { dimension: DENSITY }],
-  output: { dimension: MASS },
-  compute: (volume, density) => volume * density,
-  invertible: {
-    [VOLUME]:  (mass, density) => mass / density,
-    [DENSITY]: (mass, volume)  => mass / volume,
+  inputs: { volume: VOLUME, density: DENSITY },
+  output: MASS,
+  validate: {
+    volume:  (v) => v >= 0 || 'volume must be >= 0',
+    density: (d) => d >  0 || 'density must be > 0',
+    all: ({ volume, density }) => volume * density < 1e9 || 'mass exceeds safe range',
   },
+  compute: ({ volume, density }) => volume * density,
 });
 ```
 
-## API shape
+`inputs` is an object mapping property names to **dimensions** (not units). `output` is a single dimension. `compute` is written in **base units of the declared dimensions**; the library decorates it so that when `forge` later runs the conversion, incoming values are normalized from their declared units to base units, the compute runs, and the result is denormalized into the requested output unit. The compute author never writes unit conversion logic.
 
-Four free functions form the public surface:
+`validate` is an optional object that carries the conversion's universal input invariants:
+- **Per-property validators** (keyed by `inputs` property name) run on each input independently. These are the fast 90% case; e.g., "density must be positive."
+- **Whole-object validator** (`all`) runs on the destructured input object as a whole, for cross-property invariants; e.g., "length must be >= width."
+- Each validator returns `true` (or `undefined`) to pass, or a string to reject with that error message. Throwing is the escape hatch, so users can drop in third-party validation libraries without rewriting.
+- Conversion-layer validators see the **user-supplied value in its user-chosen unit** and should stick to unit-invariant checks (sign, integer, finite, NaN, etc.). Unit-specific range checks belong at the call site in `ForgeConfig.validate`. This keeps the "compute authors never see units" principle alive at the validator layer.
 
-```ts
-import {
-  convert,             // perform a conversion within or across dimensions
-  format,              // render a value with its unit (plural, abbrev, locale)
-  defineUnit,          // produce a unit value
-  defineConversion,    // produce a conversion value
-} from 'unitforge';
-```
+Each direction of a relationship is its own `defineConversion` value. No auto-derived inverse; if both `massFromVolumeAndDensity` and `volumeFromMassAndDensity` are needed, both are declared. The names depict direction; per-file surface area stays small.
 
-`definePack` is sugar for the inventory packaging case:
+### `forge`
 
-```ts
-import { definePack } from 'unitforge';
-
-const spoolThhn14 = definePack({ outer: 'spool-thhn-14', inner: '500 ft' });
-// equivalent to a 1-input constant-factor conversion from COUNT to LENGTH
-```
-
-### Why free functions, not an instance factory
-
-Most UOM libraries return an instance from a `createUnits({ ... })` factory. unitforge does not. Reasons:
-
-1. **Imports are configuration.** What used to be `createUnits({ kits: [...] })` is just `import { foot, meter } from 'unitforge/kits/imperial'`. Bundlers see the imports statically; nothing is registered at runtime because nothing needs to be.
-2. **Pure functions, no hidden state.** `convert(5, foot, meter)` takes everything it needs as arguments. No instance method dispatch, no shared registry.
-3. **Tree-shakes harder.** No factory machinery, no registry storage.
-4. **Zero test setup.** Import the units and the function, write the test.
-
-The trade is one extra argument at cross-dimensional call sites:
+`forge` produces a converter function. Call shape is always three positional arguments, in the same order, every time:
 
 ```ts
-// within-dimension: clean
-convert(5, meter, foot);
-
-// cross-dimensional: pass the conversion explicitly
-convert([5, liter, 1.2, gramPerMl], kilogram, massFromVolumeAndDensity);
+forge(from, to, ForgeConfig?)
 ```
 
-This explicitness is a feature: it makes the conversion's identity visible at the call site, prevents ambiguity when multiple conversions exist between the same dimensions, and forces consumers to import the conversion they want (which is what makes tree-shaking work).
+The shape of `from` determines the shape of the converter's call site:
 
-### Cross-dimensional error message
+```ts
+// within-dimension: from is a single Unit; converter is unary
+const footToInch = forge(foot, inch);
+footToInch(5); // => number
 
-When a cross-dimensional `convert` is called without a registered conversion, the error is the library's most-frequently-seen surface. It must teach.
+// cross-dimensional: from is an object whose properties are Units; converter takes a matching object
+import { massFromVolumeAndDensity } from 'unitforge/conversions/massFromVolumeAndDensity';
+import { gallon, poundPerGallon, kilogram, gram, cup } from 'unitforge/kits/...';
+
+const galPpgToKg = forge(
+  { volume: gallon, density: poundPerGallon },
+  kilogram,
+  { via: massFromVolumeAndDensity }
+);
+galPpgToKg({ volume: 5, density: 8.3 });
+
+// the SAME defineConversion value is reused across N forge sites with different unit pairings
+const cupPpgToG = forge(
+  { volume: cup, density: poundPerGallon },
+  gram,
+  { via: massFromVolumeAndDensity }
+);
+```
+
+`ForgeConfig` is an open extensibility surface, a plain TypeScript interface that consumers construct as an object literal at the call site (no `defineForgeConfig` ceremony). It carries any forge-behavior modifier: significant digits, clamping, high-precision mode, numeric adapter choice, memoization (cache repeated inputs for hot-path performance), call-site validators (additive on top of the conversion's own validators), and the cross-dim conversion value itself, passed via the `via:` field.
+
+```ts
+forge(
+  { volume: gallon, density: poundPerGallon },
+  kilogram,
+  {
+    with: massFromVolumeAndDensity,
+    validate: { volume: (v) => v <= 1000 || 'this app caps at 1000 gal' },
+    memoize: true,
+    precision: 2,
+  }
+);
+```
+
+`ForgeConfig.validate` accepts the same per-property + `all` shape as `defineConversion.validate`; call-site validators are *additive*, not overriding. The conversion's own invariants always run.
+
+`ForgeConfig.via:` carries the cross-dimensional conversion. (The field was briefly renamed `with:` during design; reverted to `via:` 2026-05-09 because `with` is SQL-shaped, is a reserved word in JS strict mode, and reads as "construct with this thing" in a way that overstates how complex the right-hand side is. The right-hand side is a `defineConversion` value, and `via` reads as "convert via this rule," which is the intent.)
+
+### Call-time pipeline
+
+When the forged converter is invoked with input values, the library runs them through:
+
+1. **Compute cache key** from the input (sort prop names, apply precision rounding if set, join with `\x00`).
+2. **Cache check** (if `memoize` is enabled and the key is present): return the cached value. Done.
+3. **All validators run, no short-circuit.** Per-property and `all` validators from both `ForgeConfig.validate` and `Conversion.validate` run together; every failure is collected.
+4. **If any failures, throw a `ValidationError`** carrying the full input object and an array of `{ key, stage, value, message }` records. The error's `.message` auto-templates the inputs and failures into a readable block. No cache write.
+5. **Normalize inputs to base units** via each `from` Unit's `toBase` function.
+6. **Run `compute`** (in base units).
+7. **Denormalize** the result to the `to` Unit via `toUnit.fromBase`.
+8. **Write to cache** (if `memoize` is enabled).
+9. **Return.**
+
+**Cache-first, validators-on-miss-only** is intentional. Validators are required to be pure functions of their inputs (no external state, no side effects). A validator that passed once for a given input passes every time; the cached result is therefore validation-correct for that bucket. Re-running validators on cache hits would be duplicate work.
+
+**Consequence of precision-bucketed cache keys.** When `precision: 1` is set, inputs `5.123` and `5.124` both bucket to `5.1` and share the same cache entry. They also share validation outcomes: validation runs once per bucket (on first miss), and the result applies to every input that buckets there. Consumers who want stricter validation per input should set a tighter `precision` or omit it entirely (no bucketing).
+
+Invalid inputs never poison the cache (validation runs on miss, before cache write). Aggregating failures (instead of first-failure-wins) lets consumers see and fix everything wrong in one shot rather than chasing errors one at a time.
+
+```ts
+import { ValidationError } from 'unitforge';
+
+class ValidationError extends Error {
+  readonly inputs: Record<string, unknown>;       // the input object that was rejected
+  readonly failures: Array<{
+    key: string | 'all';                          // which validator
+    stage: 'forge-config' | 'conversion';         // which layer it came from
+    value: unknown;                               // the value that validator saw
+    message: string;                              // the validator's error string
+  }>;
+}
+```
+
+Throwing (rather than returning a Result type) is the v1 contract; idiomatic JS, simpler converter return type. A Result-typed `forgeOrResult` variant can be added in a 0.x minor if anyone needs it.
+
+### Implementation hints
+
+These are not part of the public contract; they are notes to future-implementer-and-reviewer so the obvious-but-suboptimal version doesn't ship. None affects API shape; all can be retrofitted without breaking changes if benchmarks later demand them.
+
+- **Pre-baked cache-key builder at `forge()` construction time.** The converter knows its input prop names from the conversion's `inputs` declaration. At construction, build a closure like `(input) => round(input.density, p) + '\x00' + round(input.volume, p)` once; reuse per cache lookup. Do NOT call `Object.keys(input).sort()` per call.
+- **Pre-computed precision multiplier.** If `precision: 2`, rounding uses `Math.round(value * 100) / 100`. Compute `10 ** precision` once at `forge()` time and bind it in the closure; never call `Math.pow` per call.
+- **Lazy `ValidationError.message` via self-overwriting getter.** Build the templated `[unitforge] validation failed for inputs ... ` string on first read of `.message`, not in the constructor; cache via `Object.defineProperty` on first access. Saves work when consumers handle errors programmatically (`instanceof ValidationError` + `.failures`) and never read `.message`. ~5 extra lines; standard memoized-getter pattern.
+
+If real-world benchmarks ever show one of these matters more (or less) than expected, revise the implementation; the doc only commits to the call-time pipeline above, not to how it's structured internally.
+
+### Why this shape
+
+1. **Imports are configuration.** Units are imported from kits; conversions are imported from `src/conversions/`; `forge` itself is a free function. Bundlers see every dependency statically; no registry, no factory, no top-level mutation.
+2. **Low-arity protocol.** `forge` always takes 3 args in the same order. The polymorphism is in `from`'s shape and `ForgeConfig`'s contents, not in the function signature.
+3. **Compute authors only write base-unit physics.** They never see units. The decorator handles every gallon-vs-liter mismatch transparently.
+4. **One conversion, infinite forged converters.** The same `defineConversion` value is reused across any number of `forge` call sites with different unit pairings; the conversion stays unit-agnostic, the converter is unit-specific.
+5. **End-user custom units are first-class.** An app can call `defineUnit` in userland and pass the result to `forge`; forge cannot tell it apart from a kit-shipped unit.
+6. **Tree-shaking-friendly userland pattern.** Consumers typically collect their forged converters in a project-local module (`src/forge.ts` or similar) that imports only the units and conversions it actually uses from `unitforge`; nothing else in the library is reached, and the project ships a minimal slice.
+
+### Cross-dimensional error surface
+
+Cross-dimensional misuse is enforced primarily at compile time. The TypeScript signature of `forge` requires that when `from` is an object shape, `ForgeConfig` includes a conversion value, and that the property keys and dimensions of `from` align with the `inputs` of the supplied conversion. Mismatches surface as type errors, not runtime crashes.
+
+For runtime construction (consumers building `forge` arguments dynamically), the library still throws a teaching error:
 
 ```
-[unitforge] No conversion registered from dimension 'volume' to dimension 'mass'.
+[unitforge] forge() received an object-shaped `from` with no `via:` in ForgeConfig.
 
-Conversions currently registered with input 'volume':
-  - none to 'mass'
+`from` keys: { volume, density }
+`to`: kilogram (dimension: mass)
 
-To enable this conversion, register one:
+Cross-dimensional forging requires a defineConversion value passed as `via:` in ForgeConfig. Example:
 
-  defineConversion({
-    name: 'mass-from-volume-and-density',
-    inputs:  [{ dimension: VOLUME }, { dimension: DENSITY }],
-    output:  { dimension: MASS },
-    compute: (volume, density) => volume * density,
-  });
+  import { massFromVolumeAndDensity } from 'unitforge/conversions/...';
 
-Or chain manually:
-  convert(volume, 'volume-unit', 'intermediate-unit')
-  convert(intermediate, 'intermediate-unit', 'mass-unit')
-
-Available units in 'mass': gram, kilogram, ounce, pound (4 total)
+  forge(
+    { volume: gallon, density: poundPerGallon },
+    kilogram,
+    { via: massFromVolumeAndDensity }
+  );
 ```
 
 ## File layout
@@ -258,14 +441,13 @@ Available units in 'mass': gram, kilogram, ounce, pound (4 total)
 ```
 unitforge/
 ├── src/
-│   ├── index.ts                    // public API barrel: convert, format, defineUnit, defineConversion, definePack
+│   ├── index.ts                    // public API barrel: defineUnit, defineConversion, forge, ValidationError (format joins when OQ #4 lands)
 │   ├── dimensions.ts               // flat file; all built-in dimension constants
-│   ├── convert.ts
+│   ├── forge.ts
 │   ├── format.ts
 │   ├── defineUnit.ts
 │   ├── defineConversion.ts
-│   ├── definePack.ts
-│   ├── types.ts                    // Dimension, Unit, Conversion, Pack interfaces
+│   ├── types.ts                    // Dimension, Unit, Conversion, ForgeConfig interfaces
 │   ├── numeric/
 │   │   ├── number.ts               // default native-number adapter
 │   │   ├── decimal.ts              // peer-dep on decimal.js
@@ -276,6 +458,7 @@ unitforge/
 │   │   ├── imperial/
 │   │   ├── cooking/
 │   │   ├── inventory/
+│   │   ├── pharmacy/
 │   │   └── ...
 │   └── conversions/
 │       ├── massFromVolumeAndDensity.ts
@@ -327,14 +510,52 @@ This layout mirrors chromonym's structure exactly. The substantive differences a
 - `src/kits/` plays the role chromonym's `src/palettes/` plays.
 - `src/numeric/` is unique to unitforge (chromonym didn't need pluggable numeric types).
 
+### `package.json#exports` shape
+
+The granular per-unit-per-file design requires a wildcard `exports` map; a hand-maintained entry-per-file table will rot. Target shape:
+
+```json
+{
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./dimensions": { "types": "./dist/dimensions.d.ts", "import": "./dist/dimensions.js" },
+    "./kits/*": { "types": "./dist/kits/*/index.d.ts", "import": "./dist/kits/*/index.js" },
+    "./kits/*/*": { "types": "./dist/kits/*/*.d.ts", "import": "./dist/kits/*/*.js" },
+    "./conversions/*": { "types": "./dist/conversions/*.d.ts", "import": "./dist/conversions/*.js" },
+    "./numeric/*": { "types": "./dist/numeric/*.d.ts", "import": "./dist/numeric/*.js" },
+    "./validators": { "types": "./dist/validators/index.d.ts", "import": "./dist/validators/index.js" },
+    "./errors": { "types": "./dist/errors.d.ts", "import": "./dist/errors.js" },
+    "./package.json": "./package.json"
+  }
+}
+```
+
+ESM-only (`"type": "module"`, no `require` condition). Floor `engines.node: ">=20"` and `moduleResolution: "node16" | "nodenext" | "bundler"` for consumers; document this loudly in README.
+
+When `unitforge/numeric/decimal` and `unitforge/numeric/fraction` ship, add to `package.json`:
+
+```json
+{
+  "peerDependenciesMeta": {
+    "decimal.js": { "optional": true },
+    "fraction.js": { "optional": true }
+  }
+}
+```
+
+Without `optional: true`, every default `npm install unitforge` user sees a missing-peer warning and assumes the package is broken.
+
 ## Domain kits to ship at v1
 
-Three to five kits, deliberately diverse to stress-test the kit interface:
+Five kits, deliberately spanning four problem domains to demonstrate the thesis that unitforge is not a physics library:
 
-1. **`si`** — meter, kilogram, second, kelvin, mole, ampere, candela; derived: square meter, cubic meter, newton, joule, watt, pascal, hertz. The default kit; analog of chromonym's CSS palette.
-2. **`imperial`** — inch, foot, yard, mile, pound, ounce, fluid ounce, gallon, quart, pint, cup. Required for any US-market consumer; demonstrates a non-SI dimensional system.
-3. **`inventory`** — each, dozen, gross, ream, score, pair, half-dozen. Demonstrates the `COUNT` dimension. The case where `definePack` matters most.
-4. **One credibility/specialty kit**: candidates are `astronomy` (parsec, lightyear, AU, solar mass, jansky), `historical` (cubit, league, hand, span, rod, chain, furlong, hogshead), or `cooking` (tablespoon, teaspoon, cup with US/UK split, stick of butter, dash, pinch). Pick one for v1; ship the others in subsequent releases.
+1. **`si`** — meter, kilogram, second, kelvin, mole, ampere, candela; derived: square meter, cubic meter, newton, joule, watt, pascal, hertz. The default kit; demonstrates physics in SI base.
+2. **`imperial`** — inch, foot, yard, mile, pound, ounce, fluid ounce, gallon, quart, pint, cup. Demonstrates physics in US/UK customary; required for any US-market consumer; together with `si` shows mixed-system cross-dim forging.
+3. **`cooking`** — tablespoon, teaspoon, cup with US/UK split, stick of butter, dash, pinch, fluid ounce, milliliter. Demonstrates a domain where dimensions are technically physics (volume, mass) but units are culturally specific and conversions are imprecise by tradition.
+4. **`inventory`** (manufacturing) — each, dozen, gross, ream, score, pair, half-dozen, case, pallet, container. Demonstrates the `COUNT` dimension and the packaging-unit-as-`defineUnit`-in-COUNT pattern (a case of soda IS a unit; the conversion to "24 cans" is a separate `defineConversion`).
+5. **`pharmacy`** (pharmacy inventory) — milligram, microgram, IU, mL dose, tablet, capsule, blister pack, vial. Demonstrates a domain with regulated units (USP/WHO conventions for IU), packaging-as-unit, and life-safety precision requirements.
+
+These four problem domains (physics, cooking, manufacturing inventory, pharmacy inventory) are picked specifically to stress-test the cross-domain claim in the thesis. Adding more kits later (astronomy, historical, gaming, finance) extends the proof; the v1 set is the minimum needed to make the cross-domain claim credibly.
 
 The chromonym precedent is to file an issue per future kit (parallel to chromonym issues #21–#30 for queued palettes). Each issue specifies source, license, scope-fit, version-pin discipline.
 
@@ -343,15 +564,15 @@ The chromonym precedent is to file an issue per future kit (parallel to chromony
 These rules are non-negotiable through v1; they are what holds the design together.
 
 1. **Side-effect-free package.** `"sideEffects": false` in `package.json`; no top-level mutation; no auto-registration. Every export is reachable only through explicit named import.
-2. **Single-hop conversions only.** The library never searches for a conversion path. If a consumer needs multi-step, they declare a multi-step conversion as one unit, or chain `convert` calls in userland.
+2. **Single-hop conversions only.** The library never searches for a conversion path. If a consumer needs multi-step, they declare a multi-step conversion as one `defineConversion`, or chain forged converters in userland.
 3. **Dimensions are stable string identifiers.** Once shipped, `LENGTH = 'length'` cannot change its string value. Same stability contract as chromonym color-space identifiers.
 4. **Kits can declare new dimensions but cannot redefine existing ones.** A `cooking` kit can extend `VOLUME` with `cup`; it cannot reassign `VOLUME` to mean something else.
-5. **Conversions declare invertibility explicitly.** No auto-derived inverses (Celsius/Fahrenheit-style offsets break naive symmetry).
+5. **Each direction of a conversion is its own `defineConversion` value.** No auto-derived inverses. If both `massFromVolumeAndDensity` and `volumeFromMassAndDensity` are needed, both are declared. The names depict direction; per-file surface area stays small. Celsius/Fahrenheit-style offsets are the canonical case for why naive symmetry breaks.
 6. **Numeric type is pluggable but defaults to native `number`.** Heavy numeric adapters (decimal.js, fraction.js) are peer dependencies; consumers install them only if they need them.
 7. **Per-unit precision is a property of the unit definition, not a global config.** Specific units that must be tracked tighter than the instance default declare their precision in `defineUnit`.
 8. **No instance factory.** Public API is free functions. Period.
 9. **Granular per-unit files.** Each kit is a folder of one-unit-per-file modules with a barrel `index.ts`. Whole-kit `import *` works for convenience; named imports work for tree-shaking.
-10. **Naming convention enforced by lint.** A small dev-only checker greps `defineUnit`/`defineConversion` calls and verifies `name` matches filename and the camelCase pattern. Initial form: ~50 lines of regex; ship as project pre-commit hook; extract as `unitforge-lint` if it earns its keep.
+10. **Naming convention enforced by lint.** A small dev-only checker greps for `defineUnit`/`defineConversion` calls and the export they're assigned to, verifying that the export name matches the filename in camelCase. `defineUnit` carries a `name:` field whose value must also match. (`defineConversion` no longer carries a `name:` field; the export-name + filename pair is the contract.) Initial form: ~50 lines of regex; ship as project pre-commit hook; extract as `unitforge-lint` if it earns its keep.
 11. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO for pharmaceutical IU, BIPM for SI definitions) cite source and version-pin in source comments. NOTICE.md tracks attribution. Same discipline visible in chromonym issues #25 (Tailwind v4.0 pin), #26 (Material trademark), #27 (Farrow & Ball "unofficial reference" disclaimer).
 
 ## Numeric type strategy
@@ -397,7 +618,7 @@ unitforge handles this via **kit choice**, not runtime config:
 
 This is the same pattern as chromonym shipping multiple color-space variants without a runtime config flag. Consumers pick which atomic they want by picking which kit they import. No instance state required; no runtime configuration to forget; tree-shakes per-import.
 
-If runtime configuration of atomic later proves necessary, it can be added as an option to `defineUnit` or `convert`, but the default path is "import the kit that matches your storage."
+If runtime configuration of atomic later proves necessary, it can be added as an option to `defineUnit` or `ForgeConfig`, but the default path is "import the kit that matches your storage."
 
 ## What unitforge inherits from chromonym (boilerplate specimen)
 
@@ -409,7 +630,7 @@ The following are mirrored directly from chromonym's repository structure with m
 - **Knip**: unused-export detection.
 - **Vite-based demo**: lives in `demo/`, deployed via `deploy-demo.yml` GitHub Action.
 - **CI workflows**: `ci.yml` (lint+test+typecheck), `deploy-demo.yml` (vite build + GitHub Pages or Vercel), `link-check.yml` (markdown link rot), `scorecard.yml` (OpenSSF Scorecard).
-- **Release**: semantic-release via `.releaserc.json`. CHANGELOG.md auto-generated.
+- **Release**: semantic-release via `.releaserc.json`. CHANGELOG.md auto-generated. **npm provenance** enabled via `--provenance` (or `NPM_CONFIG_PROVENANCE=true` in CI env); `id-token: write` is already configured. Sigstore attestation is the highest-leverage supply-chain signal.
 - **Community-health surface**: CODE_OF_CONDUCT.md, CONTRIBUTING.md, SECURITY.md, CODEOWNERS, FUNDING.yml, dependabot.yml, ISSUE_TEMPLATE/, PULL_REQUEST_TEMPLATE.md.
 - **AGENTS.md**: agent-instructions file at root, references chromonym pattern.
 - **NOTICE.md**: third-party attribution (kits citing external standards).
@@ -417,29 +638,103 @@ The following are mirrored directly from chromonym's repository structure with m
 
 The substantive divergence from chromonym lives in `src/`, where the registries are different (dimensions, kits, conversions vs. chromonym's color-spaces, palettes, conversions).
 
+## Pre-coding blockers
+
+The following items must be resolved on paper before `src/` scaffolding begins. They shape the type machinery and the public surface; deferring them produces rework, not iteration.
+
+1. **Lock `src/types.ts` first.** All public types (`Dimension`, `Unit<D>`, `Conversion<I, O>`, `ValidatorMap<I>`, `ForgeConfig`, `ValidationError`) must be sketched in a TypeScript playground with `expect-type` style checks before any implementation file ships. Generic inference for `forge` is the load-bearing concern: confirm that an object-shaped `from` literal narrows correctly, that `inputs` keys constrain `from` keys (extra keys rejected), and that dimension brands thread through. The TypeScript-DX review provided concrete signatures; adopt them as the starting point.
+
+2. **~~`definePack` re-resolution.~~ Resolved 2026-05-09: dropped.** A packaging unit is just a `defineUnit` in the COUNT dimension (a spool of tape IS a unit, not a wrapper around feet), paired optionally with a `defineConversion` to the inner dimension when conversion is needed. No special primitive; the library stays at three factories.
+
+3. **~~`toBase` shape for non-linear units.~~ Resolved 2026-05-09.** `Unit` carries TWO function fields, `toBase: (value: number) => number` and `fromBase: (base: number) => number`. Both are always functions; never auto-derived from each other; mirrors the "each direction of a cross-dim conversion is its own declared `defineConversion`" principle. Linear units are not special-cased in the type; their `toBase`/`fromBase` are trivial multiply/divide functions. A `linear(scale)` helper ships alongside `defineUnit` at v1 to reduce boilerplate on the common case (returns the `{ toBase, fromBase }` pair from a scale factor).
+
+4. **`Conversion` value identity.** Two structurally-identical `defineConversion` values are interchangeable to the type system; passing the wrong one type-checks but produces silent-wrong physics. Decide whether to brand `Conversion` with a stamped id (filename, UUID, or symbol) so `via:` carries identity not just shape, and whether `forge` runtime-asserts the identity matches at wiring time.
+
+5. **Memoization defaults and bounds.** Eviction policy, default LRU cap, max allowable cap, NaN/±Infinity/-0 handling, and the `{memoize: true} | {memoize: {max: N}}` polymorphism. Either ship a fully-spec'd memoization in v1 or reserve the field name and ship the implementation in 0.x.
+
+6. **README ↔ PLANNING.md source-of-truth rule.** Doc currently states "when this document and the README disagree, the README wins." For pre-1.0, this is backwards (README is the slowest-to-update artifact). Either invert the rule for pre-1.0 or commit to README updates landing in the same PR as PLANNING updates. Pick one and write it down.
+
 ## Open questions to resolve before v1
 
-1. **Which credibility kit ships at v1?** Astronomy, historical, or cooking. Each makes a different marketing statement.
-2. **`definePack` invertibility on non-linear packs.** A spool of wire is linear (1 spool ↔ 500 ft). What about packs where the conversion is conditional ("1 carton = 12 if SKU-A, 24 if SKU-B")? Treat as out-of-scope for v1; document as a userland concern.
-3. **Format options API surface.** Pluralization, abbreviation, locale, precision rounding. How much ships at v1 vs. lives in a separate `unitforge/format-extras` subpath later?
-4. **Custom dimension scoping.** Two third-party kits both export `MANA = 'mana'`. The library currently trusts strings. Document the prefix-your-custom-dimensions convention; do not enforce.
-5. **TypeScript inference for `convert` return type when crossing dimensions.** Single-hop is straightforward; ensure the type system narrows correctly when a conversion is passed.
-6. **Subpath exports for size variants of large kits.** Astronomy could ship `kits/astronomy/core` (a dozen units) vs `kits/astronomy/full` (everything). Mirror chromonym Munsell #22's approach.
+1. **~~`ForgeConfig` field name for the cross-dim conversion.~~ Resolved 2026-05-09: `with:`.** `via:` was the working name while the value was a single function reference. Once the value became a structured spec (validators + compute + future fields), `with:` reads more naturally ("forge this converter *with* this conversion spec"). Reserved word in JS strict mode but legal as an object key.
+2. **Vocabulary review across the whole API surface.** Settle on a unified vocabulary for the `define*` factories, the `Forge*` types, and the field names inside `ForgeConfig`. Goal is internal consistency, not just per-symbol rightness. Working instinct: keep `defineConversion`; everything else open.
+3. **~~`definePack` re-resolution.~~ Resolved 2026-05-09: dropped.** See pre-coding blocker #2.
+4. **`format` API surface.** Pluralization, abbreviation, locale, precision rounding. How much ships at v1 vs lives in a separate `unitforge/format-extras` subpath later. Also: does `format` integrate with `ForgeConfig` (format hints carried by the converter) or stay fully orthogonal?
+5. **Custom dimension scoping.** Two third-party kits both export `MANA = 'mana'`. The library currently trusts strings. Document the prefix-your-custom-dimensions convention; do not enforce.
+6. **TypeScript inference and generics for `forge`.** Confirm that the type system narrows the converter's argument and return types correctly for both single-Unit `from` and object-of-Units `from`, and that key/dimension misalignment between `from` and the supplied conversion's `inputs` surfaces as a compile error rather than a runtime crash.
+7. **Subpath exports for size variants of large kits.** Pharmacy and inventory in particular could ship `core` vs `full` variants. Mirror chromonym Munsell #22's approach.
+8. **Validation helpers (`unitforge/validators` subpath).** Plain functions in `validate` are sufficient and ship at v1. Open: do we also ship a small set of helper combinators (`min`, `max`, `range`, `nonNeg`, `positive`, `nonZero`, `integer`, `finite`, `all`, `any`, `not`, `withMessage`) at `unitforge/validators` for ergonomics, or punt to a 0.x minor and let consumers write plain functions? Helpers compose via function composition (matching the no-instance-machinery aesthetic) rather than chainable builders. Each is tiny; the whole module is roughly a dozen functions, tree-shakes per import.
+
+9. **~~Memoization as a `ForgeConfig` option.~~ Resolved 2026-05-09 (modulo eviction-policy add-ons; see below).** `memoize` is a single-typed field: `memoize?: number`. Present and `> 0` enables memoization with that value as the LRU cap; `0` or absent disables. This avoids a discriminated `boolean | { max: number }` shape per the no-heterogeneous-types rule. A `DEFAULT_MEMO_CAP` constant (1024) ships from the main barrel for ergonomic opt-in.
+
+   Design decisions:
+   - **Per-converter cache.** Each `forge()` call returns a converter with its own internal `Map`; caches do not cross converters. Because prop names are fixed within one converter, the cache key only needs values; prop names are implicit in the stable iteration order.
+   - **Cache-key algorithm:** sort the input's prop names, apply precision rounding to each value if `precision` is set, join the values with a non-numeric delimiter (lean `\x00` to avoid collisions with `-` for negative numbers). For single-Unit `from`, the key is just the (rounded) value. No `JSON.stringify`, no hashing.
+   - **Precision in `ForgeConfig` does double duty:** output rounding AND cache-key normalization. With `{ precision: 1 }`, inputs `5.123` and `5.124` both bucket to `5.1` and hit the same cache entry. This is the property that makes memoization pay for itself.
+   - **Cache structure:** native JS `Map` (insertion-order LRU; on insert if size > cap, delete `map.keys().next().value`). ~15 lines, no dependencies.
+   - **Default cap when consumer types `{ memoize: DEFAULT_MEMO_CAP }`:** 1024.
+   - **Bounds:** `Number.isInteger(memoize) && memoize >= 0 && memoize <= 1_048_576`; out-of-range throws at `forge` time.
+   - **NaN/±Infinity/-0:** never-cache NaN inputs, cache ±Infinity normally, coerce `-0` to `0` in the key.
+
+   Still open: whether `forge` refuses to enable `memoize` on a trivially-cheap unary native-number converter (warn-and-ignore, or trust the consumer); whether to ship TTL eviction at v1 (lean: LRU only at v1, file an issue for TTL).
+
+## Test strategy
+
+Numerics libraries live or die on test discipline. The discipline below is non-negotiable from day one of `src/`.
+
+- **Coverage target: 100% line + branch.** Matches chromonym discipline. Codecov gate.
+- **Unit tests** for each primitive: `defineUnit`, `defineConversion`, `forge` (within-dim and cross-dim cases), `format` (when its surface lands), `ValidationError` construction and `.message` templating.
+- **Property tests using `fast-check`** (already in devDependencies) for the load-bearing invariants:
+  - **Round-trip identity within precision:** for any unit pair `(a, b)` in the same dimension, `forge(a, b)(forge(b, a)(x)) ≈ x`.
+  - **Identity:** `forge(a, a)(x) === x` for every unit `a`.
+  - **Within-dim transitivity:** `forge(a, c)(x) ≈ forge(b, c)(forge(a, b)(x))` for any three units in the same dimension.
+  - **Inverse-pair roundtrip:** when both `aFromB` and `bFromA` exist (e.g., `massFromVolumeAndDensity` and `volumeFromMassAndDensity`), `bFromA(aFromB(x)) ≈ x` for all valid inputs. Catches inverse drift at PR time.
+- **Cross-kit conversion matrix:** every pair of units in the same dimension across all v1 kits gets at least one example test (machine-generated; lives in `test/matrix/`).
+- **Validator tests:** aggregation correctness (multiple failures collected), error message format stability, throw-as-failure handling, proto-pollution rejection (`__proto__`, `constructor`, `prototype` keys rejected at definition time).
+- **Memo cache tests:** key collision impossibility, eviction policy correctness, NaN/Infinity/-0 handling, precision-as-cache-bucket behavior.
+- **Type-level tests** using `expect-type` or `tsd`: confirm `forge` generic inference produces the correct converter signature for both unary and object shapes; confirm key/dimension misalignment surfaces a compile error; confirm `Dimension` autocomplete preserves built-in literals.
+- **Bench harness in `bench/`** with at least three benchmarks (single-unit fast path, cross-dim 2-input cold path, cross-dim 2-input + memo). Numbers published in README; CI fails on regression > 20%.
+
+## Versioning and stability
+
+Semver applies; the question is what counts as a breaking change for a registry library.
+
+| Change | Bump |
+|---|---|
+| Adding a dimension constant to `dimensions.ts` | minor |
+| Adding a kit | minor |
+| Adding a unit to an existing kit | minor |
+| Adding a conversion to `src/conversions/` | minor |
+| Adding a field to `ForgeConfig` (optional) | minor |
+| Renaming a kit subpath (e.g., `kits/inventory` → `kits/manufacturing`) | major |
+| Renaming a unit's exported name | major |
+| Changing a unit's `toBase` (other than bug fix) | major |
+| Changing the public API surface (`defineUnit`, `defineConversion`, `forge`, `format` signatures) | major |
+| Changing a `defineConversion`'s `compute` (semantics change, not bug fix) | major |
+| Bug fix in `compute` that changes returned values | patch (with prominent CHANGELOG entry) |
+| Changing the wording of a `ValidationError.failures[].message` string | patch (strings are unstable; consumers must not grep them) |
+| Changing the wording of a teaching error message (e.g., "no `via:` in ForgeConfig") | patch (shape stable; wording unstable) |
+
+Pre-1.0 (`0.x.y`): minor bumps may include breaking changes per Conventional Commits + semantic-release defaults. The discipline above kicks in at 1.0.
+
+Deprecation policy: a unit, kit, or conversion marked deprecated stays exported for at least one minor cycle (e.g., deprecated in `1.4.0`, removed no earlier than `2.0.0`). Deprecation surfaces via JSDoc `@deprecated` tag (IDE-visible), CHANGELOG entry, and a one-line warning in the README's "Deprecations" section.
 
 ## Next steps
 
-1. User makes the GitHub repository at `simiancraft/unitforge`.
-2. User performs `git init` locally; we connect to remote.
-3. Mirror chromonym's compliance and tooling files: package.json (scoped to unitforge), tsconfig.json, biome.json, bunfig.toml, knip.json, codecov.yml, .releaserc.json, .gitattributes, .gitignore, LICENSE (MIT), CODE_OF_CONDUCT.md, CONTRIBUTING.md, SECURITY.md, CODEOWNERS, AGENTS.md, NOTICE.md, llms.txt, .github/ tree, dependabot.yml.
-4. Scaffold `src/` skeleton: `index.ts` barrel, `dimensions.ts`, `types.ts`, empty `kits/` and `conversions/` folders, stub `convert.ts`, `defineUnit.ts`, `defineConversion.ts`, `definePack.ts`, `format.ts`.
-5. Scaffold `demo/` as a vite app with placeholder content.
-6. Implement v1: SI kit, imperial kit, inventory kit, one credibility kit, supporting conversions.
-7. Write README hero block; the test of design coherence is whether the hero block fits in under 30 lines and reads cleanly.
-8. File issues for queued kits (analog of chromonym #21–#30).
+Repo, license, community-health files, and CI workflows are already in place (status as of 2026-05-09). Remaining:
+
+1. Resolve the open questions above to a degree sufficient to commit to type signatures (especially #2 vocabulary review, #3 `definePack` re-resolution, #6 generics for `forge`, #8 validators subpath, #9 memoization v1-vs-post-v1).
+2. Scaffold `src/` skeleton against the new API: `index.ts` barrel, `dimensions.ts`, `types.ts`, stub `forge.ts`, `defineUnit.ts`, `defineConversion.ts`, `format.ts`, `errors.ts` (for `ValidationError`), and empty `kits/` and `conversions/` folders.
+3. Scaffold `demo/` as a vite app with placeholder content.
+4. Implement v1: `si`, `imperial`, `cooking`, `inventory`, `pharmacy` kits and supporting conversions.
+5. Write README hero block; the test of design coherence is whether the hero block fits in under 30 lines and reads cleanly.
+6. File issues for queued kits (analog of chromonym #21–#30).
 
 ## Appendix: design conversation summary
 
-This document distills a conversation that explored:
+This document distills two design conversations.
+
+**Conversation 1 (project inception, 2026-04-27)** explored:
 
 - The OSS UOM landscape and its gaps (six libraries surveyed).
 - Ultrathin's existing inventory unit-handling and where current code falls short.
@@ -453,4 +748,14 @@ This document distills a conversation that explored:
 - Free-function API vs instance-factory tradeoff; the user's preference for purity-via-arity.
 - Naming process (unitforge selected over metronym, vernier, quantica, cubitor, scalesmith).
 
-The thesis line is: *units, dimensions, and conversions as values you import; three free functions; not just a physics library.*
+That conversation produced an initial four-function API (`convert`, `format`, `defineUnit`, `defineConversion`, plus `definePack` sugar).
+
+**Conversation 2 (API refactor, 2026-05-09)** revisited the API and replaced the four-function shape with the current three-primitive shape:
+
+- The two-step factory insight: provision a converter once with `forge(from, to, ForgeConfig?)`, then call it many times. Analogous to a linear-scaling-function constructor.
+- `forge` chosen as the factory verb. `defineUnit` retained because units are interface-shaped data and `forge` should accept anything matching that interface; this keeps end-user custom units first-class.
+- Cross-dimensional inputs generalized: `from` can be an object whose properties are independently-chosen Units (length in meters, width in inches, etc.). The shape of `from` determines the shape of the converter's call site.
+- `defineConversion` retained but reframed: `inputs` is now keyed by property name → dimension, `compute` is written in base units, and the library decorates it to handle unit→base normalization. One conversion, infinite forged converters across mixed unit systems.
+- Cross-domain v1 kit set decided: physics (`si` + `imperial`), `cooking`, `inventory` (manufacturing), `pharmacy`. Picked specifically to stress-test the "not just physics" thesis.
+
+The thesis line: *units and conversions as values you import; one factory verb (`forge`) that returns the converter; cross-domain by construction, not just physics.*
