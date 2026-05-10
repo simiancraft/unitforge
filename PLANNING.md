@@ -326,7 +326,7 @@ Three primitives form the public surface:
 import { defineUnit, defineConversion, forge } from 'unitforge';
 ```
 
-`forge` is the call-site verb. `defineUnit` and `defineConversion` are the value-producing factories. A `format` helper still survives as a render concern (plural, abbrev, locale, precision rounding); it is orthogonal to the conversion machinery and is documented separately under open questions until its surface is re-resolved against the new shape. (The original PLANNING.md included a `definePack` sugar; resolved 2026-05-09 to drop it. Packaging is just a `defineUnit` in the COUNT dimension paired with a `defineConversion` to the inner dimension; no special sugar needed.)
+`forge` is the call-site verb. `defineUnit` and `defineConversion` are the value-producing factories. The library does conversion; display is the view's job. (The original PLANNING.md included a standalone `format` primitive with singular/plural/locale/abbreviation logic; resolved 2026-05-09 to drop it. The library exposes an optional `format: (value: number) => string` field in `ForgeConfig` for consumer-supplied output formatting; see `forge` below. Also dropped: a `definePack` sugar; packaging is just a `defineUnit` in the COUNT dimension paired with a `defineConversion` to the inner dimension; no special sugar needed.)
 
 ### `defineUnit`
 
@@ -439,7 +439,7 @@ const cupPpgToG = forge(
 );
 ```
 
-`ForgeConfig` is an open extensibility surface, a plain TypeScript interface that consumers construct as an object literal at the call site (no `defineForgeConfig` ceremony). It carries any forge-behavior modifier: significant digits, clamping, high-precision mode, numeric adapter choice, memoization (cache repeated inputs for hot-path performance), call-site validators (additive on top of the conversion's own validators), and the cross-dim conversion value itself, passed via the `via:` field.
+`ForgeConfig` is an open extensibility surface, a plain TypeScript interface that consumers construct as an object literal at the call site (no `defineForgeConfig` ceremony). It carries any forge-behavior modifier: significant digits, clamping, high-precision mode, numeric adapter choice, memoization (cache repeated inputs for hot-path performance), call-site validators (additive on top of the conversion's own validators), an optional `format: (value: number) => string` for consumer-supplied output formatting (the library does no plural/locale/abbreviation logic itself; that is the view's job), and the cross-dim conversion value itself, passed via the `via:` field.
 
 ```ts
 forge(
@@ -455,6 +455,21 @@ forge(
 ```
 
 `ForgeConfig.validate` accepts the same per-property + `all` shape as `defineConversion.validate`; call-site validators are *additive*, not overriding. The conversion's own invariants always run.
+
+When `ForgeConfig.format` is supplied, the forged converter exposes a `.format(input)` method that runs the conversion AND applies the formatter, returning a string. The converter itself still returns `number`; the format method is opt-in convenience and is absent if `format` was not supplied:
+
+```ts
+const toInches = forge(foot, inch);
+toInches(5);                                                     // 60 (number)
+
+const toInchesPretty = forge(foot, inch, {
+  format: (v) => `${v.toFixed(0)} in`,
+});
+toInchesPretty(5);                                                // 60 (still a number; type unchanged)
+toInchesPretty.format(5);                                         // "60 in" (convert + format)
+```
+
+The library ships no plural-handling, locale, abbreviation, or ICU machinery; consumers who need those reach for `Intl.NumberFormat`, `Intl.PluralRules`, or a dedicated i18n library in their view layer. Format is a one-line escape hatch, not a feature.
 
 `ForgeConfig.via:` carries the cross-dimensional conversion. (The field was briefly renamed `with:` during design; reverted to `via:` 2026-05-09 because `with` is SQL-shaped, is a reserved word in JS strict mode, and reads as "construct with this thing" in a way that overstates how complex the right-hand side is. The right-hand side is a `defineConversion` value, and `via` reads as "convert via this rule," which is the intent.)
 
@@ -541,10 +556,9 @@ Cross-dimensional forging requires a defineConversion value passed as `via:` in 
 ```
 unitforge/
 ├── src/
-│   ├── index.ts                    // public API barrel: defineUnit, defineConversion, forge, ValidationError (format joins when OQ #4 lands)
+│   ├── index.ts                    // public API barrel: defineUnit, defineConversion, forge, linear, DEFAULT_MEMO_CAP, ValidationError
 │   ├── dimensions.ts               // flat file; all built-in dimension constants
 │   ├── forge.ts
-│   ├── format.ts
 │   ├── defineUnit.ts
 │   ├── defineConversion.ts
 │   ├── types.ts                    // Dimension, Unit, Conversion, ForgeConfig interfaces
@@ -759,11 +773,11 @@ The following items must be resolved on paper before `src/` scaffolding begins. 
 1. **~~`ForgeConfig` field name for the cross-dim conversion.~~ Resolved 2026-05-09: `with:`.** `via:` was the working name while the value was a single function reference. Once the value became a structured spec (validators + compute + future fields), `with:` reads more naturally ("forge this converter *with* this conversion spec"). Reserved word in JS strict mode but legal as an object key.
 2. **Vocabulary review across the whole API surface.** Settle on a unified vocabulary for the `define*` factories, the `Forge*` types, and the field names inside `ForgeConfig`. Goal is internal consistency, not just per-symbol rightness. Working instinct: keep `defineConversion`; everything else open.
 3. **~~`definePack` re-resolution.~~ Resolved 2026-05-09: dropped.** See pre-coding blocker #2.
-4. **`format` API surface.** Pluralization, abbreviation, locale, precision rounding. How much ships at v1 vs lives in a separate `unitforge/format-extras` subpath later. Also: does `format` integrate with `ForgeConfig` (format hints carried by the converter) or stay fully orthogonal?
+4. **~~`format` API surface.~~ Resolved 2026-05-09: collapsed to an optional `ForgeConfig.format: (value: number) => string` field.** No standalone `format` primitive; no plural/locale/abbreviation logic in the library. When supplied, the forged converter exposes a `.format(input)` convenience method that runs convert + format. Display is the view's job; the library does conversion.
 5. **Custom dimension scoping.** Two third-party kits both export `MANA = 'mana'`. The library currently trusts strings. Document the prefix-your-custom-dimensions convention; do not enforce.
 6. **TypeScript inference and generics for `forge`.** Confirm that the type system narrows the converter's argument and return types correctly for both single-Unit `from` and object-of-Units `from`, and that key/dimension misalignment between `from` and the supplied conversion's `inputs` surfaces as a compile error rather than a runtime crash.
 7. **Subpath exports for size variants of large kits.** Pharmacy and inventory in particular could ship `core` vs `full` variants. Mirror chromonym Munsell #22's approach.
-8. **Validation helpers (`unitforge/validators` subpath).** Plain functions in `validate` are sufficient and ship at v1. Open: do we also ship a small set of helper combinators (`min`, `max`, `range`, `nonNeg`, `positive`, `nonZero`, `integer`, `finite`, `all`, `any`, `not`, `withMessage`) at `unitforge/validators` for ergonomics, or punt to a 0.x minor and let consumers write plain functions? Helpers compose via function composition (matching the no-instance-machinery aesthetic) rather than chainable builders. Each is tiny; the whole module is roughly a dozen functions, tree-shakes per import.
+8. **~~Validation helpers (`unitforge/validators` subpath).~~ Deferred 2026-05-09; revisit after first pass.** Plain functions in `validate` are sufficient for v1. The helper combinators (`min`, `max`, `range`, `nonNeg`, `positive`, `nonZero`, `integer`, `finite`, `all`, `any`, `not`, `withMessage`) are primarily author/extender convenience; the right shape will be obvious after writing the kits and seeing repeated patterns. Refactor in post-first-pass.
 
 9. **~~Memoization as a `ForgeConfig` option.~~ Resolved 2026-05-09 (modulo eviction-policy add-ons; see below).** `memoize` is a single-typed field: `memoize?: number`. Present and `> 0` enables memoization with that value as the LRU cap; `0` or absent disables. This avoids a discriminated `boolean | { max: number }` shape per the no-heterogeneous-types rule. A `DEFAULT_MEMO_CAP` constant (1024) ships from the main barrel for ergonomic opt-in.
 
