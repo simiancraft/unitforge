@@ -12,7 +12,7 @@ import { AREA, LENGTH } from '../../dimensions.js';
  * decorates it so the call site may use any compatible LENGTH units
  * (centimeter, etc.).
  */
-export const areaFromLengthAndWidth = defineConversion({
+export const areaFromLengthAndWidth = /*#__PURE__*/ defineConversion({
   inputs: { length: LENGTH, width: LENGTH },
   output: AREA,
   validate: {
