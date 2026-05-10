@@ -2,7 +2,20 @@
   <img src="./.github/assets/unitforge-logo.png" alt="unitforge" width="160" />
 </p>
 
+<p align="center">
+  <a href="https://simiancraft.github.io/unitforge/">
+    <img src="https://img.shields.io/badge/▶%20Live%20demo-pre--alpha%20placeholder-f97316?style=for-the-badge" alt="Live demo" />
+  </a>
+</p>
+
 # unitforge
+
+[![CI](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml/badge.svg)](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/simiancraft/unitforge/badge)](https://securityscorecards.dev/viewer/?uri=github.com/simiancraft/unitforge)
+
+<p align="center">
+  <code>defineUnit</code> &nbsp;•&nbsp; <code>defineConversion</code> &nbsp;•&nbsp; <code>forge</code>
+</p>
 
 A units library where the units, dimensions, and conversions are all values you import; and the API is three free functions.
 
