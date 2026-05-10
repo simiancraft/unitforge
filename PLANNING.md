@@ -129,7 +129,7 @@ This way, adding a new constant to `dimensions.ts` automatically updates the aut
 
 ### (2) Kits: domain-organized bundles of units
 
-A kit is a folder under `src/kits/<domain>/` containing exactly three files: `units.ts` (every unit shipped by the kit), `conversions.ts` (every cross-dim conversion shipped by the kit), and `index.ts` (a barrel re-exporting both). Kits depend on dimensions but not on each other. A kit may declare new dimensions inline if it introduces a domain not yet in the built-in dimension list (e.g., a `gaming` kit might export `AFFINITY`, `LOYALTY` alongside its units).
+A kit is a folder under `src/kits/<domain>/` containing barrel-shaped files: always `units.ts`, `conversions.ts`, and `index.ts`; optionally `math.ts` and `types.ts` on demand. Kits depend on dimensions but not on each other (with the explicit-import-from-another-kit escape hatch when needed). A kit that introduces a brand-new dimension adds it to `src/dimensions.ts` (e.g., a `gaming` kit needing `AFFINITY` and `LOYALTY` adds those exports to `dimensions.ts` in the same change); dimensions never live inside a kit folder.
 
 Two import patterns supported:
 
@@ -734,9 +734,39 @@ unitforge/
 This layout mirrors chromonym's structure. Substantive divergences: each kit folder carries its own cross-dim conversions in `conversions.ts` (chromonym carried color-space transforms in a parallel tree); `src/dimensions.ts` is unique to unitforge (chromonym color spaces ship as named entities, not flat constants); `src/kits/` plays the role chromonym's `src/palettes/` plays.
 
 **Three tiers, with one rule each:**
-1. **Root of `src/`** (`define`, `dimensions`, `forge`, `types`, `index`): the irreducible public-facing surface. Adding a file at this tier requires a strong reason; new helpers default to `lib/`.
-2. **`src/lib/`**: root-level tooling grouped by purpose, one file per concern (math, safeCopy, validation). Files are allowed to dog-food the library's own primitives. If a kit-local helper turns out to be polymorphic enough that two or more kits use it, it gets elevated to `lib/` (analog of the classical-vs-relativistic polysemy story: shared mechanics elevate; kit-specific stays put).
-3. **`src/kits/<domain>/`**: self-contained. `units.ts` + `conversions.ts` + `index.ts` (barrel) are always present. `math.ts` and `types.ts` are added on demand when the kit needs reusable internal math or a private type vocabulary.
+1. **Root of `src/`** (`define`, `dimensions`, `forge`, `types`, `index`): the irreducible public-facing surface. Adding a file at this tier requires a strong reason; new helpers default to `lib/`. **All dimensions, regardless of kit, live in `src/dimensions.ts` and ship as individual named exports** (`export const LENGTH = 'length' as const`, etc.). Kits do NOT declare new dimensions inline; a new kit that needs a new dimension adds it to `dimensions.ts` in the same change.
+2. **`src/lib/`**: root-level tooling grouped by purpose. Files are allowed to dog-food the library's own primitives.
+3. **`src/kits/<domain>/`**: self-contained domain bundles. `units.ts` + `conversions.ts` + `index.ts` (barrel) are always present. `math.ts` is added on demand for kit-local reusable math; `types.ts` is added on demand for a kit-private type vocabulary.
+
+### Module shape convention (kits and `lib/` share a vocabulary)
+
+A natural shape emerged for kits: **`units.ts`, `conversions.ts`, `math.ts`** (with `index.ts` as the barrel). Each is a flat module of named exports, no default exports, no top-level side effects: a "barrel-shaped" file that re-exports cleanly and tree-shakes per-export under `"sideEffects": false`.
+
+`src/lib/` shares this vocabulary: `lib/math.ts` is the elevated counterpart of a kit's `math.ts`, and `lib/units.ts` / `lib/conversions.ts` are the reserved positions for elevated units and conversions. They are not files that exist eagerly; they materialize the moment something is elevated. Alongside those reserved positions, `lib/` also hosts purpose-grouped tooling files that have no kit analog (`safeCopy.ts`, `validation.ts`).
+
+The grid:
+
+|              | `units.ts`         | `conversions.ts`        | `math.ts`             | `safeCopy.ts` | `validation.ts` |
+|--------------|--------------------|-------------------------|------------------------|---------------|-----------------|
+| `src/lib/`   | (empty until elevated) | (empty until elevated) | `linear`, ...          | yes           | yes             |
+| `src/kits/<domain>/` | meter, foot, ... | areaFromLW, ...    | (kit-local; on demand) | n/a           | n/a             |
+
+#### Elevation hierarchy
+
+When a unit, conversion, or math helper turns out to be polymorphic enough that two or more kits want it, it climbs one tier:
+
+`kits/<a>/<file>.ts`  →  `src/lib/<file>.ts`  →  (only if it becomes part of the irreducible primitives) root of `src/`
+
+Concretely:
+- `linear` already sits in `lib/math.ts` because every linear-scale unit in every kit uses it. It started life as a kit-local helper that immediately needed two consumers.
+- A future `meter` referenced by both `kits/si` and `kits/imperial` (cross-system definitions of the same physical unit) would elevate from `kits/si/units.ts` to `lib/units.ts`. Both kits then re-export it under their own namespace, preserving call-site rename ergonomics (the classical-vs-relativistic polysemy pattern documented above).
+- A `dotProduct` helper used by `kits/geometry/math.ts` and `kits/physics/math.ts` would elevate to `lib/math.ts`.
+
+Elevation is one-way in v1: nothing demotes from `lib/` back to a kit. Removing a `lib/` value is a breaking change because consumers may have imported it through the public barrel.
+
+#### What this buys us
+
+Adding a new kit becomes mechanical: copy the three-file shape, fill in `units.ts`, fill in `conversions.ts`, add `math.ts` if the kit's conversions share computations, write the `index.ts` barrel. No structural decisions to relitigate. When two kits start sharing code, the elevation rule tells you exactly where to move it. `lib/` and kit folders use the same filenames, so a contributor who has read one kit can predict the contents of any other file by name.
 
 ### `package.json#exports` shape
 
@@ -748,7 +778,7 @@ Each kit ships a single barrel per kit; the wildcard map keeps maintenance to on
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
     "./dimensions": { "types": "./dist/dimensions.d.ts", "import": "./dist/dimensions.js" },
     "./kits/*": { "types": "./dist/kits/*/index.d.ts", "import": "./dist/kits/*/index.js" },
-    "./errors": { "types": "./dist/errors.d.ts", "import": "./dist/errors.js" },
+    "./errors": { "types": "./dist/lib/validation.d.ts", "import": "./dist/lib/validation.js" },
     "./package.json": "./package.json"
   }
 }
@@ -773,7 +803,7 @@ These rules are non-negotiable through v1; they are what holds the design togeth
 7. **Type-agnostic value layer.** v1 ships entirely native `number`. `Unit<D, T = number>` and `Conversion<I, O, T = number>` are parameterized for forward-compat; future precision-sensitive kits specialize `T` (e.g., to `Decimal`) without library changes. No `NumericAdapter` interface. (See "Numeric precision".)
 8. **Per-unit precision is a property of the unit definition, not a global config.**
 9. **No instance factory.** Public API is free functions. Period.
-10. **Per-kit `units.ts` + `conversions.ts` + `index.ts` barrel.** Each kit is a folder containing exactly three source files: `units.ts` (every unit shipped by the kit, one named export per unit), `conversions.ts` (every cross-dim conversion shipped by the kit, one named export per conversion), and `index.ts` (a barrel that re-exports both). Per-unit-per-file is rejected: it inflated file count without buying tree-shaking (bundler-driven dead-code elimination via `sideEffects: false` does that work) and forced a brittle wildcard subpath map that consistently failed `publint`/`attw`.
+10. **Canonical kit shape.** A kit is a folder containing barrel-shaped, named-export-only files: `units.ts` (every unit shipped by the kit), `conversions.ts` (every cross-dim conversion shipped by the kit), and `index.ts` (a barrel re-exporting both). `math.ts` and `types.ts` may be added on demand for kit-local reusable math or a kit-private type vocabulary; both are optional. `src/lib/` uses the same `units.ts` / `conversions.ts` / `math.ts` filenames as the elevation positions for values that two or more kits share (see "Module shape convention > Elevation hierarchy" above). Per-unit-per-file was rejected: it inflated file count without buying tree-shaking (bundler-driven dead-code elimination via `sideEffects: false` does that work) and forced a brittle wildcard subpath map that consistently failed `publint`/`attw`.
 11. **Naming convention enforced by lint.** A small dev-only checker greps for `defineUnit`/`defineConversion` calls in `units.ts`/`conversions.ts` and verifies that each export name matches the value's `name:` field (when present) in camelCase. `defineUnit`'s `name:` field is the source of truth for unit identity; `defineConversion` carries no `name:` field, so its check is export-name-only. Initial form: ~50 lines of regex; ship as project pre-commit hook + CI step; extract as `unitforge-lint` if it earns its keep.
 12. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO, BIPM) cite source and version-pin in source comments. NOTICE.md tracks attribution.
 13. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/lib/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable string keys and throws a clear definition-time error if any key is reserved (`__proto__`, `constructor`, `prototype`). **`safeCopy` is shallow by design**: it screens only own-enumerable string keys at the top level. It does NOT recurse into function values (validator functions, `compute` functions) or nested data structures; the trust boundary is "we trust `defineUnit`/`defineConversion`-produced values that already passed `safeCopy` at their own definition time." All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus `Object.create(null)` target on the failure path. The hot-path converter does NOT call `safeCopy` (no vector to guard against; no mutation, no prototype-chain assignment). Cost lands on definition, forge-creation, and validation-failure paths; per-call overhead unchanged.

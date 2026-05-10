@@ -1,9 +1,36 @@
 /**
- * Built-in dimension constants. Each is a string literal usable as a
- * `Dimension` value. Custom dimensions ship as `as const` string constants in
- * userland or in kit modules; the `Dimension` type union (in `./types.ts`)
- * preserves built-in autocomplete via the `(string & {})` brand.
+ * Built-in dimension constants. Each is a stable string literal usable as a
+ * `Dimension` value at any forge / defineUnit / defineConversion call site.
+ *
+ * Discipline: every dimension shipped by unitforge lives here, regardless of
+ * which kit consumes it. Kits do NOT declare dimensions inline; a kit that
+ * needs a new one adds it to this file in the same change. The string value
+ * of a dimension is part of the public API and never changes after release
+ * (see Discipline rule #3 in PLANNING.md).
+ *
+ * Custom (consumer-defined) dimensions ship as `as const` string constants in
+ * userland; the `Dimension` type union (in `./types.ts`) preserves built-in
+ * autocomplete via the `(string & {})` brand so user constants do not break
+ * IDE suggestions for built-ins.
+ *
+ * @example
+ *   import { LENGTH, AREA } from 'unitforge/dimensions';
+ *   const meter = defineUnit({ name: 'meter', dimension: LENGTH, ...linear(1), base: true });
  */
 
+/**
+ * Spatial extent in one dimension. Canonical SI base unit: **meter**.
+ *
+ * Conventional units across kits: meter, centimeter, kilometer, inch, foot,
+ * yard, mile, light-year, nautical mile.
+ */
 export const LENGTH = 'length' as const;
+
+/**
+ * Spatial extent in two dimensions. Canonical SI base unit: **square meter**.
+ *
+ * Typically produced cross-dimensionally from two `LENGTH` values via a
+ * `defineConversion` (e.g., `areaFromLengthAndWidth`); see `kits/geometry`.
+ * Kits may also declare AREA units directly (acre, hectare).
+ */
 export const AREA = 'area' as const;
