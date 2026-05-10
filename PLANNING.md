@@ -559,6 +559,8 @@ unitforge/
 │   ├── defineUnit.ts
 │   ├── defineConversion.ts
 │   ├── types.ts                    // Dimension, Unit<D, T=number>, Conversion<I, O, T=number>, ForgeConfig interfaces
+│   ├── lib/
+│   │   └── decimal.ts              // peer-dep wrapper for decimal.js (validates pattern at v1; no kit uses it yet)
 │   ├── kits/
 │   │   ├── si/
 │   │   ├── imperial/
@@ -739,6 +741,49 @@ interface Conversion<
 - `kits/geodesy` (centimeter-precision position differences in ITRF coordinates).
 
 Geosciences/SEGY is mixed: trace amplitudes and travel-time math are fine in float; survey-coordinate bookkeeping needs decimal. That kit, if shipped, would mostly use float with decimal-typed units only on the spatial-coordinates surface.
+
+### Peer-dependency wrapper pattern
+
+When a kit needs a precision library (decimal.js, dnum, fraction.js, etc.), it does NOT import the library directly. It imports from a centralized wrapper module under `src/lib/`:
+
+```ts
+// src/lib/decimal.ts
+/**
+ * Re-exports decimal.js for use across kits that need exact decimal arithmetic.
+ *
+ * REQUIRES PEER DEPENDENCY: decimal.js
+ * If you see "Cannot find module 'decimal.js'" when importing this file
+ * (transitively, via any unitforge kit that needs decimal precision):
+ *   npm install decimal.js
+ *   pnpm add decimal.js
+ *   yarn add decimal.js
+ *
+ * Kits that depend on this wrapper:
+ *   - (none yet at v1; this file validates the peer-dep pattern)
+ *
+ * @see https://github.com/simiancraft/unitforge#peer-dependencies
+ */
+import Decimal from 'decimal.js';
+export default Decimal;
+```
+
+**Why a wrapper, not direct imports.** Centralizes the JSDoc install-instructions in one place; gives a single hook for diagnostic improvements later (custom error messages, logging) without touching every kit; keeps the wire-up uniform across kits.
+
+**Why static import (not dynamic `import()` with try/catch).** Static imports keep the wrapper synchronous; modules importing from it stay synchronous; tree-shaking is preserved by static analysis. Dynamic import would make the module async (top-level await), which propagates async-ness through every kit that uses it and creates bundler edge cases in production builds. The bundler error "Cannot find module 'decimal.js'" is well-understood by JS devs; the JSDoc on the wrapper closes the install-instruction gap.
+
+**Tree-shaking guarantee.** Under `"sideEffects": false` plus static imports throughout, `src/lib/decimal.ts` is reachable in a consumer's bundle ONLY when a kit that imports it is itself reached. A consumer using only `unitforge/kits/imperial` ships zero bytes of decimal.js; a consumer using a future `unitforge/kits/finance` ships decimal.js as a dependency.
+
+**Validation at v1.** v1 ships `src/lib/decimal.ts` and `test/peer-dep-pattern.test.ts`, even though no v1 kit needs decimal. The test exercises a one-off Decimal-typed `defineUnit` + `forge` call to confirm:
+
+1. The wrapper re-exports correctly.
+2. `peerDependenciesMeta.optional` is set up correctly in `package.json`.
+3. `Unit<D, T = number>` and `Conversion<I, O, T = number>` actually parameterize over `T = Decimal` in practice.
+4. `forge` returns a `(d: Decimal) => Decimal` converter as expected.
+5. The pattern is reproducible: future kit authors copy the test as a template.
+
+decimal.js is a regular `devDependency` for the test (always installed in CI); consumers never see it because `test/` is not in the `files` allowlist.
+
+When the first precision-requiring kit ships (post-v1), repeat the pattern: add a `src/lib/<library>.ts` wrapper, declare the optional peer-dep, write the kit against the wrapper, copy the test pattern.
 
 ## Configurable atomic per dimension
 
