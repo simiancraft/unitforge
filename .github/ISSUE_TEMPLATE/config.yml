@@ -5,4 +5,4 @@ contact_links:
     about: Report security issues privately via GitHub Security Advisories. Do not open a public issue.
   - name: Question or usage help
     url: https://github.com/simiancraft/unitforge#readme
-    about: Most usage questions are answered in the README. If it's not, open a discussion-style issue using one of the templates above.
+    about: Most usage questions are answered in the README. If your question is not answered there, file a Bug report or Feature request using one of the templates.

@@ -35,9 +35,10 @@ body:
       description: Smallest possible code snippet that triggers the bug. Inline is fine; a link to a gist or StackBlitz is better.
       render: ts
       placeholder: |
-        import { convert } from 'unitforge';
-        import { meter, foot } from 'unitforge/kits/si';
-        console.log(convert(5, meter, foot));
+        import { forge } from 'unitforge';
+        import { meter } from 'unitforge/kits/si';
+        import { foot } from 'unitforge/kits/imperial';
+        console.log(forge(meter, foot)(5));
     validations:
       required: true
 

@@ -1,4 +1,4 @@
-# unitforge — Planning Document
+# unitforge: Planning Document
 
 A planning artifact captured at project inception. **For pre-1.0**, this document is the live source of truth for design intent; the README is a slower-moving public artifact and any contradiction between them is resolved by updating the README to match. When this document and the code disagree, update this document. Post-1.0, the README's published API contract takes precedence.
 
@@ -24,12 +24,12 @@ This thesis is the single load-bearing decision the library is committing to. Ev
 
 The npm landscape was surveyed before commit:
 
-- **convert-units** — closest existing match for countable units (ships `Pieces` measure with dozen/gross/ream); last stable 2018, perpetual 3.0 beta.
-- **convert (jonahsnider/convert)** — function-first API, best TS ergonomics; closed-set unit list, no runtime extension.
-- **mathjs units** — `createUnit` exists but global mutable state in a 9.4 MB dep.
-- **unitmath** — closest on configurable atomic and pluggable numeric; class-based, low adoption.
-- **safe-units** — strongest type-level dimensional analysis; cryptic compile errors, slow builds, library-author-shaped extensibility.
-- **uom (dividab)**, **js-quantities** — pure SI dimensional, no countable units.
+- **convert-units**: closest existing match for countable units (ships `Pieces` measure with dozen/gross/ream); last stable 2018, perpetual 3.0 beta.
+- **convert (jonahsnider/convert)**: function-first API, best TS ergonomics; closed-set unit list, no runtime extension.
+- **mathjs units**: `createUnit` exists but global mutable state in a 9.4 MB dep.
+- **unitmath**: closest on configurable atomic and pluggable numeric; class-based, low adoption.
+- **safe-units**: strongest type-level dimensional analysis; cryptic compile errors, slow builds, library-author-shaped extensibility.
+- **uom (dividab)**, **js-quantities**: pure SI dimensional, no countable units.
 
 Gaps the surveyed libraries do not fill, all of which unitforge addresses:
 
@@ -51,7 +51,7 @@ dimensions   →   kits   →   conversions
    (1)           (2)           (3)
 ```
 
-### (1) Dimensions — flat list, no dependencies
+### (1) Dimensions: flat list, no dependencies
 
 A dimension is a string constant. Every unit declares its dimension. Conversions only happen within a dimension by default; cross-dimensional conversions require an explicit `defineConversion` value passed at the call site via `ForgeConfig.via`.
 
@@ -97,7 +97,7 @@ export type Dimension =
 
 The naive `| string` union would collapse the entire union to `string` in TypeScript's eyes, killing autocomplete for the built-in dimensions. The `(string & {})` brand keeps the literals visible while still accepting arbitrary strings.
 
-### (2) Kits — domain-organized bundles of units
+### (2) Kits: domain-organized bundles of units
 
 A kit is a folder under `src/kits/<domain>/` containing one file per unit, plus an `index.ts` barrel. Kits depend on dimensions but not on conversions. A kit may declare new dimensions inline if it introduces a domain not yet in the built-in dimension list (e.g., a `gaming` kit might export `AFFINITY`, `LOYALTY` alongside its units).
 
@@ -202,7 +202,7 @@ sodaVolume({ cans: 24 });          // 8.52 L (one case worth)
 
 **Co-locating the pack and its conversion.** A pack and its primary inner conversion typically ship from the same module file; the kit's `index.ts` barrel re-exports both. Consumers import one, the other, or both, depending on what they need.
 
-### (3) Conversions — flat folder of single-purpose files
+### (3) Conversions: flat folder of single-purpose files
 
 A conversion is a cross-dimensional bridge. Each lives as one file under `src/conversions/`. Naming convention: `<output>From<input1>And<input2>And<...>`. The filename is the contract.
 
@@ -264,7 +264,7 @@ export const fahrenheit = defineUnit({
 });
 ```
 
-`linear(scale)` is sugar for the common linear case; expands to `{ toBase: (v) => v * scale, fromBase: (b) => b / scale }`. Saves ~50% boilerplate on every linear unit. Ships from the main barrel. Signature: `linear(scale: number) => { toBase: (v: number) => number; fromBase: (b: number) => number }` — `T = number`-only sugar; future precision-typed kits write `toBase`/`fromBase` longhand (see "Numeric precision").
+`linear(scale)` is sugar for the common linear case; expands to `{ toBase: (v) => v * scale, fromBase: (b) => b / scale }`. Saves ~50% boilerplate on every linear unit. Ships from the main barrel. Signature: `linear(scale: number) => { toBase: (v: number) => number; fromBase: (b: number) => number }`; `T = number`-only sugar; future precision-typed kits write `toBase`/`fromBase` longhand (see "Numeric precision").
 
 The output of `defineUnit` is interface-shaped data. Anything that satisfies the `Unit` interface is a unit, whether kit-shipped or user-defined a minute ago in app code. End-user custom units are first-class for this reason.
 
@@ -364,7 +364,7 @@ const cupPpgToG = forge(
 
 A fourth case (`from: Unit, to: object of Units`, e.g., scalar → 2D vector) is type-system-supported but rare; no v1 worked example.
 
-`ForgeConfig` is an open extensibility surface — a plain TypeScript interface that consumers construct as an object literal at the call site. Fields:
+`ForgeConfig` is an open extensibility surface; a plain TypeScript interface that consumers construct as an object literal at the call site. Fields:
 
 | Field | Type | Purpose |
 |---|---|---|
@@ -433,7 +433,7 @@ export interface Unit<D extends Dimension = Dimension, T = number> {
   readonly base?: boolean;
 }
 
-// Conceptual type — both `from` and `to` slots of `forge` accept either shape.
+// Conceptual type; both `from` and `to` slots of `forge` accept either shape.
 // The three concrete `forge` overloads below instantiate this union via mapped
 // types `{ [K in keyof Inputs]: Unit<Inputs[K], T> }` so per-key dimensions
 // thread through; this alias is exported for consumer-side helper types
@@ -542,7 +542,7 @@ export class ValidationError extends Error {
   readonly inputs: Record<string, unknown>;
   readonly failures: Array<{
     key: string | '_all';
-    stage: 'forge-config' | 'conversion';
+    stage: 'call-site' | 'definition';
     value: unknown;
     message: string;
     /** Original thrown error if the validator threw (vs returned a string).
@@ -588,7 +588,7 @@ When the forged converter is invoked with input values:
 
 **Failure semantics for validators and `compute`:**
 
-- **A validator that throws** is caught by the runner and converted into a `failure` entry with `key: '<the validator's key>'`, `stage: '<the layer>'`, `value: <the input value the validator saw>`, `message: String(err.message ?? err)`. The aggregation never aborts; the thrown error becomes one failure record alongside any string-returning failures. This lets consumers drop in third-party validators (zod, yup, custom assertions) that signal failure by throwing without poisoning the rest of the run.
+- **A validator that throws** is caught by the runner and converted into a `failure` entry with `key: '<the validator's key>'`, `stage: 'call-site' | 'definition'`, `value: <the input value the validator saw>`, `message: String(err.message ?? err)`. The aggregation never aborts; the thrown error becomes one failure record alongside any string-returning failures. This lets consumers drop in third-party validators (zod, yup, custom assertions) that signal failure by throwing without poisoning the rest of the run.
 - **A validator that returns a non-string non-true value** (e.g., `false`, `0`, `null`) is treated as a pass. Validators MUST signal failure with a string return or a throw; silent falsy is intentionally NOT a failure indicator (it would conflict with predicate-style validators that return booleans).
 - **`compute` that throws** propagates raw to the caller. The library does not catch compute errors; if `compute` is buggy or asserts an invariant, the consumer's call site receives the error directly. No cache write on a thrown compute.
 - **`compute` that returns `NaN` or `±Infinity`** is returned as-is to the caller and is **not cached** (mirroring the input-side rule that NaN inputs are never cached). Downstream `precision` rounding on `NaN` would propagate `NaN`; on `Infinity` would propagate `Infinity`. Consumers who want to reject these values should validate them in a downstream wrapper.
@@ -601,21 +601,7 @@ Aggregating failures (instead of first-failure-wins) lets consumers see and fix 
 
 ### `ValidationError`
 
-```ts
-import { ValidationError } from 'unitforge';
-
-class ValidationError extends Error {
-  readonly inputs: Record<string, unknown>;       // the input object that was rejected
-  readonly failures: Array<{
-    key: string | '_all';                         // input-name or _all (cross-property)
-    stage: 'forge-config' | 'conversion';         // which layer
-    value: unknown;                               // the value the validator saw
-    message: string;                              // the validator's error string
-  }>;
-}
-```
-
-Invalid inputs never poison the cache (validation runs on miss, before cache write).
+The full `ValidationError` shape is in the canonical "Public type sketch" subsection above; this section narrates behavior, not types. Invalid inputs never poison the cache (validation runs on miss, before cache write). The `failures[].cause` field preserves the original thrown error from validators that signal failure by throwing (zod, yup, custom assertions); consumers downcast via `if (failure.cause instanceof ZodError) ...` to access structured payload.
 
 ### Cross-dimensional runtime error
 
@@ -652,7 +638,7 @@ If real-world benchmarks ever show one of these matters more (or less) than expe
 
 ### Beyond unit conversion (side capability)
 
-The same primitives that convert between units can also express **domain-centric scaling**: a `defineConversion` describing how a value in one domain maps to a value in another (linear, logarithmic, piecewise, anything `(input) => output`). `forge` then produces the scaling function. This is a discoverable property of the API shape, not a primary use case — but it is worth knowing because it informs how kits should be designed.
+The same primitives that convert between units can also express **domain-centric scaling**: a `defineConversion` describing how a value in one domain maps to a value in another (linear, logarithmic, piecewise, anything `(input) => output`). `forge` then produces the scaling function. This is a discoverable property of the API shape, not a primary use case; but it is worth knowing because it informs how kits should be designed.
 
 Example: a slider position [0..100] mapping to volume in dB [-60..0]:
 
@@ -678,7 +664,7 @@ const sliderToVolume = forge(
 sliderToVolume({ position: 50 });  // -30
 ```
 
-Where this earns its keep: scaling functions that genuinely benefit from the unit-and-dimension framing — named domain/range, opt-in validators on the input domain, opt-in memoize for cached lookups, importable as values, kit-author composability. For pure UI scaling without domain semantics, `d3-scale` is purpose-built and richer.
+Where this earns its keep: scaling functions that genuinely benefit from the unit-and-dimension framing; named domain/range, opt-in validators on the input domain, opt-in memoize for cached lookups, importable as values, kit-author composability. For pure UI scaling without domain semantics, `d3-scale` is purpose-built and richer.
 
 **Kit-design implication.** Kits that ship a domain often have natural scaling functions associated with that domain: audio (slider → dB curves, frequency → MIDI note), game mechanics (armor → damage mitigation, stat → effective stat), finance (credit rating → interest spread), graphics (linear light → sRGB). These can ship as `defineConversion` values within the kit, alongside the unit definitions, without requiring any new library machinery. Kit authors should consider scaling-as-conversion when designing a domain-centric kit; it composes naturally with the rest of the kit's units and conversions.
 
@@ -731,7 +717,6 @@ Granular per-unit-per-file requires a wildcard `exports` map; a hand-maintained 
     "./kits/*": { "types": "./dist/kits/*/index.d.ts", "import": "./dist/kits/*/index.js" },
     "./kits/*/*": { "types": "./dist/kits/*/*.d.ts", "import": "./dist/kits/*/*.js" },
     "./conversions/*": { "types": "./dist/conversions/*.d.ts", "import": "./dist/conversions/*.js" },
-    "./errors": { "types": "./dist/errors.d.ts", "import": "./dist/errors.js" },
     "./package.json": "./package.json"
   }
 }
@@ -752,23 +737,24 @@ These rules are non-negotiable through v1; they are what holds the design togeth
 3. **Dimensions are stable string identifiers.** Once shipped, `LENGTH = 'length'` cannot change its string value.
 4. **Kits can declare new dimensions but cannot redefine existing ones.** A `cooking` kit can extend `VOLUME` with `cup`; it cannot reassign `VOLUME` to mean something else.
 5. **Each direction of a conversion is its own `defineConversion` value.** No auto-derived inverses. Celsius/Fahrenheit-style offsets are the canonical case for why naive symmetry breaks.
-6. **Type-agnostic value layer.** v1 ships entirely native `number`. `Unit<D, T = number>` and `Conversion<I, O, T = number>` are parameterized for forward-compat; future precision-sensitive kits specialize `T` (e.g., to `Decimal`) without library changes. No `NumericAdapter` interface. (See "Numeric precision".)
-7. **Per-unit precision is a property of the unit definition, not a global config.**
-8. **No instance factory.** Public API is free functions. Period.
-9. **Granular per-unit files.** Each kit is a folder of one-unit-per-file modules with a barrel `index.ts`.
-10. **Naming convention enforced by lint.** A small dev-only checker greps for `defineUnit`/`defineConversion` calls and the export they're assigned to, verifying the export name matches the filename in camelCase. `defineUnit`'s `name:` field must also match. (`defineConversion` carries no `name:` field.) Initial form: ~50 lines of regex; ship as project pre-commit hook + CI step; extract as `unitforge-lint` if it earns its keep.
-11. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO, BIPM) cite source and version-pin in source comments. NOTICE.md tracks attribution.
-12. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/internal/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable string keys and throws a clear definition-time error if any key is reserved (`__proto__`, `constructor`, `prototype`). **`safeCopy` is shallow by design**: it screens only own-enumerable string keys at the top level. It does NOT recurse into function values (validator functions, `compute` functions) or nested data structures; the trust boundary is "we trust `defineUnit`/`defineConversion`-produced values that already passed `safeCopy` at their own definition time." All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus `Object.create(null)` target on the failure path. The hot-path converter does NOT call `safeCopy` (no vector to guard against; no mutation, no prototype-chain assignment). Cost lands on definition, forge-creation, and validation-failure paths; per-call overhead unchanged.
+6. **Exactly one unit per dimension carries `base: true`.** The `base: true` flag is the canonical zero-point/identity unit for that dimension; multiple `base: true` units in one dimension are a definition-time error (`compute` author's "in base units" contract requires a unique base). Atomic-variant kits MUST rename their local base unit to avoid colliding with the canonical kit (see "Configurable atomic per dimension").
+7. **Type-agnostic value layer.** v1 ships entirely native `number`. `Unit<D, T = number>` and `Conversion<I, O, T = number>` are parameterized for forward-compat; future precision-sensitive kits specialize `T` (e.g., to `Decimal`) without library changes. No `NumericAdapter` interface. (See "Numeric precision".)
+8. **Per-unit precision is a property of the unit definition, not a global config.**
+9. **No instance factory.** Public API is free functions. Period.
+10. **Granular per-unit files.** Each kit is a folder of one-unit-per-file modules with a barrel `index.ts`.
+11. **Naming convention enforced by lint.** A small dev-only checker greps for `defineUnit`/`defineConversion` calls and the export they're assigned to, verifying the export name matches the filename in camelCase. `defineUnit`'s `name:` field must also match. (`defineConversion` carries no `name:` field.) Initial form: ~50 lines of regex; ship as project pre-commit hook + CI step; extract as `unitforge-lint` if it earns its keep.
+12. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO, BIPM) cite source and version-pin in source comments. NOTICE.md tracks attribution.
+13. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/internal/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable string keys and throws a clear definition-time error if any key is reserved (`__proto__`, `constructor`, `prototype`). **`safeCopy` is shallow by design**: it screens only own-enumerable string keys at the top level. It does NOT recurse into function values (validator functions, `compute` functions) or nested data structures; the trust boundary is "we trust `defineUnit`/`defineConversion`-produced values that already passed `safeCopy` at their own definition time." All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus `Object.create(null)` target on the failure path. The hot-path converter does NOT call `safeCopy` (no vector to guard against; no mutation, no prototype-chain assignment). Cost lands on definition, forge-creation, and validation-failure paths; per-call overhead unchanged.
 
 ## v1 kit roster
 
 Five kits, deliberately spanning four problem domains to demonstrate the thesis that unitforge is not a physics library:
 
-1. **`si`** — meter, kilogram, second, kelvin, mole, ampere, candela; derived: square meter, cubic meter, newton, joule, watt, pascal, hertz. The default kit.
-2. **`imperial`** — inch, foot, yard, mile, pound, ounce, fluid ounce, gallon, quart, pint, cup. Together with `si` shows mixed-system cross-dim forging.
-3. **`cooking`** — tablespoon, teaspoon, cup with US/UK split, stick of butter, dash, pinch, fluid ounce, milliliter. Domain where dimensions are technically physics but units are culturally specific.
-4. **`inventory`** (manufacturing) — each, dozen, gross, ream, score, pair, half-dozen, case, pallet, container. Demonstrates the `COUNT` dimension and the packaging-unit-as-`defineUnit`-in-COUNT pattern.
-5. **`pharmacy`** — milligram, microgram, IU, mL dose, tablet, capsule, blister pack, vial. Domain with regulated units (USP/WHO IU conventions), packaging-as-unit, and life-safety precision requirements.
+1. **`si`**: meter, kilogram, second, kelvin, mole, ampere, candela; derived: square meter, cubic meter, newton, joule, watt, pascal, hertz. The default kit.
+2. **`imperial`**: inch, foot, yard, mile, pound, ounce, fluid ounce, gallon, quart, pint, cup. Together with `si` shows mixed-system cross-dim forging.
+3. **`cooking`**: tablespoon, teaspoon, cup with US/UK split, stick of butter, dash, pinch, fluid ounce, milliliter. Domain where dimensions are technically physics but units are culturally specific.
+4. **`inventory`** (manufacturing): each, dozen, gross, ream, score, pair, half-dozen, case, pallet, container. Demonstrates the `COUNT` dimension and the packaging-unit-as-`defineUnit`-in-COUNT pattern.
+5. **`pharmacy`**: milligram, microgram, IU, mL dose, tablet, capsule, blister pack, vial. Domain with regulated units (USP/WHO IU conventions), packaging-as-unit, and life-safety precision requirements.
 
 These four problem domains are picked specifically to stress-test the cross-domain claim. Adding more kits later (astronomy, historical, gaming, finance) extends the proof; the v1 set is the minimum needed to make the cross-domain claim credibly. The chromonym precedent is to file an issue per future kit (parallel to chromonym issues #21–#30).
 
@@ -840,6 +826,8 @@ Most surveyed libraries hardcode the atomic unit per dimension; unitmath is the 
 - Alternate atomic kits live at `kits/si-mm-atomic`, `kits/si-g-atomic`, etc., for consumers who want millimeter-base or gram-base storage.
 
 Same pattern as chromonym shipping multiple palette variants without a runtime config flag. Consumers pick which atomic they want by picking which kit they import. No instance state; no runtime configuration; tree-shakes per-import.
+
+Atomic-variant kits **rename their exports** rather than shadowing canonical base units; e.g., `kits/si-mm-atomic` exports `millimeter` (the local base) plus aliases like `meterMm` for clarity, NOT a second `meter`. This preserves the discipline rule that one and only one unit per dimension carries `base: true` (rule #5a below) and avoids cross-kit ambiguity over which `meter` is the base.
 
 If runtime configuration of atomic later proves necessary, it can be added as an option to `defineUnit` or `ForgeConfig`, but the default path is "import the kit that matches your storage."
 
@@ -929,8 +917,8 @@ Repo, license, community-health files, and CI workflows are already in place. Re
 4. Wire `--provenance` into `.releaserc.json` and CI publish step (currently only documented).
 5. **Wire the wildcard `exports` map into `package.json`** alongside the first kit scaffold (currently `package.json` only ships `.` and `./package.json`; the documented map under "package.json#exports shape" must land in the same PR as the first kit so consumers can resolve `unitforge/kits/<name>` paths).
 6. Implement v1: `si`, `imperial`, `cooking`, `inventory`, `pharmacy` kits and supporting conversions.
-7. **README rewrite is deferred until after v1 ships.** The pre-1.0 README is intentionally minimal (a placeholder API sketch and a "pre-alpha, do not depend on" warning). The marketing-grade README — competitive positioning, kit roster surfaced with real names, hero block with a working cross-dim example, demo GIFs, performance numbers, Scorecard badge — lands once we have real kits to name, real benchmarks to cite, and a working demo to GIF. Writing it earlier means writing claims we can't yet substantiate. The "Beyond unit conversion" framing, the cross-domain pitch, and the kit-by-kit quick-tour all wait for this rewrite.
-8. **Repo settings to enable in GitHub UI / via `gh api`** (one-time housekeeping, not files):
+8. **README rewrite is deferred until after v1 ships.** The pre-1.0 README is intentionally minimal (a placeholder API sketch and a "pre-alpha, do not depend on" warning). The marketing-grade README; competitive positioning, kit roster surfaced with real names, hero block with a working cross-dim example, demo GIFs, performance numbers, Scorecard badge; lands once we have real kits to name, real benchmarks to cite, and a working demo to GIF. Writing it earlier means writing claims we can't yet substantiate. The "Beyond unit conversion" framing, the cross-domain pitch, and the kit-by-kit quick-tour all wait for this rewrite.
+9. **Repo settings to enable in GitHub UI / via `gh api`** (one-time housekeeping, not files):
    - Branch protection or ruleset on `main` (the release workflow at `ci.yml:78-89` already provisions an App-token bypass path that assumes the ruleset exists).
    - Private vulnerability reporting (`SECURITY.md` already routes there; toggle must be on).
    - Dependabot security updates (separate from `.github/dependabot.yml`'s actions-ecosystem coverage).
@@ -959,24 +947,24 @@ Replaced the four-function shape with the current three-primitive shape:
 
 ### Decisions made and reverted (full rationale preserved here so future review passes don't re-raise them)
 
-- **`definePack` sugar — dropped.** Original plan: a `definePack({ outer, inner })` sugar that bundled a unit + a conversion. Resolved 2026-05-09: dropped. A packaging unit is just a `defineUnit` in the COUNT dimension (a spool of tape IS a unit, not a wrapper around feet); the conversion to inner content is a separate `defineConversion` when needed. The library stays at three factories.
+- **`definePack` sugar (dropped).** Original plan: a `definePack({ outer, inner })` sugar that bundled a unit + a conversion. Resolved 2026-05-09: dropped. A packaging unit is just a `defineUnit` in the COUNT dimension (a spool of tape IS a unit, not a wrapper around feet); the conversion to inner content is a separate `defineConversion` when needed. The library stays at three factories.
 
-- **`format` primitive — dropped.** Original plan: a `format(value, unit, opts)` primitive with plural/locale/abbreviation logic. Resolved 2026-05-09 (in two passes): first collapsed to an optional `ForgeConfig.format: (value: number) => string` field with a `.format()` method on the converter; then dropped entirely. The library does conversion; display is the view's job. Consumers who want formatted output write a one-line wrapper around the converter.
+- **`format` primitive (dropped).** Original plan: a `format(value, unit, opts)` primitive with plural/locale/abbreviation logic. Resolved 2026-05-09 (in two passes): first collapsed to an optional `ForgeConfig.format: (value: number) => string` field with a `.format()` method on the converter; then dropped entirely. The library does conversion; display is the view's job. Consumers who want formatted output write a one-line wrapper around the converter.
 
-- **`with:` cross-dim conversion field — reverted to `via:`.** Briefly renamed to `with:` mid-design when the right-hand side became a structured spec (validators + compute + future fields). Reverted 2026-05-09 because `with` is SQL-shaped, is a JS strict-mode reserved word, and overstates the right-hand side's complexity. `via:` reads as "convert via this rule," which matches intent.
+- **`with:` cross-dim conversion field (reverted to `via:`).** Briefly renamed to `with:` mid-design when the right-hand side became a structured spec (validators + compute + future fields). Reverted 2026-05-09 because `with` is SQL-shaped, is a JS strict-mode reserved word, and overstates the right-hand side's complexity. `via:` reads as "convert via this rule," which matches intent.
 
-- **`NumericAdapter` interface and `src/numeric/` subpath — dropped.** Original plan: a 9-method `NumericAdapter` interface with per-adapter unit kits at `unitforge/numeric/<adapter>` and peer-deps on decimal.js / fraction.js. Resolved 2026-05-09: dropped. The library is type-agnostic at the value layer (it does no arithmetic on values itself; just shuttles user-supplied function results). Replaced with `Unit<D, T = number>` and `Conversion<I, O, T = number>` parameterized over the value type, plus the peer-dep wrapper pattern for kits that need precision.
+- **`NumericAdapter` interface and `src/numeric/` subpath (dropped).** Original plan: a 9-method `NumericAdapter` interface with per-adapter unit kits at `unitforge/numeric/<adapter>` and peer-deps on decimal.js / fraction.js. Resolved 2026-05-09: dropped. The library is type-agnostic at the value layer (it does no arithmetic on values itself; just shuttles user-supplied function results). Replaced with `Unit<D, T = number>` and `Conversion<I, O, T = number>` parameterized over the value type, plus the peer-dep wrapper pattern for kits that need precision.
 
-- **`Conversion` value identity branding — dismissed.** Cross-file invariant reviewer raised: two structurally-identical `defineConversion` values are interchangeable to the type system; passing the wrong one is silent-wrong physics. Resolved 2026-05-09: dismissed as non-issue. Two named functions with the same signature being interchangeable is ordinary JavaScript (`Math.sin` and `Math.cos` have identical signatures and nobody asks for them to be branded). ESM import-as-rename and barrel-export-rename handle naming polysemy.
+- **`Conversion` value identity branding (dismissed).** Cross-file invariant reviewer raised: two structurally-identical `defineConversion` values are interchangeable to the type system; passing the wrong one is silent-wrong physics. Resolved 2026-05-09: dismissed as non-issue. Two named functions with the same signature being interchangeable is ordinary JavaScript (`Math.sin` and `Math.cos` have identical signatures and nobody asks for them to be branded). ESM import-as-rename and barrel-export-rename handle naming polysemy.
 
-- **Validator return contract via `Result` type — dismissed.** Considered briefly. Resolved 2026-05-09: validators return `true | string` (string = rejection); throwing is the escape hatch; the runner aggregates failures and throws `ValidationError`. A `forgeOrResult` Result-typed variant can be added in a 0.x minor if anyone needs it; not v1.
+- **Validator return contract via `Result` type (dismissed).** Considered briefly. Resolved 2026-05-09: validators return `true | string` (string = rejection); throwing is the escape hatch; the runner aggregates failures and throws `ValidationError`. A `forgeOrResult` Result-typed variant can be added in a 0.x minor if anyone needs it; not v1.
 
-- **Validators-default-to-fail-fast — dismissed.** Perf reviewer suggested defaulting to fail-fast with `aggregate: true` opt-in. Resolved 2026-05-09: aggregation stays the default. Cache-first pipeline means validators only run on cold-path misses; on the success path validators all run anyway (none failed, so neither model can short-circuit). The "5-10x slower" claim was overstated.
+- **Validators-default-to-fail-fast (dismissed).** Perf reviewer suggested defaulting to fail-fast with `aggregate: true` opt-in. Resolved 2026-05-09: aggregation stays the default. Cache-first pipeline means validators only run on cold-path misses; on the success path validators all run anyway (none failed, so neither model can short-circuit). The "5-10x slower" claim was overstated.
 
-- **`memoize` as `boolean | { max: N }` discriminated union — dropped.** Resolved 2026-05-09: collapsed to `memoize: number` (single-typed; 0 or absent = off; > 0 = LRU cap). `DEFAULT_MEMO_CAP = 1024` constant ships from the main barrel for ergonomic opt-in. Per the no-heterogeneous-types rule.
+- **`memoize` as `boolean | { max: N }` discriminated union (dropped).** Resolved 2026-05-09: collapsed to `memoize: number` (single-typed; 0 or absent = off; > 0 = LRU cap). `DEFAULT_MEMO_CAP = 1024` constant ships from the main barrel for ergonomic opt-in. Per the no-heterogeneous-types rule.
 
-- **`toBase: number | { to, from }` discriminated union — dropped.** Initial proposal for non-linear units. Resolved 2026-05-09: `Unit` carries TWO function fields (`toBase` and `fromBase`, both always functions); `linear(scale)` helper covers the common linear case; non-linear units write the two functions explicitly. Type stays uniform; no discrimination.
+- **`toBase: number | { to, from }` discriminated union (dropped).** Initial proposal for non-linear units. Resolved 2026-05-09: `Unit` carries TWO function fields (`toBase` and `fromBase`, both always functions); `linear(scale)` helper covers the common linear case; non-linear units write the two functions explicitly. Type stays uniform; no discrimination.
 
-- **`validate.all` cross-property key — renamed to `_all`.** Initial proposal was `all`. Reviewer caught: collides with any input literally named `all`. Resolved 2026-05-09: renamed to `_all` (leading underscore signals library-reserved special key); consumers may use `all` as an input property name freely; no definition-time check needed.
+- **`validate.all` cross-property key (renamed to `_all`).** Initial proposal was `all`. Reviewer caught: collides with any input literally named `all`. Resolved 2026-05-09: renamed to `_all` (leading underscore signals library-reserved special key); consumers may use `all` as an input property name freely; no definition-time check needed.
 
 The thesis line: *units and conversions as values you import; one factory verb (`forge`) that returns the converter; cross-domain by construction, not just physics.*
