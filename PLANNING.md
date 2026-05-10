@@ -193,6 +193,106 @@ Tree-shaking still works under modern bundlers as long as member access is **sta
 
 **Tree-shaking is preserved at both layers.** Per-unit-per-file modules under `sideEffects: false` mean consumers only pay for the units they actually import, even when a barrel re-exports many. Composition costs no bytes the consumer didn't ask for.
 
+#### Packaging units (worked example)
+
+A packaging unit (spool of tape, case of soda, blister pack of pills, pallet of cases) IS a unit in the COUNT dimension; it is not a wrapper around the inner content's dimension. A spool of tape is dimensionally "1 spool"; converting it to inches of tape is a separate `defineConversion` step, used when needed.
+
+**Simple pack: spool of tape.**
+
+```ts
+import { defineUnit, defineConversion, forge, linear } from 'unitforge';
+import { COUNT, LENGTH } from 'unitforge/dimensions';
+import { inch } from 'unitforge/kits/imperial';
+
+// The pack is a unit in COUNT.
+export const spoolOfTape = defineUnit({
+  name: 'spool-of-tape',
+  dimension: COUNT,
+  ...linear(1),
+});
+
+// The conversion to inner content (length).
+// 1 spool = 100 inches of tape.
+export const lengthFromSpoolOfTape = defineConversion({
+  inputs:  { spools: COUNT },
+  output:  LENGTH,
+  compute: ({ spools }) => spools * 2.54,  // 100 in = 2.54 m (LENGTH base)
+});
+
+// Use:
+forge({ spools: spoolOfTape }, inch, { via: lengthFromSpoolOfTape })({ spools: 5 });
+// => 500 inches
+```
+
+**Nested packs: case → cans → liters.** Pack hierarchies compose because COUNT→COUNT conversions ride on `toBase`/`fromBase` (no `defineConversion` needed within COUNT), and only the cross-dim leg (COUNT→VOLUME) requires a conversion.
+
+```ts
+import { defineUnit, defineConversion, forge, linear } from 'unitforge';
+import { COUNT, VOLUME } from 'unitforge/dimensions';
+import { liter } from 'unitforge/kits/si';
+
+// 1 case = 24 cans (COUNT base "each").
+export const caseOfSoda = defineUnit({
+  name: 'case-of-soda',
+  dimension: COUNT,
+  toBase:   (n) => n * 24,
+  fromBase: (each) => each / 24,
+});
+
+export const canOfSoda = defineUnit({
+  name: 'can-of-soda',
+  dimension: COUNT,
+  ...linear(1),
+});
+
+// 1 can = 0.355 L of soda (12 fl oz).
+export const volumeFromCanOfSoda = defineConversion({
+  inputs:  { cans: COUNT },
+  output:  VOLUME,
+  compute: ({ cans }) => cans * 0.000355,  // L → m³ (VOLUME base)
+});
+
+// COUNT → COUNT: forge handles via toBase/fromBase. No conversion needed.
+forge(caseOfSoda, canOfSoda)(1);   // 24 cans
+forge(canOfSoda, caseOfSoda)(48);  // 2 cases
+
+// COUNT → VOLUME: cross-dim, needs the conversion.
+const sodaVolume = forge({ cans: canOfSoda }, liter, { via: volumeFromCanOfSoda });
+sodaVolume({ cans: 1 });           // 0.355 L
+sodaVolume({ cans: 24 });          // 8.52 L (one case worth)
+```
+
+**Two ways to ask "how many liters in 1 case":**
+
+```ts
+// (a) Userland chain via two forged converters (canonical for ad-hoc composition).
+const cansPerCase = forge(caseOfSoda, canOfSoda)(1);      // 24
+sodaVolume({ cans: cansPerCase });                          // 8.52 L
+
+// (b) A single-shot case→volume conversion when this shortcut is needed often.
+export const volumeFromCaseOfSoda = defineConversion({
+  inputs:  { cases: COUNT },
+  output:  VOLUME,
+  compute: ({ cases }) => cases * 24 * 0.000355,
+});
+forge({ cases: caseOfSoda }, liter, { via: volumeFromCaseOfSoda })({ cases: 1 });
+// => 8.52 L
+```
+
+The library stays single-hop on purpose; if `case → volume` is a frequent shortcut, encode it as one conversion. The library does not search or compose conversion paths.
+
+**Implicit-but-tolerable.** The COUNT dimension does not distinguish "case-of-soda" from "case-of-beer" or "case-of-paperclips" at the type level. `volumeFromCanOfSoda` accepts any `COUNT` input; pass `dozen` and the math is mathematically correct (12 cans = 4.26 L); pass `caseOfPaperclips` and it returns nonsense. The conversion's name is the contract; the type system cannot catch a wrong-but-shape-matching unit. Standard developer discipline: pass the unit you mean. Custom dimensions like `SODA_COUNT` could enforce this at the type level if it ever matters in a specific kit, but that is a domain-author choice, not a library default.
+
+**Co-locating the pack and its conversion.** A pack and its primary inner conversion typically ship from the same module file:
+
+```ts
+// src/kits/inventory/spoolThhn14.ts
+export const spoolThhn14 = defineUnit({ ... });
+export const lengthFromSpoolThhn14 = defineConversion({ ... });
+```
+
+Consumers import one, the other, or both, depending on what they need. The kit's `index.ts` barrel re-exports both.
+
 ### (3) Conversions — flat folder of single-purpose files
 
 A conversion is a cross-dimensional bridge. Each lives as one file under `src/conversions/`:
