@@ -1,0 +1,28 @@
+{
+  "name": "unitforge-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "unitforge": "file:..",
+    "react": "^18.3.1",
+    "react-compiler-runtime": "^1.0.0",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^6.0.1",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.6.3",
+    "vite": "^8.0.9"
+  }
+}

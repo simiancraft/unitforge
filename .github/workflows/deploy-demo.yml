@@ -3,13 +3,13 @@ name: Deploy demo to GitHub Pages
 on:
   push:
     branches: [main]
-    # Only rebuild the demo when demo/ files change. Until the demo/
-    # directory is scaffolded (planning Next steps #3) the workflow stays
-    # dormant on push; manual `workflow_dispatch` still works for testing.
-    # Self-trigger on the workflow file is intentionally omitted: editing
-    # this file shouldn't fail because demo/ doesn't exist yet.
+    # Rebuild the demo when anything that could affect it changes.
     paths:
       - 'demo/**'
+      - 'src/**'
+      - '.github/assets/**'
+      - 'package.json'
+      - '.github/workflows/deploy-demo.yml'
   workflow_dispatch:
 
 # Required for actions/deploy-pages.
