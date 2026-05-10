@@ -1,6 +1,26 @@
 # unitforge: Planning Document
 
 A planning artifact captured at project inception. **For pre-1.0**, this document is the live source of truth for design intent; the README is a slower-moving public artifact and any contradiction between them is resolved by updating the README to match. When this document and the code disagree, update this document. Post-1.0, the README's published API contract takes precedence.
+## Contents
+
+- [Project metadata](#project-metadata)
+- [Thesis](#thesis)
+- [What unitforge does that other libraries don't](#what-unitforge-does-that-other-libraries-dont)
+- [The three registries](#the-three-registries)
+- [API shape](#api-shape) (with the canonical Public type sketch)
+- [File layout](#file-layout)
+- [Discipline rules](#discipline-rules)
+- [v1 kit roster](#v1-kit-roster)
+- [Numeric precision](#numeric-precision)
+- [Configurable atomic per dimension](#configurable-atomic-per-dimension)
+- [What unitforge inherits from chromonym](#what-unitforge-inherits-from-chromonym-boilerplate-specimen)
+- [Test strategy](#test-strategy)
+- [Versioning and stability](#versioning-and-stability)
+- [Pre-coding blockers](#pre-coding-blockers)
+- [Open questions to resolve before v1](#open-questions-to-resolve-before-v1)
+- [Next steps](#next-steps)
+- [Appendix: design history](#appendix-design-history)
+
 
 ## Project metadata
 
@@ -96,6 +116,16 @@ export type Dimension =
 ```
 
 The naive `| string` union would collapse the entire union to `string` in TypeScript's eyes, killing autocomplete for the built-in dimensions. The `(string & {})` brand keeps the literals visible while still accepting arbitrary strings.
+
+**Implementation hint.** The built-in literal arms in `Dimension` should be DERIVED from `dimensions.ts` at type-resolution time, not hand-mirrored. In `src/types.ts`:
+
+```ts
+type BuiltinDimension =
+  (typeof import('./dimensions'))[keyof typeof import('./dimensions')];
+export type Dimension = BuiltinDimension | (string & {});
+```
+
+This way, adding a new constant to `dimensions.ts` automatically updates the autocomplete-preserving union without a parallel edit. The doc-side enumeration above is illustrative; the production union derives from the import.
 
 ### (2) Kits: domain-organized bundles of units
 
@@ -742,6 +772,8 @@ These rules are non-negotiable through v1; they are what holds the design togeth
 12. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO, BIPM) cite source and version-pin in source comments. NOTICE.md tracks attribution.
 13. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/internal/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable string keys and throws a clear definition-time error if any key is reserved (`__proto__`, `constructor`, `prototype`). **`safeCopy` is shallow by design**: it screens only own-enumerable string keys at the top level. It does NOT recurse into function values (validator functions, `compute` functions) or nested data structures; the trust boundary is "we trust `defineUnit`/`defineConversion`-produced values that already passed `safeCopy` at their own definition time." All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus `Object.create(null)` target on the failure path. The hot-path converter does NOT call `safeCopy` (no vector to guard against; no mutation, no prototype-chain assignment). Cost lands on definition, forge-creation, and validation-failure paths; per-call overhead unchanged.
 
+    Reserved-key constants (the proto-pollution list and the `_all` cross-property validator key) ship as named exports from `src/internal/safeCopy.ts` and the Public type sketch respectively, NOT inline string literals at every call site; this prevents drift between the runtime check and the test suite that asserts the rejection. `MEMO_CAP_MAX = 1_048_576` likewise ships as a named constant alongside `DEFAULT_MEMO_CAP = 1024`. The cache-key separator (`\x00` at v1) is exported from `internal/forge.ts` as `CACHE_KEY_SEP` so any future serializer or debug-print uses the same byte.
+
 ## v1 kit roster
 
 Five kits, deliberately spanning four problem domains to demonstrate the thesis that unitforge is not a physics library:
@@ -897,7 +929,7 @@ Only one item remains genuinely open before `src/` scaffolding can begin; the re
 
 ## Open questions to resolve before v1
 
-1. **Vocabulary review across the whole API surface.** Settle on a unified vocabulary for the `define*` factories, the `Forge*` types, and field names inside `ForgeConfig`. Goal is internal consistency, not just per-symbol rightness.
+1. **~~Vocabulary review across the whole API surface.~~ Resolved 2026-05-10.** Settled inline through iterative design: factories `defineUnit`/`defineConversion`, call-site verb `forge`, sugar `linear`, config interface `ForgeConfig`, error class `ValidationError`, special-key prefix convention `_all`. No remaining vocabulary drift; the canonical Public type sketch is the source of truth for symbol names.
 2. **Custom dimension scoping.** Two third-party kits both export `MANA = 'mana'`. The library currently trusts strings. Document the prefix-your-custom-dimensions convention; do not enforce.
 3. **TypeScript inference confirmation for `forge`.** Subsumed by Pre-coding blocker #1 (the `expect-type` checks); flagged here as a verification step.
 4. **Subpath exports for size variants of large kits.** Pharmacy and inventory in particular could ship `core` vs `full` variants. Mirror chromonym Munsell #22's approach.

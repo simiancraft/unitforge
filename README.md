@@ -10,17 +10,26 @@ A units library where the units, dimensions, and conversions are all values you 
 
 A units library that does not assume you are doing physics. Inventory, lab assays, game state, astronomy, finance, and SI-physics all get the same shape.
 
+## Install (placeholder)
+
+```sh
+# v1 not yet shipped; this command resolves the 0.0.0 name reservation only.
+npm install unitforge
+# or:  bun add unitforge
+# or:  pnpm add unitforge
+```
+
 ## Planned API
 
 ```ts
-import { defineUnit, defineConversion, forge } from 'unitforge';
+import { forge } from 'unitforge';
 import { foot, inch } from 'unitforge/kits/imperial';
 
 const toInches = forge(foot, inch);
 toInches(5); // 60
 ```
 
-Three primitives, three additive registries (dimensions, kits, conversions), first-class custom dimensions and packaging units, fully tree-shakeable. The `forge(from, to, ForgeConfig?)` verb returns a converter function; cross-dimensional conversions pass a `defineConversion` value via `ForgeConfig.via`.
+Three primitives (`defineUnit`, `defineConversion`, `forge`); three additive registries (dimensions, kits, conversions); first-class custom dimensions and packaging units; fully tree-shakeable. The `forge(from, to, ForgeConfig?)` verb returns a converter function; cross-dimensional conversions pass a `defineConversion` value via `ForgeConfig.via`. See [PLANNING.md](./PLANNING.md) for the full design and the canonical type sketch.
 
 ## License
 
