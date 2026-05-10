@@ -1,7 +1,7 @@
 {
   "name": "unitforge",
   "version": "0.0.0",
-  "description": "A units-of-measure library for arbitrary domains. Three free functions, three additive registries (dimensions, kits, conversions), first-class custom dimensions and packaging units, fully tree-shakeable. Not just a physics library.",
+  "description": "A units library for arbitrary domains; not just physics. Inventory, lab assays, game state, finance, astronomy, and SI all share the same shape. Tree-shakeable; three primitives (defineUnit, defineConversion, forge); first-class custom dimensions and packaging units.",
   "keywords": [
     "units",
     "unit",
@@ -16,6 +16,12 @@
     "si",
     "inventory",
     "packaging",
+    "domain",
+    "currency",
+    "finance",
+    "game",
+    "gamedev",
+    "astronomy",
     "typescript",
     "tree-shakeable",
     "tree-shaking"

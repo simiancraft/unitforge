@@ -19,9 +19,9 @@
 
 A units library where the units, dimensions, and conversions are all values you import; and the API is three free functions.
 
-> **Status: pre-alpha (0.0.0).** This release reserves the package name. The public API is not yet stable; do not depend on it. Track progress at https://github.com/simiancraft/unitforge.
+> **Status: pre-1.0 (0.0.0).** This release reserves the package name. The public API is not yet stable; do not depend on it. Track progress at https://github.com/simiancraft/unitforge.
 >
-> **This README is intentionally minimal pre-1.0.** The marketing-grade README (cross-domain pitch, kit roster, hero with cross-dim example, demo GIFs, performance numbers, Scorecard badge) lands once v1 ships and there are real kits, benchmarks, and demos to point at. See [PLANNING.md](./PLANNING.md) for the full design intent and the canonical type sketch the implementation will be written against.
+> **This README is intentionally minimal pre-1.0.** The marketing-grade README (cross-domain pitch, kit roster, hero with cross-dim example, demo GIFs, performance numbers) lands once v1 ships and there are real kits, benchmarks, and demos to point at. PLANNING.md captures the full v1 design intent; some sections describe future kits that haven't shipped yet, so consult `src/` for the implementation source of truth.
 
 ## Thesis
 
@@ -46,7 +46,7 @@ const toCm = forge(meter, centimeter);
 toCm(1.5); // 150
 ```
 
-Three primitives (`defineUnit`, `defineConversion`, `forge`); three additive registries (dimensions, kits, conversions); first-class custom dimensions and packaging units; tree-shakeable per-export under `sideEffects: false`. The `forge(from, to, ForgeConfig?)` verb returns a converter function; cross-dimensional conversions pass a `defineConversion` value via `ForgeConfig.via`. See [PLANNING.md](./PLANNING.md) for the full design and the canonical type sketch (including the four other kits planned for v1).
+Three primitives (`defineUnit`, `defineConversion`, `forge`); three additive registries (dimensions, kits, conversions); first-class custom dimensions and packaging units; tree-shakeable per-export under `sideEffects: false`. The `forge(from, to, ForgeConfig?)` verb returns a converter function; cross-dimensional conversions pass a `defineConversion` value via `ForgeConfig.via`. See PLANNING.md for the v1 design intent (including the four other kits planned for v1).
 
 ## Community
 

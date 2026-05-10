@@ -14,6 +14,7 @@ import {
   meter,
   squareMeter,
 } from '../src/kits/geometry/index.js';
+import { RESERVED_PROTO_KEYS } from '../src/lib/safeCopy.js';
 
 describe('linear()', () => {
   it('returns a toBase/fromBase pair that round-trips', () => {
@@ -32,26 +33,29 @@ describe('defineUnit', () => {
     expect(meter.fromBase(7)).toBe(7);
   });
 
-  it('rejects reserved keys at definition time', () => {
-    // Construct a deliberately-misshaped spec with `__proto__` as an OWN
-    // enumerable data property (the JSON.parse / Object.defineProperty path).
-    // `Object.assign` would invoke the prototype SETTER rather than copying
-    // an own property, defeating the test setup.
-    const evilSpec: Record<string, unknown> = {
-      name: 'evil',
-      dimension: LENGTH,
-      ...linear(1),
-    };
-    Object.defineProperty(evilSpec, '__proto__', {
-      value: { polluted: true },
-      enumerable: true,
-      configurable: true,
-      writable: true,
+  // Iterates RESERVED_PROTO_KEYS itself so the test cannot drift when the set
+  // changes. Each key is forced as an OWN enumerable data property
+  // (JSON.parse / Object.defineProperty path); a plain spread or Object.assign
+  // would invoke the prototype SETTER for `__proto__` rather than copying an
+  // own property, defeating the test setup.
+  for (const key of RESERVED_PROTO_KEYS) {
+    it(`rejects reserved key '${key}' at definition time`, () => {
+      const evilSpec: Record<string, unknown> = {
+        name: 'evil',
+        dimension: LENGTH,
+        ...linear(1),
+      };
+      Object.defineProperty(evilSpec, key, {
+        value: { polluted: true },
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
+      expect(() => defineUnit(evilSpec as unknown as Parameters<typeof defineUnit>[0])).toThrow(
+        /Reserved key/,
+      );
     });
-    expect(() => defineUnit(evilSpec as unknown as Parameters<typeof defineUnit>[0])).toThrow(
-      /Reserved key/,
-    );
-  });
+  }
 });
 
 describe('forge: within-dimension', () => {

@@ -25,8 +25,16 @@ export interface ValidationFailure {
  * (TS `readonly` is a compile-time fiction; freeze is the runtime guarantee).
  * `inputs` is also a defensive copy of the caller's input object so a
  * downstream catcher cannot poison the original via `err.inputs.foo = ...`.
- * `failures` is similarly snapshotted. Cost lands only on the failure path
- * (the converter's happy path never constructs a `ValidationError`).
+ * The freeze is **shallow**: nested objects under `inputs` are not
+ * deep-frozen (T defaults to native `number`, so this is rarely material;
+ * future precision-typed kits ship their own values). `failures` is
+ * similarly snapshotted. Cost lands only on the failure path (the
+ * converter's happy path never constructs a `ValidationError`).
+ *
+ * **Robust against malicious inputs:** the shallow copy uses
+ * `safeShallowCopy` (below), which catches throws from property getters
+ * so a hostile `{ get foo() { throw 'gotcha'; } }` cannot mask the real
+ * validation failure with a constructor crash.
  */
 export class ValidationError extends Error {
   override readonly name = 'ValidationError';
@@ -38,11 +46,30 @@ export class ValidationError extends Error {
     inputs: Readonly<Record<string, unknown>>,
   ) {
     const frozenFailures = Object.freeze(failures.slice());
-    const frozenInputs = Object.freeze({ ...inputs });
+    const frozenInputs = Object.freeze(safeShallowCopy(inputs));
     super(buildMessage(frozenFailures, frozenInputs));
     this.failures = frozenFailures;
     this.inputs = frozenInputs;
   }
+}
+
+/**
+ * Shallow copy of `src` that survives throwing property getters. Reading a
+ * value via `src[k]` invokes the getter; if it throws, we substitute a
+ * `'[throwing getter]'` sentinel rather than letting the throw escape and
+ * mask the original `ValidationError`. Same defensive class as the per-value
+ * stringifier below.
+ */
+function safeShallowCopy(src: Readonly<Record<string, unknown>>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const k of Object.getOwnPropertyNames(src)) {
+    try {
+      out[k] = src[k];
+    } catch {
+      out[k] = '[throwing getter]';
+    }
+  }
+  return out;
 }
 
 /**

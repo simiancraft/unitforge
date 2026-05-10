@@ -106,11 +106,17 @@ export interface Conversion<
  * Configuration for a single `forge()` call. Plain TypeScript interface;
  * consumers construct as object literal at the call site.
  *
- * `via` and `validate` are typed loosely on this standalone interface; the
- * `forge` overloads re-narrow them via intersection with the call's inferred
- * `Inputs`/`Output`. A consumer who hovers `ForgeConfig.via` on the standalone
- * interface sees the loose type; a consumer who hovers inside an actual
- * `forge(...)` call gets the narrowed shape.
+ * **For type annotations on userland wrappers,** this is the right type to
+ * import: e.g., `function myWrapper<I,O,T>(units: ..., cfg: ForgeConfig<T>)`.
+ * The `forge` overloads themselves do NOT take `ForgeConfig<T>` directly —
+ * each overload inlines a narrow config shape so `via` can be tied to the
+ * call's inferred `Inputs`/`Output`. **Caveat for cross-dim wrappers:** if
+ * your wrapper passes `cfg` straight into a CROSS-DIM `forge()` call, the
+ * loose `via?: Conversion<Record<string, Dimension>, ...>` on this interface
+ * will not satisfy the narrow `via: Conversion<Inputs, Output, T>` the
+ * cross-dim overload requires. Either narrow `via` in your wrapper's own
+ * generic signature, or write the inline `{ via, validate?, precision?,
+ * memoize? }` shape directly.
  */
 export interface ForgeConfig<T = number> {
   /** Cross-dim conversion value. Required when `from` is object-shaped. */

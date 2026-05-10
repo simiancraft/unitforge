@@ -1,5 +1,13 @@
-/** Reserved JS keys that prototype-pollution attacks rely on. */
-const RESERVED_PROTO_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'prototype']);
+/**
+ * Reserved JS keys that prototype-pollution attacks rely on. Exported so the
+ * test suite can iterate over the canonical set rather than hand-mirror it
+ * (which silently drifts when the set changes).
+ */
+export const RESERVED_PROTO_KEYS: ReadonlySet<string> = new Set([
+  '__proto__',
+  'constructor',
+  'prototype',
+]);
 
 /**
  * Returns a sanitized shallow copy of `spec`.

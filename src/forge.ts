@@ -1,11 +1,4 @@
-import {
-  buildCacheKey,
-  DEFAULT_MEMO_CAP,
-  MEMO_CAP_MAX,
-  roundIfNumber,
-  validateMemoCap,
-  writeCache,
-} from './lib/memoize.js';
+import { buildCacheKey, roundIfNumber, validateMemoCap, writeCache } from './lib/memoize.js';
 import { safeCopy } from './lib/safeCopy.js';
 import { runValidators, ValidationError, type ValidationFailure } from './lib/validation.js';
 import type {
@@ -16,10 +9,6 @@ import type {
   Unit,
   ValidatorMap,
 } from './types.js';
-
-// Re-export memoize-cap constants from forge.ts so the public barrel can
-// continue to import them from here (the canonical home is lib/memoize.ts).
-export { DEFAULT_MEMO_CAP, MEMO_CAP_MAX };
 
 // ─── Public overload set ─────────────────────────────────────────────────
 // (See PLANNING.md "Public type sketch (canonical)" for the source of truth.)
