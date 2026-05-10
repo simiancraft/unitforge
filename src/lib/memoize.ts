@@ -11,7 +11,14 @@
 /** NUL byte; used as the cache-key field separator (JSON-safe stringify output cannot contain it). */
 export const CACHE_KEY_SEP = '\x00';
 
-/** Hard upper bound on `ForgeConfig.memoize` cache cap. */
+/**
+ * Hard upper bound on `ForgeConfig.memoize` cache cap. This is the
+ * library's validation ceiling, NOT a recommended cap value; setting
+ * `memoize: MEMO_CAP_MAX` is almost always wrong (you would dedicate
+ * an unbounded amount of memory to the cache). Use `DEFAULT_MEMO_CAP`
+ * or a workload-derived integer instead. Exported for diagnostics and
+ * for tests that exercise the upper-bound rejection path.
+ */
 export const MEMO_CAP_MAX = 1_048_576;
 
 /**

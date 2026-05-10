@@ -36,17 +36,23 @@ npm install unitforge
 # or:  pnpm add unitforge
 ```
 
-## Planned API
+## API (current; geometry kit only)
 
 ```ts
 import { forge } from 'unitforge';
-import { foot, inch } from 'unitforge/kits/imperial';
+import { meter, centimeter } from 'unitforge/kits/geometry';
 
-const toInches = forge(foot, inch);
-toInches(5); // 60
+const toCm = forge(meter, centimeter);
+toCm(1.5); // 150
 ```
 
-Three primitives (`defineUnit`, `defineConversion`, `forge`); three additive registries (dimensions, kits, conversions); first-class custom dimensions and packaging units; fully tree-shakeable. The `forge(from, to, ForgeConfig?)` verb returns a converter function; cross-dimensional conversions pass a `defineConversion` value via `ForgeConfig.via`. See [PLANNING.md](./PLANNING.md) for the full design and the canonical type sketch.
+Three primitives (`defineUnit`, `defineConversion`, `forge`); three additive registries (dimensions, kits, conversions); first-class custom dimensions and packaging units; tree-shakeable per-export under `sideEffects: false`. The `forge(from, to, ForgeConfig?)` verb returns a converter function; cross-dimensional conversions pass a `defineConversion` value via `ForgeConfig.via`. See [PLANNING.md](./PLANNING.md) for the full design and the canonical type sketch (including the four other kits planned for v1).
+
+## Community
+
+- Bugs and feature requests: [GitHub issues](https://github.com/simiancraft/unitforge/issues)
+- Security: please use [private vulnerability reporting](https://github.com/simiancraft/unitforge/security/advisories/new); see [SECURITY.md](./SECURITY.md)
+- Contributing: [CONTRIBUTING.md](./CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
 
 ## License
 
