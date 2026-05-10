@@ -1,6 +1,6 @@
 # unitforge — Planning Document
 
-A planning artifact captured at project inception. This document is the source of truth for design intent until the README, AGENTS.md, and code itself catch up. When this document and the code disagree, update this document; when this document and the README disagree, the README wins.
+A planning artifact captured at project inception. **For pre-1.0**, this document is the live source of truth for design intent; the README is a slower-moving public artifact and any contradiction between them is resolved by updating the README to match. When this document and the code disagree, update this document. Post-1.0, the README's published API contract takes precedence.
 
 ## Project metadata
 
@@ -446,7 +446,7 @@ forge(
   { volume: gallon, density: poundPerGallon },
   kilogram,
   {
-    with: massFromVolumeAndDensity,
+    via: massFromVolumeAndDensity,
     validate: { volume: (v) => v <= 1000 || 'this app caps at 1000 gal' },
     memoize: true,
     precision: 2,
@@ -826,15 +826,15 @@ The following items must be resolved on paper before `src/` scaffolding begins. 
 
 3. **~~`toBase` shape for non-linear units.~~ Resolved 2026-05-09.** `Unit` carries TWO function fields, `toBase: (value: number) => number` and `fromBase: (base: number) => number`. Both are always functions; never auto-derived from each other; mirrors the "each direction of a cross-dim conversion is its own declared `defineConversion`" principle. Linear units are not special-cased in the type; their `toBase`/`fromBase` are trivial multiply/divide functions. A `linear(scale)` helper ships alongside `defineUnit` at v1 to reduce boilerplate on the common case (returns the `{ toBase, fromBase }` pair from a scale factor).
 
-4. **`Conversion` value identity.** Two structurally-identical `defineConversion` values are interchangeable to the type system; passing the wrong one type-checks but produces silent-wrong physics. Decide whether to brand `Conversion` with a stamped id (filename, UUID, or symbol) so `via:` carries identity not just shape, and whether `forge` runtime-asserts the identity matches at wiring time.
+4. **~~`Conversion` value identity.~~ Resolved 2026-05-09: dismissed.** Two named functions with the same signature being interchangeable is ordinary JavaScript (`Math.sin` and `Math.cos` have identical signatures and nobody asks for them to be branded). The "wrong import" failure mode is universal to all named-function code; it is not a unique unitforge problem and the library should not try to prevent it. ESM import-as-rename and barrel-export-rename handle naming polysemy cleanly (see Polysemy and kit composition section). No type brand, no runtime id, no documentation gymnastics.
 
-5. **Memoization defaults and bounds.** Eviction policy, default LRU cap, max allowable cap, NaN/±Infinity/-0 handling, and the `{memoize: true} | {memoize: {max: N}}` polymorphism. Either ship a fully-spec'd memoization in v1 or reserve the field name and ship the implementation in 0.x.
+5. **~~Memoization defaults and bounds.~~ Resolved 2026-05-09.** `memoize` is a single-typed `number` field (not a `boolean | object` discriminated union); `DEFAULT_MEMO_CAP = 1024` ships as a constant for ergonomic opt-in; bounds `[0, 1_048_576]` enforced at `forge` time; cache is a per-converter native `Map`; NaN never-cached, ±Infinity cached, `-0` coerced to `0` in the key. Full spec is documented under "Memoization as a `ForgeConfig` option" in the Open questions section (kept for traceability).
 
-6. **README ↔ PLANNING.md source-of-truth rule.** Doc currently states "when this document and the README disagree, the README wins." For pre-1.0, this is backwards (README is the slowest-to-update artifact). Either invert the rule for pre-1.0 or commit to README updates landing in the same PR as PLANNING updates. Pick one and write it down.
+6. **~~README ↔ PLANNING.md source-of-truth rule.~~ Resolved 2026-05-09: inverted for pre-1.0.** Doc preamble now states PLANNING is the live source of truth pre-1.0; the README catches up to PLANNING, not the reverse. Post-1.0, the published README API contract takes precedence (because consumers depend on it).
 
 ## Open questions to resolve before v1
 
-1. **~~`ForgeConfig` field name for the cross-dim conversion.~~ Resolved 2026-05-09: `with:`.** `via:` was the working name while the value was a single function reference. Once the value became a structured spec (validators + compute + future fields), `with:` reads more naturally ("forge this converter *with* this conversion spec"). Reserved word in JS strict mode but legal as an object key.
+1. **~~`ForgeConfig` field name for the cross-dim conversion.~~ Resolved 2026-05-09: `via:`** (briefly renamed to `with:` mid-design, then reverted; `with` is SQL-shaped, is a JS strict-mode reserved word, and reads as "construct with this thing" in a way that overstates how complex the right-hand side is. `via:` reads as "convert via this rule," which matches intent.)
 2. **Vocabulary review across the whole API surface.** Settle on a unified vocabulary for the `define*` factories, the `Forge*` types, and the field names inside `ForgeConfig`. Goal is internal consistency, not just per-symbol rightness. Working instinct: keep `defineConversion`; everything else open.
 3. **~~`definePack` re-resolution.~~ Resolved 2026-05-09: dropped.** See pre-coding blocker #2.
 4. **~~`format` API surface.~~ Resolved 2026-05-09: dropped entirely.** No standalone `format` primitive, no `ForgeConfig.format` field, no `.format()` method on the converter. The library does no string work. Consumers who need formatted output wrap the converter in a one-line userland helper. Sharper library identity than the half-step "optional convenience" version.
@@ -861,7 +861,7 @@ The following items must be resolved on paper before `src/` scaffolding begins. 
 Numerics libraries live or die on test discipline. The discipline below is non-negotiable from day one of `src/`.
 
 - **Coverage target: 100% line + branch.** Matches chromonym discipline. Codecov gate.
-- **Unit tests** for each primitive: `defineUnit`, `defineConversion`, `forge` (within-dim and cross-dim cases), `format` (when its surface lands), `ValidationError` construction and `.message` templating.
+- **Unit tests** for each primitive: `defineUnit`, `defineConversion`, `forge` (within-dim and cross-dim cases), `linear` helper, `ValidationError` construction and `.message` templating.
 - **Property tests using `fast-check`** (already in devDependencies) for the load-bearing invariants:
   - **Round-trip identity within precision:** for any unit pair `(a, b)` in the same dimension, `forge(a, b)(forge(b, a)(x)) ≈ x`.
   - **Identity:** `forge(a, a)(x) === x` for every unit `a`.
@@ -887,7 +887,7 @@ Semver applies; the question is what counts as a breaking change for a registry 
 | Renaming a kit subpath (e.g., `kits/inventory` → `kits/manufacturing`) | major |
 | Renaming a unit's exported name | major |
 | Changing a unit's `toBase` (other than bug fix) | major |
-| Changing the public API surface (`defineUnit`, `defineConversion`, `forge`, `format` signatures) | major |
+| Changing the public API surface (`defineUnit`, `defineConversion`, `forge`, `linear` signatures) | major |
 | Changing a `defineConversion`'s `compute` (semantics change, not bug fix) | major |
 | Bug fix in `compute` that changes returned values | patch (with prominent CHANGELOG entry) |
 | Changing the wording of a `ValidationError.failures[].message` string | patch (strings are unstable; consumers must not grep them) |
@@ -902,7 +902,7 @@ Deprecation policy: a unit, kit, or conversion marked deprecated stays exported 
 Repo, license, community-health files, and CI workflows are already in place (status as of 2026-05-09). Remaining:
 
 1. Resolve the open questions above to a degree sufficient to commit to type signatures (especially #2 vocabulary review, #3 `definePack` re-resolution, #6 generics for `forge`, #8 validators subpath, #9 memoization v1-vs-post-v1).
-2. Scaffold `src/` skeleton against the new API: `index.ts` barrel, `dimensions.ts`, `types.ts`, stub `forge.ts`, `defineUnit.ts`, `defineConversion.ts`, `format.ts`, `errors.ts` (for `ValidationError`), and empty `kits/` and `conversions/` folders.
+2. Scaffold `src/` skeleton against the new API: `index.ts` barrel, `dimensions.ts`, `types.ts`, stub `forge.ts`, `defineUnit.ts`, `defineConversion.ts`, `errors.ts` (for `ValidationError`), `lib/decimal.ts` (peer-dep wrapper), and empty `kits/` and `conversions/` folders.
 3. Scaffold `demo/` as a vite app with placeholder content.
 4. Implement v1: `si`, `imperial`, `cooking`, `inventory`, `pharmacy` kits and supporting conversions.
 5. Write README hero block; the test of design coherence is whether the hero block fits in under 30 lines and reads cleanly.

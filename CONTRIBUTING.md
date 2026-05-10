@@ -20,7 +20,7 @@ bun install
 | Task | Command |
 |---|---|
 | Run all tests | `bun test` |
-| Run a single test file | `bun test test/convert.test.ts` |
+| Run a single test file | `bun test test/forge.test.ts` |
 | Typecheck | `bun run typecheck` |
 | Lint | `bun run lint` |
 | Auto-fix lint | `bun run lint:fix` |
