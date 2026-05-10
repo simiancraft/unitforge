@@ -562,6 +562,8 @@ unitforge/
 │   ├── defineUnit.ts
 │   ├── defineConversion.ts
 │   ├── types.ts                    // Dimension, Unit<D, T=number>, Conversion<I, O, T=number>, ForgeConfig interfaces
+│   ├── internal/
+│   │   └── safeCopy.ts             // proto-pollution-rejecting shallow copy used by all factory entry points
 │   ├── lib/
 │   │   └── decimal.ts              // peer-dep wrapper for decimal.js (validates pattern at v1; no kit uses it yet)
 │   ├── kits/
@@ -681,6 +683,25 @@ These rules are non-negotiable through v1; they are what holds the design togeth
 9. **Granular per-unit files.** Each kit is a folder of one-unit-per-file modules with a barrel `index.ts`. Whole-kit `import *` works for convenience; named imports work for tree-shaking.
 10. **Naming convention enforced by lint.** A small dev-only checker greps for `defineUnit`/`defineConversion` calls and the export they're assigned to, verifying that the export name matches the filename in camelCase. `defineUnit` carries a `name:` field whose value must also match. (`defineConversion` no longer carries a `name:` field; the export-name + filename pair is the contract.) Initial form: ~50 lines of regex; ship as project pre-commit hook; extract as `unitforge-lint` if it earns its keep.
 11. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO for pharmaceutical IU, BIPM for SI definitions) cite source and version-pin in source comments. NOTICE.md tracks attribution. Same discipline visible in chromonym issues #25 (Tailwind v4.0 pin), #26 (Material trademark), #27 (Farrow & Ball "unofficial reference" disclaimer).
+
+12. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/internal/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable keys and throws a clear definition-time error if any is one of the JavaScript reserved keys (`__proto__`, `constructor`, `prototype`).
+
+    ```ts
+    // src/internal/safeCopy.ts
+    const RESERVED = new Set(['__proto__', 'constructor', 'prototype']);
+
+    export function safeCopy<T extends Record<string, unknown>>(spec: T): T {
+      const copy = { ...spec };
+      for (const key of Object.keys(copy)) {
+        if (RESERVED.has(key)) {
+          throw new Error(`[unitforge] Reserved key '${key}' is not allowed in factory input.`);
+        }
+      }
+      return copy;
+    }
+    ```
+
+    All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `defineConversion.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus an `Object.create(null)` target on the validation-failure path. The hot-path converter does NOT call `safeCopy`; it only reads from inputs, which is benign (no mutation, no prototype-chain assignment, no pollution propagation). Cost lands entirely on definition, forge-creation, and validation-failure paths; the converter's per-call overhead is unchanged.
 
 ## Numeric precision
 
