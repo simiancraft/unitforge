@@ -35,8 +35,27 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
+      "import": "./dist/index.js"
+    },
+    "./dimensions": {
+      "types": "./dist/dimensions.d.ts",
+      "import": "./dist/dimensions.js"
+    },
+    "./kits/*": {
+      "types": "./dist/kits/*/index.d.ts",
+      "import": "./dist/kits/*/index.js"
+    },
+    "./kits/*/*": {
+      "types": "./dist/kits/*/*.d.ts",
+      "import": "./dist/kits/*/*.js"
+    },
+    "./conversions/*": {
+      "types": "./dist/conversions/*.d.ts",
+      "import": "./dist/conversions/*.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "import": "./dist/errors.js"
     },
     "./package.json": "./package.json"
   },
