@@ -433,15 +433,11 @@ export interface Unit<D extends Dimension = Dimension, T = number> {
   readonly base?: boolean;
 }
 
-// Conceptual type; both `from` and `to` slots of `forge` accept either shape.
-// The three concrete `forge` overloads below instantiate this union via mapped
-// types `{ [K in keyof Inputs]: Unit<Inputs[K], T> }` so per-key dimensions
-// thread through; this alias is exported for consumer-side helper types
-// (e.g., `function helper(slot: UnitContainer): ...`) and is referenced by the
-// overloads conceptually, not literally.
-export type UnitContainer<T = number> =
-  | Unit<Dimension, T>
-  | Record<string, Unit<Dimension, T>>;
+// `forge`'s `from` and `to` slots accept either a single `Unit` or an
+// object whose properties are `Unit`s; the three overloads below encode
+// the four combinations directly. No `UnitContainer` alias is exported,
+// because the overloads do not literally use one and an exported alias
+// would be public surface that the actual API never references.
 
 // ─── Validators ──────────────────────────────────────────────────────────
 
@@ -827,7 +823,7 @@ Most surveyed libraries hardcode the atomic unit per dimension; unitmath is the 
 
 Same pattern as chromonym shipping multiple palette variants without a runtime config flag. Consumers pick which atomic they want by picking which kit they import. No instance state; no runtime configuration; tree-shakes per-import.
 
-Atomic-variant kits **rename their exports** rather than shadowing canonical base units; e.g., `kits/si-mm-atomic` exports `millimeter` (the local base) plus aliases like `meterMm` for clarity, NOT a second `meter`. This preserves the discipline rule that one and only one unit per dimension carries `base: true` (rule #5a below) and avoids cross-kit ambiguity over which `meter` is the base.
+Atomic-variant kits **rename their exports** rather than shadowing canonical base units; e.g., `kits/si-mm-atomic` exports `millimeter` (the local base) plus aliases like `meterMm` for clarity, NOT a second `meter`. This preserves the discipline rule that one and only one unit per dimension carries `base: true` (discipline rule #6) and avoids cross-kit ambiguity over which `meter` is the base.
 
 If runtime configuration of atomic later proves necessary, it can be added as an option to `defineUnit` or `ForgeConfig`, but the default path is "import the kit that matches your storage."
 
@@ -897,7 +893,7 @@ Deprecation policy: a unit, kit, or conversion marked deprecated stays exported 
 
 Only one item remains genuinely open before `src/` scaffolding can begin; the rest were resolved during design and are summarized in "Appendix: design history".
 
-1. **Lock `src/types.ts` against the "Public type sketch (canonical)" subsection** of "API shape" above. The sketch is the source of truth for all public types (`Dimension`, `Unit<D, T = number>`, `UnitContainer<T>`, `Conversion<I, O, T = number>`, `ValidatorMap<I, T>`, `ForgeConfig<T>`, the three `forge` overloads, `ValidationError`, `linear`, `DEFAULT_MEMO_CAP`). The `expect-type` checks listed in that subsection define the verification gate: object-shaped `from` narrowing, extra-key rejection, dimension-brand threading, uniform-`T`, mixed-`T` rejection, missing-`via` rejection, key/dimension misalignment rejection, object-output `to`-shape matching. No other gap should remain on the type surface before scaffolding.
+1. **Lock `src/types.ts` against the "Public type sketch (canonical)" subsection** of "API shape" above. The sketch is the source of truth for all public types (`Dimension`, `Unit<D, T = number>`, `Conversion<I, O, T = number>`, `ValidatorMap<I, T>`, `ForgeConfig<T>`, the three `forge` overloads, `ValidationError`, `linear`, `DEFAULT_MEMO_CAP`). The `expect-type` checks listed in that subsection define the verification gate: object-shaped `from` narrowing, extra-key rejection, dimension-brand threading, uniform-`T`, mixed-`T` rejection, missing-`via` rejection, key/dimension misalignment rejection, object-output `to`-shape matching. No other gap should remain on the type surface before scaffolding.
 
 ## Open questions to resolve before v1
 
@@ -917,8 +913,8 @@ Repo, license, community-health files, and CI workflows are already in place. Re
 4. Wire `--provenance` into `.releaserc.json` and CI publish step (currently only documented).
 5. **Wire the wildcard `exports` map into `package.json`** alongside the first kit scaffold (currently `package.json` only ships `.` and `./package.json`; the documented map under "package.json#exports shape" must land in the same PR as the first kit so consumers can resolve `unitforge/kits/<name>` paths).
 6. Implement v1: `si`, `imperial`, `cooking`, `inventory`, `pharmacy` kits and supporting conversions.
-8. **README rewrite is deferred until after v1 ships.** The pre-1.0 README is intentionally minimal (a placeholder API sketch and a "pre-alpha, do not depend on" warning). The marketing-grade README; competitive positioning, kit roster surfaced with real names, hero block with a working cross-dim example, demo GIFs, performance numbers, Scorecard badge; lands once we have real kits to name, real benchmarks to cite, and a working demo to GIF. Writing it earlier means writing claims we can't yet substantiate. The "Beyond unit conversion" framing, the cross-domain pitch, and the kit-by-kit quick-tour all wait for this rewrite.
-9. **Repo settings to enable in GitHub UI / via `gh api`** (one-time housekeeping, not files):
+7. **README rewrite is deferred until after v1 ships.** The pre-1.0 README is intentionally minimal (a placeholder API sketch and a "pre-alpha, do not depend on" warning). The marketing-grade README (competitive positioning, kit roster surfaced with real names, hero block with a working cross-dim example, demo GIFs, performance numbers, Scorecard badge) lands once we have real kits to name, real benchmarks to cite, and a working demo to GIF. Writing it earlier means writing claims we can't yet substantiate. The "Beyond unit conversion" framing, the cross-domain pitch, and the kit-by-kit quick-tour all wait for this rewrite.
+8. **Repo settings to enable in GitHub UI / via `gh api`** (one-time housekeeping, not files):
    - Branch protection or ruleset on `main` (the release workflow at `ci.yml:78-89` already provisions an App-token bypass path that assumes the ruleset exists).
    - Private vulnerability reporting (`SECURITY.md` already routes there; toggle must be on).
    - Dependabot security updates (separate from `.github/dependabot.yml`'s actions-ecosystem coverage).
