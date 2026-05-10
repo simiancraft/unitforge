@@ -159,7 +159,7 @@ export const spoolOfTape = defineUnit({
 export const lengthFromSpoolOfTape = defineConversion({
   inputs:  { spools: COUNT },
   output:  LENGTH,
-  compute: ({ spools }) => spools * 2.54,  // 100 in = 2.54 m (LENGTH base)
+  compute: ({ spools }) => spools * 2.54,  // 1 spool = 100 in = 2.54 m (LENGTH base)
 });
 
 // Use:
@@ -170,6 +170,10 @@ forge({ spools: spoolOfTape }, inch, { via: lengthFromSpoolOfTape })({ spools: 5
 **Nested packs: case → cans → liters.** Pack hierarchies compose because COUNT→COUNT conversions ride on `toBase`/`fromBase` (no `defineConversion` needed within COUNT), and only the cross-dim leg (COUNT→VOLUME) requires a conversion.
 
 ```ts
+import { defineUnit, defineConversion, forge, linear } from 'unitforge';
+import { COUNT, VOLUME } from 'unitforge/dimensions';
+import { liter } from 'unitforge/kits/si';
+
 // 1 case = 24 cans (COUNT base "each"). 1 can = 0.355 L (12 fl oz).
 export const caseOfSoda = defineUnit({
   name: 'case-of-soda', dimension: COUNT,
@@ -322,7 +326,10 @@ const footToInch = forge(foot, inch);
 footToInch(5); // => 60
 
 // 2. Cross-dimensional, single output: from is an object of Units, to is a Unit.
+import { gallon, poundPerGallon, cup } from 'unitforge/kits/imperial';
+import { kilogram, gram } from 'unitforge/kits/si';
 import { massFromVolumeAndDensity } from 'unitforge/conversions/massFromVolumeAndDensity';
+
 const galPpgToKg = forge(
   { volume: gallon, density: poundPerGallon },
   kilogram,
@@ -331,7 +338,9 @@ const galPpgToKg = forge(
 galPpgToKg({ volume: 5, density: 8.3 });
 
 // 3. Cross-dimensional, object output: from and to are both objects of Units.
+import { screenW, screenH, cssW, cssH } from 'unitforge/kits/screen';
 import { screenPxToCssPx } from 'unitforge/conversions/screenPxToCssPx';
+
 const resize = forge(
   { width: screenW, height: screenH },
   { width: cssW,    height: cssH    },
@@ -383,8 +392,28 @@ This is the single source of truth for the public type surface. The implementer 
 // Branded-string union: built-in literals preserve autocomplete, custom strings accepted.
 export type Dimension =
   | typeof LENGTH
+  | typeof AREA
+  | typeof VOLUME
   | typeof MASS
-  | /* ... all built-ins from src/dimensions.ts ... */
+  | typeof WEIGHT
+  | typeof TIME
+  | typeof VELOCITY
+  | typeof ACCELERATION
+  | typeof FORCE
+  | typeof PRESSURE
+  | typeof ENERGY
+  | typeof POWER
+  | typeof DENSITY
+  | typeof TEMPERATURE
+  | typeof ENTROPY
+  | typeof VOLTAGE
+  | typeof CURRENT
+  | typeof RESISTANCE
+  | typeof AMOUNT
+  | typeof LUMINOUS_INTENSITY
+  | typeof COUNT
+  | typeof INFORMATION
+  | typeof ANGLE
   | typeof FREQUENCY
   | (string & {});
 
@@ -693,6 +722,8 @@ Granular per-unit-per-file requires a wildcard `exports` map; a hand-maintained 
 
 ESM-only (`"type": "module"`, no `require` condition). Floor `engines.node: ">=20"` and `moduleResolution: "node16" | "nodenext" | "bundler"` for consumers; document loudly in README.
 
+**Wildcard specificity.** Node's exports resolver prefers the more-specific pattern. `unitforge/kits/imperial` matches `./kits/*` (resolves to the kit's barrel `dist/kits/imperial/index.js`); `unitforge/kits/imperial/foot` matches `./kits/*/*` (resolves to the per-unit file `dist/kits/imperial/foot.js`). The two patterns coexist because the resolver picks the longer-matching one; `publint` and `attw` checks should assert both call shapes resolve correctly.
+
 v1 ships with **no peer dependencies**. When a future precision-requiring kit ships, that kit declares its precision library as `peerDependenciesMeta.optional: true` (see "Numeric precision > Peer-dependency wrapper pattern" below). Without `optional: true`, every default `npm install unitforge` user would see a missing-peer warning.
 
 ## Discipline rules
@@ -829,6 +860,7 @@ Numerics libraries live or die on test discipline. Non-negotiable from day one o
 - **Memo cache tests:** key collision impossibility, eviction policy correctness, NaN/Infinity/-0 handling, precision-as-cache-bucket behavior.
 - **Type-level tests** using `expect-type` or `tsd`: confirm `forge` generic inference, key/dimension misalignment compile errors, `Dimension` autocomplete preservation, mixed-`T` rejection.
 - **Bench harness in `bench/`** with at least three benchmarks (single-unit fast path, cross-dim 2-input cold path, cross-dim 2-input + memo). Numbers published in README; CI fails on regression > 20%.
+- **Packaging gates in `prepublishOnly` and CI:** `publint` validates `package.json` shape; `attw --profile esm-only` validates declaration files and ESM-only conformance. Both are already wired in `package.json` scripts; treat as required CI checks. Discipline rule: do not strip them.
 - **Peer-dep pattern test** at `test/peer-dep-pattern.test.ts`: exercises the `src/lib/decimal.ts` wrapper end-to-end with a one-off Decimal-typed `defineUnit` + `forge`.
 
 ## Versioning and stability
@@ -877,9 +909,15 @@ Repo, license, community-health files, and CI workflows are already in place. Re
 2. Scaffold `src/` skeleton: `index.ts` barrel, `dimensions.ts`, `types.ts`, stub `forge.ts`, `defineUnit.ts`, `defineConversion.ts`, `errors.ts`, `internal/safeCopy.ts`, `lib/decimal.ts`, and empty `kits/` and `conversions/` folders.
 3. Scaffold `demo/` as a vite app with placeholder content.
 4. Wire `--provenance` into `.releaserc.json` and CI publish step (currently only documented).
-5. Implement v1: `si`, `imperial`, `cooking`, `inventory`, `pharmacy` kits and supporting conversions.
-6. **README rewrite is deferred until after v1 ships.** The pre-1.0 README is intentionally minimal (a placeholder API sketch and a "pre-alpha, do not depend on" warning). The marketing-grade README — competitive positioning, kit roster surfaced with real names, hero block with a working cross-dim example, demo GIFs, performance numbers, Scorecard badge — lands once we have real kits to name, real benchmarks to cite, and a working demo to GIF. Writing it earlier means writing claims we can't yet substantiate. The "Beyond unit conversion" framing, the cross-domain pitch, and the kit-by-kit quick-tour all wait for this rewrite.
-7. File issues for queued kits (analog of chromonym #21–#30).
+5. **Wire the wildcard `exports` map into `package.json`** alongside the first kit scaffold (currently `package.json` only ships `.` and `./package.json`; the documented map under "package.json#exports shape" must land in the same PR as the first kit so consumers can resolve `unitforge/kits/<name>` paths).
+6. Implement v1: `si`, `imperial`, `cooking`, `inventory`, `pharmacy` kits and supporting conversions.
+7. **README rewrite is deferred until after v1 ships.** The pre-1.0 README is intentionally minimal (a placeholder API sketch and a "pre-alpha, do not depend on" warning). The marketing-grade README — competitive positioning, kit roster surfaced with real names, hero block with a working cross-dim example, demo GIFs, performance numbers, Scorecard badge — lands once we have real kits to name, real benchmarks to cite, and a working demo to GIF. Writing it earlier means writing claims we can't yet substantiate. The "Beyond unit conversion" framing, the cross-domain pitch, and the kit-by-kit quick-tour all wait for this rewrite.
+8. **Repo settings to enable in GitHub UI / via `gh api`** (one-time housekeeping, not files):
+   - Branch protection or ruleset on `main` (the release workflow at `ci.yml:78-89` already provisions an App-token bypass path that assumes the ruleset exists).
+   - Private vulnerability reporting (`SECURITY.md` already routes there; toggle must be on).
+   - Dependabot security updates (separate from `.github/dependabot.yml`'s actions-ecosystem coverage).
+   - Secret scanning + push protection.
+9. File issues for queued kits (analog of chromonym #21–#30).
 
 ## Appendix: design history
 
