@@ -161,6 +161,31 @@ describe('forge: cross-dimensional (object input, single output)', () => {
     }).toThrow();
   });
 
+  it('survives an input with a throwing property getter (safeShallowCopy)', () => {
+    // A hostile input whose property getter throws would otherwise crash the
+    // ValidationError constructor's defensive copy and mask the real failure.
+    // safeShallowCopy catches per-key access throws and substitutes a sentinel.
+    const toArea = forge({ length: meter, width: meter }, squareMeter, {
+      via: areaFromLengthAndWidth,
+    });
+    const hostile: Record<string, unknown> = { width: -3 };
+    Object.defineProperty(hostile, 'length', {
+      enumerable: true,
+      configurable: true,
+      get: () => {
+        throw new Error('gotcha');
+      },
+    });
+    let caught: ValidationError | null = null;
+    try {
+      toArea(hostile as unknown as { length: number; width: number });
+    } catch (err) {
+      caught = err instanceof ValidationError ? err : null;
+    }
+    if (!caught) throw new Error('expected ValidationError; getter throw should not escape');
+    expect(caught.inputs.length).toBe('[throwing getter]');
+  });
+
   it('error message handles BigInt and circular refs in input values without throwing', () => {
     const toArea = forge({ length: meter, width: meter }, squareMeter, {
       via: areaFromLengthAndWidth,

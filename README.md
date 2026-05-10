@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://simiancraft.github.io/unitforge/">
-    <img src="https://img.shields.io/badge/▶%20Live%20demo-pre--alpha%20placeholder-f97316?style=for-the-badge" alt="Live demo" />
+    <img src="https://img.shields.io/badge/▶%20Live%20demo-pre--1.0%20placeholder-f97316?style=for-the-badge" alt="Live demo" />
   </a>
 </p>
 
@@ -47,6 +47,16 @@ toCm(1.5); // 150
 ```
 
 Three primitives (`defineUnit`, `defineConversion`, `forge`); three additive registries (dimensions, kits, conversions); first-class custom dimensions and packaging units; tree-shakeable per-export under `sideEffects: false`. The `forge(from, to, ForgeConfig?)` verb returns a converter function; cross-dimensional conversions pass a `defineConversion` value via `ForgeConfig.via`. See PLANNING.md for the v1 design intent (including the four other kits planned for v1).
+
+### Subpath imports
+
+| Subpath | Exports |
+| --- | --- |
+| `unitforge` | the API barrel: `defineUnit`, `defineConversion`, `forge`, `linear`, `ValidationError`, `DEFAULT_MEMO_CAP`, `MEMO_CAP_MAX`, plus types |
+| `unitforge/dimensions` | `LENGTH`, `AREA`, `DIMENSIONS`, `Dimension` type |
+| `unitforge/kits/<kit>` | every unit and conversion shipped by `<kit>` (currently only `geometry`) |
+| `unitforge/validation` | `ValidationError`, `ValidationFailure` type |
+| `unitforge/version` | `VERSION: string` (read from `package.json` at runtime; on its own subpath because the JSON import would otherwise inline `package.json` into every consumer bundle) |
 
 ## Community
 

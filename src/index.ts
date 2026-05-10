@@ -20,3 +20,4 @@ export type {
 // VERSION lives on its own subpath (`unitforge/version`) so the JSON-import
 // cost (~2 kB inlined package.json in consumer bundles) is paid only by
 // consumers who explicitly want it. The main barrel stays bloat-free.
+// Documented in README under "API" so consumers reading docs find it.

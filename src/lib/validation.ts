@@ -56,11 +56,18 @@ export class ValidationError extends Error {
 /**
  * Shallow copy of `src` that survives throwing property getters. Reading a
  * value via `src[k]` invokes the getter; if it throws, we substitute a
- * `'[throwing getter]'` sentinel rather than letting the throw escape and
- * mask the original `ValidationError`. Same defensive class as the per-value
- * stringifier below.
+ * `'[throwing getter]'` sentinel rather than letting the throw escape.
+ * Same defensive class as the per-value stringifier below.
+ *
+ * Used in two places: at the top of every cross-dim converter call (so all
+ * downstream operations: cache-key building, validator execution, base
+ * normalization, see sanitized values), AND inside `ValidationError`'s
+ * constructor (so a failure built from a hostile input still constructs).
+ *
+ * Skips Symbol-keyed properties intentionally; the `Inputs` contract is
+ * `Record<string, Dimension>`, so non-string keys are not part of the API.
  */
-function safeShallowCopy(src: Readonly<Record<string, unknown>>): Record<string, unknown> {
+export function safeShallowCopy(src: Readonly<Record<string, unknown>>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const k of Object.getOwnPropertyNames(src)) {
     try {

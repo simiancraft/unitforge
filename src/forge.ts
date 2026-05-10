@@ -1,6 +1,11 @@
 import { buildCacheKey, roundIfNumber, validateMemoCap, writeCache } from './lib/memoize.js';
 import { safeCopy } from './lib/safeCopy.js';
-import { runValidators, ValidationError, type ValidationFailure } from './lib/validation.js';
+import {
+  runValidators,
+  safeShallowCopy,
+  ValidationError,
+  type ValidationFailure,
+} from './lib/validation.js';
 import type {
   Conversion,
   Dimension,
@@ -172,7 +177,14 @@ function buildCrossDimConverter(
 
   const cache = memoCap > 0 ? new Map<string, unknown>() : null;
 
-  return (input) => {
+  return (rawInput) => {
+    // 0: defensively copy the input ONCE at the top. All downstream operations
+    // (cache key, validators, base normalization) read from the safe copy.
+    // Hostile inputs with throwing property getters get '[throwing getter]'
+    // sentinels; validators see those and reject cleanly instead of crashing
+    // the converter mid-pipeline.
+    const input = safeShallowCopy(rawInput);
+
     // 1-2: cache check (memoize-on only)
     let key: string | null = null;
     if (cache) {
