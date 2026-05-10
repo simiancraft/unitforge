@@ -558,12 +558,7 @@ unitforge/
 │   ├── forge.ts
 │   ├── defineUnit.ts
 │   ├── defineConversion.ts
-│   ├── types.ts                    // Dimension, Unit, Conversion, ForgeConfig interfaces
-│   ├── numeric/
-│   │   ├── number.ts               // default native-number adapter
-│   │   ├── decimal.ts              // peer-dep on decimal.js
-│   │   ├── bigint.ts               // zero-dep BigInt-with-fixed-scale adapter
-│   │   └── fraction.ts             // peer-dep on fraction.js
+│   ├── types.ts                    // Dimension, Unit<D, T=number>, Conversion<I, O, T=number>, ForgeConfig interfaces
 │   ├── kits/
 │   │   ├── si/
 │   │   ├── imperial/
@@ -619,7 +614,6 @@ This layout mirrors chromonym's structure exactly. The substantive differences a
 - `src/conversions/` contains cross-dimensional conversions (chromonym's `src/conversions/` contained color-space transforms).
 - `src/dimensions.ts` is a flat file of dimension constants (chromonym had no equivalent because color spaces ship as named entities, not flat constants).
 - `src/kits/` plays the role chromonym's `src/palettes/` plays.
-- `src/numeric/` is unique to unitforge (chromonym didn't need pluggable numeric types).
 
 ### `package.json#exports` shape
 
@@ -633,8 +627,6 @@ The granular per-unit-per-file design requires a wildcard `exports` map; a hand-
     "./kits/*": { "types": "./dist/kits/*/index.d.ts", "import": "./dist/kits/*/index.js" },
     "./kits/*/*": { "types": "./dist/kits/*/*.d.ts", "import": "./dist/kits/*/*.js" },
     "./conversions/*": { "types": "./dist/conversions/*.d.ts", "import": "./dist/conversions/*.js" },
-    "./numeric/*": { "types": "./dist/numeric/*.d.ts", "import": "./dist/numeric/*.js" },
-    "./validators": { "types": "./dist/validators/index.d.ts", "import": "./dist/validators/index.js" },
     "./errors": { "types": "./dist/errors.d.ts", "import": "./dist/errors.js" },
     "./package.json": "./package.json"
   }
@@ -643,18 +635,17 @@ The granular per-unit-per-file design requires a wildcard `exports` map; a hand-
 
 ESM-only (`"type": "module"`, no `require` condition). Floor `engines.node: ">=20"` and `moduleResolution: "node16" | "nodenext" | "bundler"` for consumers; document this loudly in README.
 
-When `unitforge/numeric/decimal` and `unitforge/numeric/fraction` ship, add to `package.json`:
+v1 ships with **no peer dependencies**; the library has no dependency on `decimal.js`, `fraction.js`, or any precision library. If a future kit ships that requires precision arithmetic (finance, crypto, geodesy, etc.), that kit declares its precision library as an optional peer-dep at the time it lands; consumers using only native-number kits never see it. Pattern when that day comes:
 
 ```json
 {
   "peerDependenciesMeta": {
-    "decimal.js": { "optional": true },
-    "fraction.js": { "optional": true }
+    "decimal.js": { "optional": true }
   }
 }
 ```
 
-Without `optional: true`, every default `npm install unitforge` user sees a missing-peer warning and assumes the package is broken.
+Without `optional: true`, every default `npm install unitforge` user would see a missing-peer warning and assume the package is broken.
 
 ## Domain kits to ship at v1
 
@@ -679,44 +670,75 @@ These rules are non-negotiable through v1; they are what holds the design togeth
 3. **Dimensions are stable string identifiers.** Once shipped, `LENGTH = 'length'` cannot change its string value. Same stability contract as chromonym color-space identifiers.
 4. **Kits can declare new dimensions but cannot redefine existing ones.** A `cooking` kit can extend `VOLUME` with `cup`; it cannot reassign `VOLUME` to mean something else.
 5. **Each direction of a conversion is its own `defineConversion` value.** No auto-derived inverses. If both `massFromVolumeAndDensity` and `volumeFromMassAndDensity` are needed, both are declared. The names depict direction; per-file surface area stays small. Celsius/Fahrenheit-style offsets are the canonical case for why naive symmetry breaks.
-6. **Numeric type is pluggable but defaults to native `number`.** Heavy numeric adapters (decimal.js, fraction.js) are peer dependencies; consumers install them only if they need them.
+6. **Numeric type is consumer's choice; library is type-agnostic at the value layer.** v1 ships entirely native `number`. `Unit<D, T>` and `Conversion<I, O, T>` are parameterized over `T` with `T = number` default; future precision-sensitive kits specialize `T` (e.g., to `Decimal`) without library changes. No `NumericAdapter` interface ships; kits that need precision import the library they need (decimal.js, dnum, BigInt, etc.) directly inside their `toBase`/`fromBase`/`compute`.
 7. **Per-unit precision is a property of the unit definition, not a global config.** Specific units that must be tracked tighter than the instance default declare their precision in `defineUnit`.
 8. **No instance factory.** Public API is free functions. Period.
 9. **Granular per-unit files.** Each kit is a folder of one-unit-per-file modules with a barrel `index.ts`. Whole-kit `import *` works for convenience; named imports work for tree-shaking.
 10. **Naming convention enforced by lint.** A small dev-only checker greps for `defineUnit`/`defineConversion` calls and the export they're assigned to, verifying that the export name matches the filename in camelCase. `defineUnit` carries a `name:` field whose value must also match. (`defineConversion` no longer carries a `name:` field; the export-name + filename pair is the contract.) Initial form: ~50 lines of regex; ship as project pre-commit hook; extract as `unitforge-lint` if it earns its keep.
 11. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO for pharmaceutical IU, BIPM for SI definitions) cite source and version-pin in source comments. NOTICE.md tracks attribution. Same discipline visible in chromonym issues #25 (Tailwind v4.0 pin), #26 (Material trademark), #27 (Farrow & Ball "unofficial reference" disclaimer).
 
-## Numeric type strategy
+## Numeric precision
 
-Default: native JavaScript `number` (IEEE 754 double). Sufficient for ~99% of use cases.
+v1 ships entirely native JavaScript `number` (IEEE 754 double). Sufficient for ~99% of use cases including all five v1 kits (si, imperial, cooking, inventory, pharmacy).
 
-Pluggable adapter for precision-sensitive consumers:
+The library is **type-agnostic at the value layer.** It does no arithmetic on values itself; it calls user-supplied `toBase`, `fromBase`, and `compute` functions and shuttles their results around. This means precision-sensitive kits can be added later without library changes by writing their unit definitions against an exact-arithmetic library inside the `toBase`/`fromBase`/`compute` functions.
+
+The forward-compatible type shape (locked at v1 in `src/types.ts`) parameterizes `Unit` and `Conversion` over the value type `T`, with `T = number` as the default:
 
 ```ts
-// Adapter interface
-interface NumericAdapter<T> {
-  add(a: T, b: T): T;
-  sub(a: T, b: T): T;
-  mul(a: T, b: T): T;
-  div(a: T, b: T): T;
-  pow(a: T, n: number): T;
-  compare(a: T, b: T): number;
-  fromString(s: string): T;
-  toNumber(t: T): number;
-  clone(t: T): T;
+interface Unit<D extends Dimension = Dimension, T = number> {
+  readonly name: string;
+  readonly dimension: D;
+  readonly toBase:   (value: T) => T;
+  readonly fromBase: (base:  T) => T;
+  readonly base?: boolean;
+}
+
+interface Conversion<
+  Inputs extends Record<string, Dimension>,
+  Output extends Dimension,
+  T = number,
+> {
+  readonly inputs: Inputs;
+  readonly output: Output;
+  readonly validate?: ValidatorMap<Inputs, T>;
+  readonly compute: (vals: { [K in keyof Inputs]: T }) => T;
 }
 ```
 
-Reference adapters shipped under `unitforge/numeric/<name>`:
+**Consequences:**
 
-- `unitforge/numeric/number` — default; always loaded.
-- `unitforge/numeric/decimal` — peer-dep on `decimal.js`. Arbitrary precision.
-- `unitforge/numeric/bigint` — zero-dep `BigInt`-with-fixed-scale. Exact integer math at a chosen resolution.
-- `unitforge/numeric/fraction` — peer-dep on `fraction.js`. Exact rational arithmetic.
+- v1 consumers writing native-number units never see the `T` parameter; it defaults from the function signatures.
+- All v1 kits ship with `T = number` (implicit). Their code looks identical to "T isn't there."
+- A future `kits/finance/usd.ts` specializes `T = Decimal` from `decimal.js` (or `dnum`, `big.js`, BigInt-with-fixed-scale, etc.) explicitly:
+  ```ts
+  import Decimal from 'decimal.js';
+  export const usd = defineUnit<typeof CURRENCY, Decimal>({
+    name: 'usd',
+    dimension: CURRENCY,
+    toBase:   (d) => d,
+    fromBase: (d) => d,
+  });
+  ```
+  The kit declares `decimal.js` as a peer-dep; consumers using only native-number kits never see it.
+- `forge` threads `T` through. Pass Decimal-typed units in, get a `(d: Decimal) => Decimal` converter back; pass number-typed units in, get a `(n: number) => number` converter. Same code path, different specialization.
 
-Tree-shaking strategy: each adapter is its own subpath; consumers who don't import an adapter don't pay for it. Heavy adapters (decimal.js, fraction.js) are peer dependencies; `npm install unitforge` does not install them.
+**Cache-key precision normalization** is the one place the library does arithmetic on values (`Math.round(value * multiplier) / multiplier`). At v1, `precision: N` in `ForgeConfig` is documented as native-number only; non-number consumers either skip `precision` or do their own rounding inside `compute`. A future generalization (per-T precision strategy) is non-breaking.
 
-This is the chromonym pattern applied to numeric types: the analog of "palette I import or don't" is "numeric adapter I import or don't."
+**What this is NOT:**
+
+- No `NumericAdapter` interface ships at v1. The library has no abstraction over numeric types; consumers and kit authors use whatever library they need directly inside their `toBase`/`fromBase`/`compute`.
+- No `numeric/` subpath. No `unitforge/numeric/decimal` re-export. If a kit needs decimal precision, it imports `decimal.js` (or whatever) at the top of its file, period.
+- No peer-dep on `decimal.js`, `fraction.js`, or any precision library at v1.
+
+**Likely "needs decimal" kits worth filing as future-issue placeholders** (not v1):
+
+- `kits/finance` (the textbook case; penny precision is regulatory).
+- `kits/crypto` (Bitcoin satoshis, Ethereum wei; floats can't even represent these).
+- `kits/astronomy` (sub-arcsecond ephemerides over centuries).
+- `kits/geodesy` (centimeter-precision position differences in ITRF coordinates).
+
+Geosciences/SEGY is mixed: trace amplitudes and travel-time math are fine in float; survey-coordinate bookkeeping needs decimal. That kit, if shipped, would mostly use float with decimal-typed units only on the spatial-coordinates surface.
 
 ## Configurable atomic per dimension
 
@@ -727,7 +749,7 @@ unitforge handles this via **kit choice**, not runtime config:
 - Default kit `si` anchors at meter, kilogram, second.
 - Alternate atomic kits live at `kits/si-mm-atomic`, `kits/si-g-atomic`, etc., for consumers who want millimeter-base or gram-base storage.
 
-This is the same pattern as chromonym shipping multiple color-space variants without a runtime config flag. Consumers pick which atomic they want by picking which kit they import. No instance state required; no runtime configuration to forget; tree-shakes per-import.
+This is the same pattern as chromonym shipping multiple palette variants without a runtime config flag. Consumers pick which atomic they want by picking which kit they import. No instance state required; no runtime configuration to forget; tree-shakes per-import.
 
 If runtime configuration of atomic later proves necessary, it can be added as an option to `defineUnit` or `ForgeConfig`, but the default path is "import the kit that matches your storage."
 
