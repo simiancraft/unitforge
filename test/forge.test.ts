@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import { AREA, LENGTH } from '../src/dimensions.js';
-import { defineConversion, defineUnit, forge, linear, ValidationError } from '../src/index.js';
+import {
+  defineConversion,
+  defineUnit,
+  forge,
+  linear,
+  ValidationError,
+  type ValidationFailure,
+} from '../src/index.js';
 import {
   areaFromLengthAndWidth,
   centimeter,
@@ -115,6 +122,53 @@ describe('forge: cross-dimensional (object input, single output)', () => {
     for (const f of ve.failures) {
       expect(f.stage).toBe('definition');
     }
+  });
+
+  it('freezes inputs and failures at construction (mutation rejected at runtime)', () => {
+    const toArea = forge({ length: meter, width: meter }, squareMeter, {
+      via: areaFromLengthAndWidth,
+    });
+    const originalInput = { length: -5, width: -3 };
+    let caught: ValidationError | null = null;
+    try {
+      toArea(originalInput);
+    } catch (err) {
+      caught = err as ValidationError;
+    }
+    if (!caught) throw new Error('expected ValidationError');
+
+    // inputs is a frozen DEFENSIVE COPY: mutating it throws in strict mode
+    // and never affects the original input object the caller passed.
+    expect(Object.isFrozen(caught.inputs)).toBe(true);
+    expect(Object.isFrozen(caught.failures)).toBe(true);
+    expect(caught.inputs).not.toBe(originalInput);
+
+    // Mutation attempts via TS-readonly cast must fail loudly.
+    expect(() => {
+      (caught.inputs as Record<string, unknown>).polluted = true;
+    }).toThrow();
+    expect(() => {
+      (caught.failures as ValidationFailure[]).push({
+        key: 'fake',
+        stage: 'definition',
+        value: null,
+        message: 'fake',
+      });
+    }).toThrow();
+  });
+
+  it('error message handles BigInt and circular refs in input values without throwing', () => {
+    const toArea = forge({ length: meter, width: meter }, squareMeter, {
+      via: areaFromLengthAndWidth,
+    });
+
+    // BigInt would crash JSON.stringify; ensure the per-value formatter handles it.
+    expect(() => toArea({ length: 1n as unknown as number, width: -1 })).toThrow();
+
+    // Circular ref would crash JSON.stringify; ensure the per-value formatter handles it.
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+    expect(() => toArea({ length: circular as unknown as number, width: -1 })).toThrow();
   });
 
   it('respects call-site validators (additive on top of conversion validators)', () => {
