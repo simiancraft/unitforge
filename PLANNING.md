@@ -391,7 +391,7 @@ export const massFromVolumeAndDensity = defineConversion({
   validate: {
     volume:  (v) => v >= 0 || 'volume must be >= 0',
     density: (d) => d >  0 || 'density must be > 0',
-    all: ({ volume, density }) => volume * density < 1e9 || 'mass exceeds safe range',
+    _all: ({ volume, density }) => volume * density < 1e9 || 'mass exceeds safe range',
   },
   compute: ({ volume, density }) => volume * density,
 });
@@ -401,7 +401,7 @@ export const massFromVolumeAndDensity = defineConversion({
 
 `validate` is an optional object that carries the conversion's universal input invariants:
 - **Per-property validators** (keyed by `inputs` property name) run on each input independently. These are the fast 90% case; e.g., "density must be positive."
-- **Whole-object validator** (`all`) runs on the destructured input object as a whole, for cross-property invariants; e.g., "length must be >= width."
+- **Whole-object validator** (`_all`) runs on the destructured input object as a whole, for cross-property invariants; e.g., "length must be >= width." The leading underscore signals "library-reserved special key" and avoids collision with any input literally named `all`; consumers may use `all` as an input property name freely.
 - Each validator returns `true` (or `undefined`) to pass, or a string to reject with that error message. Throwing is the escape hatch, so users can drop in third-party validation libraries without rewriting.
 - Conversion-layer validators see the **user-supplied value in its user-chosen unit** and should stick to unit-invariant checks (sign, integer, finite, NaN, etc.). Unit-specific range checks belong at the call site in `ForgeConfig.validate`. This keeps the "compute authors never see units" principle alive at the validator layer.
 
@@ -456,7 +456,7 @@ forge(
 );
 ```
 
-`ForgeConfig.validate` accepts the same per-property + `all` shape as `defineConversion.validate`; call-site validators are *additive*, not overriding. The conversion's own invariants always run.
+`ForgeConfig.validate` accepts the same per-property + `_all` shape as `defineConversion.validate`; call-site validators are *additive*, not overriding. The conversion's own invariants always run.
 
 The library ships no formatting machinery. Consumers who need formatted output wrap the converter in a one-line userland helper:
 
@@ -480,7 +480,7 @@ When the forged converter is invoked with input values, the library runs them th
 
 1. **(Memoize-on only)** Compute cache key from the input (sort prop names, apply precision rounding if set, join with `\x00`).
 2. **(Memoize-on only)** Cache check: if the key is present, return the cached value. Done.
-3. **All validators run, no short-circuit.** Per-property and `all` validators from both `ForgeConfig.validate` and `Conversion.validate` run together; every failure is collected.
+3. **All validators run, no short-circuit.** Per-property and `_all` validators from both `ForgeConfig.validate` and `Conversion.validate` run together; every failure is collected.
 4. **If any failures, throw a `ValidationError`** carrying the full input object and an array of `{ key, stage, value, message }` records. The error's `.message` auto-templates the inputs and failures into a readable block. No cache write.
 5. **Normalize inputs to base units** via each `from` Unit's `toBase` function.
 6. **Run `compute`** (in base units).
@@ -500,7 +500,7 @@ import { ValidationError } from 'unitforge';
 class ValidationError extends Error {
   readonly inputs: Record<string, unknown>;       // the input object that was rejected
   readonly failures: Array<{
-    key: string | 'all';                          // which validator
+    key: string | '_all';                         // which validator (input-name, or `_all` for cross-property)
     stage: 'forge-config' | 'conversion';         // which layer it came from
     value: unknown;                               // the value that validator saw
     message: string;                              // the validator's error string
