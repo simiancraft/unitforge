@@ -434,9 +434,15 @@ export interface Conversion<
 
 // ─── ForgeConfig ─────────────────────────────────────────────────────────
 
+// `via` and `validate` are typed loosely on the standalone interface; the
+// `forge` overloads below re-narrow them via intersection with the call's
+// inferred `Inputs`/`Output`. A consumer who hovers `ForgeConfig.via` on
+// the standalone interface sees the loose type; a consumer who hovers
+// inside an actual `forge(...)` call gets the narrowed shape (correct keys,
+// correct dimensions, correct T).
 export interface ForgeConfig<T = number> {
   /** Cross-dim conversion value. Required when `from` is object-shaped. */
-  via?: Conversion<any, any, T>;
+  via?: Conversion<Record<string, Dimension>, Dimension | Record<string, Dimension>, T>;
 
   /** Call-site validators, additive on top of the conversion's own. */
   validate?: ValidatorMap<Record<string, Dimension>, T>;
@@ -458,6 +464,7 @@ export function forge<D extends Dimension, T = number>(
 ): (value: T) => T;
 
 // 2. Cross-dim. Object input → single-Unit output. Via required.
+//    Intersection re-narrows both `via` and `validate` to the call's `Inputs`.
 export function forge<
   Inputs extends Record<string, Dimension>,
   Output extends Dimension,
@@ -465,10 +472,14 @@ export function forge<
 >(
   from:   { [K in keyof Inputs]: Unit<Inputs[K], T> },
   to:     Unit<Output, T>,
-  config: ForgeConfig<T> & { via: Conversion<Inputs, Output, T> },
+  config: ForgeConfig<T> & {
+    via:       Conversion<Inputs, Output, T>;
+    validate?: ValidatorMap<Inputs, T>;
+  },
 ): (input: { [K in keyof Inputs]: T }) => T;
 
 // 3. Cross-dim. Object input → object output. Via required.
+//    Intersection re-narrows both `via` and `validate` to the call's `Inputs`.
 export function forge<
   Inputs extends Record<string, Dimension>,
   Output extends Record<string, Dimension>,
@@ -476,7 +487,10 @@ export function forge<
 >(
   from:   { [K in keyof Inputs]: Unit<Inputs[K], T> },
   to:     { [K in keyof Output]: Unit<Output[K], T> },
-  config: ForgeConfig<T> & { via: Conversion<Inputs, Output, T> },
+  config: ForgeConfig<T> & {
+    via:       Conversion<Inputs, Output, T>;
+    validate?: ValidatorMap<Inputs, T>;
+  },
 ): (input: { [K in keyof Inputs]: T }) => { [K in keyof Output]: T };
 
 // ─── ValidationError ─────────────────────────────────────────────────────
@@ -525,6 +539,13 @@ When the forged converter is invoked with input values:
 9. **Return.**
 
 **Cache-first, validators-on-miss-only** is intentional. Validators are required to be pure; a validator that passed once for a given input passes every time, so the cached result is validation-correct for that bucket. Re-running validators on cache hits would be duplicate work.
+
+**Failure semantics for validators and `compute`:**
+
+- **A validator that throws** is caught by the runner and converted into a `failure` entry with `key: '<the validator's key>'`, `stage: '<the layer>'`, `value: <the input value the validator saw>`, `message: String(err.message ?? err)`. The aggregation never aborts; the thrown error becomes one failure record alongside any string-returning failures. This lets consumers drop in third-party validators (zod, yup, custom assertions) that signal failure by throwing without poisoning the rest of the run.
+- **A validator that returns a non-string non-true value** (e.g., `false`, `0`, `null`) is treated as a pass. Validators MUST signal failure with a string return or a throw; silent falsy is intentionally NOT a failure indicator (it would conflict with predicate-style validators that return booleans).
+- **`compute` that throws** propagates raw to the caller. The library does not catch compute errors; if `compute` is buggy or asserts an invariant, the consumer's call site receives the error directly. No cache write on a thrown compute.
+- **`compute` that returns `NaN` or `±Infinity`** is returned as-is to the caller and is **not cached** (mirroring the input-side rule that NaN inputs are never cached). Downstream `precision` rounding on `NaN` would propagate `NaN`; on `Infinity` would propagate `Infinity`. Consumers who want to reject these values should validate them in a downstream wrapper.
 
 **Consequence of precision-bucketed cache keys.** When `precision: 1` is set, inputs `5.123` and `5.124` both bucket to `5.1` and share the same cache entry AND validation outcome (validation runs once per bucket on first miss). Consumers who want stricter per-input validation should set a tighter `precision` or omit it.
 
@@ -709,28 +730,7 @@ v1 ships entirely native JavaScript `number` (IEEE 754 double). Sufficient for ~
 
 The library is **type-agnostic at the value layer.** It does no arithmetic on values itself; it calls user-supplied `toBase`, `fromBase`, and `compute` functions and shuttles their results around (with one exception below). Precision-sensitive kits can be added later without library changes by writing their unit definitions against an exact-arithmetic library inside `toBase`/`fromBase`/`compute`.
 
-The forward-compatible type shape (locked at v1 in `src/types.ts`) parameterizes `Unit` and `Conversion` over the value type `T`, with `T = number` as the default:
-
-```ts
-interface Unit<D extends Dimension = Dimension, T = number> {
-  readonly name: string;
-  readonly dimension: D;
-  readonly toBase:   (value: T) => T;
-  readonly fromBase: (base:  T) => T;
-  readonly base?: boolean;
-}
-
-interface Conversion<
-  Inputs extends Record<string, Dimension>,
-  Output extends Dimension,
-  T = number,
-> {
-  readonly inputs: Inputs;
-  readonly output: Output;
-  readonly validate?: ValidatorMap<Inputs, T>;
-  readonly compute: (vals: { [K in keyof Inputs]: T }) => T;
-}
-```
+The forward-compatible type shape (locked at v1 in `src/types.ts`) parameterizes `Unit` and `Conversion` over the value type `T`, with `T = number` as the default. The canonical type definitions live in the **"Public type sketch (canonical)" subsection** of "API shape" above; this section does not redeclare them. (Earlier drafts duplicated the type block here; the duplicate has been removed to prevent drift between the two declarations.)
 
 **Consequences:**
 
