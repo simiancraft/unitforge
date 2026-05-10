@@ -281,7 +281,20 @@ export const massFromVolumeAndDensity = defineConversion({
 });
 ```
 
-`inputs` is an object mapping property names to **dimensions** (not units). `output` is a single dimension. `compute` is written in **base units of the declared dimensions**; the library decorates it so unit normalization happens at call time (compute author never writes unit conversion logic).
+`inputs` is an object mapping property names to **dimensions** (not units). `output` is **either a single dimension OR an object mapping property names to dimensions** (for n-in / m-out conversions like 2D scaling, vector rotation, color-space transforms with multiple channels). `compute` is written in **base units of the declared dimensions**; its return type matches `output`'s shape (scalar `T` for single-dimension output, `{ [K in keyof Output]: T }` for object output). The library decorates `compute` so unit normalization happens at call time (compute author never writes unit conversion logic).
+
+A scalar-output example is shown above. An object-output example (window pixel-to-CSS scaling):
+
+```ts
+export const screenPxToCssPx = defineConversion({
+  inputs: { width: SCREEN_PX, height: SCREEN_PX },
+  output: { width: CSS_PX,    height: CSS_PX    },
+  compute: ({ width, height }) => ({
+    width:  width  / devicePixelRatio,
+    height: height / devicePixelRatio,
+  }),
+});
+```
 
 `validate` is optional and carries the conversion's universal input invariants:
 
@@ -301,14 +314,14 @@ Each direction of a relationship is its own `defineConversion` value. No auto-de
 forge(from, to, ForgeConfig?)
 ```
 
-The shape of `from` determines the shape of the converter's call site:
+Both `from` and `to` accept either a single `Unit` OR an object whose properties are Units. The shape of each slot determines the shape of the converter's call site:
 
 ```ts
-// within-dimension: from is a single Unit; converter is unary
+// 1. Within-dimension: from is a Unit, to is a Unit; converter is unary.
 const footToInch = forge(foot, inch);
 footToInch(5); // => 60
 
-// cross-dimensional: from is an object whose properties are Units
+// 2. Cross-dimensional, single output: from is an object of Units, to is a Unit.
 import { massFromVolumeAndDensity } from 'unitforge/conversions/massFromVolumeAndDensity';
 const galPpgToKg = forge(
   { volume: gallon, density: poundPerGallon },
@@ -317,6 +330,15 @@ const galPpgToKg = forge(
 );
 galPpgToKg({ volume: 5, density: 8.3 });
 
+// 3. Cross-dimensional, object output: from and to are both objects of Units.
+import { screenPxToCssPx } from 'unitforge/conversions/screenPxToCssPx';
+const resize = forge(
+  { width: screenW, height: screenH },
+  { width: cssW,    height: cssH    },
+  { via: screenPxToCssPx }
+);
+resize({ width: 1920, height: 1080 }); // { width: 960, height: 540 }
+
 // the SAME defineConversion value is reused across N forge sites with different unit pairings
 const cupPpgToG = forge(
   { volume: cup, density: poundPerGallon },
@@ -324,6 +346,8 @@ const cupPpgToG = forge(
   { via: massFromVolumeAndDensity }
 );
 ```
+
+A fourth case (`from: Unit, to: object of Units`, e.g., scalar → 2D vector) is type-system-supported but rare; no v1 worked example.
 
 `ForgeConfig` is an open extensibility surface — a plain TypeScript interface that consumers construct as an object literal at the call site. Fields:
 
@@ -348,6 +372,141 @@ forge(
 ```
 
 Output formatting (plural, locale, abbreviation, i18n) lives entirely in the consumer's view layer. The library does no string work.
+
+### Public type sketch (canonical)
+
+This is the single source of truth for the public type surface. The implementer locks `src/types.ts` against this; reviewers verify against this; no other section overrides it.
+
+```ts
+// ─── Dimensions ──────────────────────────────────────────────────────────
+
+// Branded-string union: built-in literals preserve autocomplete, custom strings accepted.
+export type Dimension =
+  | typeof LENGTH
+  | typeof MASS
+  | /* ... all built-ins from src/dimensions.ts ... */
+  | typeof FREQUENCY
+  | (string & {});
+
+// ─── Units ───────────────────────────────────────────────────────────────
+
+export interface Unit<D extends Dimension = Dimension, T = number> {
+  readonly name: string;
+  readonly dimension: D;
+  readonly toBase:   (value: T) => T;
+  readonly fromBase: (base:  T) => T;
+  readonly base?: boolean;
+}
+
+// Both `from` and `to` slots of forge accept either shape.
+export type UnitContainer<T = number> =
+  | Unit<Dimension, T>
+  | Record<string, Unit<Dimension, T>>;
+
+// ─── Validators ──────────────────────────────────────────────────────────
+
+// Per-property validators keyed by `inputs` keys, plus optional cross-property `_all`.
+// JSDoc on each function value-position: "Must be a pure function of its input.
+// Validators are skipped on cache hits."
+export type ValidatorMap<
+  Inputs extends Record<string, Dimension>,
+  T = number,
+> =
+  & { [K in keyof Inputs]?: (value: T) => true | string }
+  & { _all?: (vals: { [K in keyof Inputs]: T }) => true | string };
+
+// ─── Conversions ─────────────────────────────────────────────────────────
+
+// Output can be a single dimension OR a record of dimensions.
+// compute's return shape mirrors output's shape.
+export interface Conversion<
+  Inputs extends Record<string, Dimension>,
+  Output extends Dimension | Record<string, Dimension>,
+  T = number,
+> {
+  readonly inputs: Inputs;
+  readonly output: Output;
+  readonly validate?: ValidatorMap<Inputs, T>;
+  readonly compute: Output extends Dimension
+    ? (vals: { [K in keyof Inputs]: T }) => T
+    : (vals: { [K in keyof Inputs]: T }) => { [K in keyof Output]: T };
+}
+
+// ─── ForgeConfig ─────────────────────────────────────────────────────────
+
+export interface ForgeConfig<T = number> {
+  /** Cross-dim conversion value. Required when `from` is object-shaped. */
+  via?: Conversion<any, any, T>;
+
+  /** Call-site validators, additive on top of the conversion's own. */
+  validate?: ValidatorMap<Record<string, Dimension>, T>;
+
+  /** Output rounding AND cache-key normalization. Native-number only at v1. */
+  precision?: number;
+
+  /** LRU cap. 0 or absent = off. Bounds [0, 1_048_576]. DEFAULT_MEMO_CAP = 1024. */
+  memoize?: number;
+}
+
+// ─── forge overloads ─────────────────────────────────────────────────────
+
+// 1. Within-dimension. Both Units. No via.
+export function forge<D extends Dimension, T = number>(
+  from: Unit<D, T>,
+  to:   Unit<D, T>,
+  config?: ForgeConfig<T>,
+): (value: T) => T;
+
+// 2. Cross-dim. Object input → single-Unit output. Via required.
+export function forge<
+  Inputs extends Record<string, Dimension>,
+  Output extends Dimension,
+  T = number,
+>(
+  from:   { [K in keyof Inputs]: Unit<Inputs[K], T> },
+  to:     Unit<Output, T>,
+  config: ForgeConfig<T> & { via: Conversion<Inputs, Output, T> },
+): (input: { [K in keyof Inputs]: T }) => T;
+
+// 3. Cross-dim. Object input → object output. Via required.
+export function forge<
+  Inputs extends Record<string, Dimension>,
+  Output extends Record<string, Dimension>,
+  T = number,
+>(
+  from:   { [K in keyof Inputs]: Unit<Inputs[K], T> },
+  to:     { [K in keyof Output]: Unit<Output[K], T> },
+  config: ForgeConfig<T> & { via: Conversion<Inputs, Output, T> },
+): (input: { [K in keyof Inputs]: T }) => { [K in keyof Output]: T };
+
+// ─── ValidationError ─────────────────────────────────────────────────────
+
+export class ValidationError extends Error {
+  readonly inputs: Record<string, unknown>;
+  readonly failures: Array<{
+    key: string | '_all';
+    stage: 'forge-config' | 'conversion';
+    value: unknown;
+    message: string;
+  }>;
+  // .message via lazy self-overwriting getter (see Implementation hints).
+}
+
+// ─── Sugar ───────────────────────────────────────────────────────────────
+
+// Linear-only sugar; T = number-only.
+export function linear(scale: number): {
+  toBase:   (v: number) => number;
+  fromBase: (b: number) => number;
+};
+
+// Default LRU cap when consumer types `{ memoize: DEFAULT_MEMO_CAP }`.
+export const DEFAULT_MEMO_CAP: 1024;
+```
+
+**Type-uniform `T`.** Every primitive that operates on values is parameterized over `T` with `T = number` default. v1 consumers writing native-number units never see the `T` parameter; future precision-sensitive kits specialize to `T = Decimal` (or `Fraction`, `BigInt`, etc.) without library changes. `T` must be uniform across one `forge` call (mixing Decimal-typed and number-typed units in one call is a type error).
+
+**Pre-coding blocker #1 is satisfied by this sketch.** When `src/types.ts` is written, the playground exercise is to verify `expect-type`-style assertions against these signatures: object-shaped `from` narrows correctly; `inputs` keys constrain `from` keys (extra keys rejected); dimension brands thread through; `T` uniform; mixed-`T` rejected; missing `via` on object-shape `from` is a compile error; key/dimension misalignment between `from` and `via.inputs` is a compile error; object-output `to` shape matches conversion's `output` shape.
 
 ### Call-time pipeline
 
@@ -700,7 +859,7 @@ Deprecation policy: a unit, kit, or conversion marked deprecated stays exported 
 
 Only one item remains genuinely open before `src/` scaffolding can begin; the rest were resolved during design and are summarized in "Appendix: design history".
 
-1. **Lock `src/types.ts` first.** All public types (`Dimension`, `Unit<D, T = number>`, `Conversion<I, O, T = number>`, `ValidatorMap<I, T>`, `ForgeConfig<T>`, `ValidationError`) must be sketched in a TypeScript playground with `expect-type` style checks before any implementation file ships. Generic inference for `forge` is the load-bearing concern: confirm that an object-shaped `from` literal narrows correctly, that `inputs` keys constrain `from` keys (extra keys rejected), that dimension brands thread through, and that `T` is uniform across one `forge` call. The TypeScript-DX review pass-2 supplied the full `forge` overload set with object-shape `from` constrained to `{ [K in keyof Inputs]: Unit<Inputs[K], T> }`; adopt that as the starting point.
+1. **Lock `src/types.ts` against the "Public type sketch (canonical)" subsection** of "API shape" above. The sketch is the source of truth for all public types (`Dimension`, `Unit<D, T = number>`, `UnitContainer<T>`, `Conversion<I, O, T = number>`, `ValidatorMap<I, T>`, `ForgeConfig<T>`, the three `forge` overloads, `ValidationError`, `linear`, `DEFAULT_MEMO_CAP`). The `expect-type` checks listed in that subsection define the verification gate: object-shaped `from` narrowing, extra-key rejection, dimension-brand threading, uniform-`T`, mixed-`T` rejection, missing-`via` rejection, key/dimension misalignment rejection, object-output `to`-shape matching. No other gap should remain on the type surface before scaffolding.
 
 ## Open questions to resolve before v1
 
