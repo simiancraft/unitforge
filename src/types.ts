@@ -1,11 +1,11 @@
-import type { AREA, LENGTH } from './dimensions.js';
+import type { Dimension } from './dimensions.js';
 
 /**
- * Dimension identifier. Built-in literals (LENGTH, AREA, ...) preserve
- * autocomplete; arbitrary custom strings are accepted via the `(string & {})`
- * brand without collapsing the union to `string`.
+ * Dimension identifier. Canonical declaration lives in `./dimensions.ts`
+ * alongside the constants that derive it; re-exported here for the
+ * convenience of consumers who import everything from `types`.
  */
-export type Dimension = typeof LENGTH | typeof AREA | (string & {});
+export type { Dimension };
 
 /**
  * A unit of measure. Carries two functions: `toBase` converts a value in this
@@ -89,9 +89,20 @@ export interface ForgeConfig<T = number> {
    */
   precision?: number;
   /**
-   * LRU cap. `0` or absent disables the cache entirely (no key construction,
-   * no Map). Bounds `[0, 1_048_576]`. `DEFAULT_MEMO_CAP = 1024` ships as a
-   * named constant for ergonomic opt-in.
+   * FIFO bounded-cache cap. `0` or absent disables the cache entirely (no key
+   * construction, no Map). Bounds `[0, 1_048_576]`. `DEFAULT_MEMO_CAP = 1024`
+   * ships as a named constant for ergonomic opt-in.
+   *
+   * **Eviction policy:** when the cache reaches `cap` entries, the
+   * oldest-INSERTED entry is dropped to make room for the new one. Reads do
+   * NOT promote entries (this is FIFO, not LRU). For typical
+   * unit-conversion workloads (small repeating value sets), FIFO is
+   * indistinguishable from LRU; the per-hit path stays as cheap as possible
+   * (no delete-and-reinsert).
+   *
+   * **Implementation note:** backed by `Map` (the only JS primitive offering
+   * both key→value lookup and insertion-order iteration); `cap` bounds entry
+   * count, not byte size.
    */
   memoize?: number;
 }

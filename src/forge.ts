@@ -5,10 +5,10 @@ import type { Conversion, Dimension, ForgeConfig, Unit, ValidatorMap } from './t
 /** NUL byte; used as the cache-key field separator. */
 const CACHE_KEY_SEP = '\x00';
 
-/** Hard upper bound on `ForgeConfig.memoize` LRU cap. */
+/** Hard upper bound on `ForgeConfig.memoize` cache cap (FIFO bounded cache). */
 export const MEMO_CAP_MAX = 1_048_576;
 
-/** Default LRU cap for ergonomic opt-in: `forge(a, b, { memoize: DEFAULT_MEMO_CAP })`. */
+/** Default cache cap for ergonomic opt-in: `forge(a, b, { memoize: DEFAULT_MEMO_CAP })`. */
 export const DEFAULT_MEMO_CAP = 1024;
 
 // ─── Public overload set ─────────────────────────────────────────────────

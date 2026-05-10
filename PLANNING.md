@@ -401,7 +401,7 @@ A fourth case (`from: Unit, to: object of Units`, e.g., scalar → 2D vector) is
 | `via` | `Conversion` | Cross-dim conversion value. Required when `from` is object-shaped. |
 | `validate` | per-property + `_all` map | Call-site validators. Same shape as `defineConversion.validate`; *additive* (does not override the conversion's invariants). |
 | `precision` | `number` | Output rounding AND cache-key normalization. |
-| `memoize` | `number` | LRU cap; `0` or absent = off. Bounds `[0, 1_048_576]`. `DEFAULT_MEMO_CAP = 1024` ships as a constant. |
+| `memoize` | `number` | FIFO bounded-cache cap; `0` or absent = off. Bounds `[0, 1_048_576]`. `DEFAULT_MEMO_CAP = 1024` ships as a constant. |
 
 ```ts
 forge(
@@ -517,7 +517,7 @@ export interface ForgeConfig<T = number> {
    *  Non-negative integer; `0` means "round to integer"; absent means no rounding. */
   precision?: number;
 
-  /** LRU cap. 0 or absent = off. Bounds [0, 1_048_576]. DEFAULT_MEMO_CAP = 1024. */
+  /** FIFO bounded-cache cap. 0 or absent = off. Bounds [0, 1_048_576]. DEFAULT_MEMO_CAP = 1024. */
   memoize?: number;
 }
 
@@ -586,7 +586,7 @@ export function linear(scale: number): {
   fromBase: (b: number) => number;
 };
 
-// Default LRU cap when consumer types `{ memoize: DEFAULT_MEMO_CAP }`.
+// Default cache cap when consumer types `{ memoize: DEFAULT_MEMO_CAP }`.
 export const DEFAULT_MEMO_CAP: 1024;
 ```
 
@@ -621,7 +621,7 @@ When the forged converter is invoked with input values:
 
 **Consequence of precision-bucketed cache keys.** When `precision: 1` is set, inputs `5.123` and `5.124` both bucket to `5.1` and share the same cache entry AND validation outcome (validation runs once per bucket on first miss). Consumers who want stricter per-input validation should set a tighter `precision` or omit it.
 
-**Cache-key algorithm.** Sort the input's prop names, apply precision rounding to each value if `precision` is set, stringify each value (`String(v)`), join with `\x00`. For single-Unit `from`, the key is `String(roundedValue)`. The string form means memoize works for any `T` whose `.toString()` is stable and value-distinguishing (native `number`, `bigint`, `string`, `Decimal`, `Fraction`). Cache structure: native JS `Map` (insertion-order LRU; on insert if size > cap, delete `map.keys().next().value`). NaN never cached; ±Infinity cached normally; `-0` coerced to `0` in the key.
+**Cache-key algorithm.** Sort the input's prop names, apply precision rounding to each value if `precision` is set, stringify each value (`String(v)`), join with `\x00`. For single-Unit `from`, the key is `String(roundedValue)`. The string form means memoize works for any `T` whose `.toString()` is stable and value-distinguishing (native `number`, `bigint`, `string`, `Decimal`, `Fraction`). Cache structure: native JS `Map` used as a FIFO bounded cache (Map is the only JS primitive offering both key→value lookup and insertion-order iteration; on insert if size ≥ cap, delete `map.keys().next().value`, which is the oldest INSERTED entry). Reads do NOT promote entries (FIFO, not LRU): the per-hit path stays as cheap as possible. NaN never cached; ±Infinity cached normally; `-0` coerced to `0` in the key.
 
 Aggregating failures (instead of first-failure-wins) lets consumers see and fix everything wrong in one shot. Throwing (rather than returning a Result type) is the v1 contract; idiomatic JS, simpler converter return type. A Result-typed `forgeOrResult` variant can be added in a 0.x minor if anyone needs it.
 
@@ -969,7 +969,7 @@ Only one item remains genuinely open before `src/` scaffolding can begin; the re
 2. **Custom dimension scoping.** Two third-party kits both export `MANA = 'mana'`. The library currently trusts strings. Document the prefix-your-custom-dimensions convention; do not enforce.
 3. **TypeScript inference confirmation for `forge`.** Subsumed by Pre-coding blocker #1 (the `expect-type` checks); flagged here as a verification step.
 4. **Subpath exports for size variants of large kits.** Pharmacy and inventory in particular could ship `core` vs `full` variants. Mirror chromonym Munsell #22's approach.
-5. **Memoization sub-decisions** (post-v1 unless real demand emerges): whether `forge` refuses `memoize` on a trivially-cheap unary native-number converter (lean: trust the consumer); whether to ship TTL eviction (lean: LRU only; file an issue for TTL).
+5. **Memoization sub-decisions** (post-v1 unless real demand emerges): whether `forge` refuses `memoize` on a trivially-cheap unary native-number converter (lean: trust the consumer); whether to ship TTL eviction (lean: FIFO only at v1; file an issue for TTL); whether to upgrade FIFO to true LRU (lean: keep FIFO; the per-hit cost of LRU promotion only earns its keep with skewed access at small cap).
 
 ## Next steps
 
@@ -1025,7 +1025,9 @@ Replaced the four-function shape with the current three-primitive shape:
 
 - **Validators-default-to-fail-fast (dismissed).** Perf reviewer suggested defaulting to fail-fast with `aggregate: true` opt-in. Resolved 2026-05-09: aggregation stays the default. Cache-first pipeline means validators only run on cold-path misses; on the success path validators all run anyway (none failed, so neither model can short-circuit). The "5-10x slower" claim was overstated.
 
-- **`memoize` as `boolean | { max: N }` discriminated union (dropped).** Resolved 2026-05-09: collapsed to `memoize: number` (single-typed; 0 or absent = off; > 0 = LRU cap). `DEFAULT_MEMO_CAP = 1024` constant ships from the main barrel for ergonomic opt-in. Per the no-heterogeneous-types rule.
+- **`memoize` as `boolean | { max: N }` discriminated union (dropped).** Resolved 2026-05-09: collapsed to `memoize: number` (single-typed; 0 or absent = off; > 0 = FIFO bounded-cache cap). `DEFAULT_MEMO_CAP = 1024` constant ships from the main barrel for ergonomic opt-in. Per the no-heterogeneous-types rule.
+
+- **"LRU" labeling (corrected to FIFO).** Resolved 2026-05-10: earlier drafts called the cache LRU, but the implementation never promoted on read (Map iteration order = insertion order; reads do not delete-and-reinsert). The eviction policy is FIFO. The `Map` data structure is unchanged (only JS primitive that gives key→value with insertion order); only the docs and JSDoc were corrected. True LRU was considered and declined: per-hit cost (extra delete + set on every cache hit) only pays for itself with strongly skewed access patterns at small cap, which is a narrow case the consumer can solve by raising `memoize`.
 
 - **`toBase: number | { to, from }` discriminated union (dropped).** Initial proposal for non-linear units. Resolved 2026-05-09: `Unit` carries TWO function fields (`toBase` and `fromBase`, both always functions); `linear(scale)` helper covers the common linear case; non-linear units write the two functions explicitly. Type stays uniform; no discrimination.
 
