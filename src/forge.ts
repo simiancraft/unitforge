@@ -1,6 +1,13 @@
 import { safeCopy } from './lib/safeCopy.js';
 import { ValidationError, type ValidationFailure } from './lib/validation.js';
-import type { Conversion, Dimension, ForgeConfig, Unit, ValidatorMap } from './types.js';
+import type {
+  Conversion,
+  Dimension,
+  ForgeInput,
+  ForgeOutput,
+  Unit,
+  ValidatorMap,
+} from './types.js';
 
 /** NUL byte; used as the cache-key field separator. */
 const CACHE_KEY_SEP = '\x00';
@@ -13,12 +20,20 @@ export const DEFAULT_MEMO_CAP = 1024;
 
 // ─── Public overload set ─────────────────────────────────────────────────
 // (See PLANNING.md "Public type sketch (canonical)" for the source of truth.)
+//
+// Each overload inlines its own `config` shape rather than intersecting
+// `ForgeConfig<T>` with a narrow `via`. Two reasons: (1) the intersection
+// `ForgeConfig<T> & { via: Conversion<Inputs, Output, T> }` requires the
+// narrow `via` to satisfy the loose `Conversion<Record<string, Dimension>, ...>`
+// from ForgeConfig, which fails because `ValidatorMap` is invariant in
+// `Inputs`; (2) the inlined shape is the source of truth at the call site.
+// `ForgeConfig` remains exported for documentation/hover.
 
 /** Within-dimension. Both `Unit`s. No `via`. Converter is unary `(value) => value`. */
 export function forge<D extends Dimension, T = number>(
-  from: Unit<D, T>,
-  to: Unit<D, T>,
-  config?: Omit<ForgeConfig<T>, 'via'> & { via?: never },
+  from: ForgeInput<D, T>,
+  to: ForgeInput<NoInfer<D>, T>,
+  config?: { precision?: number; memoize?: number },
 ): (value: T) => T;
 
 /** Cross-dimensional. Object input, single-`Unit` output. `via` required. */
@@ -27,11 +42,13 @@ export function forge<
   Output extends Dimension,
   T = number,
 >(
-  from: { [K in keyof Inputs]: Unit<Inputs[K], T> },
-  to: Unit<Output, T>,
-  config: ForgeConfig<T> & {
+  from: ForgeInput<Inputs, T>,
+  to: ForgeOutput<Output, T>,
+  config: {
     via: Conversion<Inputs, Output, T>;
     validate?: ValidatorMap<Inputs, T>;
+    precision?: number;
+    memoize?: number;
   },
 ): (input: { [K in keyof Inputs]: T }) => T;
 
@@ -41,11 +58,13 @@ export function forge<
   Output extends Record<string, Dimension>,
   T = number,
 >(
-  from: { [K in keyof Inputs]: Unit<Inputs[K], T> },
-  to: { [K in keyof Output]: Unit<Output[K], T> },
-  config: ForgeConfig<T> & {
+  from: ForgeInput<Inputs, T>,
+  to: ForgeOutput<Output, T>,
+  config: {
     via: Conversion<Inputs, Output, T>;
     validate?: ValidatorMap<Inputs, T>;
+    precision?: number;
+    memoize?: number;
   },
 ): (input: { [K in keyof Inputs]: T }) => { [K in keyof Output]: T };
 

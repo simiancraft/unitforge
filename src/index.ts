@@ -9,7 +9,10 @@ export type {
   Conversion,
   Dimension,
   ForgeConfig,
+  ForgeInput,
+  ForgeOutput,
   Unit,
+  UnitMap,
   ValidatorMap,
 } from './types.js';
 

@@ -27,6 +27,40 @@ export interface Unit<D extends Dimension = Dimension, T = number> {
 }
 
 /**
+ * Field-name → Unit map, parameterized by an `Inputs` (or `Output`) shape.
+ * Used wherever forge accepts a multi-key dimensional bundle: cross-dim
+ * `from`, object-shaped `to`, etc.
+ *
+ * @example
+ *   // Inputs = { length: 'length'; width: 'length' }
+ *   const fromUnits: UnitMap<{ length: 'length'; width: 'length' }> =
+ *     { length: meter, width: meter };
+ */
+export type UnitMap<M extends Record<string, Dimension>, T = number> = {
+  readonly [K in keyof M]: Unit<M[K], T>;
+};
+
+/**
+ * What `forge` accepts on the LEFT (the `from` argument). Either a single
+ * `Unit` (within-dim, scalar value flows through) or a `UnitMap` (cross-dim,
+ * object-keyed input). Provided as a named type so call signatures read
+ * `from: ForgeInput<I, T>` rather than the mapped-type longhand.
+ */
+export type ForgeInput<
+  I extends Dimension | Record<string, Dimension>,
+  T = number,
+> = I extends Dimension ? Unit<I, T> : I extends Record<string, Dimension> ? UnitMap<I, T> : never;
+
+/**
+ * What `forge` produces values into on the RIGHT (the `to` argument).
+ * Symmetric to `ForgeInput`: either a single `Unit` or a `UnitMap`.
+ */
+export type ForgeOutput<
+  O extends Dimension | Record<string, Dimension>,
+  T = number,
+> = O extends Dimension ? Unit<O, T> : O extends Record<string, Dimension> ? UnitMap<O, T> : never;
+
+/**
  * Per-property + cross-property validators for a `defineConversion`'s `inputs`.
  * Per-key validators run on each input independently; the optional `_all`
  * validator runs on the destructured input object as a whole.
