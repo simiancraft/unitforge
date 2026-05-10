@@ -1,3 +1,5 @@
+import type { Dimension, ValidatorMap } from '../types.js';
+
 /** A single validation failure record. Aggregated into `ValidationError.failures`. */
 export interface ValidationFailure {
   /** Input key that failed (or `_all` for the cross-property validator). */
@@ -63,6 +65,66 @@ function buildMessage(
     (f) => `  - ${f.stage}.${f.key} (saw ${stringifyValue(f.value)}): ${f.message}`,
   );
   return [head, ...lines].join('\n');
+}
+
+/**
+ * Runs every validator in `vmap` against `input` and pushes any failures
+ * into the shared `failures` array. Per-key validators run on each input
+ * field independently; the optional `_all` validator runs on the
+ * destructured input object as a whole. Aggregating; never short-circuits
+ * (the caller drains the full failure set into one `ValidationError`).
+ */
+export function runValidators(
+  vmap: ValidatorMap<Record<string, Dimension>, unknown> | undefined,
+  input: Record<string, unknown>,
+  stage: 'call-site' | 'definition',
+  failures: ValidationFailure[],
+): void {
+  if (!vmap) return;
+
+  for (const k of Object.keys(vmap)) {
+    if (k === '_all') continue;
+    const fn = (vmap as Record<string, unknown>)[k];
+    if (typeof fn !== 'function') continue;
+    runOne(fn as (v: unknown) => true | string | undefined, input[k], k, stage, failures);
+  }
+
+  const allFn = (vmap as { _all?: unknown })._all;
+  if (typeof allFn === 'function') {
+    runOne(allFn as (v: unknown) => true | string | undefined, input, '_all', stage, failures);
+  }
+}
+
+/**
+ * Runs a single validator. Captures both string-return rejection and
+ * thrown errors; thrown errors preserve the original `cause` so consumers
+ * can downcast (zod / yup / valibot payloads).
+ */
+function runOne(
+  fn: (v: unknown) => true | string | undefined,
+  value: unknown,
+  key: string,
+  stage: 'call-site' | 'definition',
+  failures: ValidationFailure[],
+): void {
+  try {
+    const result = fn(value);
+    if (typeof result === 'string') {
+      failures.push({ key, stage, value, message: result });
+    }
+  } catch (err) {
+    failures.push({
+      key,
+      stage,
+      value,
+      message: String(
+        err && typeof err === 'object' && 'message' in err
+          ? (err as { message: unknown }).message
+          : err,
+      ),
+      cause: err,
+    });
+  }
 }
 
 /**

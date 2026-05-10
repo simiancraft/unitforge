@@ -1,5 +1,13 @@
+import {
+  buildCacheKey,
+  DEFAULT_MEMO_CAP,
+  MEMO_CAP_MAX,
+  roundIfNumber,
+  validateMemoCap,
+  writeCache,
+} from './lib/memoize.js';
 import { safeCopy } from './lib/safeCopy.js';
-import { ValidationError, type ValidationFailure } from './lib/validation.js';
+import { runValidators, ValidationError, type ValidationFailure } from './lib/validation.js';
 import type {
   Conversion,
   Dimension,
@@ -9,14 +17,9 @@ import type {
   ValidatorMap,
 } from './types.js';
 
-/** NUL byte; used as the cache-key field separator. */
-const CACHE_KEY_SEP = '\x00';
-
-/** Hard upper bound on `ForgeConfig.memoize` cache cap (FIFO bounded cache). */
-export const MEMO_CAP_MAX = 1_048_576;
-
-/** Default cache cap for ergonomic opt-in: `forge(a, b, { memoize: DEFAULT_MEMO_CAP })`. */
-export const DEFAULT_MEMO_CAP = 1024;
+// Re-export memoize-cap constants from forge.ts so the public barrel can
+// continue to import them from here (the canonical home is lib/memoize.ts).
+export { DEFAULT_MEMO_CAP, MEMO_CAP_MAX };
 
 // ─── Public overload set ─────────────────────────────────────────────────
 // (See PLANNING.md "Public type sketch (canonical)" for the source of truth.)
@@ -180,20 +183,11 @@ function buildCrossDimConverter(
 
   const cache = memoCap > 0 ? new Map<string, unknown>() : null;
 
-  const buildKey = (input: Record<string, unknown>): string => {
-    const parts: string[] = [];
-    for (const k of inputKeys) {
-      const v = input[k];
-      parts.push(String(precisionMul != null ? roundIfNumber(v, precisionMul) : v));
-    }
-    return parts.join(CACHE_KEY_SEP);
-  };
-
   return (input) => {
     // 1-2: cache check (memoize-on only)
     let key: string | null = null;
     if (cache) {
-      key = buildKey(input);
+      key = buildCacheKey(input, inputKeys, precisionMul);
       if (cache.has(key)) return cache.get(key);
     }
 
@@ -249,7 +243,7 @@ function buildCrossDimConverter(
   };
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────
+// ─── Local helpers ───────────────────────────────────────────────────────
 
 function isUnitLike(x: unknown): x is AnyUnit {
   return (
@@ -260,21 +254,6 @@ function isUnitLike(x: unknown): x is AnyUnit {
   );
 }
 
-function validateMemoCap(memoize: unknown): number {
-  if (memoize == null) return 0;
-  if (
-    typeof memoize !== 'number' ||
-    !Number.isInteger(memoize) ||
-    memoize < 0 ||
-    memoize > MEMO_CAP_MAX
-  ) {
-    throw new Error(
-      `[unitforge] memoize must be an integer in [0, ${MEMO_CAP_MAX}]; got ${String(memoize)}`,
-    );
-  }
-  return memoize;
-}
-
 function validatePrecision(precision: unknown): number | null {
   if (precision == null) return null;
   if (typeof precision !== 'number' || !Number.isInteger(precision) || precision < 0) {
@@ -283,69 +262,4 @@ function validatePrecision(precision: unknown): number | null {
     );
   }
   return precision;
-}
-
-/** Rounds `v` if it is a finite number; otherwise returns `v` unchanged. */
-function roundIfNumber(v: unknown, mul: number | null): unknown {
-  if (mul == null) return v;
-  if (typeof v !== 'number' || !Number.isFinite(v)) return v;
-  return Math.round(v * mul) / mul;
-}
-
-function writeCache(cache: Map<string, unknown>, key: string, value: unknown, cap: number): void {
-  if (cache.size >= cap) {
-    const oldest = cache.keys().next().value;
-    if (oldest !== undefined) cache.delete(oldest);
-  }
-  cache.set(key, value);
-}
-
-function runValidators(
-  vmap: ValidatorMap<Record<string, Dimension>, unknown> | undefined,
-  input: Record<string, unknown>,
-  stage: 'call-site' | 'definition',
-  failures: ValidationFailure[],
-): void {
-  if (!vmap) return;
-
-  // Per-property validators
-  for (const k of Object.keys(vmap)) {
-    if (k === '_all') continue;
-    const fn = (vmap as Record<string, unknown>)[k];
-    if (typeof fn !== 'function') continue;
-    runOne(fn as (v: unknown) => true | string | undefined, input[k], k, stage, failures);
-  }
-
-  // Cross-property `_all` validator
-  const allFn = (vmap as { _all?: unknown })._all;
-  if (typeof allFn === 'function') {
-    runOne(allFn as (v: unknown) => true | string | undefined, input, '_all', stage, failures);
-  }
-}
-
-function runOne(
-  fn: (v: unknown) => true | string | undefined,
-  value: unknown,
-  key: string,
-  stage: 'call-site' | 'definition',
-  failures: ValidationFailure[],
-): void {
-  try {
-    const result = fn(value);
-    if (typeof result === 'string') {
-      failures.push({ key, stage, value, message: result });
-    }
-  } catch (err) {
-    failures.push({
-      key,
-      stage,
-      value,
-      message: String(
-        err && typeof err === 'object' && 'message' in err
-          ? (err as { message: unknown }).message
-          : err,
-      ),
-      cause: err,
-    });
-  }
 }
