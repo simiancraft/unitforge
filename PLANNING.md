@@ -424,6 +424,38 @@ If real-world benchmarks ever show one of these matters more (or less) than expe
 5. **End-user custom units are first-class.** Userland `defineUnit` calls produce values indistinguishable from kit-shipped units.
 6. **Tree-shaking-friendly userland pattern.** Consumers typically collect their forged converters in a project-local module that imports only what they use.
 
+### Beyond unit conversion (side capability)
+
+The same primitives that convert between units can also express **domain-centric scaling**: a `defineConversion` describing how a value in one domain maps to a value in another (linear, logarithmic, piecewise, anything `(input) => output`). `forge` then produces the scaling function. This is a discoverable property of the API shape, not a primary use case — but it is worth knowing because it informs how kits should be designed.
+
+Example: a slider position [0..100] mapping to volume in dB [-60..0]:
+
+```ts
+const SLIDER_POSITION = 'slider-position' as const;
+const VOLUME_DB       = 'volume-db'       as const;
+
+const sliderPosition = defineUnit({ name: 'slider-position', dimension: SLIDER_POSITION, ...linear(1) });
+const volumeDb       = defineUnit({ name: 'volume-db',       dimension: VOLUME_DB,       ...linear(1) });
+
+const sliderToDb = defineConversion({
+  inputs: { position: SLIDER_POSITION },
+  output: VOLUME_DB,
+  compute: ({ position }) => -60 + (position / 100) * 60,
+});
+
+const sliderToVolume = forge(
+  { position: sliderPosition },
+  volumeDb,
+  { via: sliderToDb }
+);
+
+sliderToVolume({ position: 50 });  // -30
+```
+
+Where this earns its keep: scaling functions that genuinely benefit from the unit-and-dimension framing — named domain/range, opt-in validators on the input domain, opt-in memoize for cached lookups, importable as values, kit-author composability. For pure UI scaling without domain semantics, `d3-scale` is purpose-built and richer.
+
+**Kit-design implication.** Kits that ship a domain often have natural scaling functions associated with that domain: audio (slider → dB curves, frequency → MIDI note), game mechanics (armor → damage mitigation, stat → effective stat), finance (credit rating → interest spread), graphics (linear light → sRGB). These can ship as `defineConversion` values within the kit, alongside the unit definitions, without requiring any new library machinery. Kit authors should consider scaling-as-conversion when designing a domain-centric kit; it composes naturally with the rest of the kit's units and conversions.
+
 ## File layout
 
 ```
