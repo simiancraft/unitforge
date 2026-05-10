@@ -878,7 +878,7 @@ Repo, license, community-health files, and CI workflows are already in place. Re
 3. Scaffold `demo/` as a vite app with placeholder content.
 4. Wire `--provenance` into `.releaserc.json` and CI publish step (currently only documented).
 5. Implement v1: `si`, `imperial`, `cooking`, `inventory`, `pharmacy` kits and supporting conversions.
-6. Write README hero block; the test of design coherence is whether the hero block fits in under 30 lines and reads cleanly.
+6. **README rewrite is deferred until after v1 ships.** The pre-1.0 README is intentionally minimal (a placeholder API sketch and a "pre-alpha, do not depend on" warning). The marketing-grade README — competitive positioning, kit roster surfaced with real names, hero block with a working cross-dim example, demo GIFs, performance numbers, Scorecard badge — lands once we have real kits to name, real benchmarks to cite, and a working demo to GIF. Writing it earlier means writing claims we can't yet substantiate. The "Beyond unit conversion" framing, the cross-domain pitch, and the kit-by-kit quick-tour all wait for this rewrite.
 7. File issues for queued kits (analog of chromonym #21–#30).
 
 ## Appendix: design history
