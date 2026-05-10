@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 import { AREA, LENGTH, VOLUME } from '../../src/dimensions.js';
+import { forge, ValidationError } from '../../src/index.js';
 import {
   acre,
+  areaFromCircleRadius,
+  areaFromSquareSide,
   centimeter,
   cubicCentimeter,
   cubicFoot,
@@ -22,6 +25,10 @@ import {
   squareKilometer,
   squareMeter,
   squareMillimeter,
+  volumeFromCubeSide,
+  volumeFromCylinderRadiusAndHeight,
+  volumeFromLengthAndWidthAndHeight,
+  volumeFromSphereRadius,
   yard,
 } from '../../src/kits/geometry/index.js';
 
@@ -385,6 +392,150 @@ describe('geometry/units: VOLUME', () => {
     });
     it('1 mL = 1 cm³ (cross-verify with cubicCentimeter)', () => {
       expect(milliliter.toBase(1)).toBeCloseTo(cubicCentimeter.toBase(1), 18);
+    });
+  });
+});
+
+// Conversion tests assert four invariants:
+//   1. correct numerical output for known inputs in base units
+//   2. correct unit-aware output via mixed-unit forge call (toBase normalization)
+//   3. correct ValidationError when an input is out of range (typically negative)
+//   4. cross-property invariants (e.g., circle area ≈ π r²) where applicable
+
+describe('geometry/conversions: AREA derivations', () => {
+  describe('areaFromSquareSide', () => {
+    it('side² = area in base units', () => {
+      const fn = forge({ side: meter }, squareMeter, { via: areaFromSquareSide });
+      expect(fn({ side: 5 })).toBeCloseTo(25, 12);
+      expect(fn({ side: 0 })).toBeCloseTo(0, 12);
+      expect(fn({ side: 12.5 })).toBeCloseTo(156.25, 12);
+    });
+    it('honors mixed input units (cm side → m² area)', () => {
+      const fn = forge({ side: centimeter }, squareMeter, { via: areaFromSquareSide });
+      // 100 cm = 1 m → area = 1 m²
+      expect(fn({ side: 100 })).toBeCloseTo(1, 9);
+    });
+    it('rejects negative side', () => {
+      const fn = forge({ side: meter }, squareMeter, { via: areaFromSquareSide });
+      expect(() => fn({ side: -1 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('areaFromCircleRadius', () => {
+    it('π · r² = area in base units', () => {
+      const fn = forge({ radius: meter }, squareMeter, { via: areaFromCircleRadius });
+      expect(fn({ radius: 1 })).toBeCloseTo(Math.PI, 12);
+      expect(fn({ radius: 2 })).toBeCloseTo(4 * Math.PI, 12);
+      expect(fn({ radius: 0 })).toBe(0);
+    });
+    it('honors mixed input units (cm radius → m² area)', () => {
+      const fn = forge({ radius: centimeter }, squareMeter, { via: areaFromCircleRadius });
+      // 100 cm = 1 m → area = π m²
+      expect(fn({ radius: 100 })).toBeCloseTo(Math.PI, 9);
+    });
+    it('rejects negative radius', () => {
+      const fn = forge({ radius: meter }, squareMeter, { via: areaFromCircleRadius });
+      expect(() => fn({ radius: -1 })).toThrow(ValidationError);
+    });
+  });
+});
+
+describe('geometry/conversions: VOLUME derivations', () => {
+  describe('volumeFromLengthAndWidthAndHeight', () => {
+    it('l × w × h = volume in base units', () => {
+      const fn = forge({ length: meter, width: meter, height: meter }, cubicMeter, {
+        via: volumeFromLengthAndWidthAndHeight,
+      });
+      expect(fn({ length: 2, width: 3, height: 4 })).toBeCloseTo(24, 12);
+      expect(fn({ length: 0, width: 5, height: 5 })).toBe(0);
+    });
+    it('honors mixed input units (cm × m × m)', () => {
+      const fn = forge({ length: centimeter, width: meter, height: meter }, cubicMeter, {
+        via: volumeFromLengthAndWidthAndHeight,
+      });
+      // 200 cm = 2 m; 2 × 3 × 4 = 24 m³
+      expect(fn({ length: 200, width: 3, height: 4 })).toBeCloseTo(24, 9);
+    });
+    it('rejects any negative dimension; aggregates failures', () => {
+      const fn = forge({ length: meter, width: meter, height: meter }, cubicMeter, {
+        via: volumeFromLengthAndWidthAndHeight,
+      });
+      let caught: ValidationError | null = null;
+      try {
+        fn({ length: -1, width: -2, height: -3 });
+      } catch (e) {
+        caught = e instanceof ValidationError ? e : null;
+      }
+      if (!caught) throw new Error('expected ValidationError');
+      expect(caught.failures).toHaveLength(3);
+      expect(caught.failures.map((f) => f.key).sort()).toEqual(['height', 'length', 'width']);
+    });
+  });
+
+  describe('volumeFromCubeSide', () => {
+    it('side³ = volume in base units', () => {
+      const fn = forge({ side: meter }, cubicMeter, { via: volumeFromCubeSide });
+      expect(fn({ side: 2 })).toBeCloseTo(8, 12);
+      expect(fn({ side: 3 })).toBeCloseTo(27, 12);
+      expect(fn({ side: 0 })).toBe(0);
+    });
+    it('honors mixed input units (cm side → m³)', () => {
+      const fn = forge({ side: centimeter }, cubicMeter, { via: volumeFromCubeSide });
+      // 100 cm = 1 m → volume = 1 m³
+      expect(fn({ side: 100 })).toBeCloseTo(1, 9);
+    });
+    it('rejects negative side', () => {
+      const fn = forge({ side: meter }, cubicMeter, { via: volumeFromCubeSide });
+      expect(() => fn({ side: -1 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('volumeFromSphereRadius', () => {
+    it('(4/3) π r³ = volume in base units', () => {
+      const fn = forge({ radius: meter }, cubicMeter, { via: volumeFromSphereRadius });
+      expect(fn({ radius: 1 })).toBeCloseTo((4 / 3) * Math.PI, 12);
+      expect(fn({ radius: 2 })).toBeCloseTo((4 / 3) * Math.PI * 8, 12);
+      expect(fn({ radius: 0 })).toBe(0);
+    });
+    it('honors mixed input units (cm radius → m³ volume)', () => {
+      const fn = forge({ radius: centimeter }, cubicMeter, { via: volumeFromSphereRadius });
+      // 100 cm = 1 m → volume = (4/3) π m³
+      expect(fn({ radius: 100 })).toBeCloseTo((4 / 3) * Math.PI, 9);
+    });
+    it('rejects negative radius', () => {
+      const fn = forge({ radius: meter }, cubicMeter, { via: volumeFromSphereRadius });
+      expect(() => fn({ radius: -1 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('volumeFromCylinderRadiusAndHeight', () => {
+    it('π r² h = volume in base units', () => {
+      const fn = forge({ radius: meter, height: meter }, cubicMeter, {
+        via: volumeFromCylinderRadiusAndHeight,
+      });
+      expect(fn({ radius: 1, height: 1 })).toBeCloseTo(Math.PI, 12);
+      expect(fn({ radius: 2, height: 5 })).toBeCloseTo(20 * Math.PI, 12);
+      expect(fn({ radius: 0, height: 10 })).toBe(0);
+    });
+    it('honors mixed input units (cm radius, m height)', () => {
+      const fn = forge({ radius: centimeter, height: meter }, cubicMeter, {
+        via: volumeFromCylinderRadiusAndHeight,
+      });
+      // 100 cm = 1 m; π × 1² × 5 = 5π
+      expect(fn({ radius: 100, height: 5 })).toBeCloseTo(5 * Math.PI, 9);
+    });
+    it('rejects negative radius or height; aggregates', () => {
+      const fn = forge({ radius: meter, height: meter }, cubicMeter, {
+        via: volumeFromCylinderRadiusAndHeight,
+      });
+      let caught: ValidationError | null = null;
+      try {
+        fn({ radius: -1, height: -1 });
+      } catch (e) {
+        caught = e instanceof ValidationError ? e : null;
+      }
+      if (!caught) throw new Error('expected ValidationError');
+      expect(caught.failures).toHaveLength(2);
     });
   });
 });
