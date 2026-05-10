@@ -10,7 +10,7 @@ A planning artifact captured at project inception. **For pre-1.0**, this documen
 - **Sibling reference**: `~/Simiancraft_Programming/Simiancraft/chromonym` is the architectural specimen
 - **Author**: simiancraft / the-simian
 - **License**: MIT (matching chromonym)
-- **Status**: pre-init, planning only
+- **Status**: pre-alpha; `0.0.0` published as a name reservation; v1 implementation pending
 
 ## Thesis
 
@@ -154,12 +154,12 @@ export const spoolOfTape = defineUnit({
   ...linear(1),
 });
 
-// The conversion to inner content (length).
-// 1 spool = 100 inches of tape.
+// The conversion to inner content (length). 1 spool = 100 inches of tape.
+// LENGTH base is the meter; 100 in = 2.54 m, so multiplier per spool is 2.54.
 export const lengthFromSpoolOfTape = defineConversion({
   inputs:  { spools: COUNT },
   output:  LENGTH,
-  compute: ({ spools }) => spools * 2.54,  // 1 spool = 100 in = 2.54 m (LENGTH base)
+  compute: ({ spools }) => spools * 2.54,
 });
 
 // Use:
@@ -290,14 +290,20 @@ export const massFromVolumeAndDensity = defineConversion({
 A scalar-output example is shown above. An object-output example (window pixel-to-CSS scaling):
 
 ```ts
+// Note: `compute` MUST be a pure function of its inputs. To make a DPR-aware
+// scaler pure, treat DPR as an input dimension rather than an external read:
+const DPR = 'device-pixel-ratio' as const;
+
 export const screenPxToCssPx = defineConversion({
-  inputs: { width: SCREEN_PX, height: SCREEN_PX },
-  output: { width: CSS_PX,    height: CSS_PX    },
-  compute: ({ width, height }) => ({
-    width:  width  / devicePixelRatio,
-    height: height / devicePixelRatio,
+  inputs:  { width: SCREEN_PX, height: SCREEN_PX, dpr: DPR },
+  output:  { width: CSS_PX,    height: CSS_PX    },
+  compute: ({ width, height, dpr }) => ({
+    width:  width  / dpr,
+    height: height / dpr,
   }),
 });
+// Consumers pass the live DPR value at the call site; the compute stays pure
+// and the cache keys correctly bucket by DPR.
 ```
 
 `validate` is optional and carries the conversion's universal input invariants:
@@ -427,7 +433,12 @@ export interface Unit<D extends Dimension = Dimension, T = number> {
   readonly base?: boolean;
 }
 
-// Both `from` and `to` slots of forge accept either shape.
+// Conceptual type — both `from` and `to` slots of `forge` accept either shape.
+// The three concrete `forge` overloads below instantiate this union via mapped
+// types `{ [K in keyof Inputs]: Unit<Inputs[K], T> }` so per-key dimensions
+// thread through; this alias is exported for consumer-side helper types
+// (e.g., `function helper(slot: UnitContainer): ...`) and is referenced by the
+// overloads conceptually, not literally.
 export type UnitContainer<T = number> =
   | Unit<Dimension, T>
   | Record<string, Unit<Dimension, T>>;
@@ -476,7 +487,8 @@ export interface ForgeConfig<T = number> {
   /** Call-site validators, additive on top of the conversion's own. */
   validate?: ValidatorMap<Record<string, Dimension>, T>;
 
-  /** Output rounding AND cache-key normalization. Native-number only at v1. */
+  /** Output rounding AND cache-key normalization. Native-number only at v1.
+   *  Non-negative integer; `0` means "round to integer"; absent means no rounding. */
   precision?: number;
 
   /** LRU cap. 0 or absent = off. Bounds [0, 1_048_576]. DEFAULT_MEMO_CAP = 1024. */
@@ -486,10 +498,12 @@ export interface ForgeConfig<T = number> {
 // ─── forge overloads ─────────────────────────────────────────────────────
 
 // 1. Within-dimension. Both Units. No via.
+//    `via?: never` constraint prevents this overload from accidentally matching
+//    cross-dim calls where the consumer mistakenly passed a `via:` value.
 export function forge<D extends Dimension, T = number>(
   from: Unit<D, T>,
   to:   Unit<D, T>,
-  config?: ForgeConfig<T>,
+  config?: Omit<ForgeConfig<T>, 'via'> & { via?: never },
 ): (value: T) => T;
 
 // 2. Cross-dim. Object input → single-Unit output. Via required.
@@ -531,6 +545,9 @@ export class ValidationError extends Error {
     stage: 'forge-config' | 'conversion';
     value: unknown;
     message: string;
+    /** Original thrown error if the validator threw (vs returned a string).
+     *  Preserves zod/yup `ZodError` etc. so consumers can downcast via `.cause`. */
+    cause?: unknown;
   }>;
   // .message via lazy self-overwriting getter (see Implementation hints).
 }
@@ -741,7 +758,7 @@ These rules are non-negotiable through v1; they are what holds the design togeth
 9. **Granular per-unit files.** Each kit is a folder of one-unit-per-file modules with a barrel `index.ts`.
 10. **Naming convention enforced by lint.** A small dev-only checker greps for `defineUnit`/`defineConversion` calls and the export they're assigned to, verifying the export name matches the filename in camelCase. `defineUnit`'s `name:` field must also match. (`defineConversion` carries no `name:` field.) Initial form: ~50 lines of regex; ship as project pre-commit hook + CI step; extract as `unitforge-lint` if it earns its keep.
 11. **Trademark and source attribution discipline.** Kits referencing third-party standards (RAL, USP/WHO, BIPM) cite source and version-pin in source comments. NOTICE.md tracks attribution.
-12. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/internal/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable keys and throws a clear definition-time error if any key is reserved (`__proto__`, `constructor`, `prototype`). All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus `Object.create(null)` target on the failure path. The hot-path converter does NOT call `safeCopy` (no vector to guard against; no mutation, no prototype-chain assignment). Cost lands on definition, forge-creation, and validation-failure paths; per-call overhead unchanged.
+12. **Prototype-pollution rejection via `safeCopy`.** A single internal helper `safeCopy(spec)` (in `src/internal/safeCopy.ts`) takes a user-supplied object and returns a sanitized shallow copy: spreads to neutralize literal-syntax `__proto__:` pollution, then iterates own enumerable string keys and throws a clear definition-time error if any key is reserved (`__proto__`, `constructor`, `prototype`). **`safeCopy` is shallow by design**: it screens only own-enumerable string keys at the top level. It does NOT recurse into function values (validator functions, `compute` functions) or nested data structures; the trust boundary is "we trust `defineUnit`/`defineConversion`-produced values that already passed `safeCopy` at their own definition time." All factory entry points (`defineUnit`, `defineConversion`, `forge`) call `safeCopy` on their inputs as the first action; nested user-controlled key maps (`defineConversion.inputs`, `.validate`, `ForgeConfig.validate`, object-shape `from`) each get their own `safeCopy` call. `ValidationError.inputs` is constructed via `safeCopy` plus `Object.create(null)` target on the failure path. The hot-path converter does NOT call `safeCopy` (no vector to guard against; no mutation, no prototype-chain assignment). Cost lands on definition, forge-creation, and validation-failure paths; per-call overhead unchanged.
 
 ## v1 kit roster
 
@@ -882,6 +899,7 @@ Semver applies; the question is what counts as a breaking change for a registry 
 | Bug fix in `compute` that changes returned values | patch (with prominent CHANGELOG entry) |
 | Changing the wording of a `ValidationError.failures[].message` string | patch (strings unstable; consumers must not grep them) |
 | Changing the wording of a teaching error message | patch (shape stable; wording unstable) |
+| Changing the cache-key algorithm, separator, rounding, or `-0` coercion | patch (cache internals are non-public; consumers MUST NOT persist memo state across upgrades) |
 
 Pre-1.0 (`0.x.y`): minor bumps may include breaking changes per Conventional Commits + semantic-release defaults. The discipline above kicks in at 1.0.
 
