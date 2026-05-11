@@ -14,6 +14,7 @@
 // variants for variation).
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CroutonDemo } from './CroutonDemo.js';
 import { CoreApiIntro } from './CoreApiIntro.js';
 import { EmberStream } from '../components/EmberStream.js';
@@ -148,7 +149,13 @@ export function Home() {
     }, NAV_DELAY_MS);
   };
 
-  return (
+  // Portal the background flair (forge-flash + ember streams) directly
+  // into document.body. The anvil-strike animation applies `transform`
+  // to <main>; any `position: fixed` descendant of a transformed
+  // ancestor is positioned relative to that ancestor instead of the
+  // viewport. Portaling sidesteps the issue and keeps the flash
+  // pinned to viewport-bottom even mid-strike or during page scroll.
+  const flair = (
     <>
       <div
         key={`forge-flash-${flashKey}`}
@@ -193,6 +200,12 @@ export function Home() {
         durationMax={STOKE_DURATION_MAX / slotB.intensity}
         maxDelaySec={STOKE_MAX_DELAY_SEC}
       />
+    </>
+  );
+
+  return (
+    <>
+      {createPortal(flair, document.body)}
 
       <section className="flex flex-col gap-12">
         <header className="flex flex-col items-center text-center gap-4">
