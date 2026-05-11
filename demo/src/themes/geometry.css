@@ -1,0 +1,27 @@
+/* Geometry / engineering-paper theme: cream + navy ink + red pencil,
+ * cyan grid tokens, paper-grain texture utility. Imported from
+ * `pages/Geometry.tsx`.
+ */
+
+[data-theme='geometry'] {
+  /* Contrast-tuned per WCAG AA: muted #4d566b (6.4:1), accent #b73a3b
+   * (5:1), grid #3e7fa6 (3.8:1).
+   */
+  --uf-bg: #f6efdc;
+  --uf-fg: #1a2238;
+  --uf-muted: #4d566b;
+  --uf-accent: #b73a3b;
+  --uf-card: #fffaf0;
+  --uf-border: #2b3553;
+  --uf-code-bg: #1a2238;
+
+  --uf-display: 'Caveat', 'Georgia', cursive;
+  --uf-grid: #3e7fa6;
+  --uf-grid-faint: #3e7fa666; /* ~40% alpha */
+}
+
+/* Subtle paper-grain dot texture on `.uf-paper` surfaces. */
+[data-theme='geometry'] .uf-paper {
+  background-image: radial-gradient(circle at 1px 1px, var(--uf-grid-faint) 1px, transparent 0);
+  background-size: 12px 12px;
+}

@@ -1,0 +1,36 @@
+/* Data-storage / PCB-phosphor theme: green-black surface, phosphor green
+ * foreground, amber LED accent, copper trace tokens, scanline overlay.
+ * Imported from `pages/DataStorage.tsx`.
+ */
+
+[data-theme='data-storage'] {
+  /* Contrast-tuned: muted #6e9c7e (6.0:1), border #a06a2e (4.1:1) so
+   * card edges read.
+   */
+  --uf-bg: #0a1410;
+  --uf-fg: #a3ff7f;
+  --uf-muted: #6e9c7e;
+  --uf-accent: #ffb000;
+  --uf-card: #0f1f18;
+  --uf-border: #a06a2e;
+  --uf-code-bg: #050a08;
+
+  --uf-display: 'JetBrains Mono', ui-monospace, monospace;
+  --uf-trace: #c8881e;
+  --uf-trace-faint: #c8881e22;
+}
+
+/* Subtle phosphor scanline shimmer for data-storage panels. */
+[data-theme='data-storage'] .uf-scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(163, 255, 127, 0.03) 2px,
+    rgba(163, 255, 127, 0.03) 3px
+  );
+}

@@ -1,22 +1,20 @@
 @import 'tailwindcss';
 
 /*
- * Per-kit theme system.
- *
- * Each kit owns a complete visual identity (palette, accent, surface, flair).
- * A `data-theme="<kit>"` attribute on the route container swaps the variable
- * bundle. Components reference variables only; they never hardcode color.
- *
- *   data-theme="home"          forge / hot-metal / dark
- *   data-theme="geometry"      cream paper / navy ink / red pencil
- *   data-theme="data-storage"  PCB green-black / phosphor / amber LED
+ * Shared theme infrastructure. Per-kit palettes + kit-specific keyframes
+ * live in `themes/<kit>.css`, imported from their corresponding page
+ * component. This file holds only the cross-kit defaults (`:root`),
+ * layout primitives (`.uf-card`, `.uf-eyebrow`, `.uf-flare-card`), and
+ * global utilities (`.uf-skip-link`, `.uf-code-scroll`, `:focus-visible`).
  */
 
 :root {
   /* Brand baseline (used by the masthead + footer regardless of route). */
   --uf-brand: #f97316;
 
-  /* Default = home theme tokens. */
+  /* Default = home theme tokens; per-route overrides land via the
+   * [data-theme='<kit>'] selectors in themes/<kit>.css.
+   */
   --uf-bg: #0d0d0d;
   --uf-fg: #f4ede0;
   --uf-muted: #9b8e7e;
@@ -30,50 +28,6 @@
     'Helvetica Neue', Arial, sans-serif;
   --uf-mono: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
-}
-
-[data-theme='home'] {
-  --uf-bg: #0d0d0d;
-  --uf-fg: #f4ede0;
-  --uf-muted: #9b8e7e;
-  --uf-accent: #f97316;
-  --uf-card: #161412;
-  --uf-border: #7a6948; /* warm-leather; raised from #2b231a (1.26:1 -> 3.65:1) */
-  --uf-code-bg: #0a0908;
-}
-
-[data-theme='geometry'] {
-  /* engineering-paper cream + navy ink + red pencil. Contrast-tuned per
-   * WCAG AA: muted #4d566b (6.4:1), accent #b73a3b (5:1), grid #3e7fa6 (3.8:1).
-   */
-  --uf-bg: #f6efdc;
-  --uf-fg: #1a2238;
-  --uf-muted: #4d566b;
-  --uf-accent: #b73a3b;
-  --uf-card: #fffaf0;
-  --uf-border: #2b3553;
-  --uf-code-bg: #1a2238;
-
-  --uf-display: 'Caveat', 'Georgia', cursive;
-  --uf-grid: #3e7fa6;
-  --uf-grid-faint: #3e7fa666; /* ~40% alpha; was 12% and barely visible */
-}
-
-[data-theme='data-storage'] {
-  /* PCB green-black + phosphor + amber LED. Contrast-tuned: muted
-   * #6e9c7e (6.0:1), border #a06a2e (4.1:1) so card edges read.
-   */
-  --uf-bg: #0a1410;
-  --uf-fg: #a3ff7f;
-  --uf-muted: #6e9c7e;
-  --uf-accent: #ffb000;
-  --uf-card: #0f1f18;
-  --uf-border: #a06a2e;
-  --uf-code-bg: #050a08;
-
-  --uf-display: 'JetBrains Mono', ui-monospace, monospace;
-  --uf-trace: #c8881e;
-  --uf-trace-faint: #c8881e22;
 }
 
 html,
@@ -90,9 +44,6 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-/* The themed route container in App.tsx paints the actual page background;
- * the body bg above is just an SSR / first-paint baseline that gets covered
- * the moment the route container mounts. */
 
 /* Visible focus ring across every interactive surface; themed via --uf-accent. */
 :where(a, button, select, input, [role='slider'], [tabindex]):focus-visible {
@@ -119,9 +70,7 @@ body {
   left: 8px;
 }
 
-/* Thin, theme-aware scrollbars for code-block overflow. Only show when
- * actually needed (overflow:auto); chromium + firefox both honor these.
- */
+/* Thin, theme-aware scrollbars for code-block overflow. */
 .uf-code-scroll {
   overflow-x: auto;
   scrollbar-width: thin;
@@ -138,50 +87,6 @@ body {
   border-radius: 3px;
 }
 
-/* Anvil-strike: a brief one-shot vertical translate played when the user
- * hovers a kit card on home, evoking the hammer-on-anvil percussion that
- * the forge metaphor implies. ~280ms, ~3px peak; below the threshold of
- * "vestibular alarm" per WAI motion guidance but enough to read as impact.
- */
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes uf-anvil-strike {
-    0%   { transform: translateY(0); }
-    18%  { transform: translateY(3px); }
-    40%  { transform: translateY(-2px); }
-    62%  { transform: translateY(1px); }
-    100% { transform: translateY(0); }
-  }
-  .uf-anvil-strike {
-    animation: uf-anvil-strike 280ms ease-out;
-  }
-
-  /* Forge-glow flash: scales out of the bottom of the viewport on the
-   * first 20% of the timeline, then opacity decays to 0. Pairs with
-   * each stoke burst; reads as a flame leaping up from the anvil.
-   * The element using this needs `transform-origin: bottom`.
-   */
-  @keyframes uf-forge-flash {
-    0%   { transform: scaleY(0); opacity: 1; }
-    20%  { transform: scaleY(1); opacity: 1; }
-    100% { transform: scaleY(1); opacity: 0; }
-  }
-
-}
-
-@media (prefers-reduced-motion: reduce) {
-  @keyframes uf-forge-flash {
-    0%, 100% { transform: scaleY(1); opacity: 0.25; }
-  }
-}
-
-/* Anvil / hammer cursor on the home kit tiles; lucide Hammer SVG inlined
- * as a data-URI with brand orange stroke. Adds delight on the home page
- * only; everywhere else the normal pointer applies.
- */
-.uf-anvil-cursor {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m15 12-8.5 8.5c-.83.83-2.17.83-3 0a2.12 2.12 0 0 1 0-3L12 9'/><path d='M17.64 15 22 10.64'/><path d='m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91'/></svg>") 4 4, pointer;
-}
-
 code,
 pre,
 .mono {
@@ -192,7 +97,7 @@ pre,
   font-family: var(--uf-display);
 }
 
-/* Demo section borders + cards reference these so the per-kit theme propagates. */
+/* Demo section cards reference these so the per-kit theme propagates. */
 .uf-card {
   background: var(--uf-card);
   border: 1px solid var(--uf-border);
@@ -206,29 +111,7 @@ pre,
   color: var(--uf-muted);
 }
 
-/* Geometry: paper grain texture (subtle dot pattern, only on the page bg). */
-[data-theme='geometry'] body::before,
-[data-theme='geometry'] .uf-paper {
-  background-image: radial-gradient(circle at 1px 1px, var(--uf-grid-faint) 1px, transparent 0);
-  background-size: 12px 12px;
-}
-
-/* Subtle scanline shimmer for data-storage panels (purely decorative). */
-[data-theme='data-storage'] .uf-scanlines::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 2px,
-    rgba(163, 255, 127, 0.03) 2px,
-    rgba(163, 255, 127, 0.03) 3px
-  );
-}
-
-/* Generic floating-shape flare (cards on home preview their kit's vibe). */
+/* Floating-shape flare wrapper (kit cards on home preview their kit's vibe). */
 .uf-flare-card {
   position: relative;
   overflow: hidden;

@@ -15,6 +15,11 @@ import { CircuitBg } from '../themes/CircuitBg.js';
 import { EmberStream } from '../themes/EmberStream.js';
 import { GridPaperBg } from '../themes/GridPaperBg.js';
 import { KITS } from '../lib/kits.js';
+import '../themes/home.css';
+// Kit-card backgrounds preview their target kit's theme inline, so the
+// kit-CSS bundles need to load on home too.
+import '../themes/geometry.css';
+import '../themes/data-storage.css';
 
 // ─── tweakables ──────────────────────────────────────────────────────────
 const AMBIENT_COUNT = 32;

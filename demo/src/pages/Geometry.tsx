@@ -12,6 +12,7 @@ import { findByKey, LENGTH_UNITS } from '../lib/units.js';
 import { CircleMachine } from '../widgets/CircleMachine.js';
 import { HelloUnit } from '../widgets/HelloUnit.js';
 import { RectangleMachine } from '../widgets/RectangleMachine.js';
+import '../themes/geometry.css';
 
 // Grid cell size in pixels, per "from" unit. The grid background reads this
 // and reticks; the effect is "the paper resamples when you change units".

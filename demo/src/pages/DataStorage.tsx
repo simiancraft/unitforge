@@ -13,6 +13,7 @@ import { DriveVsOs } from '../widgets/DriveVsOs.js';
 import { HelloBytes } from '../widgets/HelloBytes.js';
 import { RamStick } from '../widgets/RamStick.js';
 import { ThroughputViz } from '../widgets/ThroughputViz.js';
+import '../themes/data-storage.css';
 
 export function DataStoragePage() {
   const [bench, setBench] = useState<BenchState<'data'>>({
