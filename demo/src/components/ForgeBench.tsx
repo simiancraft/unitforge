@@ -16,7 +16,7 @@ import { forge } from 'unitforge';
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { CopyButton } from './CodeBlock.js';
-import { useKitTheme } from './KitTheme.js';
+import { useKitTheme } from './kits/theme.js';
 import { cachedHighlight, highlight } from '../lib/highlighter.js';
 
 export interface BenchState<D extends Dimension> {

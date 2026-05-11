@@ -13,7 +13,7 @@ import { forge } from 'unitforge';
 import { LENGTH_UNITS, findByKey } from '../lib/units.js';
 import { cachedHighlight, highlight } from '../lib/highlighter.js';
 import { CopyButton } from '../components/CodeBlock.js';
-import { useKitTheme } from '../components/KitTheme.js';
+import { useKitTheme } from '../components/kits/theme.js';
 
 const MIN = 0.1;
 const MAX = 100;

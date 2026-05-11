@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { Check, Copy } from 'lucide-react';
-import { useKitTheme } from './KitTheme.js';
+import { useKitTheme } from './kits/theme.js';
 import { cachedHighlight, highlight } from '../lib/highlighter.js';
 
 type Lang = 'ts' | 'tsx' | 'js';
