@@ -1,22 +1,57 @@
 # unitforge
 
-> A units-of-measure library for arbitrary domains. Three free functions (`convert`, `defineUnit`, `defineConversion`) work against three additive registries: dimensions, kits, conversions. First-class custom dimensions for non-physical domains (game state, business metrics, simulation), first-class packaging units for inventory (`definePack`), tree-shakeable per-unit imports. Not just a physics library.
+> A units-of-measure library for arbitrary domains. Three primitives (`forge`, `defineUnit`, `defineConversion`) work against any dimension and unit a consumer (or kit author) declares. First-class custom dimensions for non-physical domains (game state, business metrics, simulation, packaging, factions); per-unit tree-shake; not just a physics library.
 
 ## Status
 
-Pre-1.0. Design is captured in [PLANNING.md](./PLANNING.md). Code, README, and demo are in scaffolding.
-
-## Key files
-
-- [PLANNING.md](./PLANNING.md) — design intent, three-registry model, API shape, kit strategy, discipline rules
-- [AGENTS.md](./AGENTS.md) — agent/contributor orientation
-- [CONTRIBUTING.md](./CONTRIBUTING.md) — setup, commands, commit conventions
-- [SECURITY.md](./SECURITY.md) — security policy and reporting
-- [NOTICE.md](./NOTICE.md) — third-party attributions (currently empty; populated as kits ship)
+Published to npm. Public API is stable. The shipped surface is `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, plus the `Dimension`, `Unit`, `Conversion`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ForgeConfig`, `ValidatorMap`, and `ValidationFailure` types.
 
 ## Thesis
 
-Units, dimensions, and conversions are all values you import. Within-dimension conversions are free; cross-dimensional conversions are explicit, single-hop, and registered via `defineConversion`. Custom dimensions and units are first-class, the same shape as the library's own.
+Units, dimensions, and conversions are values you import. Within-dimension conversions are free; cross-dimensional conversions are explicit, single-hop, and registered via `defineConversion`. Custom dimensions and units are first-class, the same shape as the library's own kits.
+
+## API surface
+
+- `forge(from, to, config?)`: returns a converter function. Three overloads cover within-dim (scalar in, scalar out, no `via`); cross-dim with scalar output (object in, scalar out, `via` required); cross-dim with object output (object in, object out, `via` required). `NoInfer<D>` on the within-dim `to` parameter makes mismatched-dimension forges a compile error.
+- `defineUnit(spec)`: returns a `Unit`. Spec is `{ name, dimension, toBase, fromBase, base? }`. `safeCopy` rejects prototype-pollution keys at definition time.
+- `defineConversion(spec)`: returns a `Conversion`. Spec is `{ inputs, output, validate?, compute }`. `compute` runs in base units; the library normalizes inputs from whatever unit the call site uses before calling it.
+- `linear(scale)`: helper returning `{ toBase, fromBase }` for the linear case. For userland one-offs only; kit-shipped units MUST inline closures because the spread `...linear(scale)` introduces a `CallExpression` inside the spec literal which defeats per-export tree-shaking even when `defineUnit(...)` is `/*#__PURE__*/`-marked.
+
+## Kits
+
+- `unitforge/kits/geometry`: LENGTH, AREA, VOLUME units (metric + imperial); cross-dim conversions for rectangle, square, circle area and box, cube, sphere, cylinder volume.
+- `unitforge/kits/data-storage`: DATA units; decimal bytes (kilobyte through petabyte, ×1000), binary bytes (kibibyte through pebibyte, ×1024 per IEC 80000-13), bits (bit through gigabit, 1 bit = 1/8 byte).
+
+## Subpath imports
+
+| Subpath | Exports |
+| --- | --- |
+| `unitforge` | API barrel: `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, `DEFAULT_MEMO_CAP`, `MEMO_CAP_MAX`, plus types |
+| `unitforge/dimensions` | `LENGTH`, `AREA`, `VOLUME`, `DATA`, `DIMENSIONS` tuple, `Dimension` type |
+| `unitforge/kits/<kit>` | every unit and conversion shipped by `<kit>` |
+| `unitforge/validation` | `ValidationError`, `ValidationFailure` type |
+| `unitforge/version` | `VERSION: string` (read from `package.json` at runtime; on its own subpath because the JSON import would inline `package.json` into every consumer bundle) |
+
+## Tree-shake implementation
+
+- `"sideEffects": false` in `package.json`.
+- Every kit unit and conversion is `/*#__PURE__*/`-marked so importing only `meter` drops `centimeter`, `squareMeter`, and every other unused export.
+- All exports are named; no default export.
+- Per-kit subpath (`unitforge/kits/<name>`) so importing from `geometry` never pulls a sibling kit.
+- Kit unit definitions inline `toBase`/`fromBase` closures rather than spreading `...linear(scale)` because a `CallExpression` inside the spec literal defeats per-export tree-shake even when the outer `defineUnit(...)` is PURE-marked.
+
+## ForgeConfig narrowing nuance
+
+`ForgeConfig<T>` is exported from the root barrel for userland wrappers (e.g. a helper function that takes a config and forwards it to `forge`). The `forge` overloads themselves do NOT take `ForgeConfig<T>` directly; each overload inlines its own narrow config shape so `via` can be tied to the call's inferred `Inputs`/`Output`. A wrapper that passes a `ForgeConfig`-typed value into a cross-dim `forge` call will fail to type-check because the loose `via?` cannot satisfy the narrow `via:` constraint. Resolution: narrow `via` in the wrapper's own generic signature, or write the inline config object literal at the `forge` call site.
+
+## Key files
+
+- [README.md](./README.md): primary docs (audience: humans evaluating the library)
+- [AGENTS.md](./AGENTS.md): agent and contributor orientation
+- [CONTRIBUTING.md](./CONTRIBUTING.md): setup, commands, commit conventions
+- [SECURITY.md](./SECURITY.md): security policy and reporting
+- [NOTICE.md](./NOTICE.md): third-party attributions (currently empty; populated as kits cite external standards)
+- [PLANNING.md](./PLANNING.md): historical design intent (partially stale on API surface; README is canonical)
 
 ## Reference
 
