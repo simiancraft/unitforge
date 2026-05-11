@@ -157,14 +157,21 @@ export function Home() {
       <section className="flex flex-col gap-12">
         <header className="flex flex-col items-center text-center gap-4">
           <img
-            src="./unitforge-simple.png"
+            src="./unitforge-glyph.svg"
             alt=""
             width={128}
             height={128}
             className="h-32 w-32 select-none"
             draggable={false}
           />
-          <h1 className="display text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+          <div
+            aria-label="unitforge"
+            className="uf-wordmark text-5xl leading-none md:text-7xl"
+          >
+            <span className="uf-wordmark-unit">UNIT</span>
+            <span className="uf-wordmark-forge">FORGE</span>
+          </div>
+          <h1 className="display text-3xl font-bold leading-tight tracking-tight md:text-5xl">
             forge anything measurable
           </h1>
         </header>
