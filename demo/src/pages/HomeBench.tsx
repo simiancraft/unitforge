@@ -82,12 +82,21 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
           </span>
         </div>
 
-        <ArrowRight
-          size={18}
-          strokeWidth={1.8}
-          style={{ color: 'var(--uf-accent)' }}
-          className="self-center"
-        />
+        {/* Dotted-trail pointing across to the right; arrow lands at the
+            far end. Renders as a subtle accent-colored trace between
+            the FROM and TO halves rather than a stranded glyph. */}
+        <div className="flex items-center gap-1 self-center w-14 md:w-24">
+          <span
+            className="flex-1 border-t-2 border-dotted"
+            style={{ borderColor: 'var(--uf-accent)', opacity: 0.55 }}
+            aria-hidden
+          />
+          <ArrowRight
+            size={18}
+            strokeWidth={1.8}
+            style={{ color: 'var(--uf-accent)' }}
+          />
+        </div>
 
         {/* RIGHT half: result + TO picker */}
         <div className="flex flex-1 items-center justify-end gap-3">
