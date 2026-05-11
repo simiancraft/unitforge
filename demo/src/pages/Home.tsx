@@ -166,7 +166,9 @@ export function Home() {
             zIndex: -2,
             opacity: 0,
             transformOrigin: 'bottom',
-            ['--uf-flash-scale' as string]: flashIntensity,
+            // Custom-property values must be strings for some engines to
+            // parse them reliably; bare numbers can silently fall back.
+            ['--uf-flash-scale' as string]: `${flashIntensity}`,
             animation:
               flashKey > 0
                 ? `uf-forge-flash ${STOKE_FLASH_DECAY_MS}ms ease-out forwards`
