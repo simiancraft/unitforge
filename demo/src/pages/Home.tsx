@@ -112,6 +112,11 @@ export function Home() {
     stoke();
   };
 
+  const onTileMouseDown = () => {
+    triggerStrike();
+    stoke();
+  };
+
   return (
     <>
       <div
@@ -185,7 +190,7 @@ export function Home() {
               hovered={hovered === kit.id}
               onEnter={() => onTileEnter(kit.id)}
               onLeave={() => setHovered(null)}
-              onMouseDown={triggerStrike}
+              onMouseDown={onTileMouseDown}
             />
           ))}
         </div>
