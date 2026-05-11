@@ -33,12 +33,8 @@ interface Card {
   code: string;
 }
 
+// Left-to-right flow matches the heading: define this, then that, then boom.
 const CARDS: Card[] = [
-  {
-    name: 'forge',
-    blurb: 'the consumer; pick units, get a converter.',
-    code: FORGE_CODE,
-  },
   {
     name: 'defineUnit',
     blurb: 'declare a unit value in any dimension you want.',
@@ -48,6 +44,11 @@ const CARDS: Card[] = [
     name: 'defineConversion',
     blurb: 'cross-dimensional recipes; inputs in, outputs out.',
     code: DEFINE_CONVERSION_CODE,
+  },
+  {
+    name: 'forge',
+    blurb: 'the consumer; pick units, get a converter.',
+    code: FORGE_CODE,
   },
 ];
 
