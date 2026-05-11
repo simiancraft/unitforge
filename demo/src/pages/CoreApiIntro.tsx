@@ -83,7 +83,7 @@ export function CoreApiIntro() {
                 {c.blurb}
               </p>
             </div>
-            <CodeBlock code={c.code} className="min-h-[350px]" />
+            <CodeBlock code={c.code} className="min-h-[200px]" />
           </div>
         ))}
       </div>
