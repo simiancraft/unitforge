@@ -8,7 +8,11 @@ import { CodeBlock } from '../components/CodeBlock.js';
 const FORGE_CODE = `import { forge } from 'unitforge';
 import { meter, foot } from 'unitforge/kits/geometry';
 
-forge(meter, foot)(5); // 16.4042`;
+const meterToFeet = forge(meter, foot);
+
+meterToFeet(5);    // 16.4042
+meterToFeet(100);  // 328.084
+meterToFeet(1.5);  // 4.9212`;
 
 const DEFINE_UNIT_CODE = `import { defineUnit } from 'unitforge';
 
@@ -47,7 +51,7 @@ const CARDS: Card[] = [
   },
   {
     name: 'forge',
-    blurb: 'the consumer; pick units, get a converter.',
+    blurb: 'a converter is born. forge it once; call it forever.',
     code: FORGE_CODE,
   },
 ];
