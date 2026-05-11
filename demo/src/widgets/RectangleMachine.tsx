@@ -1,20 +1,20 @@
-// Rectangle "shape machine". Direct manipulation: drag the bottom-right
-// corner handle to set length and width simultaneously, OR drive each axis
-// from its slider. Both controls bind to the same state. The rectangle
-// renders at a fixed scale (slider position 0-10 of selected unit maps to
-// 0-10 viewport ticks), so the visual is always perceivable; the AREA
-// calculation goes through forge using the actual unit choices, so unit
-// math stays honest even when the visual is normalized.
+// Rectangle "shape machine". Drag the bottom-right corner handle to set
+// length and width simultaneously, OR drive each axis from its slider.
+// Both bind to the same state. The rectangle renders at a fixed scale so
+// dragging stays predictable; AREA is computed through forge using the
+// actual unit choices.
 //
 // Hand-scrawled dimension labels (Caveat font) sit just outside the
-// rectangle on each axis, mimicking pencil-on-paper engineering notation.
+// rectangle on each axis.
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { forge } from 'unitforge';
 import { areaFromLengthAndWidth } from 'unitforge/kits/geometry';
 import { Result } from '../components/Result.js';
 import { Slider } from '../components/Slider.js';
 import { UnitPicker } from '../components/UnitPicker.js';
+import { useSvgPointerDrag } from '../hooks/useSvgPointerDrag.js';
+import { clamp, round1 } from '../lib/math.js';
 import { AREA_UNITS, findByKey, LENGTH_UNITS, pickerOptions } from '../lib/units.js';
 
 const VIEW_W = 340;
@@ -44,46 +44,25 @@ export function RectangleMachine() {
     { via: areaFromLengthAndWidth },
   )({ length, width });
 
-  // Pointer-drag the bottom-right handle. Convert pointer client position
-  // into SVG userspace via getCTM().inverse(), then derive new length/width
-  // by subtracting the rectangle's fixed anchor.
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const draggingRef = useRef(false);
-
-  const handlePointerDown = (e: React.PointerEvent<SVGCircleElement>) => {
-    (e.target as Element).setPointerCapture(e.pointerId);
-    draggingRef.current = true;
-  };
-  const handlePointerUp = (e: React.PointerEvent<SVGCircleElement>) => {
-    (e.target as Element).releasePointerCapture(e.pointerId);
-    draggingRef.current = false;
-  };
-  const handlePointerMove = (e: React.PointerEvent<SVGCircleElement>) => {
-    if (!draggingRef.current || !svgRef.current) return;
-    const svg = svgRef.current;
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return;
-    const pt = svg.createSVGPoint();
-    pt.x = e.clientX;
-    pt.y = e.clientY;
-    const local = pt.matrixTransform(ctm.inverse());
-    const newLength = clamp((local.x - PAD) / SCALE, MIN_VAL, MAX_VAL);
-    const newWidth = clamp((local.y - PAD) / SCALE, MIN_VAL, MAX_VAL);
-    setLength(round1(newLength));
-    setWidth(round1(newWidth));
-  };
+  const { svgRef, handlers } = useSvgPointerDrag({
+    getHandleCenter: () => ({ x: PAD + rectW, y: PAD + rectH }),
+    onDrag: (p) => {
+      setLength(round1(clamp((p.x - PAD) / SCALE, MIN_VAL, MAX_VAL)));
+      setWidth(round1(clamp((p.y - PAD) / SCALE, MIN_VAL, MAX_VAL)));
+    },
+  });
 
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <UnitPicker
-          label="length unit"
+          label="length (↔) unit"
           value={lengthKey}
           options={pickerOptions(LENGTH_UNITS)}
           onChange={setLengthKey}
         />
         <UnitPicker
-          label="width unit"
+          label="width (↕) unit"
           value={widthKey}
           options={pickerOptions(LENGTH_UNITS)}
           onChange={setWidthKey}
@@ -98,7 +77,7 @@ export function RectangleMachine() {
 
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-stretch">
         <Slider
-          label={`width (${widthOpt.key})`}
+          label={`width ↕ (${widthOpt.key})`}
           value={width}
           min={MIN_VAL}
           max={MAX_VAL}
@@ -129,7 +108,7 @@ export function RectangleMachine() {
               </filter>
             </defs>
 
-            {/* anchor corner crosshair (paper convention) */}
+            {/* anchor corner crosshair */}
             <line
               x1={PAD - 6}
               y1={PAD}
@@ -165,7 +144,6 @@ export function RectangleMachine() {
               }}
             />
 
-            {/* dimension labels (pencil-scribble Caveat) */}
             <text
               x={PAD + rectW / 2}
               y={PAD - 8}
@@ -192,7 +170,6 @@ export function RectangleMachine() {
               {width.toFixed(2)} {widthOpt.key}
             </text>
 
-            {/* drag handle at bottom-right corner */}
             <circle
               cx={PAD + rectW}
               cy={PAD + rectH}
@@ -201,12 +178,9 @@ export function RectangleMachine() {
               stroke="var(--uf-accent)"
               strokeWidth="2"
               cursor="nwse-resize"
-              onPointerDown={handlePointerDown}
-              onPointerUp={handlePointerUp}
-              onPointerMove={handlePointerMove}
-              role="slider"
-              aria-label="resize rectangle by dragging the corner"
-              aria-valuetext={`${length.toFixed(2)} ${lengthOpt.key} by ${width.toFixed(2)} ${widthOpt.key}`}
+              role="button"
+              aria-label={`resize rectangle, currently ${length.toFixed(2)} ${lengthOpt.key} by ${width.toFixed(2)} ${widthOpt.key}`}
+              {...handlers}
             />
             <circle
               cx={PAD + rectW}
@@ -217,7 +191,7 @@ export function RectangleMachine() {
             />
           </svg>
           <Slider
-            label={`length (${lengthOpt.key})`}
+            label={`length ↔ (${lengthOpt.key})`}
             value={length}
             min={MIN_VAL}
             max={MAX_VAL}
@@ -231,11 +205,4 @@ export function RectangleMachine() {
       <Result label="area" value={`${area.toFixed(4)} ${areaOpt.key}`} emphasis />
     </div>
   );
-}
-
-function clamp(n: number, lo: number, hi: number) {
-  return Math.max(lo, Math.min(hi, n));
-}
-function round1(n: number) {
-  return Math.round(n * 10) / 10;
 }

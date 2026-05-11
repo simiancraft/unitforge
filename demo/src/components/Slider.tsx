@@ -45,6 +45,7 @@ export function Slider({
           value={value}
           onChange={handleChange}
           aria-label={label}
+          aria-orientation="vertical"
           className="uf-slider"
           style={{
             writingMode: 'vertical-lr' as never,
