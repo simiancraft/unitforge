@@ -32,7 +32,7 @@ const STOKE_BOOST = 2;
 const STOKE_DURATION_MIN = 1.04;
 const STOKE_DURATION_MAX = 3.575;
 const STOKE_MAX_DELAY_SEC = 0.52;
-const STOKE_HOLD_MS = 1125;
+const STOKE_HOLD_MS = 1200;
 // ─────────────────────────────────────────────────────────────────────────
 
 interface StokeSlot {
