@@ -22,7 +22,9 @@
   <code>defineUnit</code> &nbsp;•&nbsp; <code>defineConversion</code> &nbsp;•&nbsp; <code>forge</code>
 </p>
 
-**A units library that does not assume you are doing physics.** Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
+# Forge anything measurable.
+
+A units library that does not assume you are doing physics. Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
 
 ## Kits
 
