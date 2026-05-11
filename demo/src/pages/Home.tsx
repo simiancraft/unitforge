@@ -1,12 +1,12 @@
 // Home page. Forge-themed: simple-version unitforge mark, ember streams,
 // hot-metal accent kit cards, then a "three verbs" core-API teaser and a
-// build-your-own Catan demo. Reads top-down as:
+// build-your-own Settlers-of-Crouton demo. Reads top-down as:
 //
 //   1. icon + the thesis "forge anything measurable"
 //   2. interactive horizontal rule (HomeBench)
 //   3. kits with reactive themed previews
 //   4. core api intro (three primitives + tiny snippets)
-//   5. byo Catan demo
+//   5. byo Crouton demo
 //
 // Ember layering: one ambient stream + two stoke slots on a round-robin
 // so rapid hovers stack flurries. Each stoke also fires a multi-stop
@@ -14,7 +14,7 @@
 // variants for variation).
 
 import { useEffect, useRef, useState } from 'react';
-import { CatanDemo } from './CatanDemo.js';
+import { CroutonDemo } from './CroutonDemo.js';
 import { CoreApiIntro } from './CoreApiIntro.js';
 import { EmberStream } from '../components/EmberStream.js';
 import { HomeBench } from './HomeBench.js';
@@ -190,7 +190,7 @@ export function Home() {
           ))}
         </div>
 
-        <CatanDemo />
+        <CroutonDemo />
 
         <CoreApiIntro />
       </section>

@@ -1,4 +1,4 @@
-// "Build your own units": Catan resource economy as a custom-dimensions
+// "Build your own units": Settlers-of-Crouton resource economy as a custom-dimensions
 // demo. Two resources (wood, brick) and a conversion (roads = min(wood,
 // brick)) — all userland, no kit. Proves that any dimension you invent
 // gets the same forge() treatment as the library's own.
@@ -12,7 +12,7 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { Result } from '../components/Result.js';
 import { Slider } from '../components/Slider.js';
 
-// Each resource is its own dimension (Catan wood and Catan brick aren't
+// Each resource is its own dimension (wood and brick aren't
 // directly interconvertible). ROAD is the produced structure.
 const WOOD = 'wood' as const;
 const BRICK = 'brick' as const;
@@ -78,7 +78,7 @@ const roads = forge({ wood, brick }, road, { via: buildRoads });
 
 roads({ wood: 3, brick: 2 }); // 2`;
 
-export function CatanDemo() {
+export function CroutonDemo() {
   const [wood, setWood] = useState(3);
   const [brick, setBrick] = useState(2);
   const roads = roadsFromResources({ wood, brick });

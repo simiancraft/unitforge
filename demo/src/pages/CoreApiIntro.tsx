@@ -61,8 +61,8 @@ export function CoreApiIntro() {
         </h2>
       </header>
       <p className="max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--uf-muted)' }}>
-        That's the whole surface. The Catan demo above stitched all three
-        together. Kits are values built from the same primitives; you can use
+        That's the whole surface. The Settlers-of-Crouton demo above stitched
+        all three together. Kits are values built from the same primitives; you can use
         the kits, build your own, or both.
       </p>
       <div className="grid gap-4 md:grid-cols-3">
