@@ -15,6 +15,7 @@ import type { Dimension, ForgeInput, Unit } from 'unitforge';
 import { forge } from 'unitforge';
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { CopyButton } from './CodeBlock.js';
 import { cachedHighlight, highlight } from '../lib/highlighter.js';
 
 export interface BenchState<D extends Dimension> {
@@ -177,19 +178,25 @@ function LiveCodeLine({ code }: { code: string }) {
   }, [code]);
   return (
     <div
-      className="mono mt-3 overflow-x-auto rounded text-xs"
+      className="relative mono mt-3 rounded text-xs"
       style={{
         background: 'var(--uf-code-bg)',
         border: '1px solid var(--uf-border)',
       }}
     >
+      <div className="absolute right-2 top-1.5 z-10">
+        <CopyButton code={code} />
+      </div>
       {html ? (
         <div
-          className="px-3 py-2 [&_pre]:!bg-transparent [&_pre]:!m-0"
+          className="uf-code-scroll px-3 py-2 pr-24 [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!whitespace-pre"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : (
-        <pre className="m-0 px-3 py-2" style={{ color: 'var(--uf-fg)' }}>
+        <pre
+          className="uf-code-scroll m-0 px-3 py-2 pr-24"
+          style={{ color: 'var(--uf-fg)' }}
+        >
           {code}
         </pre>
       )}

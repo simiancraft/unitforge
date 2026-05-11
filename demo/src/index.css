@@ -90,13 +90,9 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  body {
-    transition: background-color 600ms cubic-bezier(0.22, 1, 0.36, 1),
-      color 600ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-}
+/* The themed route container in App.tsx paints the actual page background;
+ * the body bg above is just an SSR / first-paint baseline that gets covered
+ * the moment the route container mounts. */
 
 /* Visible focus ring across every interactive surface; themed via --uf-accent. */
 :where(a, button, select, input, [role='slider'], [tabindex]):focus-visible {
@@ -121,6 +117,68 @@ body {
 }
 .uf-skip-link:focus {
   left: 8px;
+}
+
+/* Thin, theme-aware scrollbars for code-block overflow. Only show when
+ * actually needed (overflow:auto); chromium + firefox both honor these.
+ */
+.uf-code-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--uf-border) transparent;
+}
+.uf-code-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.uf-code-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.uf-code-scroll::-webkit-scrollbar-thumb {
+  background: var(--uf-border);
+  border-radius: 3px;
+}
+
+/* Anvil-strike: a brief one-shot vertical translate played when the user
+ * hovers a kit card on home, evoking the hammer-on-anvil percussion that
+ * the forge metaphor implies. ~280ms, ~3px peak; below the threshold of
+ * "vestibular alarm" per WAI motion guidance but enough to read as impact.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes uf-anvil-strike {
+    0%   { transform: translateY(0); }
+    18%  { transform: translateY(3px); }
+    40%  { transform: translateY(-2px); }
+    62%  { transform: translateY(1px); }
+    100% { transform: translateY(0); }
+  }
+  .uf-anvil-strike {
+    animation: uf-anvil-strike 280ms ease-out;
+  }
+
+  /* Ember burst on tile hover. Particles emit outward from origin via
+   * CSS custom properties --dx / --dy set inline on each particle.
+   */
+  @keyframes uf-ember-burst {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.95;
+    }
+    100% {
+      transform: translate3d(var(--dx, 0), var(--dy, 0), 0) scale(0.4);
+      opacity: 0;
+    }
+  }
+}
+
+/* Anvil / hammer cursor on the home kit tiles; lucide Hammer SVG inlined
+ * as a data-URI with brand orange stroke. Adds delight on the home page
+ * only; everywhere else the normal pointer applies.
+ */
+.uf-anvil-cursor {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m15 12-8.5 8.5c-.83.83-2.17.83-3 0a2.12 2.12 0 0 1 0-3L12 9'/><path d='M17.64 15 22 10.64'/><path d='m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91'/></svg>") 4 4, pointer;
 }
 
 code,

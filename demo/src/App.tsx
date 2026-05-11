@@ -40,7 +40,15 @@ export function App() {
   const kitMeta = route === 'home' ? null : KITS.find((k) => k.id === route);
 
   return (
-    <div data-theme={theme} className="relative min-h-screen">
+    <div
+      data-theme={theme}
+      className="relative min-h-screen"
+      style={{
+        background: 'var(--uf-bg)',
+        color: 'var(--uf-fg)',
+        transition: 'background-color 600ms cubic-bezier(0.22,1,0.36,1), color 600ms cubic-bezier(0.22,1,0.36,1)',
+      }}
+    >
       <a href="#main" className="uf-skip-link">
         skip to content
       </a>

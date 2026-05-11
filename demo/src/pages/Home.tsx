@@ -1,19 +1,27 @@
-// Home page. Forge-themed: ember background, hot-metal accent, anvil-vibe
-// kit cards. Each kit card previews its own theme via an inline flair
-// background and pulses brighter on hover. A small "try it" forge bench
-// sits between header and cards so visitors can run a real conversion
-// before they decide which kit to enter; bench interaction also drives
-// the ember intensity, so the forge "breathes brighter" while the user
-// is playing.
+// Home page. Forge-themed: simple-version unitforge mark above the
+// wordmark, drifting ember background, hot-metal accent kit cards. The
+// cards have a hammer-cursor (uf-anvil-cursor) and on hover they:
+//   - "stoke" the embers: intensity boosts globally + a one-shot
+//     EmberBurst spawns at the tile's center.
+//   - trigger a brief vertical "anvil strike" on the page main so the
+//     whole frame reads as percussion (subtle; 3px peak, 280ms).
+//   - pulse their themed inline background brighter.
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Box, Database } from 'lucide-react';
 import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
 import { findByKey, LENGTH_UNITS } from '../lib/units.js';
 import { CircuitBg } from '../themes/CircuitBg.js';
+import { EmberBurst } from '../themes/EmberBurst.js';
 import { ForgeEmberBg } from '../themes/ForgeEmberBg.js';
 import { GridPaperBg } from '../themes/GridPaperBg.js';
 import { KITS } from '../lib/kits.js';
+
+interface Burst {
+  id: number;
+  x: number;
+  y: number;
+}
 
 export function Home() {
   const [bench, setBench] = useState<BenchState<'length'>>({
@@ -22,21 +30,58 @@ export function Home() {
     value: 5,
   });
   const [hovered, setHovered] = useState<string | null>(null);
+  const [bursts, setBursts] = useState<Burst[]>([]);
+  const burstIdRef = useRef(0);
 
-  // Intensity boost while the user is interacting with the bench (any
-  // value != initial), or hovering a kit card.
   const isPlaying =
     bench.value !== 5 || bench.fromKey !== 'm' || bench.toKey !== 'ft' || hovered !== null;
-  const intensity = isPlaying ? 1.5 : 1;
+  const intensity = isPlaying ? 1.6 : 1.05;
+
+  const triggerStrike = () => {
+    const main = document.getElementById('main');
+    if (!main) return;
+    main.classList.remove('uf-anvil-strike');
+    // Force a reflow so removing-then-adding the class restarts the animation.
+    void main.offsetWidth;
+    main.classList.add('uf-anvil-strike');
+  };
+
+  const onTileEnter = (id: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+    setHovered(id);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const burst: Burst = {
+      id: ++burstIdRef.current,
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
+    setBursts((b) => [...b, burst]);
+    window.setTimeout(() => {
+      setBursts((b) => b.filter((x) => x.id !== burst.id));
+    }, 1300);
+    triggerStrike();
+  };
 
   return (
     <>
       <ForgeEmberBg intensity={intensity} />
+      {bursts.map((b) => (
+        <EmberBurst key={b.id} x={b.x} y={b.y} />
+      ))}
       <section className="flex flex-col gap-10">
-        <div className="flex flex-col items-center text-center gap-4">
+        <div className="flex flex-col items-center text-center gap-3">
+          <img
+            src="./unitforge-simple.png"
+            alt=""
+            width={128}
+            height={128}
+            className="h-32 w-32 select-none"
+            draggable={false}
+          />
           <p className="uf-eyebrow">forge anything measurable</p>
-          <h1 className="text-5xl font-bold tracking-tight md:text-6xl">unitforge</h1>
-          <p className="max-w-xl text-sm leading-relaxed" style={{ color: 'var(--uf-muted)' }}>
+          <p
+            className="max-w-xl text-sm leading-relaxed"
+            style={{ color: 'var(--uf-muted)' }}
+          >
             Units, dimensions, and conversions are values you import. Try a
             quick conversion below, or pick a kit and play with a domain.
           </p>
@@ -61,7 +106,8 @@ export function Home() {
               key={kit.id}
               kit={kit}
               hovered={hovered === kit.id}
-              onHover={(h) => setHovered(h ? kit.id : null)}
+              onEnter={(e) => onTileEnter(kit.id, e)}
+              onLeave={() => setHovered(null)}
             />
           ))}
         </div>
@@ -73,22 +119,24 @@ export function Home() {
 function KitCard({
   kit,
   hovered,
-  onHover,
+  onEnter,
+  onLeave,
 }: {
   kit: (typeof KITS)[number];
   hovered: boolean;
-  onHover: (h: boolean) => void;
+  onEnter: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  onLeave: () => void;
 }) {
   const Icon = kit.id === 'geometry' ? Box : Database;
   return (
     <a
       href={`#/${kit.id}`}
       data-theme={kit.theme}
-      onMouseEnter={() => onHover(true)}
-      onMouseLeave={() => onHover(false)}
-      onFocus={() => onHover(true)}
-      onBlur={() => onHover(false)}
-      className="uf-flare-card group relative flex flex-col gap-3 rounded-lg border p-6 transition-transform hover:-translate-y-1"
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      onFocus={(e) => onEnter(e as unknown as React.MouseEvent<HTMLAnchorElement>)}
+      onBlur={onLeave}
+      className="uf-flare-card uf-anvil-cursor group relative flex flex-col gap-3 rounded-lg border p-6 transition-transform hover:-translate-y-1"
       style={{
         background: 'var(--uf-card)',
         borderColor: 'var(--uf-border)',
@@ -98,14 +146,9 @@ function KitCard({
     >
       <div
         className="uf-flare-bg"
-        style={{
-          transition: 'opacity 300ms ease',
-          opacity: hovered ? 0.85 : 0.45,
-        }}
+        style={{ transition: 'opacity 300ms ease', opacity: hovered ? 0.9 : 0.45 }}
       >
-        {kit.id === 'geometry' && (
-          <GridPaperBg inline cellSize={hovered ? 18 : 12} />
-        )}
+        {kit.id === 'geometry' && <GridPaperBg inline cellSize={hovered ? 18 : 12} />}
         {kit.id === 'data-storage' && <CircuitBg inline pulse={hovered} />}
       </div>
       <div className="uf-flare-content flex flex-col gap-3">
