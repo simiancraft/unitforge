@@ -112,17 +112,27 @@ export const DATA_ALL_UNITS = [
   ...DATA_BIT_UNITS,
 ] as const satisfies ReadonlyArray<UnitOption<'data'>>;
 
+// Key-union aliases for each catalog. Sections that hold a key in state
+// import these so useState('m') doesn't widen to plain string, and so
+// findByKey / UnitPicker callsites get literal-union autocomplete.
+export type LengthKey = (typeof LENGTH_UNITS)[number]['key'];
+export type AreaKey = (typeof AREA_UNITS)[number]['key'];
+export type VolumeKey = (typeof VOLUME_UNITS)[number]['key'];
+export type DataKey = (typeof DATA_ALL_UNITS)[number]['key'];
+
 export function findByKey<L extends ReadonlyArray<{ key: string }>>(
   list: L,
-  key: L[number]['key'] | string,
+  key: L[number]['key'],
 ): L[number] {
   const found = list.find((o) => o.key === key);
-  if (!found) throw new Error(`Unknown unit key: ${key}`);
+  if (!found) throw new Error(`Unknown unit key: ${String(key)}`);
   return found;
 }
 
-export function pickerOptions(
-  list: ReadonlyArray<{ key: string; label: string }>,
-): ReadonlyArray<{ key: string; label: string }> {
-  return list.map(({ key, label }) => ({ key, label }));
+export function pickerOptions<L extends ReadonlyArray<{ key: string; label: string }>>(
+  list: L,
+): ReadonlyArray<Pick<L[number], 'key' | 'label'>> {
+  return list.map(({ key, label }) => ({ key, label })) as ReadonlyArray<
+    Pick<L[number], 'key' | 'label'>
+  >;
 }

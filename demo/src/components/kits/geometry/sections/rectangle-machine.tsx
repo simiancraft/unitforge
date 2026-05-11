@@ -18,7 +18,14 @@ import { UnitPicker } from '../../../UnitPicker.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 import { clamp, round1 } from '../../../../lib/math.js';
-import { AREA_UNITS, findByKey, LENGTH_UNITS, pickerOptions } from '../../../../lib/units.js';
+import {
+  AREA_UNITS,
+  findByKey,
+  LENGTH_UNITS,
+  pickerOptions,
+  type AreaKey,
+  type LengthKey,
+} from '../../../../lib/units.js';
 
 const VIEW_W = 340;
 const VIEW_H = 260;
@@ -45,9 +52,9 @@ area({ length: 100, width: 50 }); // 0.1524 ha
 export function RectangleMachine() {
   const [length, setLength] = useState(3);
   const [width, setWidth] = useState(2);
-  const [lengthKey, setLengthKey] = useState('m');
-  const [widthKey, setWidthKey] = useState('m');
-  const [areaKey, setAreaKey] = useState('m2');
+  const [lengthKey, setLengthKey] = useState<LengthKey>('m');
+  const [widthKey, setWidthKey] = useState<LengthKey>('m');
+  const [areaKey, setAreaKey] = useState<AreaKey>('m2');
 
   const lengthOpt = findByKey(LENGTH_UNITS, lengthKey);
   const widthOpt = findByKey(LENGTH_UNITS, widthKey);

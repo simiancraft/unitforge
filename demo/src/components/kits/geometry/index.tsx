@@ -16,7 +16,7 @@ import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { CircleMachine } from './sections/circle-machine.js';
 import { HelloUnit } from './sections/hello-unit.js';
 import { RectangleMachine } from './sections/rectangle-machine.js';
-import { findByKey, LENGTH_UNITS } from '../../../lib/units.js';
+import { findByKey, LENGTH_UNITS, type LengthKey } from '../../../lib/units.js';
 
 // Grid cell size in pixels, per "from" unit. The grid background reads
 // this and reticks; the effect is "the paper resamples when you change
@@ -33,7 +33,7 @@ const CELL_PX_BY_UNIT: Record<string, number> = {
 };
 
 export function Page() {
-  const [bench, setBench] = useState<BenchState<'length'>>({
+  const [bench, setBench] = useState<BenchState<'length', LengthKey>>({
     fromKey: 'm',
     toKey: 'ft',
     value: 5,
@@ -75,7 +75,7 @@ export function Page() {
         <Bench
           state={bench}
           onChange={setBench}
-          options={LENGTH_UNITS.map((o) => ({ key: o.key, label: o.label, unit: o.unit }))}
+          options={LENGTH_UNITS}
           min={0.1}
           max={100}
           step={0.1}

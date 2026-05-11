@@ -13,7 +13,14 @@ import { UnitPicker } from '../../../UnitPicker.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 import { clamp, round1 } from '../../../../lib/math.js';
-import { AREA_UNITS, findByKey, LENGTH_UNITS, pickerOptions } from '../../../../lib/units.js';
+import {
+  AREA_UNITS,
+  findByKey,
+  LENGTH_UNITS,
+  pickerOptions,
+  type AreaKey,
+  type LengthKey,
+} from '../../../../lib/units.js';
 
 const VIEW = 280;
 const PAD = 24;
@@ -38,9 +45,9 @@ circleArea({ radius: 2 }); // 12.566...  (π · 2²)
 
 export function CircleMachine() {
   const [radius, setRadius] = useState(3);
-  const [radiusKey, setRadiusKey] = useState('m');
-  const [areaKey, setAreaKey] = useState('m2');
-  const [circKey, setCircKey] = useState('m');
+  const [radiusKey, setRadiusKey] = useState<LengthKey>('m');
+  const [areaKey, setAreaKey] = useState<AreaKey>('m2');
+  const [circKey, setCircKey] = useState<LengthKey>('m');
 
   const radiusOpt = findByKey(LENGTH_UNITS, radiusKey);
   const areaOpt = findByKey(AREA_UNITS, areaKey);

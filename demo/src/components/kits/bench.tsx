@@ -19,26 +19,30 @@ import { CopyButton } from '../CodeBlock.js';
 import { useTheme } from '../theme/provider.js';
 import { useHighlighted } from '../theme/use-highlighted.js';
 
-export interface BenchState<D extends Dimension> {
-  fromKey: string;
-  toKey: string;
+export interface BenchState<D extends Dimension = Dimension, K extends string = string> {
+  fromKey: K;
+  toKey: K;
   value: number;
+  // Phantom tag: keeps `BenchState<'length'>` and `BenchState<'data'>`
+  // structurally distinct so a kit's setBench can't accept the wrong
+  // dimension's state.
+  readonly __dimension?: D;
 }
 
-interface BenchProps<D extends Dimension> {
-  state: BenchState<D>;
-  onChange: (next: BenchState<D>) => void;
-  options: ReadonlyArray<{ key: string; label: string; unit: Unit<D, number> }>;
+interface BenchProps<D extends Dimension, K extends string> {
+  state: BenchState<D, K>;
+  onChange: (next: BenchState<D, K>) => void;
+  options: ReadonlyArray<{ key: K; label: string; unit: Unit<D, number> }>;
   /** Slider bounds (in fromKey units). */
   min: number;
   max: number;
   step: number;
   /** Short code-block snippet shown under the controls; receives the live values. */
-  codeFor: (s: BenchState<D>, result: number) => string;
+  codeFor: (s: BenchState<D, K>, result: number) => string;
   label?: string;
 }
 
-export function Bench<D extends Dimension>({
+export function Bench<D extends Dimension, K extends string>({
   state,
   onChange,
   options,
@@ -47,7 +51,7 @@ export function Bench<D extends Dimension>({
   step,
   codeFor,
   label = 'forge bench',
-}: BenchProps<D>) {
+}: BenchProps<D, K>) {
   const fromOpt = options.find((o) => o.key === state.fromKey) ?? options[0];
   const toOpt = options.find((o) => o.key === state.toKey) ?? options[0];
   // Cast: TS cannot prove the conditional `ForgeInput<D> = Unit<D>` for a
@@ -86,7 +90,7 @@ export function Bench<D extends Dimension>({
           <span className="uf-eyebrow">from</span>
           <select
             value={state.fromKey}
-            onChange={(e) => onChange({ ...state, fromKey: e.target.value })}
+            onChange={(e) => onChange({ ...state, fromKey: e.target.value as K })}
             className="mono rounded border px-2 py-1.5 text-sm"
             style={{
               background: 'var(--uf-bg)',
@@ -112,7 +116,7 @@ export function Bench<D extends Dimension>({
           <span className="uf-eyebrow">to</span>
           <select
             value={state.toKey}
-            onChange={(e) => onChange({ ...state, toKey: e.target.value })}
+            onChange={(e) => onChange({ ...state, toKey: e.target.value as K })}
             className="mono rounded border px-2 py-1.5 text-sm"
             style={{
               background: 'var(--uf-bg)',

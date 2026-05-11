@@ -17,10 +17,10 @@ import { DriveVsOs } from './sections/drive-vs-os.js';
 import { HelloBytes } from './sections/hello-bytes.js';
 import { RamStick } from './sections/ram-stick.js';
 import { ThroughputViz } from './sections/throughput-viz.js';
-import { DATA_ALL_UNITS, findByKey } from '../../../lib/units.js';
+import { DATA_ALL_UNITS, findByKey, type DataKey } from '../../../lib/units.js';
 
 export function Page() {
-  const [bench, setBench] = useState<BenchState<'data'>>({
+  const [bench, setBench] = useState<BenchState<'data', DataKey>>({
     fromKey: 'GB',
     toKey: 'GiB',
     value: 500,
@@ -64,7 +64,7 @@ export function Page() {
         <Bench
           state={bench}
           onChange={setBench}
-          options={DATA_ALL_UNITS.map((o) => ({ key: o.key, label: o.label, unit: o.unit }))}
+          options={DATA_ALL_UNITS}
           min={1}
           max={2000}
           step={1}

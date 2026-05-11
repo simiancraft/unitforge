@@ -11,7 +11,7 @@ import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { forge } from 'unitforge';
-import { LENGTH_UNITS, findByKey } from '../../../../lib/units.js';
+import { LENGTH_UNITS, findByKey, type LengthKey } from '../../../../lib/units.js';
 import { CopyButton } from '../../../CodeBlock.js';
 import { useTheme } from '../../../theme/provider.js';
 import { useHighlighted } from '../../../theme/use-highlighted.js';
@@ -21,10 +21,10 @@ const MAX = 100;
 const STEP = 0.1;
 
 interface ForgeBenchProps {
-  fromKey: string;
-  toKey: string;
+  fromKey: LengthKey;
+  toKey: LengthKey;
   value: number;
-  onChange: (next: { fromKey: string; toKey: string; value: number }) => void;
+  onChange: (next: { fromKey: LengthKey; toKey: LengthKey; value: number }) => void;
 }
 
 export function ForgeBench({ fromKey, toKey, value, onChange }: ForgeBenchProps) {
@@ -46,7 +46,7 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
           <select
             value={fromKey}
             onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-              onChange({ fromKey: e.target.value, toKey, value })
+              onChange({ fromKey: e.target.value as LengthKey, toKey, value })
             }
             aria-label="from unit"
             className="rounded border px-2 py-1 text-sm"
@@ -125,7 +125,7 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
           <select
             value={toKey}
             onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-              onChange({ fromKey, toKey: e.target.value, value })
+              onChange({ fromKey, toKey: e.target.value as LengthKey, value })
             }
             aria-label="to unit"
             className="rounded border px-2 py-1 text-sm"

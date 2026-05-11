@@ -10,7 +10,12 @@ import { Result } from '../../../Result.js';
 import { Slider } from '../../../Slider.js';
 import { UnitPicker } from '../../../UnitPicker.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
-import { findByKey, LENGTH_UNITS, pickerOptions } from '../../../../lib/units.js';
+import {
+  findByKey,
+  LENGTH_UNITS,
+  pickerOptions,
+  type LengthKey,
+} from '../../../../lib/units.js';
 
 const CODE = `import { forge } from 'unitforge';
 import { meter, foot } from 'unitforge/kits/geometry';
@@ -23,8 +28,8 @@ metersToFeet(100); // 328.084
 
 export function HelloUnit() {
   const [value, setValue] = useState(5);
-  const [fromKey, setFromKey] = useState('m');
-  const [toKey, setToKey] = useState('ft');
+  const [fromKey, setFromKey] = useState<LengthKey>('m');
+  const [toKey, setToKey] = useState<LengthKey>('ft');
 
   const from = findByKey(LENGTH_UNITS, fromKey);
   const to = findByKey(LENGTH_UNITS, toKey);

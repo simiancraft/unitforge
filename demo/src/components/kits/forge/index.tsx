@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { Hammer } from 'lucide-react';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
+import type { LengthKey } from '../../../lib/units.js';
 import { ForgeBackdrop } from './parts/forge-backdrop.js';
 import { ForgeHeader } from './parts/forge-header.js';
 import { FORGE_GLOW_VARIANT_COUNT } from './parts/forge-glow.js';
@@ -33,7 +34,11 @@ const STRIKE_VARIANT = 1;
 const NAV_DELAY_MS = Math.round(STOKE_HOLD_MS * (2 / 3));
 
 export function Page() {
-  const [bench, setBench] = useState({ fromKey: 'm', toKey: 'ft', value: 5 });
+  const [bench, setBench] = useState<{
+    fromKey: LengthKey;
+    toKey: LengthKey;
+    value: number;
+  }>({ fromKey: 'm', toKey: 'ft', value: 5 });
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const stoke = useForgeStoke({
     holdMs: STOKE_HOLD_MS,

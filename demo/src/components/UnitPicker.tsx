@@ -1,23 +1,25 @@
-// Themed select for picking a unit. Keys are arbitrary strings; the parent
-// owns the mapping from key to Unit value (lets the picker stay decoupled
-// from unitforge's type plumbing).
+// Themed select for picking a unit. Generic over the key union so the
+// parent's setState callback narrows correctly (e.g. setFromKey takes
+// `LengthKey`, not plain `string`).
 
 import type { ChangeEvent } from 'react';
 
-interface PickerOption {
-  key: string;
+interface UnitPickerProps<K extends string> {
   label: string;
+  value: K;
+  options: ReadonlyArray<{ key: K; label: string }>;
+  onChange: (key: K) => void;
 }
 
-interface UnitPickerProps {
-  label: string;
-  value: string;
-  options: ReadonlyArray<PickerOption>;
-  onChange: (key: string) => void;
-}
-
-export function UnitPicker({ label, value, options, onChange }: UnitPickerProps) {
-  const handle = (e: ChangeEvent<HTMLSelectElement>) => onChange(e.target.value);
+export function UnitPicker<K extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: UnitPickerProps<K>) {
+  // e.target.value is `string`; the runtime invariant (`<option>` values
+  // are drawn from `options`) lets the parent safely narrow to K.
+  const handle = (e: ChangeEvent<HTMLSelectElement>) => onChange(e.target.value as K);
   return (
     <label className="flex flex-col gap-1">
       <span className="uf-eyebrow">{label}</span>
