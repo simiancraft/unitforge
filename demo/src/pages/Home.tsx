@@ -65,7 +65,6 @@ export function Home() {
   const [slotA, setSlotA] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
   const [slotB, setSlotB] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
   const [flashKey, setFlashKey] = useState(0);
-  const [flashIntensity, setFlashIntensity] = useState(1);
   const aTimer = useRef<number | null>(null);
   const bTimer = useRef<number | null>(null);
 
@@ -87,7 +86,12 @@ export function Home() {
   //   - picks the more-stale ember-stoke slot, bumps its key + intensity
   //   - sets --uf-shake-amp on <main> and (re-)applies uf-anvil-strike
   const stoke = (intensity: number) => {
-    setFlashIntensity(intensity);
+    // Write the intensity to a CSS variable on <body> SYNCHRONOUSLY,
+    // before queueing the React render. The flash element reads
+    // `scale: var(--uf-flash-scale, 1)` and picks up the new value at
+    // paint, sidestepping any React state-batching race on the keyed
+    // remount.
+    document.body.style.setProperty('--uf-flash-scale', String(intensity));
     setFlashKey((k) => k + 1);
 
     const main = document.getElementById('main');
@@ -166,8 +170,10 @@ export function Home() {
           opacity: 0,
           transformOrigin: 'bottom',
           // Intensity scaling composes with the keyframe's `transform`.
-          // CSS `scale` is a separate property and multiplies in.
-          scale: `1 ${flashIntensity}`,
+          // The value lives on document.body via --uf-flash-scale (set
+          // synchronously in stoke), so the newly-keyed div picks up
+          // the right scale at paint with no React state-batching race.
+          scale: 'var(--uf-flash-scale, 1)',
           animation:
             flashKey > 0
               ? `uf-forge-flash ${STOKE_FLASH_DECAY_MS}ms ease-out forwards`
