@@ -60,7 +60,7 @@
  * element using this class.
  */
 .uf-forge-glow-1 {
-  height: 24vh;
+  height: 20.4vh; /* 24vh, 15% smaller */
   background: linear-gradient(
     to top,
     rgba(255, 250, 220, 1) 0%,
@@ -86,7 +86,7 @@
 }
 
 .uf-forge-glow-3 {
-  height: 42vh;
+  height: 50.4vh; /* 42vh, 20% larger */
   background: linear-gradient(
     to top,
     rgba(255, 252, 235, 1) 0%,
