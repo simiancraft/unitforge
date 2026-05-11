@@ -25,7 +25,7 @@ const AMBIENT_MAX_DELAY_SEC = 4;
 const STOKE_COUNT = 72;
 const STOKE_BOOST = 2;
 const STOKE_SPEED_SCALE = 0.26; // faster rise, like a struck anvil throwing sparks (75% faster than 0.45)
-const STOKE_MAX_DELAY_SEC = 0.35; // tight: nearly every particle starts together
+const STOKE_MAX_DELAY_SEC = 0.52; // 50% wider than 0.35 to break up the "coherent layer" look
 const STOKE_HOLD_MS = 900;
 // ─────────────────────────────────────────────────────────────────────────
 
