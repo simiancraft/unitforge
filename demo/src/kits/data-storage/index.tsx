@@ -38,7 +38,7 @@ export function DataStoragePage() {
   }, [bench.fromKey, bench.toKey, bench.value]);
 
   return (
-    <KitThemeProvider values={{ shikiTheme: 'synthwave-84' }}>
+    <KitThemeProvider values={{ shikiTheme: 'synthwave-84', codeFrameClass: 'uf-code-crt' }}>
       <CircuitBg pulse={pulse} />
 
       <header className="relative uf-scanlines flex flex-col gap-2">

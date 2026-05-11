@@ -34,3 +34,47 @@
     rgba(163, 255, 127, 0.03) 3px
   );
 }
+
+/* CRT chrome for code blocks. Applied via KitTheme's codeFrameClass
+ * ('uf-code-crt') from the data-storage kit page. Heavier scanlines
+ * over the snippet itself + a soft radial vignette darkening the
+ * corners + a phosphor glow on the rendered code. Inspired by
+ * chromonym's LiveSnippet component.
+ */
+.uf-code-crt {
+  position: relative;
+}
+.uf-code-crt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.32),
+    rgba(0, 0, 0, 0.32) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+  z-index: 2;
+}
+.uf-code-crt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  z-index: 3;
+}
+.uf-code-crt pre,
+.uf-code-crt pre code,
+.uf-code-crt pre span {
+  text-shadow: 0 0 4px var(--uf-fg);
+}
+

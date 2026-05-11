@@ -14,6 +14,13 @@ export interface KitThemeValues {
    * Must be present in THEME_LOADERS in lib/highlighter.ts.
    */
   shikiTheme: string;
+  /**
+   * Optional class name applied to every code block in this kit. Lets a
+   * kit attach a frame decoration (CRT scanlines + vignette, a hand-drawn
+   * sketch border, a parchment grain, etc.) without changing CodeBlock.
+   * The class itself is defined in the kit's CSS file.
+   */
+  codeFrameClass?: string;
 }
 
 const DEFAULT_KIT_THEME: KitThemeValues = {

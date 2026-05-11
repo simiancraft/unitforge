@@ -17,7 +17,7 @@ interface Highlighter {
 const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   'github-dark': () => import('shiki/themes/github-dark.mjs'),
   'github-light': () => import('shiki/themes/github-light.mjs'),
-  'rose-pine-dawn': () => import('shiki/themes/rose-pine-dawn.mjs'),
+  'vitesse-light': () => import('shiki/themes/vitesse-light.mjs'),
   'synthwave-84': () => import('shiki/themes/synthwave-84.mjs'),
 };
 

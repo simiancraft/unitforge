@@ -15,7 +15,7 @@ interface CodeBlockProps {
 }
 
 export function CodeBlock({ code, lang = 'ts' }: CodeBlockProps) {
-  const { shikiTheme } = useKitTheme();
+  const { shikiTheme, codeFrameClass } = useKitTheme();
   const [html, setHtml] = useState<string | null>(
     cachedHighlight(code, lang, shikiTheme) ?? null,
   );
@@ -37,7 +37,7 @@ export function CodeBlock({ code, lang = 'ts' }: CodeBlockProps) {
     <div
       role="region"
       aria-label="code sample"
-      className="relative overflow-hidden rounded-lg text-xs leading-relaxed"
+      className={`relative overflow-hidden rounded-lg text-xs leading-relaxed ${codeFrameClass ?? ''}`}
       style={{
         background: 'var(--uf-code-bg)',
         border: '1px solid var(--uf-border)',

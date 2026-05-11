@@ -129,7 +129,7 @@ forge(${fromOpt.label.replace(/\s/g, '')}, ${toOpt.label.replace(/\s/g, '')})(${
 }
 
 function BenchCodeLine({ code }: { code: string }) {
-  const { shikiTheme } = useKitTheme();
+  const { shikiTheme, codeFrameClass } = useKitTheme();
   const [html, setHtml] = useState<string | null>(
     cachedHighlight(code, 'ts', shikiTheme) ?? null,
   );
@@ -147,7 +147,7 @@ function BenchCodeLine({ code }: { code: string }) {
   }, [code, shikiTheme]);
   return (
     <div
-      className="relative mono rounded text-xs"
+      className={`relative mono rounded text-xs overflow-hidden ${codeFrameClass ?? ''}`}
       style={{
         background: 'var(--uf-code-bg)',
         border: '1px solid var(--uf-border)',

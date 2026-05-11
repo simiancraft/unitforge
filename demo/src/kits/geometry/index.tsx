@@ -50,7 +50,7 @@ export function GeometryPage() {
   }, [bench.fromKey, bench.toKey, bench.value]);
 
   return (
-    <KitThemeProvider values={{ shikiTheme: 'rose-pine-dawn' }}>
+    <KitThemeProvider values={{ shikiTheme: 'vitesse-light' }}>
       <GridPaperBg cellSize={cellSize} pulse={paperPulse} />
 
       <header className="flex flex-col gap-2">

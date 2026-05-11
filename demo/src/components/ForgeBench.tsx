@@ -165,7 +165,7 @@ export function ForgeBench<D extends Dimension>({
 }
 
 function LiveCodeLine({ code }: { code: string }) {
-  const { shikiTheme } = useKitTheme();
+  const { shikiTheme, codeFrameClass } = useKitTheme();
   const [html, setHtml] = useState<string | null>(
     cachedHighlight(code, 'ts', shikiTheme) ?? null,
   );
@@ -183,7 +183,7 @@ function LiveCodeLine({ code }: { code: string }) {
   }, [code, shikiTheme]);
   return (
     <div
-      className="relative mono mt-3 rounded text-xs"
+      className={`relative mono mt-3 rounded text-xs overflow-hidden ${codeFrameClass ?? ''}`}
       style={{
         background: 'var(--uf-code-bg)',
         border: '1px solid var(--uf-border)',

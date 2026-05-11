@@ -13,7 +13,10 @@
   --uf-accent: #b73a3b;
   --uf-card: #fffaf0;
   --uf-border: #2b3553;
-  --uf-code-bg: #1a2238;
+  /* Code bg: parchment one shade off the page cream so the block reads
+   * as a clipped excerpt, not a blueprint reference. Pairs with the
+   * light vitesse-light shiki theme. */
+  --uf-code-bg: #ede4cf;
 
   --uf-display: 'Caveat', 'Georgia', cursive;
   --uf-grid: #3e7fa6;
