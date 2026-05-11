@@ -1,21 +1,38 @@
-// Home page. Forge-themed: simple-version unitforge mark above the
-// wordmark, layered ember backgrounds, hot-metal accent kit cards.
+// Home page. Forge-themed: simple-version unitforge mark, ember streams,
+// hot-metal accent kit cards.
 //
-// Two ember layers: an always-on ambient stream and a "stoked" overlay
-// that fades in on hover (more particles, bigger glow) and fades back
-// out on a timeout. Pairs with the `uf-anvil-strike` percussion on press.
+// Ember layering: one ambient EmberStream always running, plus a pool of
+// two "stoke" EmberStreams that are restarted via key bumps on hover. The
+// pool is round-robin: each stoke routes to whichever slot is more stale
+// (idle, or expiring sooner), so rapid back-and-forth hovers keep one
+// layer brightening while another is still fading.
 
 import { useRef, useState } from 'react';
 import { Box, Database } from 'lucide-react';
 import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
 import { findByKey, LENGTH_UNITS } from '../lib/units.js';
 import { CircuitBg } from '../themes/CircuitBg.js';
-import { ForgeEmberBg } from '../themes/ForgeEmberBg.js';
+import { EmberStream } from '../themes/EmberStream.js';
 import { GridPaperBg } from '../themes/GridPaperBg.js';
 import { KITS } from '../lib/kits.js';
 
-const STOKE_HOLD_MS = 1200; // how long the stoked layer stays bright after a hover
-const STOKE_FADE_MS = 700; // matches the ForgeEmberBg opacity transition
+// ─── tweakables ──────────────────────────────────────────────────────────
+const AMBIENT_COUNT = 32;
+const AMBIENT_BOOST = 1;
+const AMBIENT_SPEED_SCALE = 1;
+const AMBIENT_MAX_DELAY_SEC = 4;
+
+const STOKE_COUNT = 48;
+const STOKE_BOOST = 2;
+const STOKE_SPEED_SCALE = 0.45; // faster rise, like a struck anvil throwing sparks
+const STOKE_MAX_DELAY_SEC = 0.35; // tight: nearly every particle starts together
+const STOKE_HOLD_MS = 900;
+// ─────────────────────────────────────────────────────────────────────────
+
+interface StokeSlot {
+  key: number;
+  expiresAt: number | null;
+}
 
 export function Home() {
   const [bench, setBench] = useState<BenchState<'length'>>({
@@ -24,13 +41,41 @@ export function Home() {
     value: 5,
   });
   const [hovered, setHovered] = useState<string | null>(null);
-  const [stoked, setStoked] = useState(0);
-  const stokeTimer = useRef<number | null>(null);
+  const [slotA, setSlotA] = useState<StokeSlot>({ key: 0, expiresAt: null });
+  const [slotB, setSlotB] = useState<StokeSlot>({ key: 0, expiresAt: null });
+  const aTimer = useRef<number | null>(null);
+  const bTimer = useRef<number | null>(null);
 
-  const triggerStoke = () => {
-    setStoked(1);
-    if (stokeTimer.current !== null) window.clearTimeout(stokeTimer.current);
-    stokeTimer.current = window.setTimeout(() => setStoked(0), STOKE_HOLD_MS);
+  const stoke = () => {
+    const now = Date.now();
+    const aLive = slotA.expiresAt !== null && slotA.expiresAt > now;
+    const bLive = slotB.expiresAt !== null && slotB.expiresAt > now;
+    // Pick the more-stale slot: an idle one if available, else whichever
+    // is expiring sooner. Third rapid hover lands on the same slot as the
+    // first, "shuffling" the most-stale instance with a fresh burst.
+    let target: 'A' | 'B';
+    if (aLive && bLive) {
+      target = (slotA.expiresAt ?? 0) <= (slotB.expiresAt ?? 0) ? 'A' : 'B';
+    } else if (aLive) {
+      target = 'B';
+    } else {
+      target = 'A';
+    }
+
+    const newExpiry = now + STOKE_HOLD_MS;
+    if (target === 'A') {
+      setSlotA((s) => ({ key: s.key + 1, expiresAt: newExpiry }));
+      if (aTimer.current !== null) window.clearTimeout(aTimer.current);
+      aTimer.current = window.setTimeout(() => {
+        setSlotA((s) => ({ ...s, expiresAt: null }));
+      }, STOKE_HOLD_MS);
+    } else {
+      setSlotB((s) => ({ key: s.key + 1, expiresAt: newExpiry }));
+      if (bTimer.current !== null) window.clearTimeout(bTimer.current);
+      bTimer.current = window.setTimeout(() => {
+        setSlotB((s) => ({ ...s, expiresAt: null }));
+      }, STOKE_HOLD_MS);
+    }
   };
 
   const triggerStrike = () => {
@@ -46,13 +91,35 @@ export function Home() {
 
   const onTileEnter = (id: string) => {
     setHovered(id);
-    triggerStoke();
+    stoke();
   };
 
   return (
     <>
-      <ForgeEmberBg intensity={1} boost={1} />
-      <ForgeEmberBg intensity={stoked} boost={2.5} />
+      <EmberStream
+        intensity={1}
+        count={AMBIENT_COUNT}
+        boost={AMBIENT_BOOST}
+        speedScale={AMBIENT_SPEED_SCALE}
+        maxDelaySec={AMBIENT_MAX_DELAY_SEC}
+      />
+      <EmberStream
+        key={`A-${slotA.key}`}
+        intensity={slotA.expiresAt !== null ? 1 : 0}
+        count={STOKE_COUNT}
+        boost={STOKE_BOOST}
+        speedScale={STOKE_SPEED_SCALE}
+        maxDelaySec={STOKE_MAX_DELAY_SEC}
+      />
+      <EmberStream
+        key={`B-${slotB.key}`}
+        intensity={slotB.expiresAt !== null ? 1 : 0}
+        count={STOKE_COUNT}
+        boost={STOKE_BOOST}
+        speedScale={STOKE_SPEED_SCALE}
+        maxDelaySec={STOKE_MAX_DELAY_SEC}
+      />
+
       <section className="flex flex-col gap-10">
         <div className="flex flex-col items-center text-center gap-3">
           <img
