@@ -16,8 +16,8 @@
 // ─── tweakables ──────────────────────────────────────────────────────────
 const SIZE_MIN = 3; // px
 const SIZE_RANGE = 5; // px above min
-const RISE_DURATION_MIN = 6; // s
-const RISE_DURATION_RANGE = 5; // s above min
+const DEFAULT_DURATION_MIN = 6; // s (fastest particle rise time)
+const DEFAULT_DURATION_MAX = 11; // s (slowest particle rise time)
 const DRIFT_MAX = 18; // px peak linear lateral drift over the full rise
 const SWAY_AMP_MAX = 16; // px peak horizontal oscillation
 const SWAY_PERIOD_MIN = 2; // s per sway cycle
@@ -29,9 +29,11 @@ interface EmberStreamProps {
   count?: number;
   /** Size + glow multiplier; 1.0 = ambient, ~2 = stoked. */
   boost?: number;
-  /** Rise-duration multiplier; 1.0 = ambient, < 1.0 = faster / shorter. */
-  speedScale?: number;
-  /** Maximum initial delay per particle (s). Ambient ~4s; stoke ~0.4s. */
+  /** Fastest possible rise time (s). Smaller values = faster particles. */
+  durationMin?: number;
+  /** Slowest possible rise time (s). Wider range = more parallax. */
+  durationMax?: number;
+  /** Maximum initial delay per particle (s). Ambient ~4s; stoke ~0.5s. */
   maxDelaySec?: number;
   /** 0..1 layer visibility; 700ms opacity transition built in. */
   intensity?: number;
@@ -51,18 +53,20 @@ function rand(i: number, offset: number): number {
 export function EmberStream({
   count = 32,
   boost = 1,
-  speedScale = 1,
+  durationMin = DEFAULT_DURATION_MIN,
+  durationMax = DEFAULT_DURATION_MAX,
   maxDelaySec = 4,
   intensity = 1,
 }: EmberStreamProps) {
   const visible = Math.max(0, Math.min(1, intensity));
   const sizeMul = Math.min(1.7, boost);
+  const durationRange = durationMax - durationMin;
 
   const embers = Array.from({ length: count }, (_, i) => ({
     left: rand(i, 1) * 100,
     size: (SIZE_MIN + rand(i, 2) * SIZE_RANGE) * sizeMul,
     delay: rand(i, 3) * maxDelaySec,
-    duration: (RISE_DURATION_MIN + rand(i, 4) * RISE_DURATION_RANGE) * speedScale,
+    duration: durationMin + rand(i, 4) * durationRange,
     drift: (rand(i, 5) - 0.5) * DRIFT_MAX * 2,
     swayAmp: (rand(i, 6) - 0.5) * SWAY_AMP_MAX * 2,
     swayPeriod: SWAY_PERIOD_MIN + rand(i, 7) * SWAY_PERIOD_RANGE,

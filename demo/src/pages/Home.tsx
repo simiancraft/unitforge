@@ -19,13 +19,19 @@ import { KITS } from '../lib/kits.js';
 // ─── tweakables ──────────────────────────────────────────────────────────
 const AMBIENT_COUNT = 32;
 const AMBIENT_BOOST = 1;
-const AMBIENT_SPEED_SCALE = 1;
+const AMBIENT_DURATION_MIN = 6;
+const AMBIENT_DURATION_MAX = 11;
 const AMBIENT_MAX_DELAY_SEC = 4;
 
 const STOKE_COUNT = 72;
 const STOKE_BOOST = 2;
-const STOKE_SPEED_SCALE = 0.26; // faster rise, like a struck anvil throwing sparks (75% faster than 0.45)
-const STOKE_MAX_DELAY_SEC = 0.52; // 50% wider than 0.35 to break up the "coherent layer" look
+// Wider speed variance than ambient so the burst reads as flurry, not
+// a coherent layer. Fastest = 1.04s (was 1.56s; 50% faster); slowest =
+// 3.575s (was 2.86s; 25% slower). Median ~2.3s, near the previous
+// uniform-scale stoke timing.
+const STOKE_DURATION_MIN = 1.04;
+const STOKE_DURATION_MAX = 3.575;
+const STOKE_MAX_DELAY_SEC = 0.52;
 const STOKE_HOLD_MS = 900;
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -100,7 +106,8 @@ export function Home() {
         intensity={1}
         count={AMBIENT_COUNT}
         boost={AMBIENT_BOOST}
-        speedScale={AMBIENT_SPEED_SCALE}
+        durationMin={AMBIENT_DURATION_MIN}
+        durationMax={AMBIENT_DURATION_MAX}
         maxDelaySec={AMBIENT_MAX_DELAY_SEC}
       />
       <EmberStream
@@ -108,7 +115,8 @@ export function Home() {
         intensity={slotA.expiresAt !== null ? 1 : 0}
         count={STOKE_COUNT}
         boost={STOKE_BOOST}
-        speedScale={STOKE_SPEED_SCALE}
+        durationMin={STOKE_DURATION_MIN}
+        durationMax={STOKE_DURATION_MAX}
         maxDelaySec={STOKE_MAX_DELAY_SEC}
       />
       <EmberStream
@@ -116,7 +124,8 @@ export function Home() {
         intensity={slotB.expiresAt !== null ? 1 : 0}
         count={STOKE_COUNT}
         boost={STOKE_BOOST}
-        speedScale={STOKE_SPEED_SCALE}
+        durationMin={STOKE_DURATION_MIN}
+        durationMax={STOKE_DURATION_MAX}
         maxDelaySec={STOKE_MAX_DELAY_SEC}
       />
 
