@@ -14,17 +14,15 @@
 // variants for variation).
 
 import { useRef, useState } from 'react';
-import { Box, Database } from 'lucide-react';
 import { CatanDemo } from './CatanDemo.js';
 import { CoreApiIntro } from './CoreApiIntro.js';
 import { EmberStream } from '../components/EmberStream.js';
 import { HomeBench } from './HomeBench.js';
-import { CircuitBg } from '../kits/data-storage/components/CircuitBg.js';
-import { GridPaperBg } from '../kits/geometry/components/GridPaperBg.js';
 import { KITS } from '../lib/kits.js';
 import '../forge.css';
-// Kit-card backgrounds preview their target kit's theme inline, so the
-// kit-CSS bundles need to load on home too.
+// Kit-card backgrounds preview their target kit's theme inline (the
+// previewBg components in lib/kits.tsx reach into each kit), so the
+// kit CSS bundles need to load on home too.
 import '../kits/geometry/geometry.css';
 import '../kits/data-storage/data-storage.css';
 
@@ -183,9 +181,9 @@ export function Home() {
           ))}
         </div>
 
-        <CoreApiIntro />
-
         <CatanDemo />
+
+        <CoreApiIntro />
       </section>
     </>
   );
@@ -204,7 +202,8 @@ function KitCard({
   onLeave: () => void;
   onMouseDown: () => void;
 }) {
-  const Icon = kit.id === 'geometry' ? Box : Database;
+  const Icon = kit.icon;
+  const PreviewBg = kit.previewBg;
   return (
     <a
       href={`#/${kit.id}`}
@@ -226,8 +225,7 @@ function KitCard({
         className="uf-flare-bg"
         style={{ transition: 'opacity 300ms ease', opacity: hovered ? 0.9 : 0.45 }}
       >
-        {kit.id === 'geometry' && <GridPaperBg inline scale={hovered ? 1.5 : 1} />}
-        {kit.id === 'data-storage' && <CircuitBg inline pulse={hovered} />}
+        <PreviewBg hovered={hovered} />
       </div>
       <div className="uf-flare-content flex flex-col gap-3">
         <div className="flex items-center gap-3">

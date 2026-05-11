@@ -57,12 +57,13 @@ export function CoreApiIntro() {
       <header className="flex flex-col gap-1">
         <p className="uf-eyebrow">core api</p>
         <h2 className="display text-3xl font-bold leading-tight md:text-4xl">
-          three verbs
+          the three verbs you just used
         </h2>
       </header>
       <p className="max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--uf-muted)' }}>
-        That's the whole surface. Kits are values built from these primitives;
-        you can use the kits, build your own, or both.
+        That's the whole surface. The Catan demo above stitched all three
+        together. Kits are values built from the same primitives; you can use
+        the kits, build your own, or both.
       </p>
       <div className="grid gap-4 md:grid-cols-3">
         {CARDS.map((c) => (

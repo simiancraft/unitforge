@@ -18,10 +18,6 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/simiancraft/unitforge/badge)](https://securityscorecards.dev/viewer/?uri=github.com/simiancraft/unitforge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-<p align="center">
-  <code>defineUnit</code> &nbsp;•&nbsp; <code>defineConversion</code> &nbsp;•&nbsp; <code>forge</code>
-</p>
-
 # Forge anything measurable.
 
 A units library that does not assume you are doing physics. Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
