@@ -113,7 +113,7 @@ export function Home() {
               hovered={hovered === kit.id}
               onEnter={(e) => onTileEnter(kit.id, e)}
               onLeave={() => setHovered(null)}
-              onClick={onTileClick}
+              onMouseDown={onTileClick}
             />
           ))}
         </div>
@@ -127,13 +127,13 @@ function KitCard({
   hovered,
   onEnter,
   onLeave,
-  onClick,
+  onMouseDown,
 }: {
   kit: (typeof KITS)[number];
   hovered: boolean;
   onEnter: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   onLeave: () => void;
-  onClick: () => void;
+  onMouseDown: () => void;
 }) {
   const Icon = kit.id === 'geometry' ? Box : Database;
   return (
@@ -144,7 +144,7 @@ function KitCard({
       onMouseLeave={onLeave}
       onFocus={(e) => onEnter(e as unknown as React.MouseEvent<HTMLAnchorElement>)}
       onBlur={onLeave}
-      onClick={onClick}
+      onMouseDown={onMouseDown}
       className="uf-flare-card uf-anvil-cursor group relative flex flex-col gap-3 rounded-lg border p-6 transition-transform hover:-translate-y-1"
       style={{
         background: 'var(--uf-card)',
