@@ -184,7 +184,7 @@ function LiveCodeLine({ code }: { code: string }) {
         border: '1px solid var(--uf-border)',
       }}
     >
-      <div className="absolute bottom-1.5 right-1.5 z-10">
+      <div className="absolute bottom-0.5 right-0.5 z-10">
         <CopyButton code={code} />
       </div>
       {html ? (

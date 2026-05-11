@@ -45,7 +45,7 @@ export function CodeBlock({ code, lang = 'ts' }: CodeBlockProps) {
       >
         unitforge
       </span>
-      <div className="absolute bottom-2 right-2 z-10">
+      <div className="absolute bottom-0.5 right-0.5 z-10">
         <CopyButton code={code} />
       </div>
       {html ? (
