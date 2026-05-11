@@ -1,27 +1,21 @@
 // Home page. Forge-themed: simple-version unitforge mark above the
-// wordmark, drifting ember background, hot-metal accent kit cards. The
-// cards have a hammer-cursor (uf-anvil-cursor) and on hover they:
-//   - "stoke" the embers: intensity boosts globally + a one-shot
-//     EmberBurst spawns at the tile's center.
-//   - trigger a brief vertical "anvil strike" on the page main so the
-//     whole frame reads as percussion (subtle; 3px peak, 280ms).
-//   - pulse their themed inline background brighter.
+// wordmark, layered ember backgrounds, hot-metal accent kit cards.
+//
+// Two ember layers: an always-on ambient stream and a "stoked" overlay
+// that fades in on hover (more particles, bigger glow) and fades back
+// out on a timeout. Pairs with the `uf-anvil-strike` percussion on press.
 
 import { useRef, useState } from 'react';
 import { Box, Database } from 'lucide-react';
 import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
 import { findByKey, LENGTH_UNITS } from '../lib/units.js';
 import { CircuitBg } from '../themes/CircuitBg.js';
-import { EmberBurst } from '../themes/EmberBurst.js';
 import { ForgeEmberBg } from '../themes/ForgeEmberBg.js';
 import { GridPaperBg } from '../themes/GridPaperBg.js';
 import { KITS } from '../lib/kits.js';
 
-interface Burst {
-  id: number;
-  x: number;
-  y: number;
-}
+const STOKE_HOLD_MS = 1200; // how long the stoked layer stays bright after a hover
+const STOKE_FADE_MS = 700; // matches the ForgeEmberBg opacity transition
 
 export function Home() {
   const [bench, setBench] = useState<BenchState<'length'>>({
@@ -30,56 +24,35 @@ export function Home() {
     value: 5,
   });
   const [hovered, setHovered] = useState<string | null>(null);
-  const [bursts, setBursts] = useState<Burst[]>([]);
-  const burstIdRef = useRef(0);
+  const [stoked, setStoked] = useState(0);
+  const stokeTimer = useRef<number | null>(null);
 
-  const isPlaying =
-    bench.value !== 5 || bench.fromKey !== 'm' || bench.toKey !== 'ft' || hovered !== null;
-  const intensity = isPlaying ? 1.6 : 1.05;
+  const triggerStoke = () => {
+    setStoked(1);
+    if (stokeTimer.current !== null) window.clearTimeout(stokeTimer.current);
+    stokeTimer.current = window.setTimeout(() => setStoked(0), STOKE_HOLD_MS);
+  };
 
   const triggerStrike = () => {
     const main = document.getElementById('main');
     if (!main) return;
-    // Defensive remove in case a previous strike's cleanup didn't fire
-    // (route change unmounted us mid-timer). Reflow to flush the class
-    // change so the next add is a fresh animation start.
     main.classList.remove('uf-anvil-strike');
     void main.offsetWidth;
     main.classList.add('uf-anvil-strike');
-    // Clear the class once the animation finishes so subsequent presses
-    // start from a no-class state. Without this the reflow-restart trick
-    // becomes unreliable after the first cycle on some Chromium builds.
     window.setTimeout(() => {
       main.classList.remove('uf-anvil-strike');
     }, 320);
   };
 
-  const onTileEnter = (id: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+  const onTileEnter = (id: string) => {
     setHovered(id);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const burst: Burst = {
-      id: ++burstIdRef.current,
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-    };
-    setBursts((b) => [...b, burst]);
-    window.setTimeout(() => {
-      setBursts((b) => b.filter((x) => x.id !== burst.id));
-    }, 1300);
-  };
-
-  // Hammer hits the anvil on click, not on hover; the strike rings briefly
-  // and the user is carried into the kit page mid-animation.
-  const onTileClick = () => {
-    triggerStrike();
+    triggerStoke();
   };
 
   return (
     <>
-      <ForgeEmberBg intensity={intensity} />
-      {bursts.map((b) => (
-        <EmberBurst key={b.id} x={b.x} y={b.y} />
-      ))}
+      <ForgeEmberBg intensity={1} boost={1} />
+      <ForgeEmberBg intensity={stoked} boost={2.5} />
       <section className="flex flex-col gap-10">
         <div className="flex flex-col items-center text-center gap-3">
           <img
@@ -119,9 +92,9 @@ export function Home() {
               key={kit.id}
               kit={kit}
               hovered={hovered === kit.id}
-              onEnter={(e) => onTileEnter(kit.id, e)}
+              onEnter={() => onTileEnter(kit.id)}
               onLeave={() => setHovered(null)}
-              onMouseDown={onTileClick}
+              onMouseDown={triggerStrike}
             />
           ))}
         </div>
@@ -139,7 +112,7 @@ function KitCard({
 }: {
   kit: (typeof KITS)[number];
   hovered: boolean;
-  onEnter: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  onEnter: () => void;
   onLeave: () => void;
   onMouseDown: () => void;
 }) {
@@ -150,7 +123,7 @@ function KitCard({
       data-theme={kit.theme}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
-      onFocus={(e) => onEnter(e as unknown as React.MouseEvent<HTMLAnchorElement>)}
+      onFocus={onEnter}
       onBlur={onLeave}
       onMouseDown={onMouseDown}
       className="uf-flare-card uf-anvil-cursor group relative flex flex-col gap-3 rounded-lg border p-6 transition-transform hover:-translate-y-1"
