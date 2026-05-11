@@ -160,7 +160,7 @@ export function Home() {
       <div
         key={`forge-flash-${flashKey}`}
         aria-hidden
-        className={`${FORGE_GLOW_VARIANTS[flashKey % FORGE_GLOW_VARIANTS.length]} fixed bottom-0 left-0 right-0 pointer-events-none`}
+        className={`${FORGE_GLOW_VARIANTS[flashKey % FORGE_GLOW_VARIANTS.length]} fixed bottom-0 left-0 w-screen pointer-events-none`}
         style={
           {
             zIndex: -2,
