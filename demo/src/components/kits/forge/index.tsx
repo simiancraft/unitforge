@@ -77,6 +77,7 @@ export function Page() {
       sectionsZone={
         <>
           <KitsGrid
+            currentKitId="forge"
             hoveredId={hoveredId}
             onTileEnter={onTileEnter}
             onTileLeave={onTileLeave}

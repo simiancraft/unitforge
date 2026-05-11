@@ -1,16 +1,18 @@
-// KitsGrid — the forge home page's section that surfaces the other
-// kits as navigation cards. Reads the existing lib/kits.tsx catalog
-// (step 5 will switch this to read from components/kits/registry.ts).
+// KitsGrid — surfaces every kit other than the active one as a navigation
+// card. Reads from the central registry; adding a kit picks it up here
+// automatically.
 //
-// Hover/strike side effects are passed in: forge owns the stoke state at
-// the kit level, this section just relays card events back up. Click
-// navigation is delayed by the caller so the visual burst finishes
-// before the route swaps.
+// Hover/strike side effects are passed in: the forge chassis owns the
+// stoke state, this section relays card events back up. Click navigation
+// is delayed by the caller so the visual burst finishes before the route
+// swaps.
 
-import { KITS } from '../../../../lib/kits.js';
+import { KITS } from '../../registry.js';
 import { NavigationCard } from '../../../ui/navigation-card.js';
 
 interface KitsGridProps {
+  /** Id of the currently active kit; excluded from the grid. */
+  currentKitId: string;
   /** Which kit, if any, is currently hovered. */
   hoveredId: string | null;
   onTileEnter: (id: string) => void;
@@ -20,31 +22,34 @@ interface KitsGridProps {
 }
 
 export function KitsGrid({
+  currentKitId,
   hoveredId,
   onTileEnter,
   onTileLeave,
   onTileMouseDown,
   onTileClick,
 }: KitsGridProps) {
+  const others = KITS.filter((k) => k.meta.id !== currentKitId);
+
   return (
     <div className="grid gap-5 md:grid-cols-2">
-      {KITS.map((kit) => {
-        const PreviewBg = kit.previewBg;
-        const hovered = hoveredId === kit.id;
+      {others.map(({ meta }) => {
+        const PreviewBg = meta.previewBg;
+        const hovered = hoveredId === meta.id;
         return (
           <NavigationCard
-            key={kit.id}
-            href={`#/${kit.id}`}
-            theme={kit.theme}
-            icon={kit.icon}
-            label={kit.label}
-            blurb={kit.blurb}
+            key={meta.id}
+            href={`#/${meta.id}`}
+            theme={meta.theme}
+            icon={meta.icon}
+            label={meta.label}
+            blurb={meta.blurb}
             hovered={hovered}
             background={<PreviewBg hovered={hovered} />}
-            onEnter={() => onTileEnter(kit.id)}
+            onEnter={() => onTileEnter(meta.id)}
             onLeave={onTileLeave}
             onMouseDown={onTileMouseDown}
-            onClick={onTileClick(kit.id)}
+            onClick={onTileClick(meta.id)}
           />
         );
       })}

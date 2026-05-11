@@ -1,27 +1,28 @@
-// Router shell. Reads window.location.hash, derives a route, sets
-// data-theme on the route container, and renders the corresponding page.
-// Error boundary catches widget-level throws; skip-link supports
-// keyboard-only navigation. Reduced-motion users don't get smooth scrolls.
+// Router shell. Reads window.location.hash, looks up the active kit from
+// the registry, sets data-theme on <html> from that kit's meta, and renders
+// the kit's Page. ErrorBoundary catches widget-level throws; skip-link
+// supports keyboard-only navigation. Reduced-motion users don't get smooth
+// scrolls.
+//
+// Adding a new kit: register it in components/kits/registry.ts. App.tsx
+// requires no edits.
 
 import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { VERSION } from 'unitforge/version';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
-import { KITS, type KitId } from './lib/kits.js';
-import { Page as DataStoragePage } from './components/kits/data-storage/index.js';
-import { Page as GeometryPage } from './components/kits/geometry/index.js';
-import { Page as ForgePage } from './components/kits/forge/index.js';
+import { findKit } from './components/kits/registry.js';
 
-type Route = 'home' | KitId;
+// 'forge' is the default route (#/ or empty hash); other kits route at #/<id>.
+const DEFAULT_KIT_ID = 'forge';
 
-function parseHash(): Route {
+function parseHash(): string {
   const raw = window.location.hash.replace(/^#\/?/, '');
-  if (raw === 'geometry' || raw === 'data-storage') return raw;
-  return 'home';
+  return raw === '' ? DEFAULT_KIT_ID : raw;
 }
 
-function useHashRoute(): Route {
-  const [route, setRoute] = useState<Route>(parseHash());
+function useHashRoute(): string {
+  const [route, setRoute] = useState<string>(parseHash());
   useEffect(() => {
     const handler = () => {
       setRoute(parseHash());
@@ -36,8 +37,9 @@ function useHashRoute(): Route {
 
 export function App() {
   const route = useHashRoute();
-  const theme = route === 'home' ? 'home' : route;
-  const kitMeta = route === 'home' ? null : KITS.find((k) => k.id === route);
+  const active = findKit(route) ?? findKit(DEFAULT_KIT_ID);
+  const Page = active?.Page;
+  const theme = active?.meta.theme ?? 'home';
 
   // Theme cascade lives on <html> so the body's `background: var(--uf-bg)`
   // resolves to the kit palette and paints the viewport. The route
@@ -47,18 +49,16 @@ export function App() {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
+  const isHome = route === DEFAULT_KIT_ID;
+
   return (
     <div className="relative min-h-screen">
       <a href="#main" className="uf-skip-link">
         skip to content
       </a>
       <main id="main" className="relative mx-auto max-w-6xl px-6 py-10 md:py-14">
-        {route !== 'home' && <BreadcrumbBar kitLabel={kitMeta?.label ?? route} />}
-        <ErrorBoundary>
-          {route === 'home' && <ForgePage />}
-          {route === 'geometry' && <GeometryPage />}
-          {route === 'data-storage' && <DataStoragePage />}
-        </ErrorBoundary>
+        {isHome ? null : <BreadcrumbBar kitLabel={active?.meta.label ?? route} />}
+        <ErrorBoundary>{Page ? <Page /> : null}</ErrorBoundary>
         <Footer />
       </main>
     </div>

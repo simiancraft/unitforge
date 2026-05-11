@@ -5,13 +5,15 @@
 // Adding a kit: drop a folder at components/kits/<kit>/ exporting
 // { Page, meta }, then import + append it below. Two consumers, one source
 // of truth.
-//
-// Step 1 scaffold: array is empty. Populated incrementally as each kit is
-// migrated (steps 2-4); routing flips from the hardcoded ladder in App.tsx
-// to registry-driven dispatch in step 5.
 
 import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { Page as ForgePage, meta as forgeMeta } from './forge/index.js';
+import { Page as GeometryPage, meta as geometryMeta } from './geometry/index.js';
+import {
+  Page as DataStoragePage,
+  meta as dataStorageMeta,
+} from './data-storage/index.js';
 
 export interface KitMeta {
   id: string;
@@ -30,4 +32,13 @@ export interface KitEntry {
   Page: ComponentType;
 }
 
-export const KITS: ReadonlyArray<KitEntry> = [];
+export const KITS: ReadonlyArray<KitEntry> = [
+  { meta: forgeMeta, Page: ForgePage },
+  { meta: geometryMeta, Page: GeometryPage },
+  { meta: dataStorageMeta, Page: DataStoragePage },
+];
+
+/** Look up a kit by its id; returns undefined if no match. */
+export function findKit(id: string): KitEntry | undefined {
+  return KITS.find((k) => k.meta.id === id);
+}
