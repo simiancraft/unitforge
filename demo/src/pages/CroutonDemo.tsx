@@ -132,6 +132,7 @@ export function CroutonDemo() {
               count={roads}
               label="roads"
               maxVisible={10}
+              showCount={false}
               highlight
             />
           </div>
@@ -179,17 +180,19 @@ function Glyph({
   label,
   highlight,
   maxVisible = 5,
+  showCount = true,
 }: {
   glyph: string;
   count: number;
   label: string;
   highlight?: boolean;
   maxVisible?: number;
+  showCount?: boolean;
 }) {
-  // Render up to maxVisible glyphs as a horizontal "stack"; the trailing
-  // "× n" count is the source of truth for the actual quantity. Default
-  // cap is 5 (resource piles); the road row asks for more so the line
-  // reads as a road instead of a stamp.
+  // Render up to maxVisible glyphs as a horizontal "stack". The visible
+  // trailing "× n" count is the source of truth for the actual quantity
+  // when it's shown; the road row hides it because the Result line
+  // above already names the count.
   const visible = Math.min(count, maxVisible);
   return (
     <span
@@ -200,9 +203,11 @@ function Glyph({
       <span className="sr-only">
         {count} {label}
       </span>
-      <span className="mono text-sm" style={{ color: 'var(--uf-muted)' }} aria-hidden>
-        × {count}
-      </span>
+      {showCount && (
+        <span className="mono text-sm" style={{ color: 'var(--uf-muted)' }} aria-hidden>
+          × {count}
+        </span>
+      )}
     </span>
   );
 }
