@@ -1,14 +1,75 @@
 @import 'tailwindcss';
 
+/*
+ * Per-kit theme system.
+ *
+ * Each kit owns a complete visual identity (palette, accent, surface, flair).
+ * A `data-theme="<kit>"` attribute on the route container swaps the variable
+ * bundle. Components reference variables only; they never hardcode color.
+ *
+ *   data-theme="home"          forge / hot-metal / dark
+ *   data-theme="geometry"      cream paper / navy ink / red pencil
+ *   data-theme="data-storage"  PCB green-black / phosphor / amber LED
+ */
+
 :root {
-  --uf-bg: #0d1117;
-  --uf-fg: #e6edf3;
-  --uf-muted: #7d8590;
+  /* Brand baseline (used by the masthead + footer regardless of route). */
+  --uf-brand: #f97316;
+
+  /* Default = home theme tokens. */
+  --uf-bg: #0d0d0d;
+  --uf-fg: #f4ede0;
+  --uf-muted: #9b8e7e;
   --uf-accent: #f97316;
-  --uf-card: #161b22;
-  --uf-border: #30363d;
+  --uf-card: #161412;
+  --uf-border: #2b231a;
+  --uf-code-bg: #0a0908;
+
+  --uf-display: 'Georgia', 'Times New Roman', serif;
+  --uf-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
   --uf-mono: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
+}
+
+[data-theme='home'] {
+  --uf-bg: #0d0d0d;
+  --uf-fg: #f4ede0;
+  --uf-muted: #9b8e7e;
+  --uf-accent: #f97316;
+  --uf-card: #161412;
+  --uf-border: #2b231a;
+  --uf-code-bg: #0a0908;
+}
+
+[data-theme='geometry'] {
+  /* engineering-paper cream + navy ink + red pencil */
+  --uf-bg: #f6efdc;
+  --uf-fg: #1a2238;
+  --uf-muted: #5b6479;
+  --uf-accent: #c84647;
+  --uf-card: #fffaf0;
+  --uf-border: #2b3553;
+  --uf-code-bg: #1a2238;
+
+  --uf-display: 'Caveat', 'Georgia', cursive;
+  --uf-grid: #6aa1c8; /* cyan grid lines */
+  --uf-grid-faint: #6aa1c81f;
+}
+
+[data-theme='data-storage'] {
+  /* PCB green-black + phosphor + amber LED */
+  --uf-bg: #0a1410;
+  --uf-fg: #a3ff7f;
+  --uf-muted: #4f7a5f;
+  --uf-accent: #ffb000;
+  --uf-card: #0f1f18;
+  --uf-border: #7a4f1c;
+  --uf-code-bg: #050a08;
+
+  --uf-display: 'JetBrains Mono', ui-monospace, monospace;
+  --uf-trace: #c8881e; /* copper trace */
+  --uf-trace-faint: #c8881e22;
 }
 
 html,
@@ -21,14 +82,73 @@ body {
   margin: 0;
   background: var(--uf-bg);
   color: var(--uf-fg);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--uf-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  transition: background-color 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 code,
 pre,
 .mono {
   font-family: var(--uf-mono);
+}
+
+.display {
+  font-family: var(--uf-display);
+}
+
+/* Demo section borders + cards reference these so the per-kit theme propagates. */
+.uf-card {
+  background: var(--uf-card);
+  border: 1px solid var(--uf-border);
+}
+
+.uf-eyebrow {
+  font-family: var(--uf-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--uf-muted);
+}
+
+/* Geometry: paper grain texture (subtle dot pattern, only on the page bg). */
+[data-theme='geometry'] body::before,
+[data-theme='geometry'] .uf-paper {
+  background-image: radial-gradient(circle at 1px 1px, var(--uf-grid-faint) 1px, transparent 0);
+  background-size: 12px 12px;
+}
+
+/* Subtle scanline shimmer for data-storage panels (purely decorative). */
+[data-theme='data-storage'] .uf-scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(163, 255, 127, 0.03) 2px,
+    rgba(163, 255, 127, 0.03) 3px
+  );
+}
+
+/* Generic floating-shape flare (cards on home preview their kit's vibe). */
+.uf-flare-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.uf-flare-card > .uf-flare-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+}
+.uf-flare-card > .uf-flare-content {
+  position: relative;
+  z-index: 1;
 }
