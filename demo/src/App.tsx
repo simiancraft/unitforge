@@ -48,7 +48,7 @@ export function App() {
   }, [theme]);
 
   return (
-    <div data-theme={theme} className="relative min-h-screen">
+    <div className="relative min-h-screen">
       <a href="#main" className="uf-skip-link">
         skip to content
       </a>

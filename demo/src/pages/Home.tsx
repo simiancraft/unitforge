@@ -13,7 +13,7 @@
 // forge-glow flash at the bottom of the viewport (one of three height
 // variants for variation).
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CatanDemo } from './CatanDemo.js';
 import { CoreApiIntro } from './CoreApiIntro.js';
 import { EmberStream } from '../components/EmberStream.js';
@@ -57,6 +57,15 @@ export function Home() {
   const [flashKey, setFlashKey] = useState(0);
   const aTimer = useRef<number | null>(null);
   const bTimer = useRef<number | null>(null);
+
+  // Clear any in-flight stoke timers on unmount so HMR / route-change
+  // doesn't leave dangling setStates that fire against a stale tree.
+  useEffect(() => {
+    return () => {
+      if (aTimer.current !== null) window.clearTimeout(aTimer.current);
+      if (bTimer.current !== null) window.clearTimeout(bTimer.current);
+    };
+  }, []);
 
   const stoke = () => {
     setFlashKey((k) => k + 1);

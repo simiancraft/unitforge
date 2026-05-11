@@ -39,7 +39,11 @@ export function useSvgPointerDrag({ getHandleCenter, onDrag }: UseSvgPointerDrag
 
   const handlers = {
     onPointerDown: (e: React.PointerEvent<SVGElement>) => {
-      const target = e.target as SVGElement;
+      // currentTarget = the handle element the listener is attached to.
+      // Using e.target would be the topmost hit (could be a child inside
+      // the handle), and Safari then delivers later pointer events to
+      // whatever element is under the cursor instead of honoring capture.
+      const target = e.currentTarget as SVGElement;
       target.setPointerCapture(e.pointerId);
       const local = toSvgSpace(e.clientX, e.clientY);
       const center = getHandleCenter();
@@ -57,14 +61,22 @@ export function useSvgPointerDrag({ getHandleCenter, onDrag }: UseSvgPointerDrag
       });
     },
     onPointerUp: (e: React.PointerEvent<SVGElement>) => {
-      const target = e.target as SVGElement;
+      // currentTarget = the handle element the listener is attached to.
+      // Using e.target would be the topmost hit (could be a child inside
+      // the handle), and Safari then delivers later pointer events to
+      // whatever element is under the cursor instead of honoring capture.
+      const target = e.currentTarget as SVGElement;
       if (target.hasPointerCapture?.(e.pointerId)) {
         target.releasePointerCapture(e.pointerId);
       }
       dragRef.current = null;
     },
     onPointerCancel: (e: React.PointerEvent<SVGElement>) => {
-      const target = e.target as SVGElement;
+      // currentTarget = the handle element the listener is attached to.
+      // Using e.target would be the topmost hit (could be a child inside
+      // the handle), and Safari then delivers later pointer events to
+      // whatever element is under the cursor instead of honoring capture.
+      const target = e.currentTarget as SVGElement;
       if (target.hasPointerCapture?.(e.pointerId)) {
         target.releasePointerCapture(e.pointerId);
       }
