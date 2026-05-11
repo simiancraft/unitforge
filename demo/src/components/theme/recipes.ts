@@ -33,7 +33,7 @@ export interface ThemeRecipe {
   codeFrameClass?: string;
 }
 
-export const THEMES = {
+export const THEMES: Record<ThemeId, ThemeRecipe> = {
   'forge-dark': {
     id: 'forge-dark',
     kit: 'forge',
@@ -71,10 +71,10 @@ export const THEMES = {
     variant: 'light',
     shikiTheme: 'light-plus',
   },
-} as const satisfies Record<ThemeId, ThemeRecipe>;
+};
 
 export function findTheme(id: string): ThemeRecipe | undefined {
-  return (THEMES as Record<string, ThemeRecipe>)[id];
+  return THEMES[id as ThemeId];
 }
 
 /**
@@ -83,12 +83,9 @@ export function findTheme(id: string): ThemeRecipe | undefined {
  * (it always does today; null is the "graceful future" path).
  */
 export function pairForKit(kit: KitId): { light: ThemeId; dark: ThemeId } | null {
-  const light = (Object.values(THEMES) as ThemeRecipe[]).find(
-    (t) => t.kit === kit && t.variant === 'light',
-  );
-  const dark = (Object.values(THEMES) as ThemeRecipe[]).find(
-    (t) => t.kit === kit && t.variant === 'dark',
-  );
+  const all = Object.values(THEMES);
+  const light = all.find((t) => t.kit === kit && t.variant === 'light');
+  const dark = all.find((t) => t.kit === kit && t.variant === 'dark');
   if (!light || !dark) return null;
   return { light: light.id, dark: dark.id };
 }

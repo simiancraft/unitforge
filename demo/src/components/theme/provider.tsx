@@ -124,3 +124,18 @@ export function useTheme(): ThemeContextValue {
   }
   return v;
 }
+
+/**
+ * Resolve the initial theme to activate for a given kit on first paint,
+ * honoring localStorage so the user's last choice wins without flashing
+ * the default first. Callers (App.tsx today) pass this into
+ * <ThemeProvider initialThemeId={...}/> as the first-render value.
+ *
+ * Lives outside the provider so App.tsx can compute it before mounting
+ * the provider tree.
+ */
+export function resolveInitialThemeId(kit: KitId, fallback: ThemeId): ThemeId {
+  const stored = readStorage()[kit];
+  if (stored && findTheme(stored)) return stored;
+  return fallback;
+}

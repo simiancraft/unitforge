@@ -92,12 +92,11 @@ export function Page() {
 }
 
 // Forge never appears in a kits-grid as a card (it IS the home page);
-// previewBg is a noop. Default theme is the hot-metal dark variant.
+// previewBg is omitted and KitsGrid filters by its absence.
 export const meta: KitMeta = {
   id: 'forge',
   label: 'unitforge',
   blurb: 'forge anything measurable.',
   defaultThemeId: 'forge-dark',
   icon: Hammer,
-  previewBg: () => null,
 };

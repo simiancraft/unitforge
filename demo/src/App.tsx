@@ -11,12 +11,15 @@ import { ArrowLeft } from 'lucide-react';
 import { VERSION } from 'unitforge/version';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { findKit } from './components/kits/registry.js';
-import { ThemeProvider, useTheme } from './components/theme/provider.js';
-import { findTheme, pairForKit, type ThemeId } from './components/theme/recipes.js';
+import {
+  ThemeProvider,
+  resolveInitialThemeId,
+  useTheme,
+} from './components/theme/provider.js';
+import { pairForKit, type ThemeId } from './components/theme/recipes.js';
 import { ThemeToggle } from './components/theme/toggle.js';
 
 const DEFAULT_KIT_ID = 'forge';
-const STORAGE_KEY = 'unitforge.themes';
 
 function parseHash(): string {
   const raw = window.location.hash.replace(/^#\/?/, '');
@@ -38,24 +41,15 @@ function useHashRoute(): string {
 }
 
 /**
- * Compute the theme to activate on initial mount, honoring localStorage
- * so the first paint matches the user's last choice for the active kit
- * (no flash of the wrong theme).
+ * Compute the theme to activate on initial mount. Routes to
+ * resolveInitialThemeId in the provider module so localStorage logic and
+ * the storage key live in one file.
  */
 function getInitialThemeId(): ThemeId {
-  const route = parseHash();
-  const kit = findKit(route);
-  const fallback = kit?.meta.defaultThemeId ?? 'forge-dark';
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw || !kit) return fallback;
-    const parsed = JSON.parse(raw) as Record<string, string>;
-    const stored = parsed[kit.meta.id];
-    if (stored && findTheme(stored)) return stored as ThemeId;
-  } catch {
-    // ignore
-  }
-  return fallback;
+  const kit = findKit(parseHash());
+  const fallback: ThemeId = kit?.meta.defaultThemeId ?? 'forge-dark';
+  if (!kit) return fallback;
+  return resolveInitialThemeId(kit.meta.id, fallback);
 }
 
 export function App() {

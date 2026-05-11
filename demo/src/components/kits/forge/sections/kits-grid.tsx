@@ -29,12 +29,15 @@ export function KitsGrid({
   onTileMouseDown,
   onTileClick,
 }: KitsGridProps) {
-  const others = KITS.filter((k) => k.meta.id !== currentKitId);
+  const others = KITS.filter(
+    (k) => k.meta.id !== currentKitId && k.meta.previewBg !== undefined,
+  );
 
   return (
     <div className="grid gap-5 md:grid-cols-2">
       {others.map(({ meta }) => {
-        const PreviewBg = meta.previewBg;
+        // Filter above guarantees previewBg is defined.
+        const PreviewBg = meta.previewBg as NonNullable<typeof meta.previewBg>;
         const hovered = hoveredId === meta.id;
         return (
           <NavigationCard

@@ -28,8 +28,13 @@ export interface KitMeta {
   defaultThemeId: ThemeId;
   /** Lucide icon for the navigation card. */
   icon: LucideIcon;
-  /** Inline backdrop preview component used by the navigation card. */
-  previewBg: ComponentType<{ hovered: boolean }>;
+  /**
+   * Inline backdrop preview component used by the navigation card.
+   * Optional because some kits (currently: forge) never appear as a
+   * card on the home grid (forge IS the home). KitsGrid filters them
+   * out by absence.
+   */
+  previewBg?: ComponentType<{ hovered: boolean }>;
 }
 
 export interface KitEntry {
