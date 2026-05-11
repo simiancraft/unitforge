@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { VERSION } from 'unitforge/version';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
-import { findKit } from './components/kits/registry.js';
+import { findKit, KITS } from './components/kits/registry.js';
 import {
   ThemeProvider,
   resolveInitialThemeId,
@@ -46,10 +46,12 @@ function useHashRoute(): string {
  * the storage key live in one file.
  */
 function getInitialThemeId(): ThemeId {
-  const kit = findKit(parseHash());
-  const fallback: ThemeId = kit?.meta.defaultThemeId ?? 'forge-dark';
-  if (!kit) return fallback;
-  return resolveInitialThemeId(kit.meta.id, fallback);
+  const kit = findKit(parseHash()) ?? KITS[0];
+  if (!kit) {
+    // KITS is non-empty by registry contract; this branch is unreachable.
+    throw new Error('Kit registry is empty');
+  }
+  return resolveInitialThemeId(kit.meta.id, kit.meta.defaultThemeId);
 }
 
 export function App() {

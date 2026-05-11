@@ -76,7 +76,7 @@ export function NavigationCard({
       onMouseDown={onPress}
       onKeyDown={handleKeyDown}
       onClick={onClick}
-      className="uf-flare-card uf-anvil-cursor group relative flex min-h-[180px] flex-col gap-3 rounded-lg border border-uf-border bg-uf-card p-6 text-uf-fg transition-transform hover:-translate-y-1"
+      className="uf-flare-card uf-anvil-cursor group relative flex min-h-[180px] flex-col gap-3 rounded-lg border border-uf-border bg-uf-card p-6 text-uf-fg transition-transform hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uf-accent"
     >
       <div className="uf-flare-bg">
         {BackgroundZone ? <BackgroundZone hovered={hovered} /> : null}

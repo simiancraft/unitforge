@@ -22,8 +22,9 @@ import './geometry.css';
 
 // Grid cell size in pixels, per "from" unit. The grid background reads
 // this and reticks; the effect is "the paper resamples when you change
-// units".
-const CELL_PX_BY_UNIT: Record<string, number> = {
+// units". Keyed by LengthKey so adding a new length unit fails the build
+// until the table is updated.
+const CELL_PX_BY_UNIT: Record<LengthKey, number> = {
   mm: 8,
   cm: 12,
   m: 18,
@@ -40,7 +41,7 @@ export function Page() {
     toKey: 'ft',
     value: 5,
   });
-  const cellSize = CELL_PX_BY_UNIT[bench.fromKey] ?? 12;
+  const cellSize = CELL_PX_BY_UNIT[bench.fromKey];
 
   // Brief "the paper rippled" flash whenever the bench changes; mirrors
   // the data-storage trace pulse so geometry also breathes on interact.

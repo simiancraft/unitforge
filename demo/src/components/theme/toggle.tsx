@@ -44,13 +44,7 @@ export function ThemeToggle({ light, dark, defaultTheme }: ThemeToggleProps) {
       onClick={() => setTheme(nextId)}
       aria-label={`switch to ${nextLabel} theme`}
       title={`switch to ${nextLabel}`}
-      className="fixed top-4 right-4 z-50 flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:opacity-100"
-      style={{
-        background: 'var(--uf-card)',
-        borderColor: 'var(--uf-border)',
-        color: 'var(--uf-fg)',
-        opacity: 0.85,
-      }}
+      className="fixed top-4 right-4 z-50 flex h-9 w-9 items-center justify-center rounded-full border border-uf-border bg-uf-card text-uf-fg opacity-85 transition-opacity hover:opacity-100"
     >
       <Icon size={16} strokeWidth={2} />
     </button>

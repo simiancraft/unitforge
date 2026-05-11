@@ -84,14 +84,18 @@ export function CodeLine({ code, lang = 'ts' }: { code: string; lang?: Lang }) {
 export function CopyButton({ code, label = 'copy' }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
 
-  const onClick = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1400);
-    } catch {
-      // Older / locked-down environments; silently no-op.
-    }
+  // React Compiler doesn't lower try/catch in hook bodies; promise-form
+  // .then(success, error) keeps the compiler happy and is equivalent.
+  const onClick = () => {
+    navigator.clipboard.writeText(code).then(
+      () => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1400);
+      },
+      () => {
+        // Older / locked-down environments; silently no-op.
+      },
+    );
   };
 
   return (

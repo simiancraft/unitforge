@@ -69,12 +69,13 @@ export function DriveVsOs() {
             suffix="GB"
           />
 
-          {/* Top: drive-vendor "product label" sticker */}
+          {/* Top: drive-vendor "product label" sticker. The gradient
+              and inset shadow stay inline because they're not theme
+              tokens; the border-color uses the kit's trace token. */}
           <div
-            className="relative rounded-md p-3"
+            className="relative rounded-md border border-uf-trace p-3"
             style={{
               background: 'linear-gradient(180deg, var(--uf-card) 0%, rgba(0,0,0,0.4) 100%)',
-              border: '1px solid var(--uf-trace)',
               boxShadow: '0 2px 0 rgba(0,0,0,0.3) inset',
             }}
           >
@@ -83,32 +84,28 @@ export function DriveVsOs() {
             </div>
             <div className="flex items-baseline gap-2">
               <span className="mono text-4xl font-bold text-uf-fg">
-                {inTB >= 1 ? inTB.toFixed(inTB < 10 ? 1 : 0) : (marketedGB / 1).toFixed(0)}
+                {formatMarketedCapacity(marketedGB, inTB)}
               </span>
-              <span className="mono text-2xl text-uf-accent">
-                {inTB >= 1 ? 'TB' : 'GB'}
-              </span>
+              <span className="mono text-2xl text-uf-accent">{inTB >= 1 ? 'TB' : 'GB'}</span>
               <span className="mono ml-auto text-xs text-uf-muted">
                 {marketedGB.toFixed(0)} GB · 1 GB = 1,000,000,000 bytes
               </span>
             </div>
           </div>
 
-          {/* Bottom: Windows Properties-dialog vibe */}
+          {/* Bottom: Windows Properties-dialog vibe. The inset shadow
+              isn't a theme token (white-tint highlight); keep it inline. */}
           <div
-            className="rounded-md"
+            className="rounded-md border border-uf-border bg-uf-card"
             style={{
-              background: 'var(--uf-card)',
-              border: '1px solid var(--uf-border)',
               boxShadow: '0 0 0 1px rgba(255,255,255,0.04) inset',
             }}
           >
             <div
-              className="flex items-center justify-between px-3 py-1.5 text-[11px]"
+              className="flex items-center justify-between border-b border-uf-border px-3 py-1.5 text-[11px]"
               style={{
                 background:
                   'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.2) 100%)',
-                borderBottom: '1px solid var(--uf-border)',
               }}
             >
               <span className="mono uppercase tracking-wider text-uf-muted">
@@ -218,4 +215,12 @@ export function DriveVsOs() {
       codeZone={<CodeBlock code={CODE} />}
     />
   );
+}
+
+// Drive labels read in TB once capacity crosses 1 TB; smaller-than-10 TB
+// drives use one decimal (1.5 TB), bigger drives drop the decimal
+// (12 TB). Under 1 TB stays in whole-GB form.
+function formatMarketedCapacity(marketedGB: number, inTB: number): string {
+  if (inTB >= 1) return inTB.toFixed(inTB < 10 ? 1 : 0);
+  return marketedGB.toFixed(0);
 }

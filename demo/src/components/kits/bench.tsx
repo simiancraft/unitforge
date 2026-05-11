@@ -11,20 +11,21 @@
 // don't read from the bench; this lets each page have one canonical
 // instrument plus several escalating explorations.
 
-import type { Dimension, ForgeInput, Unit } from 'unitforge';
-import { forge } from 'unitforge';
+import type { Dimension, Unit } from 'unitforge';
 import { type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { CodeLine } from '../CodeBlock.js';
+import { useBenchValues } from './use-bench-values.js';
+import { round1 } from '~/lib/math.js';
 
 export interface BenchState<D extends Dimension = Dimension, K extends string = string> {
   fromKey: K;
   toKey: K;
   value: number;
-  // Phantom tag: keeps `BenchState<'length'>` and `BenchState<'data'>`
-  // structurally distinct so a kit's setBench can't accept the wrong
-  // dimension's state.
-  readonly __dimension?: D;
+  // The `D` type parameter discriminates BenchState<'length'> from
+  // BenchState<'data'> at use sites (different K unions per dimension).
+  // We don't need a phantom field: K is the discriminator.
+  readonly __d?: never;
 }
 
 interface BenchProps<D extends Dimension, K extends string> {
@@ -50,23 +51,17 @@ export function Bench<D extends Dimension, K extends string>({
   codeFor,
   label = 'forge bench',
 }: BenchProps<D, K>) {
-  // The options array is non-empty by contract; the runtime invariant
-  // (every option's unit shares dimension D) is enforced at the kit-page
-  // level. If state.fromKey/toKey falls out of the catalog (hot-reload,
-  // future deep-link wiring), we fall back to options[0]. The non-null
-  // assertions are sound: the kit-page always passes a non-empty list.
-  const fromOpt = options.find((o) => o.key === state.fromKey) ?? options[0]!;
-  const toOpt = options.find((o) => o.key === state.toKey) ?? options[0]!;
-  // Cast: TS cannot prove the conditional `ForgeInput<D> = Unit<D>` for a
-  // generic D extending Dimension. The runtime invariant is enforced by
-  // the options array (every option's unit shares dimension D).
-  const result = forge(
-    fromOpt.unit as ForgeInput<D, number>,
-    toOpt.unit as ForgeInput<D, number>,
-  )(state.value);
+  const { fromOpt, toOpt, result } = useBenchValues({
+    fromKey: state.fromKey,
+    toKey: state.toKey,
+    value: state.value,
+    options,
+  });
 
+  // Round at the input boundary so the rendered code-snippet doesn't
+  // pick up floating-point drift from the slider (e.g. 0.30000000000004).
   const handleValue = (e: ChangeEvent<HTMLInputElement>) => {
-    const next = Number(e.target.value);
+    const next = round1(Number(e.target.value));
     if (Number.isFinite(next)) onChange({ ...state, value: next });
   };
 
@@ -138,11 +133,7 @@ export function Bench<D extends Dimension, K extends string>({
 
       <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-uf-border pt-3">
         <span className="uf-eyebrow">result</span>
-        <span
-          className="mono text-2xl tabular-nums text-uf-fg md:text-3xl"
-          aria-live="polite"
-          aria-atomic="true"
-        >
+        <span className="mono text-2xl tabular-nums text-uf-fg md:text-3xl">
           {formatLive(result)} <span className="text-uf-muted">{toOpt.key}</span>
         </span>
       </div>

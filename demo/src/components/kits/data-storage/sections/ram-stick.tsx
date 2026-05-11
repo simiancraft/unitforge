@@ -66,18 +66,6 @@ export function RamStick() {
       }
       widgetZone={
         <div className="flex flex-col gap-4">
-          <style>{`
-            @media (prefers-reduced-motion: no-preference) {
-              .uf-led-active {
-                animation: uf-led-breathe 1.8s ease-in-out infinite;
-              }
-              @keyframes uf-led-breathe {
-                0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 1px var(--uf-fg)); }
-                50%      { opacity: 1;   filter: drop-shadow(0 0 4px var(--uf-fg)); }
-              }
-            }
-          `}</style>
-
           <svg
             viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
             xmlns="http://www.w3.org/2000/svg"

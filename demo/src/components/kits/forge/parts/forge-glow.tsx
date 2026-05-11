@@ -6,6 +6,8 @@
 // each stoke remounts the div and restarts the keyframe; this component
 // is a pure leaf that reads variant + intensity off props.
 
+import { cn } from '~/lib/cn.js';
+
 const FORGE_GLOW_VARIANTS = ['uf-forge-glow-1', 'uf-forge-glow-2', 'uf-forge-glow-3'] as const;
 
 export const FORGE_GLOW_VARIANT_COUNT = FORGE_GLOW_VARIANTS.length;
@@ -23,7 +25,10 @@ export function ForgeGlow({ variant, intensity, decayMs }: ForgeGlowProps) {
   return (
     <div
       aria-hidden
-      className={`${FORGE_GLOW_VARIANTS[variant]} fixed bottom-0 left-0 w-screen pointer-events-none`}
+      className={cn(
+        'pointer-events-none fixed bottom-0 left-0 w-screen',
+        FORGE_GLOW_VARIANTS[variant],
+      )}
       style={{
         zIndex: -2,
         opacity: 0,

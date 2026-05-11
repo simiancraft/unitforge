@@ -70,24 +70,6 @@ export function ThroughputViz() {
       }
       widgetZone={
         <div className="flex flex-col gap-4">
-          <style>{`
-            @media (prefers-reduced-motion: no-preference) {
-              .uf-throughput-fill {
-                animation-name: uf-throughput-sweep;
-                animation-timing-function: linear;
-                animation-fill-mode: forwards;
-                animation-iteration-count: 1;
-              }
-              @keyframes uf-throughput-sweep {
-                from { width: 0%; }
-                to   { width: 100%; }
-              }
-            }
-            @media (prefers-reduced-motion: reduce) {
-              .uf-throughput-fill { width: 100%; }
-            }
-          `}</style>
-
           <Slider
             label="link rate (Gbit/s)"
             value={gbits}

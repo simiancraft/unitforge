@@ -99,3 +99,36 @@
 .uf-code-crt pre span {
   text-shadow: 0 0 4px var(--uf-fg);
 }
+
+/* Throughput-viz: sweep animation for the bandwidth progress bar.
+ * Inputs change the keyframe duration via inline animationDuration; the
+ * keyframe itself is static. Reduced-motion users get the filled state.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .uf-throughput-fill {
+    animation-name: uf-throughput-sweep;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    animation-iteration-count: 1;
+  }
+  @keyframes uf-throughput-sweep {
+    from { width: 0%; }
+    to   { width: 100%; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uf-throughput-fill { width: 100%; }
+}
+
+/* Ram-stick: chip status LED "breathing" animation. Each chip's LED
+ * pulses while lit; opacity + drop-shadow filter shimmer.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .uf-led-active {
+    animation: uf-led-breathe 1.8s ease-in-out infinite;
+  }
+  @keyframes uf-led-breathe {
+    0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 1px var(--uf-fg)); }
+    50%      { opacity: 1;   filter: drop-shadow(0 0 4px var(--uf-fg)); }
+  }
+}
