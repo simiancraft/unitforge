@@ -44,7 +44,7 @@ export function App() {
       <a href="#main" className="uf-skip-link">
         skip to content
       </a>
-      <main id="main" className="relative mx-auto max-w-5xl px-6 py-10 md:py-14">
+      <main id="main" className="relative mx-auto max-w-6xl px-6 py-10 md:py-14">
         {route !== 'home' && <BreadcrumbBar kitLabel={kitMeta?.label ?? route} />}
         <ErrorBoundary>
           {route === 'home' && <Home />}
