@@ -10,15 +10,12 @@
 
 export type KitId = 'forge' | 'geometry' | 'data-storage';
 
-export type ThemeId =
-  | 'forge-dark'
-  | 'forge-light'
-  | 'geometry-dark'
-  | 'geometry-light'
-  | 'data-storage-dark'
-  | 'data-storage-light';
-
 export type ThemeVariant = 'dark' | 'light';
+
+// ThemeId is derived from KitId + variant so adding a kit can't drift
+// the union. The completeness check on THEMES below enforces that every
+// kit ships both variants.
+export type ThemeId = `${KitId}-${ThemeVariant}`;
 
 export interface ThemeRecipe {
   /** Used both as the data-theme attribute value and as the registry key. */
@@ -77,15 +74,20 @@ export function findTheme(id: string): ThemeRecipe | undefined {
   return THEMES[id as ThemeId];
 }
 
-/**
- * Pair of theme ids that belong to the same kit, surfaced for the toggle.
- * Returns null if the recipe's kit doesn't have both variants registered
- * (it always does today; null is the "graceful future" path).
- */
-export function pairForKit(kit: KitId): { light: ThemeId; dark: ThemeId } | null {
-  const all = Object.values(THEMES);
-  const light = all.find((t) => t.kit === kit && t.variant === 'light');
-  const dark = all.find((t) => t.kit === kit && t.variant === 'dark');
-  if (!light || !dark) return null;
-  return { light: light.id, dark: dark.id };
+// Precomputed once at module init: every kit's light/dark pair. The
+// completeness of this map is enforced by ThemeId's template-literal
+// derivation + the THEMES type annotation above.
+const PAIRS_BY_KIT: Record<KitId, { light: ThemeId; dark: ThemeId }> = (() => {
+  const map = {} as Record<KitId, { light: ThemeId; dark: ThemeId }>;
+  for (const recipe of Object.values(THEMES)) {
+    const slot = map[recipe.kit] ?? { light: 'forge-light', dark: 'forge-dark' };
+    slot[recipe.variant] = recipe.id;
+    map[recipe.kit] = slot;
+  }
+  return map;
+})();
+
+/** Pair of theme ids that belong to the same kit, surfaced for the toggle. */
+export function pairForKit(kit: KitId): { light: ThemeId; dark: ThemeId } {
+  return PAIRS_BY_KIT[kit];
 }

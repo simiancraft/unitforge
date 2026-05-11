@@ -50,8 +50,13 @@ export function Bench<D extends Dimension, K extends string>({
   codeFor,
   label = 'forge bench',
 }: BenchProps<D, K>) {
-  const fromOpt = options.find((o) => o.key === state.fromKey) ?? options[0];
-  const toOpt = options.find((o) => o.key === state.toKey) ?? options[0];
+  // The options array is non-empty by contract; the runtime invariant
+  // (every option's unit shares dimension D) is enforced at the kit-page
+  // level. If state.fromKey/toKey falls out of the catalog (hot-reload,
+  // future deep-link wiring), we fall back to options[0]. The non-null
+  // assertions are sound: the kit-page always passes a non-empty list.
+  const fromOpt = options.find((o) => o.key === state.fromKey) ?? options[0]!;
+  const toOpt = options.find((o) => o.key === state.toKey) ?? options[0]!;
   // Cast: TS cannot prove the conditional `ForgeInput<D> = Unit<D>` for a
   // generic D extending Dimension. The runtime invariant is enforced by
   // the options array (every option's unit shares dimension D).

@@ -7,11 +7,11 @@
 // mousedown fires a stoke event with the appropriate intensity; the
 // click defers route navigation until ~2/3 of the burst has played.
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Hammer } from 'lucide-react';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
-import type { LengthKey } from '../../../lib/units.js';
+import type { LengthKey } from '~/lib/units.js';
 import { ForgeBackdrop } from './parts/forge-backdrop.js';
 import { ForgeHeader } from './parts/forge-header.js';
 import { FORGE_GLOW_VARIANT_COUNT } from './parts/forge-glow.js';
@@ -20,6 +20,7 @@ import { KitsGrid } from './sections/kits-grid.js';
 import { CoreApi } from './sections/core-api.js';
 import { CroutonDemo } from './sections/crouton-demo.js';
 import { useForgeStoke } from './use-forge-stoke.js';
+import './forge.css';
 
 const STOKE_HOLD_MS = 1200;
 const SHAKE_AMP_BASE_PX = 9;
@@ -39,11 +40,13 @@ export function Page() {
     toKey: LengthKey;
     value: number;
   }>({ fromKey: 'm', toKey: 'ft', value: 5 });
+  const shakeRef = useRef<HTMLDivElement | null>(null);
   const stoke = useForgeStoke({
     holdMs: STOKE_HOLD_MS,
     shakeAmpBasePx: SHAKE_AMP_BASE_PX,
     shakeDurationMs: SHAKE_DURATION_MS,
     variantCount: FORGE_GLOW_VARIANT_COUNT,
+    shakeTargetRef: shakeRef,
   });
 
   const onTileActivate = () => stoke.stoke(STOKE_HOVER_INTENSITY);
@@ -56,6 +59,7 @@ export function Page() {
   };
 
   return (
+    <div ref={shakeRef}>
     <KitLayout
       backdropZone={<ForgeBackdrop stoke={stoke} />}
       headerZone={<ForgeHeader />}
@@ -80,6 +84,7 @@ export function Page() {
         </>
       }
     />
+    </div>
   );
 }
 

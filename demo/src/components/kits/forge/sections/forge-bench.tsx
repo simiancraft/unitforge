@@ -10,9 +10,9 @@
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { forge } from 'unitforge';
-import { LENGTH_UNITS, findByKey, type LengthKey } from '../../../../lib/units.js';
-import { CodeLine } from '../../../CodeBlock.js';
+import { LENGTH_UNITS, findByKey, type LengthKey } from '~/lib/units.js';
+import { convert } from '~/lib/convert.js';
+import { CodeLine } from '~/components/CodeBlock.js';
 
 const MIN = 0.1;
 const MAX = 100;
@@ -28,7 +28,7 @@ interface ForgeBenchProps {
 export function ForgeBench({ fromKey, toKey, value, onChange }: ForgeBenchProps) {
   const fromOpt = findByKey(LENGTH_UNITS, fromKey);
   const toOpt = findByKey(LENGTH_UNITS, toKey);
-  const result = forge(fromOpt.unit, toOpt.unit)(value);
+  const result = convert(fromOpt.unit, toOpt.unit, value);
   const [sliderActive, setSliderActive] = useState(false);
 
   const code = `import { forge } from 'unitforge';

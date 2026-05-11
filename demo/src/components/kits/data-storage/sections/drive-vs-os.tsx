@@ -6,11 +6,11 @@
 
 import { useState } from 'react';
 import { HardDrive } from 'lucide-react';
-import { forge } from 'unitforge';
 import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
-import { CodeBlock } from '../../../CodeBlock.js';
-import { Result } from '../../../Result.js';
-import { Slider } from '../../../Slider.js';
+import { CodeBlock } from '~/components/CodeBlock.js';
+import { convert } from '~/lib/convert.js';
+import { Result } from '~/components/Result.js';
+import { Slider } from '~/components/Slider.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 const VIEW_W = 520;
@@ -30,8 +30,8 @@ marketedToReported(1000); // 931.32...
 export function DriveVsOs() {
   const [marketedGB, setMarketedGB] = useState(1000);
 
-  const bytes = forge(gigabyte, byte)(marketedGB);
-  const inGiB = forge(byte, gibibyte)(bytes);
+  const bytes = convert(gigabyte, byte, marketedGB);
+  const inGiB = convert(byte, gibibyte, bytes);
   const inTB = marketedGB / 1000;
   const lossFraction = 1 - inGiB / marketedGB;
   const fullW = VIEW_W - PADDING * 2;

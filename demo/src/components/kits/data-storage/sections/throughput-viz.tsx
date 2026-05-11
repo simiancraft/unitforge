@@ -6,11 +6,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Gauge } from 'lucide-react';
-import { forge } from 'unitforge';
 import { byte, gigabit, gigabyte, megabyte } from 'unitforge/kits/data-storage';
-import { CodeBlock } from '../../../CodeBlock.js';
-import { Result } from '../../../Result.js';
-import { Slider } from '../../../Slider.js';
+import { CodeBlock } from '~/components/CodeBlock.js';
+import { convert } from '~/lib/convert.js';
+import { Result } from '~/components/Result.js';
+import { Slider } from '~/components/Slider.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 const MAX_VIEW_SECONDS = 12;
@@ -32,9 +32,9 @@ export function ThroughputViz() {
   const [gbits, setGbits] = useState(1);
   const [targetGB, setTargetGB] = useState(100);
 
-  const mbPerSec = forge(gigabit, megabyte)(gbits);
-  const bytesPerSec = forge(gigabit, byte)(gbits);
-  const targetBytes = forge(gigabyte, byte)(targetGB);
+  const mbPerSec = convert(gigabit, megabyte, gbits);
+  const bytesPerSec = convert(gigabit, byte, gbits);
+  const targetBytes = convert(gigabyte, byte, targetGB);
   const realSeconds = targetBytes / bytesPerSec;
   const sweepSeconds = Math.min(MAX_VIEW_SECONDS, Math.max(0.4, realSeconds));
 

@@ -8,7 +8,7 @@
 // from useTheme() at the call site.
 
 import { useEffect, useState } from 'react';
-import { cachedHighlight, highlight } from '../../lib/highlighter.js';
+import { cachedHighlight, highlight } from '~/lib/highlighter.js';
 
 type Lang = 'ts' | 'tsx' | 'js';
 

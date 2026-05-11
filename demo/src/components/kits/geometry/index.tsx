@@ -17,7 +17,8 @@ import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { CircleMachine } from './sections/circle-machine.js';
 import { HelloUnit } from './sections/hello-unit.js';
 import { RectangleMachine } from './sections/rectangle-machine.js';
-import { findByKey, LENGTH_UNITS, type LengthKey } from '../../../lib/units.js';
+import { findByKey, LENGTH_UNITS, type LengthKey } from '~/lib/units.js';
+import './geometry.css';
 
 // Grid cell size in pixels, per "from" unit. The grid background reads
 // this and reticks; the effect is "the paper resamples when you change

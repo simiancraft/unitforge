@@ -11,13 +11,13 @@ import { useState } from 'react';
 import { Square } from 'lucide-react';
 import { forge } from 'unitforge';
 import { areaFromLengthAndWidth } from 'unitforge/kits/geometry';
-import { CodeBlock } from '../../../CodeBlock.js';
-import { Result } from '../../../Result.js';
-import { Slider } from '../../../Slider.js';
-import { UnitPicker } from '../../../UnitPicker.js';
+import { CodeBlock } from '~/components/CodeBlock.js';
+import { Result } from '~/components/Result.js';
+import { Slider } from '~/components/Slider.js';
+import { UnitPicker } from '~/components/UnitPicker.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
-import { clamp, round1 } from '../../../../lib/math.js';
+import { clamp, round1 } from '~/lib/math.js';
 import {
   AREA_UNITS,
   findByKey,
@@ -25,7 +25,7 @@ import {
   pickerOptions,
   type AreaKey,
   type LengthKey,
-} from '../../../../lib/units.js';
+} from '~/lib/units.js';
 
 const VIEW_W = 340;
 const VIEW_H = 260;

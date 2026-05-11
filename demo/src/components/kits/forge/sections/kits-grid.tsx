@@ -8,7 +8,7 @@
 
 import type { MouseEvent } from 'react';
 import { KITS, type KitEntry, type KitMeta } from '../../registry.js';
-import { NavigationCard } from '../../../ui/navigation-card.js';
+import { NavigationCard } from '~/components/ui/navigation-card.js';
 
 interface KitsGridProps {
   /** Id of the currently active kit; excluded from the grid. */

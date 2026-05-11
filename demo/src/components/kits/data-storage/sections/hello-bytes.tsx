@@ -6,12 +6,12 @@
 import { useState } from 'react';
 import { Cpu } from 'lucide-react';
 import type { Unit } from 'unitforge';
-import { forge } from 'unitforge';
 import { byte } from 'unitforge/kits/data-storage';
-import { CodeBlock } from '../../../CodeBlock.js';
-import { Result } from '../../../Result.js';
-import { Slider } from '../../../Slider.js';
-import { UnitPicker } from '../../../UnitPicker.js';
+import { convert } from '~/lib/convert.js';
+import { CodeBlock } from '~/components/CodeBlock.js';
+import { Result } from '~/components/Result.js';
+import { Slider } from '~/components/Slider.js';
+import { UnitPicker } from '~/components/UnitPicker.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import {
   DATA_BINARY_UNITS,
@@ -21,7 +21,7 @@ import {
   pickerOptions,
   DATA_ALL_UNITS,
   type DataKey,
-} from '../../../../lib/units.js';
+} from '~/lib/units.js';
 
 // Per-unit slider bounds so the range stays pedagogical at every scale:
 // 1-1e6 bytes is interesting; 1-2000 GB is the canonical drive-size range.
@@ -76,7 +76,7 @@ export function HelloBytes() {
   };
 
   const fromUnit = findByKey(DATA_ALL_UNITS, state.unitKey);
-  const inBytes = forge(fromUnit.unit, byte)(state.value);
+  const inBytes = convert(fromUnit.unit, byte, state.value);
 
   const renderRows = (
     list: ReadonlyArray<{ key: string; label: string; unit: Unit<'data', number> }>,
@@ -85,7 +85,7 @@ export function HelloBytes() {
     <div className="flex flex-col gap-1">
       <span className="uf-eyebrow">{family}</span>
       {list.map((opt) => {
-        const v = forge(byte, opt.unit)(inBytes);
+        const v = convert(byte, opt.unit, inBytes);
         return (
           <Result
             key={opt.key}

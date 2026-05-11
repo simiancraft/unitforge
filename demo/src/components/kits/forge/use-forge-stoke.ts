@@ -13,7 +13,7 @@
 // pages can also call with their own intensity. All three visible parts
 // (shake, flash, particles) move together.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 
 export interface StokeSlot {
   key: number;
@@ -30,8 +30,12 @@ export interface UseForgeStokeArgs {
   shakeDurationMs: number;
   /** How many flash-variant classes exist; the round-robin cycles 0..N-1. */
   variantCount: number;
-  /** Element id that receives the shake class + CSS var. Defaults to "main". */
-  shakeTargetId?: string;
+  /**
+   * Ref pointing at the element that receives the shake class + CSS var.
+   * Pass the chassis's main element ref; the hook reads `.current` at
+   * stoke time so it tolerates the element mounting/unmounting around it.
+   */
+  shakeTargetRef: RefObject<HTMLElement | null>;
 }
 
 export interface UseForgeStokeResult {
@@ -57,7 +61,7 @@ export function useForgeStoke({
   shakeAmpBasePx,
   shakeDurationMs,
   variantCount,
-  shakeTargetId = 'main',
+  shakeTargetRef,
 }: UseForgeStokeArgs): UseForgeStokeResult {
   const [slotA, setSlotA] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
   const [slotB, setSlotB] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
@@ -103,10 +107,10 @@ export function useForgeStoke({
       setFlashVariant(next);
     }
 
-    // Shake: direct DOM. <main> isn't a child of this hook's owner so
-    // class manipulation via id-lookup is the simplest seam. CSS var
-    // controls amplitude so a single keyframe carries every intensity.
-    const target = document.getElementById(shakeTargetId);
+    // Shake: direct DOM via the chassis-supplied ref. The element holds
+    // the class + CSS var; a single keyframe carries every intensity via
+    // the var so we don't author one keyframe per intensity level.
+    const target = shakeTargetRef.current;
     if (target) {
       target.style.setProperty('--uf-shake-amp', `${shakeAmpBasePx * intensity}px`);
       target.classList.remove('uf-anvil-strike');

@@ -18,7 +18,8 @@ import { DriveVsOs } from './sections/drive-vs-os.js';
 import { HelloBytes } from './sections/hello-bytes.js';
 import { RamStick } from './sections/ram-stick.js';
 import { ThroughputViz } from './sections/throughput-viz.js';
-import { DATA_ALL_UNITS, findByKey, type DataKey } from '../../../lib/units.js';
+import { DATA_ALL_UNITS, findByKey, type DataKey } from '~/lib/units.js';
+import './data-storage.css';
 
 export function Page() {
   const [bench, setBench] = useState<BenchState<'data', DataKey>>({

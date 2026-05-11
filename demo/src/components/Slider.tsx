@@ -94,7 +94,7 @@ const ORIENTATIONS = {
   vertical: VerticalSlider,
 } as const;
 
-function SliderReadout({ value, suffix }: { value: number; suffix?: string }) {
+function SliderReadout({ value, suffix }: { value: number; suffix?: string | undefined }) {
   return (
     <span className="mono text-sm tabular-nums">
       {value.toFixed(2)}

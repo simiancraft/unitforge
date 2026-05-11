@@ -5,17 +5,17 @@
 import { useState } from 'react';
 import { Ruler } from 'lucide-react';
 import { forge } from 'unitforge';
-import { CodeBlock } from '../../../CodeBlock.js';
-import { Result } from '../../../Result.js';
-import { Slider } from '../../../Slider.js';
-import { UnitPicker } from '../../../UnitPicker.js';
+import { CodeBlock } from '~/components/CodeBlock.js';
+import { Result } from '~/components/Result.js';
+import { Slider } from '~/components/Slider.js';
+import { UnitPicker } from '~/components/UnitPicker.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import {
   findByKey,
   LENGTH_UNITS,
   pickerOptions,
   type LengthKey,
-} from '../../../../lib/units.js';
+} from '~/lib/units.js';
 
 const CODE = `import { forge } from 'unitforge';
 import { meter, foot } from 'unitforge/kits/geometry';

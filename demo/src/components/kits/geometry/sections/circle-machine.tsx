@@ -6,13 +6,14 @@ import { useState } from 'react';
 import { Compass } from 'lucide-react';
 import { forge } from 'unitforge';
 import { areaFromCircleRadius, meter } from 'unitforge/kits/geometry';
-import { CodeBlock } from '../../../CodeBlock.js';
-import { Result } from '../../../Result.js';
-import { Slider } from '../../../Slider.js';
-import { UnitPicker } from '../../../UnitPicker.js';
+import { CodeBlock } from '~/components/CodeBlock.js';
+import { Result } from '~/components/Result.js';
+import { Slider } from '~/components/Slider.js';
+import { UnitPicker } from '~/components/UnitPicker.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
-import { clamp, round1 } from '../../../../lib/math.js';
+import { clamp, round1 } from '~/lib/math.js';
+import { convert } from '~/lib/convert.js';
 import {
   AREA_UNITS,
   findByKey,
@@ -20,7 +21,7 @@ import {
   pickerOptions,
   type AreaKey,
   type LengthKey,
-} from '../../../../lib/units.js';
+} from '~/lib/units.js';
 
 const VIEW = 280;
 const PAD = 24;
@@ -63,9 +64,9 @@ export function CircleMachine() {
     { via: areaFromCircleRadius },
   )({ radius });
 
-  const radiusInMeters = forge(radiusOpt.unit, meter)(radius);
+  const radiusInMeters = convert(radiusOpt.unit, meter, radius);
   const circumferenceInMeters = 2 * Math.PI * radiusInMeters;
-  const circumference = forge(meter, circOpt.unit)(circumferenceInMeters);
+  const circumference = convert(meter, circOpt.unit, circumferenceInMeters);
 
   const { svgRef, handlers } = useSvgPointerDrag({
     getHandleCenter: () => ({ x: cx + svgR, y: cy }),

@@ -13,11 +13,11 @@
 // who flipped geometry to dark keeps that choice even after visiting
 // other kits.
 //
-// All kit CSS files are eagerly imported here so the [data-theme='<id>']
-// cascade resolves regardless of which theme is active. CSS is small;
-// pre-loading every variant means the home page's kit-card previews
-// (which paint in their destination kit's theme via data-theme on a
-// subtree) work without per-page CSS coordination.
+// Kit CSS files load transitively: each kit's index.tsx imports its own
+// CSS, and the kit registry imports every kit's index for the meta
+// export. So importing the registry side-effects every kit's CSS into
+// the bundle; the [data-theme='<id>'] cascade resolves regardless of
+// which theme is active. Adding a kit needs no edits here.
 
 import {
   createContext,
@@ -34,13 +34,10 @@ import {
   type ThemeId,
   type ThemeRecipe,
 } from './recipes.js';
-
-// Eager CSS imports for every kit. The data-theme selectors inside each
-// file declare both variants, so loading the file once makes every
-// recipe's CSS variables resolvable.
-import '../kits/forge/forge.css';
-import '../kits/geometry/geometry.css';
-import '../kits/data-storage/data-storage.css';
+// Pull the kit registry as a side effect so every kit's index.tsx (and
+// therefore its CSS) is in the module graph by the time the provider
+// mounts. The registry itself isn't consumed here.
+import '../kits/registry.js';
 
 const STORAGE_KEY = 'unitforge.themes';
 

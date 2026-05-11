@@ -82,7 +82,7 @@ function RouteShell() {
       <a href="#main" className="uf-skip-link">
         skip to content
       </a>
-      {pair && active ? (
+      {active && pair ? (
         <ThemeToggle
           light={pair.light}
           dark={pair.dark}

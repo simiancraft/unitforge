@@ -14,9 +14,9 @@
 
 import { useState } from 'react';
 import { defineConversion, defineUnit, forge } from 'unitforge';
-import { CodeBlock } from '../../../CodeBlock.js';
-import { Result } from '../../../Result.js';
-import { Slider } from '../../../Slider.js';
+import { CodeBlock } from '~/components/CodeBlock.js';
+import { Result } from '~/components/Result.js';
+import { Slider } from '~/components/Slider.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 const COUNT = 'count' as const;
