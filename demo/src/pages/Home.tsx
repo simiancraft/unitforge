@@ -49,7 +49,7 @@ const FORGE_GLOW_VARIANTS = ['uf-forge-glow-1', 'uf-forge-glow-2', 'uf-forge-glo
 // scale relative to this so all three effects (shake, flash, particle
 // stoke layer) move together.
 const STOKE_HOVER_INTENSITY = 0.75;
-const STOKE_STRIKE_INTENSITY = 2.25; // 150% of 1.5
+const STOKE_STRIKE_INTENSITY = 3;
 const SHAKE_AMP_BASE_PX = 9; // peak translateY at intensity 1.0
 const SHAKE_DURATION_MS = 320;
 
