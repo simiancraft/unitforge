@@ -117,23 +117,18 @@ export function CroutonDemo() {
             />
           </div>
 
-          <div className="flex items-center justify-center gap-3 text-2xl md:text-3xl">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Glyph glyph="🌾" count={wheat} label="wheat" />
-            <span style={{ color: 'var(--uf-muted)' }}>+</span>
+            <span className="text-xl" style={{ color: 'var(--uf-muted)' }}>
+              +
+            </span>
             <Glyph glyph="🪨" count={ore} label="ore" />
           </div>
 
           <Result label="cities built" value={`${cities}`} emphasis />
 
-          <div className="flex items-center justify-center text-2xl md:text-3xl">
-            <Glyph
-              glyph="🏰"
-              count={cities}
-              label="cities"
-              maxVisible={10}
-              showCount={false}
-              highlight
-            />
+          <div className="flex items-center justify-center">
+            <Glyph glyph="🏰" count={cities} label="cities" variant="large" highlight />
           </div>
         </div>
 
@@ -178,35 +173,43 @@ function Glyph({
   count,
   label,
   highlight,
-  maxVisible = 5,
-  showCount = true,
+  variant = 'auto',
 }: {
   glyph: string;
   count: number;
   label: string;
   highlight?: boolean;
-  maxVisible?: number;
-  showCount?: boolean;
+  /**
+   * `auto` (resource piles) shrinks the per-glyph font size as count grows
+   * so 30 items don't overflow the card. `large` (the city payoff) holds
+   * a fixed prominent size regardless of count.
+   */
+  variant?: 'auto' | 'large';
 }) {
-  // Render up to maxVisible glyphs as a horizontal "stack". When the
-  // count exceeds the cap the trailing "× n" is the source of truth;
-  // the city row hides it because the Result line above already names
-  // the count.
-  const visible = Math.min(count, maxVisible);
+  const sizeClass =
+    variant === 'large'
+      ? 'text-4xl md:text-5xl'
+      : count <= 5
+        ? 'text-2xl md:text-3xl'
+        : count <= 10
+          ? 'text-xl md:text-2xl'
+          : count <= 20
+            ? 'text-lg md:text-xl'
+            : 'text-base md:text-lg';
+
   return (
     <span
-      className="inline-flex items-baseline gap-1 tabular-nums"
+      className={`inline-flex flex-wrap items-center justify-center gap-0.5 leading-none ${sizeClass}`}
       style={{ color: highlight ? 'var(--uf-accent)' : 'var(--uf-fg)' }}
     >
-      <span aria-hidden>{glyph.repeat(visible)}</span>
+      {Array.from({ length: count }, (_, i) => (
+        <span key={i} aria-hidden>
+          {glyph}
+        </span>
+      ))}
       <span className="sr-only">
         {count} {label}
       </span>
-      {showCount && (
-        <span className="mono text-base font-semibold" aria-hidden>
-          × {count}
-        </span>
-      )}
     </span>
   );
 }
