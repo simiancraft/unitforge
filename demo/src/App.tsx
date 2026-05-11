@@ -46,11 +46,9 @@ function useHashRoute(): string {
  * the storage key live in one file.
  */
 function getInitialThemeId(): ThemeId {
+  // KITS is a non-empty tuple, so KITS[0] is always defined; no fallback
+  // branch needed.
   const kit = findKit(parseHash()) ?? KITS[0];
-  if (!kit) {
-    // KITS is non-empty by registry contract; this branch is unreachable.
-    throw new Error('Kit registry is empty');
-  }
   return resolveInitialThemeId(kit.meta.id, kit.meta.defaultThemeId);
 }
 

@@ -12,7 +12,7 @@ interface BenchOption<D extends Dimension, K extends string> {
   unit: Unit<D, number>;
 }
 
-interface UseBenchValuesArgs<D extends Dimension, K extends string> {
+interface ComputeBenchValuesArgs<D extends Dimension, K extends string> {
   fromKey: K;
   toKey: K;
   value: number;
@@ -25,12 +25,12 @@ interface BenchValues<D extends Dimension, K extends string> {
   result: number;
 }
 
-export function useBenchValues<D extends Dimension, K extends string>({
+export function computeBenchValues<D extends Dimension, K extends string>({
   fromKey,
   toKey,
   value,
   options,
-}: UseBenchValuesArgs<D, K>): BenchValues<D, K> {
+}: ComputeBenchValuesArgs<D, K>): BenchValues<D, K> {
   // The options array is non-empty by contract (kit pages always pass a
   // catalog). If the key falls out of the catalog (hot reload, future
   // deep-link state), fall back to options[0].

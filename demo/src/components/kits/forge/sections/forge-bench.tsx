@@ -8,7 +8,7 @@
 // Row 2: code block with the minimal imports + the live forge() call.
 //
 // Shares the option-lookup + forge invocation engine with <Bench> via
-// useBenchValues; the visual layouts stay distinct on purpose.
+// computeBenchValues; the visual layouts stay distinct on purpose.
 
 import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
@@ -17,7 +17,7 @@ import { round1 } from '~/lib/math.js';
 import { CodeLine } from '~/components/CodeBlock.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
 import type { BenchState } from '~/components/kits/bench.js';
-import { useBenchValues } from '~/components/kits/use-bench-values.js';
+import { computeBenchValues } from '~/components/kits/compute-bench-values.js';
 import { cn } from '~/lib/cn.js';
 
 const MIN = 0.1;
@@ -31,7 +31,7 @@ interface ForgeBenchProps {
 
 export function ForgeBench({ state, onChange }: ForgeBenchProps) {
   const { fromKey, toKey, value } = state;
-  const { fromOpt, toOpt, result } = useBenchValues({
+  const { fromOpt, toOpt, result } = computeBenchValues({
     fromKey,
     toKey,
     value,

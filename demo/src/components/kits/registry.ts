@@ -46,7 +46,10 @@ export interface KitEntry {
 // route. App.tsx's hash-router falls back to KITS[0] when the URL hash
 // doesn't match any kit id. Subsequent entries surface as cards in the
 // home page's kits-grid in declaration order.
-export const KITS: ReadonlyArray<KitEntry> = [
+//
+// Non-empty tuple type so KITS[0] is statically known to be defined; the
+// "empty registry" branch becomes unreachable at the type layer.
+export const KITS: readonly [KitEntry, ...KitEntry[]] = [
   { meta: forgeMeta, Page: ForgePage },
   { meta: geometryMeta, Page: GeometryPage },
   { meta: dataStorageMeta, Page: DataStoragePage },

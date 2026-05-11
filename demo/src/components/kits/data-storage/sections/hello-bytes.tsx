@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Cpu } from 'lucide-react';
 import type { Unit } from 'unitforge';
 import { byte } from 'unitforge/kits/data-storage';
-import { convert } from '~/lib/convert.js';
+import { forge } from 'unitforge';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
@@ -76,7 +76,7 @@ export function HelloBytes() {
   };
 
   const fromUnit = findByKey(DATA_ALL_UNITS, state.unitKey);
-  const inBytes = convert(fromUnit.unit, byte, state.value);
+  const inBytes = forge(fromUnit.unit, byte)(state.value);
 
   const renderRows = (
     list: ReadonlyArray<{ key: string; label: string; unit: Unit<'data', number> }>,
@@ -85,7 +85,7 @@ export function HelloBytes() {
     <div className="flex flex-col gap-1">
       <span className="uf-eyebrow">{family}</span>
       {list.map((opt) => {
-        const v = convert(byte, opt.unit, inBytes);
+        const v = forge(byte, opt.unit)(inBytes);
         return (
           <Result
             key={opt.key}

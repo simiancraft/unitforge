@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { MemoryStick } from 'lucide-react';
 import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
-import { convert } from '~/lib/convert.js';
+import { forge } from 'unitforge';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
@@ -29,8 +29,8 @@ const bytes = forge(gibibyte, byte)(16);
 export function RamStick() {
   const [gibValue, setGibValue] = useState(16);
 
-  const inBytes = convert(gibibyte, byte, gibValue);
-  const inGB = convert(gibibyte, gigabyte, gibValue);
+  const inBytes = forge(gibibyte, byte)(gibValue);
+  const inGB = forge(gibibyte, gigabyte)(gibValue);
 
   const max = 64;
   const targetLit = Math.min(CHIPS, Math.max(0, Math.round((gibValue / max) * CHIPS)));

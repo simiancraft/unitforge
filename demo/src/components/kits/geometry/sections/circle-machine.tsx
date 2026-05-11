@@ -13,7 +13,6 @@ import { UnitPicker } from '~/components/UnitPicker.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 import { clamp, round1 } from '~/lib/math.js';
-import { convert } from '~/lib/convert.js';
 import {
   AREA_UNITS,
   findByKey,
@@ -64,9 +63,9 @@ export function CircleMachine() {
     { via: areaFromCircleRadius },
   )({ radius });
 
-  const radiusInMeters = convert(radiusOpt.unit, meter, radius);
+  const radiusInMeters = forge(radiusOpt.unit, meter)(radius);
   const circumferenceInMeters = 2 * Math.PI * radiusInMeters;
-  const circumference = convert(meter, circOpt.unit, circumferenceInMeters);
+  const circumference = forge(meter, circOpt.unit)(circumferenceInMeters);
 
   const { svgRef, handlers } = useSvgPointerDrag({
     getHandleCenter: () => ({ x: cx + svgR, y: cy }),

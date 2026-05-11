@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Gauge } from 'lucide-react';
 import { byte, gigabit, gigabyte, megabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
-import { convert } from '~/lib/convert.js';
+import { forge } from 'unitforge';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
@@ -32,9 +32,9 @@ export function ThroughputViz() {
   const [gbits, setGbits] = useState(1);
   const [targetGB, setTargetGB] = useState(100);
 
-  const mbPerSec = convert(gigabit, megabyte, gbits);
-  const bytesPerSec = convert(gigabit, byte, gbits);
-  const targetBytes = convert(gigabyte, byte, targetGB);
+  const mbPerSec = forge(gigabit, megabyte)(gbits);
+  const bytesPerSec = forge(gigabit, byte)(gbits);
+  const targetBytes = forge(gigabyte, byte)(targetGB);
   const realSeconds = targetBytes / bytesPerSec;
   const sweepSeconds = Math.min(MAX_VIEW_SECONDS, Math.max(0.4, realSeconds));
 
@@ -90,13 +90,12 @@ export function ThroughputViz() {
           />
 
           <div
-            className="relative h-9 overflow-hidden rounded border"
-            role="img"
-            aria-label={`progress fills over ${formatDuration(realSeconds)} at ${mbPerSec.toFixed(1)} megabytes per second`}
-            style={{
-              background: 'var(--uf-bg)',
-              borderColor: 'var(--uf-border)',
-            }}
+            className="relative h-9 overflow-hidden rounded border border-uf-border bg-uf-bg"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={100}
+            aria-valuetext={`fills over ${formatDuration(realSeconds)} at ${mbPerSec.toFixed(1)} megabytes per second`}
           >
             <div
               key={tick}
@@ -109,8 +108,7 @@ export function ThroughputViz() {
               }}
             />
             <span
-              className="mono absolute inset-0 flex items-center justify-center text-xs text-uf-bg"
-              style={{ mixBlendMode: 'difference' }}
+              className="mono absolute inset-0 flex items-center justify-center text-xs text-uf-bg mix-blend-difference"
             >
               {targetGB.toFixed(0)} GB · @ {mbPerSec.toFixed(1)} MB/s
             </span>

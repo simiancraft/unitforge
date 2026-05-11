@@ -16,17 +16,17 @@ import { type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { CodeLine } from '../CodeBlock.js';
 import { UnitPicker } from '../UnitPicker.js';
-import { useBenchValues } from './use-bench-values.js';
+import { computeBenchValues } from './compute-bench-values.js';
 import { round1 } from '~/lib/math.js';
 
 export interface BenchState<D extends Dimension = Dimension, K extends string = string> {
   fromKey: K;
   toKey: K;
   value: number;
-  // The `D` type parameter discriminates BenchState<'length'> from
-  // BenchState<'data'> at use sites (different K unions per dimension).
-  // We don't need a phantom field: K is the discriminator.
-  readonly __d?: never;
+  // K (the unit-key union) is the structural discriminator between
+  // BenchState<'length', LengthKey> and BenchState<'data', DataKey>; D
+  // remains a generic parameter so the consumer-facing options array
+  // can ship `Unit<D, number>` typed correctly.
 }
 
 interface BenchProps<D extends Dimension, K extends string> {
@@ -52,7 +52,7 @@ export function Bench<D extends Dimension, K extends string>({
   codeFor,
   label = 'forge bench',
 }: BenchProps<D, K>) {
-  const { fromOpt, toOpt, result } = useBenchValues({
+  const { fromOpt, toOpt, result } = computeBenchValues({
     fromKey: state.fromKey,
     toKey: state.toKey,
     value: state.value,
