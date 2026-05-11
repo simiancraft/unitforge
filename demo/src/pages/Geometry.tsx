@@ -1,36 +1,76 @@
-// Geometry kit page. Engineering-paper theme. Scroll-down stack of demos
-// that escalates: hello-unit (1 slider, picker-to-picker) → rectangle
-// machine (2 sliders + live SVG square + 3 unit pickers) → circle machine
-// (radius + circle viz + area + circumference). Each demo gets its own
-// titled section with code block and explanation.
+// Geometry kit page. Engineering-paper theme. The page owns the ForgeBench
+// state at the top so the grid background can rescale its cell size to the
+// currently-selected "from" unit; the bench is always visible while the
+// user scrolls through the demos below.
 
+import { useMemo, useState } from 'react';
 import { Compass, Ruler, Square } from 'lucide-react';
 import { DemoSection } from '../components/DemoSection.js';
+import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
 import { GridPaperBg } from '../themes/GridPaperBg.js';
+import { findByKey, LENGTH_UNITS } from '../lib/units.js';
 import { CircleMachine } from '../widgets/CircleMachine.js';
 import { HelloUnit } from '../widgets/HelloUnit.js';
 import { RectangleMachine } from '../widgets/RectangleMachine.js';
 
+// Grid cell size in pixels, per "from" unit. The grid background reads this
+// and reticks; the effect is "the paper resamples when you change units".
+const CELL_PX_BY_UNIT: Record<string, number> = {
+  mm: 8,
+  cm: 12,
+  m: 18,
+  km: 26,
+  in: 14,
+  ft: 20,
+  yd: 24,
+  mi: 28,
+};
+
 export function GeometryPage() {
+  const [bench, setBench] = useState<BenchState<'length'>>({
+    fromKey: 'm',
+    toKey: 'ft',
+    value: 5,
+  });
+  const cellSize = CELL_PX_BY_UNIT[bench.fromKey] ?? 12;
+
+  const options = useMemo(
+    () => LENGTH_UNITS.map((o) => ({ key: o.key, label: o.label, unit: o.unit })),
+    [],
+  );
+
   return (
     <>
-      <GridPaperBg />
+      <GridPaperBg cellSize={cellSize} />
 
       <header className="flex flex-col gap-2">
         <p className="uf-eyebrow">kit · 01</p>
-        <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">
-          geometry
-        </h1>
+        <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">geometry</h1>
         <p
           className="mt-2 max-w-2xl text-sm leading-relaxed"
           style={{ color: 'var(--uf-muted)' }}
         >
           Length, area, and volume; metric and imperial; cross-dimensional
-          conversions for rectangles, circles, and (coming soon) 3D shapes.
-          Pick any unit for any input. The library normalizes through the
-          base unit and re-emits in whatever unit you want for the output.
+          conversions for rectangles, circles, and spheres. Pick any unit for
+          any input. Watch the engineering paper retick as you change units
+          on the bench below.
         </p>
       </header>
+
+      <div className="mt-6">
+        <ForgeBench
+          state={bench}
+          onChange={setBench}
+          options={options}
+          min={0.1}
+          max={100}
+          step={0.1}
+          codeFor={(s, r) =>
+            `forge(${findByKey(LENGTH_UNITS, s.fromKey).label}, ${findByKey(LENGTH_UNITS, s.toKey).label})(${s.value}); // ${r.toFixed(4)}`
+          }
+          label="forge bench · length"
+        />
+      </div>
 
       <div className="mt-12 flex flex-col gap-16">
         <DemoSection
@@ -41,18 +81,17 @@ export function GeometryPage() {
           intro={
             <>
               The smallest forge call: pick a value, pick its unit, pick a
-              target unit, and read out the conversion. This is the
-              within-dimension overload: scalar in, scalar out, no{' '}
-              <code className="mono">via</code>.
+              target unit, and read out the conversion. Within-dimension
+              overload: scalar in, scalar out, no <code className="mono">via</code>.
             </>
           }
           widget={<HelloUnit />}
           code={HELLO_UNIT_CODE}
           notes={
             <>
-              <code className="mono">forge(meter, foot)</code> returns a
-              cached converter function; calling it is cheap. The signature
-              is the same for any pair of LENGTH units shipped by the kit.
+              <code className="mono">forge(meter, foot)</code> returns a cached
+              converter; the call signature is the same for any pair of LENGTH
+              units shipped by the kit.
             </>
           }
         />
@@ -64,12 +103,11 @@ export function GeometryPage() {
           icon={<Square size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
           intro={
             <>
-              Length × width = area. Watch the rectangle change shape as you
-              drive the sliders. Each input has its own unit picker; mix and
-              match (5 ft × 200 cm is fine), and read the area in any AREA
-              unit you like. Behind the scenes the library normalizes to
-              base meters, runs <code className="mono">compute</code>, and
-              re-emits.
+              Length × width = area. Drag the sliders to see the rectangle
+              redraw; each axis has its own unit picker so you can mix and
+              match (5 ft × 200 cm is fine). The library normalizes to base
+              meters, runs <code className="mono">compute</code>, then
+              re-emits in whatever area unit you ask for.
             </>
           }
           widget={<RectangleMachine />}
@@ -84,10 +122,10 @@ export function GeometryPage() {
           intro={
             <>
               A single radius slider drives both area (π · r²) and
-              circumference (2π · r). The conversion is a one-input
-              cross-dim forge; circumference is a bonus we compute inline
-              and re-emit via <code className="mono">forge(meter, ...)</code>{' '}
-              into the user's chosen length unit.
+              circumference (2π · r). One-input cross-dim forge for area;
+              circumference is computed inline and re-emitted via{' '}
+              <code className="mono">forge(meter, ...)</code> into your
+              chosen length unit.
             </>
           }
           widget={<CircleMachine />}
@@ -101,7 +139,6 @@ export function GeometryPage() {
 const HELLO_UNIT_CODE = `import { forge } from 'unitforge';
 import { meter, foot } from 'unitforge/kits/geometry';
 
-// Within-dim: just two units. No \`via\` config needed.
 const metersToFeet = forge(meter, foot);
 
 metersToFeet(5);   // 16.4042
@@ -111,14 +148,9 @@ metersToFeet(100); // 328.084
 const RECTANGLE_CODE = `import { forge } from 'unitforge';
 import {
   areaFromLengthAndWidth,
-  meter,
-  foot,
-  squareMeter,
-  hectare,
+  foot, meter, hectare,
 } from 'unitforge/kits/geometry';
 
-// Cross-dim: object input, scalar output, \`via\` required.
-// Inputs can be in different units; the library normalizes.
 const area = forge(
   { length: foot, width: meter },
   hectare,
@@ -131,8 +163,7 @@ area({ length: 100, width: 50 }); // 0.1524 ha
 const CIRCLE_CODE = `import { forge } from 'unitforge';
 import {
   areaFromCircleRadius,
-  meter,
-  squareMeter,
+  meter, squareMeter,
 } from 'unitforge/kits/geometry';
 
 const circleArea = forge(

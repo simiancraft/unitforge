@@ -1,22 +1,45 @@
-// Data-storage kit page. PCB / phosphor theme. Scroll-down stack of demos
-// that escalates: hello-bytes (one number, every unit, side-by-side
-// decimal/binary/bits) → drive-vs-os (the famous marketed-vs-reported
-// gap, visualized) → throughput (Gbit ↔ MB and fill-time) → RAM stick flair.
+// Data-storage kit page. PCB / phosphor theme. The page owns ForgeBench
+// state at the top so the circuit background's pulse animation toggles
+// whenever the user is actively moving the bench; the visual effect is
+// "data flowing through the board as you scrub units".
 
+import { useEffect, useRef, useState } from 'react';
 import { Cpu, Gauge, HardDrive, MemoryStick } from 'lucide-react';
 import { DemoSection } from '../components/DemoSection.js';
+import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
 import { CircuitBg } from '../themes/CircuitBg.js';
+import { DATA_ALL_UNITS, findByKey } from '../lib/units.js';
 import { DriveVsOs } from '../widgets/DriveVsOs.js';
 import { HelloBytes } from '../widgets/HelloBytes.js';
 import { RamStick } from '../widgets/RamStick.js';
 import { ThroughputViz } from '../widgets/ThroughputViz.js';
 
 export function DataStoragePage() {
+  const [bench, setBench] = useState<BenchState<'data'>>({
+    fromKey: 'GB',
+    toKey: 'GiB',
+    value: 500,
+  });
+
+  // Pulse the circuit traces briefly each time the bench moves. We flip
+  // `pulse` to true on change and back to false 1.6s later so the
+  // animation has time to play and then rests.
+  const [pulse, setPulse] = useState(false);
+  const timerRef = useRef<number | null>(null);
+  useEffect(() => {
+    setPulse(true);
+    if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => setPulse(false), 1600);
+    return () => {
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+    };
+  }, [bench.fromKey, bench.toKey, bench.value]);
+
   return (
     <>
-      <CircuitBg />
+      <CircuitBg pulse={pulse} />
 
-      <header className="flex flex-col gap-2 relative uf-scanlines">
+      <header className="relative uf-scanlines flex flex-col gap-2">
         <p className="uf-eyebrow">kit · 02</p>
         <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">
           data-storage
@@ -26,12 +49,26 @@ export function DataStoragePage() {
           style={{ color: 'var(--uf-muted)' }}
         >
           Decimal bytes (kilobyte through petabyte), IEC binary bytes
-          (kibibyte through pebibyte), and bits. Shipping all three is the
-          point: a units library that calls a kilobyte and a kibibyte the
-          same thing is the bug. Click through; the demos all run the same
-          forge calls your code would.
+          (kibibyte through pebibyte), and bits. The board pulses as you
+          scrub the bench; every conversion is a real forge call against the
+          built package.
         </p>
       </header>
+
+      <div className="mt-6">
+        <ForgeBench
+          state={bench}
+          onChange={setBench}
+          options={DATA_ALL_UNITS.map((o) => ({ key: o.key, label: o.label, unit: o.unit }))}
+          min={1}
+          max={2000}
+          step={1}
+          codeFor={(s, r) =>
+            `forge(${findByKey(DATA_ALL_UNITS, s.fromKey).label}, ${findByKey(DATA_ALL_UNITS, s.toKey).label})(${s.value}); // ${r.toExponential(3)}`
+          }
+          label="forge bench · data"
+        />
+      </div>
 
       <div className="mt-12 flex flex-col gap-16">
         <DemoSection
@@ -41,10 +78,9 @@ export function DataStoragePage() {
           icon={<Cpu size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
           intro={
             <>
-              Pick a number and a unit; every other byte and bit unit
-              renders side-by-side. The decimal and binary columns sit next
-              to each other so the gap between (e.g.) GB and GiB is visible
-              at a glance.
+              Pick a number and a unit; every other byte and bit unit renders
+              side by side. Decimal and binary columns sit next to each other
+              so the gap between (say) GB and GiB is visible at a glance.
             </>
           }
           widget={<HelloBytes />}
@@ -59,9 +95,9 @@ export function DataStoragePage() {
           intro={
             <>
               Drive vendors market capacity in decimal gigabytes; operating
-              systems traditionally report in binary gibibytes. Same drive,
-              different unit. Slide the marketed capacity and watch the
-              "lost" space (it isn't lost; it's the unit conversion).
+              systems traditionally report in binary gibibytes. Slide the
+              marketed capacity and watch the "missing" space appear; it
+              isn't missing, it's the unit conversion.
             </>
           }
           widget={<DriveVsOs />}
@@ -76,9 +112,9 @@ export function DataStoragePage() {
           intro={
             <>
               Network specs are in bits; storage rates in bytes. Same DATA
-              dimension, factor of 8 apart. This widget converts your
-              connection's Gbit/s into MB/s and computes the time-to-fill
-              for a target file size.
+              dimension, factor of 8 apart. Adjust the link rate; the file
+              fills against the clock, and the sweep duration is the
+              forge-computed transfer time at that rate.
             </>
           }
           widget={<ThroughputViz />}
@@ -92,10 +128,9 @@ export function DataStoragePage() {
           icon={<MemoryStick size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
           intro={
             <>
-              Modern memory is sold in GiB (Windows reports it the same
-              way), while consumer drives use decimal GB. Move the slider;
-              the chips light up proportionally and you see the same
-              capacity rendered in both unit families.
+              Modern memory is sold in GiB; consumer drives use decimal GB.
+              Move the slider and the chips boot in sequence with their
+              status LEDs glowing. Same capacity, two unit families.
             </>
           }
           widget={<RamStick />}
@@ -108,10 +143,7 @@ export function DataStoragePage() {
 
 const HELLO_BYTES_CODE = `import { forge } from 'unitforge';
 import {
-  byte,
-  gigabyte,
-  gibibyte,
-  megabit,
+  byte, gigabyte, gibibyte, megabit,
 } from 'unitforge/kits/data-storage';
 
 const bytes = forge(gigabyte, byte)(500); // 5e11
@@ -130,16 +162,12 @@ marketedToReported(1000); // 931.32...
 
 const THROUGHPUT_CODE = `import { forge } from 'unitforge';
 import {
-  gigabit,
-  megabyte,
-  byte,
-  gigabyte,
+  gigabit, megabyte, byte, gigabyte,
 } from 'unitforge/kits/data-storage';
 
-// 1 Gbit/s as MB/s
 const mbps = forge(gigabit, megabyte)(1); // 125
 
-// Time to transfer a 100 GB file at 1 Gbit/s
+// Time to transfer a 100 GB file at 1 Gbit/s.
 const bytesPerSec = forge(gigabit, byte)(1);
 const target = forge(gigabyte, byte)(100);
 const seconds = target / bytesPerSec; // 800
@@ -147,12 +175,9 @@ const seconds = target / bytesPerSec; // 800
 
 const RAM_CODE = `import { forge } from 'unitforge';
 import {
-  byte,
-  gigabyte,
-  gibibyte,
+  byte, gigabyte, gibibyte,
 } from 'unitforge/kits/data-storage';
 
-// 16 GiB of RAM, rendered in both family conventions.
-const bytes = forge(gibibyte, byte)(16);
 const inDecimalGB = forge(gibibyte, gigabyte)(16); // 17.18
+const bytes = forge(gibibyte, byte)(16);
 `;

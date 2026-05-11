@@ -1,36 +1,55 @@
-// Engineering / grid paper background for the geometry theme.
-// Renders as a fixed-position aria-hidden layer behind page content.
-// Uses SVG patterns so the grid stays crisp at any zoom level.
+// Engineering / grid paper background for the geometry theme. The grid IS
+// the ruler: the fine cell size is driven by the page's currently-selected
+// "from" unit, so switching from meters to feet visibly reticks the grid.
+// Coarse grid lines mark every 5 fine cells.
+//
+// Renders as a fixed-position aria-hidden layer behind page content; SVG
+// patterns stay crisp at any zoom level.
 
 interface GridPaperBgProps {
   /** Render inline (sized to parent) instead of fixed to viewport. */
   inline?: boolean;
+  /** Fine grid spacing in pixels. Driven by the page bench's unit choice. */
+  cellSize?: number;
 }
 
-export function GridPaperBg({ inline }: GridPaperBgProps) {
+export function GridPaperBg({ inline, cellSize = 12 }: GridPaperBgProps) {
   const className = inline
     ? 'absolute inset-0 pointer-events-none'
     : 'fixed inset-0 pointer-events-none -z-10';
+
+  const coarse = cellSize * 5;
 
   return (
     <div aria-hidden className={className} style={{ zIndex: inline ? 0 : -1 }}>
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <pattern id="uf-grid-fine" width="12" height="12" patternUnits="userSpaceOnUse">
+          <pattern
+            id="uf-grid-fine"
+            width={cellSize}
+            height={cellSize}
+            patternUnits="userSpaceOnUse"
+          >
             <path
-              d="M 12 0 L 0 0 0 12"
+              d={`M ${cellSize} 0 L 0 0 0 ${cellSize}`}
               fill="none"
               stroke="var(--uf-grid-faint)"
               strokeWidth="0.5"
+              style={{ transition: 'd 400ms cubic-bezier(0.22,1,0.36,1)' }}
             />
           </pattern>
-          <pattern id="uf-grid-coarse" width="60" height="60" patternUnits="userSpaceOnUse">
+          <pattern
+            id="uf-grid-coarse"
+            width={coarse}
+            height={coarse}
+            patternUnits="userSpaceOnUse"
+          >
             <path
-              d="M 60 0 L 0 0 0 60"
+              d={`M ${coarse} 0 L 0 0 0 ${coarse}`}
               fill="none"
               stroke="var(--uf-grid)"
               strokeWidth="0.6"
-              opacity="0.4"
+              opacity="0.45"
             />
           </pattern>
         </defs>

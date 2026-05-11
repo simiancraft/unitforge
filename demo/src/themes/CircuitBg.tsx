@@ -1,19 +1,36 @@
-// Circuit-board background for the data-storage theme.
-// Pseudo-random PCB trace paths with via dots at junctions; aria-hidden,
-// fixed-position behind page content.
+// Circuit-board background for the data-storage theme. PCB trace paths with
+// via dots; when `pulse` is on, copper traces stroke-dash-animate so data
+// visibly "flows" along them. The pulse is the chromonym "set reacts to
+// state" pattern adapted for data-storage: any time the page bench moves,
+// the page flashes a couple of traces.
 
 interface CircuitBgProps {
-  /** Render inline (sized to parent) instead of fixed to viewport. */
   inline?: boolean;
+  /** Active = traces pulse (stroke-dashoffset animation). */
+  pulse?: boolean;
 }
 
-export function CircuitBg({ inline }: CircuitBgProps) {
+export function CircuitBg({ inline, pulse = false }: CircuitBgProps) {
   const className = inline
     ? 'absolute inset-0 pointer-events-none'
     : 'fixed inset-0 pointer-events-none -z-10';
 
   return (
     <div aria-hidden className={className} style={{ zIndex: inline ? 0 : -1 }}>
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .uf-trace-pulse {
+            stroke: var(--uf-trace);
+            stroke-dasharray: 6 18;
+            animation: uf-trace-flow 2.4s linear infinite;
+            opacity: 0.55;
+          }
+          @keyframes uf-trace-flow {
+            0%   { stroke-dashoffset: 24; }
+            100% { stroke-dashoffset: 0; }
+          }
+        }
+      `}</style>
       <svg
         width="100%"
         height="100%"
@@ -23,7 +40,6 @@ export function CircuitBg({ inline }: CircuitBgProps) {
       >
         <defs>
           <pattern id="uf-pcb" width="100" height="100" patternUnits="userSpaceOnUse">
-            {/* base trace lines */}
             <path
               d="M 0 20 L 60 20 L 60 60 L 100 60"
               fill="none"
@@ -42,7 +58,6 @@ export function CircuitBg({ inline }: CircuitBgProps) {
               stroke="var(--uf-trace-faint)"
               strokeWidth="1.2"
             />
-            {/* via dots */}
             <circle cx="60" cy="20" r="2" fill="var(--uf-trace)" opacity="0.5" />
             <circle cx="60" cy="60" r="2" fill="var(--uf-trace)" opacity="0.5" />
             <circle cx="40" cy="40" r="2" fill="var(--uf-trace)" opacity="0.5" />
@@ -51,6 +66,31 @@ export function CircuitBg({ inline }: CircuitBgProps) {
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#uf-pcb)" />
+
+        {pulse && (
+          <g>
+            <path
+              d="M 0 120 L 240 120 L 240 280 L 540 280"
+              fill="none"
+              strokeWidth="1.8"
+              className="uf-trace-pulse"
+            />
+            <path
+              d="M 800 400 L 600 400 L 600 200 L 320 200"
+              fill="none"
+              strokeWidth="1.8"
+              className="uf-trace-pulse"
+              style={{ animationDelay: '0.6s' } as React.CSSProperties}
+            />
+            <path
+              d="M 100 600 L 100 460 L 380 460 L 380 360"
+              fill="none"
+              strokeWidth="1.8"
+              className="uf-trace-pulse"
+              style={{ animationDelay: '1.2s' } as React.CSSProperties}
+            />
+          </g>
+        )}
       </svg>
     </div>
   );
