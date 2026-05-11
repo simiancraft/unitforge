@@ -118,12 +118,19 @@ export function CroutonDemo() {
             />
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-2xl md:text-3xl">
-            <Glyph glyph="🌲" count={wood} label="wood" />
-            <span style={{ color: 'var(--uf-muted)' }}>+</span>
-            <Glyph glyph="🧱" count={brick} label="brick" />
-            <span style={{ color: 'var(--uf-accent)' }}>→</span>
-            <Glyph glyph="🛣️" count={roads} label="roads" highlight />
+          <div className="flex flex-col items-center gap-3 text-2xl md:text-3xl">
+            <div className="flex items-center justify-center gap-3">
+              <Glyph glyph="🌲" count={wood} label="wood" />
+              <span style={{ color: 'var(--uf-muted)' }}>+</span>
+              <Glyph glyph="🧱" count={brick} label="brick" />
+            </div>
+            <Glyph
+              glyph="🛣️"
+              count={roads}
+              label="roads"
+              maxVisible={10}
+              highlight
+            />
           </div>
 
           <Result label="roads built" value={`${roads}`} emphasis />
@@ -170,15 +177,19 @@ function Glyph({
   count,
   label,
   highlight,
+  maxVisible = 5,
 }: {
   glyph: string;
   count: number;
   label: string;
   highlight?: boolean;
+  maxVisible?: number;
 }) {
-  // Render up to 5 glyphs as a "stack"; for higher counts show "× n" to
-  // keep the row compact at extreme inputs.
-  const visible = Math.min(count, 5);
+  // Render up to maxVisible glyphs as a horizontal "stack"; the trailing
+  // "× n" count is the source of truth for the actual quantity. Default
+  // cap is 5 (resource piles); the road row asks for more so the line
+  // reads as a road instead of a stamp.
+  const visible = Math.min(count, maxVisible);
   return (
     <span
       className="inline-flex items-baseline gap-1 tabular-nums"
