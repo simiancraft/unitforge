@@ -30,6 +30,7 @@ export function HomeBench({ fromKey, toKey, value, onChange }: HomeBenchProps) {
   const fromOpt = findByKey(LENGTH_UNITS, fromKey);
   const toOpt = findByKey(LENGTH_UNITS, toKey);
   const result = forge(fromOpt.unit, toOpt.unit)(value);
+  const [sliderActive, setSliderActive] = useState(false);
 
   const code = `import { forge } from 'unitforge';
 import { ${fromOpt.label}, ${toOpt.label} } from 'unitforge/kits/geometry';
@@ -70,8 +71,12 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
               const next = Number(e.target.value);
               if (Number.isFinite(next)) onChange({ fromKey, toKey, value: next });
             }}
+            onPointerDown={() => setSliderActive(true)}
+            onPointerUp={() => setSliderActive(false)}
+            onPointerCancel={() => setSliderActive(false)}
+            onBlur={() => setSliderActive(false)}
             aria-label={`value in ${fromOpt.label}`}
-            className="flex-1"
+            className="h-3 flex-1"
             style={{ accentColor: 'var(--uf-accent)' }}
           />
           <span
@@ -82,13 +87,20 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
           </span>
         </div>
 
-        {/* Dotted-trail pointing across to the right; arrow lands at the
-            far end. Renders as a subtle accent-colored trace between
-            the FROM and TO halves rather than a stranded glyph. */}
-        <div className="flex items-center gap-1 self-center w-14 md:w-24">
+        {/* Dotted-trail pointing across to the result. The whole zone
+            mutes to 50% opacity at rest and lifts to 100% when the
+            user is actively dragging the slider, so the user's eye
+            follows the trail toward the live output. */}
+        <div
+          className="flex flex-1 items-center gap-1 self-center"
+          style={{
+            opacity: sliderActive ? 1 : 0.5,
+            transition: 'opacity 220ms ease',
+          }}
+        >
           <span
             className="flex-1 border-t-2 border-dotted"
-            style={{ borderColor: 'var(--uf-accent)', opacity: 0.55 }}
+            style={{ borderColor: 'var(--uf-accent)' }}
             aria-hidden
           />
           <ArrowRight
@@ -98,8 +110,9 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
           />
         </div>
 
-        {/* RIGHT half: result + TO picker */}
-        <div className="flex flex-1 items-center justify-end gap-3">
+        {/* RIGHT half: result + TO picker. Content-width on purpose so
+            the dotted trail in the middle gets the room. */}
+        <div className="flex items-center justify-end gap-3">
           <span
             className="tabular-nums whitespace-nowrap text-2xl md:text-3xl"
             aria-live="polite"
