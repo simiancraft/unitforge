@@ -44,17 +44,27 @@ const STOKE_FLASH_DECAY_MS = STOKE_HOLD_MS * 0.25;
 const FORGE_GLOW_VARIANTS = ['uf-forge-glow-1', 'uf-forge-glow-2', 'uf-forge-glow-3'] as const;
 // ─────────────────────────────────────────────────────────────────────────
 
+// Reference (1.0) intensity for the stoke event; hover and mousedown
+// scale relative to this so all three effects (shake, flash, particle
+// stoke layer) move together.
+const STOKE_HOVER_INTENSITY = 0.75;
+const STOKE_STRIKE_INTENSITY = 1.5;
+const SHAKE_AMP_BASE_PX = 9; // peak translateY at intensity 1.0
+const SHAKE_DURATION_MS = 320;
+
 interface StokeSlot {
   key: number;
   expiresAt: number | null;
+  intensity: number;
 }
 
 export function Home() {
   const [bench, setBench] = useState({ fromKey: 'm', toKey: 'ft', value: 5 });
   const [hovered, setHovered] = useState<string | null>(null);
-  const [slotA, setSlotA] = useState<StokeSlot>({ key: 0, expiresAt: null });
-  const [slotB, setSlotB] = useState<StokeSlot>({ key: 0, expiresAt: null });
+  const [slotA, setSlotA] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
+  const [slotB, setSlotB] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
   const [flashKey, setFlashKey] = useState(0);
+  const [flashIntensity, setFlashIntensity] = useState(1);
   const aTimer = useRef<number | null>(null);
   const bTimer = useRef<number | null>(null);
 
@@ -67,8 +77,29 @@ export function Home() {
     };
   }, []);
 
-  const stoke = () => {
+  // Unified "stoke" event — flash + particles + shake all coupled and
+  // scaled together by `intensity`. Hover = 0.75, strike = 1.5, baseline
+  // reference = 1.0. Each call:
+  //   - bumps flashKey (remounts the gradient div, restarts the keyframe)
+  //   - records flashIntensity so the gradient's --uf-flash-scale picks
+  //     up the new peak before the next render
+  //   - picks the more-stale ember-stoke slot, bumps its key + intensity
+  //   - sets --uf-shake-amp on <main> and (re-)applies uf-anvil-strike
+  const stoke = (intensity: number) => {
+    setFlashIntensity(intensity);
     setFlashKey((k) => k + 1);
+
+    const main = document.getElementById('main');
+    if (main) {
+      main.style.setProperty('--uf-shake-amp', `${SHAKE_AMP_BASE_PX * intensity}px`);
+      main.classList.remove('uf-anvil-strike');
+      void main.offsetWidth;
+      main.classList.add('uf-anvil-strike');
+      window.setTimeout(() => {
+        main.classList.remove('uf-anvil-strike');
+      }, SHAKE_DURATION_MS);
+    }
+
     const now = Date.now();
     const aLive = slotA.expiresAt !== null && slotA.expiresAt > now;
     const bLive = slotB.expiresAt !== null && slotB.expiresAt > now;
@@ -82,13 +113,13 @@ export function Home() {
     }
     const newExpiry = now + STOKE_HOLD_MS;
     if (target === 'A') {
-      setSlotA((s) => ({ key: s.key + 1, expiresAt: newExpiry }));
+      setSlotA((s) => ({ key: s.key + 1, expiresAt: newExpiry, intensity }));
       if (aTimer.current !== null) window.clearTimeout(aTimer.current);
       aTimer.current = window.setTimeout(() => {
         setSlotA((s) => ({ ...s, expiresAt: null }));
       }, STOKE_HOLD_MS);
     } else {
-      setSlotB((s) => ({ key: s.key + 1, expiresAt: newExpiry }));
+      setSlotB((s) => ({ key: s.key + 1, expiresAt: newExpiry, intensity }));
       if (bTimer.current !== null) window.clearTimeout(bTimer.current);
       bTimer.current = window.setTimeout(() => {
         setSlotB((s) => ({ ...s, expiresAt: null }));
@@ -96,25 +127,13 @@ export function Home() {
     }
   };
 
-  const triggerStrike = () => {
-    const main = document.getElementById('main');
-    if (!main) return;
-    main.classList.remove('uf-anvil-strike');
-    void main.offsetWidth;
-    main.classList.add('uf-anvil-strike');
-    window.setTimeout(() => {
-      main.classList.remove('uf-anvil-strike');
-    }, 320);
-  };
-
   const onTileEnter = (id: string) => {
     setHovered(id);
-    stoke();
+    stoke(STOKE_HOVER_INTENSITY);
   };
 
   const onTileMouseDown = () => {
-    triggerStrike();
-    stoke();
+    stoke(STOKE_STRIKE_INTENSITY);
   };
 
   // Delay the hash navigation by ~180ms after the click so the anvil-
@@ -135,15 +154,18 @@ export function Home() {
         key={`forge-flash-${flashKey}`}
         aria-hidden
         className={`${FORGE_GLOW_VARIANTS[flashKey % FORGE_GLOW_VARIANTS.length]} fixed bottom-0 left-0 right-0 pointer-events-none`}
-        style={{
-          zIndex: -2,
-          opacity: 0,
-          transformOrigin: 'bottom',
-          animation:
-            flashKey > 0
-              ? `uf-forge-flash ${STOKE_FLASH_DECAY_MS}ms ease-out forwards`
-              : 'none',
-        }}
+        style={
+          {
+            zIndex: -2,
+            opacity: 0,
+            transformOrigin: 'bottom',
+            ['--uf-flash-scale' as string]: flashIntensity,
+            animation:
+              flashKey > 0
+                ? `uf-forge-flash ${STOKE_FLASH_DECAY_MS}ms ease-out forwards`
+                : 'none',
+          } as React.CSSProperties
+        }
       />
       <EmberStream
         intensity={1}
@@ -156,19 +178,19 @@ export function Home() {
       <EmberStream
         key={`A-${slotA.key}`}
         intensity={slotA.expiresAt !== null ? 1 : 0}
-        count={STOKE_COUNT}
-        boost={STOKE_BOOST}
-        durationMin={STOKE_DURATION_MIN}
-        durationMax={STOKE_DURATION_MAX}
+        count={Math.round(STOKE_COUNT * slotA.intensity)}
+        boost={STOKE_BOOST * slotA.intensity}
+        durationMin={STOKE_DURATION_MIN / slotA.intensity}
+        durationMax={STOKE_DURATION_MAX / slotA.intensity}
         maxDelaySec={STOKE_MAX_DELAY_SEC}
       />
       <EmberStream
         key={`B-${slotB.key}`}
         intensity={slotB.expiresAt !== null ? 1 : 0}
-        count={STOKE_COUNT}
-        boost={STOKE_BOOST}
-        durationMin={STOKE_DURATION_MIN}
-        durationMax={STOKE_DURATION_MAX}
+        count={Math.round(STOKE_COUNT * slotB.intensity)}
+        boost={STOKE_BOOST * slotB.intensity}
+        durationMin={STOKE_DURATION_MIN / slotB.intensity}
+        durationMax={STOKE_DURATION_MAX / slotB.intensity}
         maxDelaySec={STOKE_MAX_DELAY_SEC}
       />
 

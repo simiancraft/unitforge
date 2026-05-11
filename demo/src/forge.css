@@ -12,17 +12,23 @@
   --uf-code-bg: #0a0908;
 }
 
-/* Anvil-strike: brief one-shot vertical translate played when the user
- * presses a kit card. ~280ms, ~9px peak (3x the prior 3px); reads as a
- * real hammer hit. Navigation is delayed by ~180ms in Home so the user
- * feels the rumble before the route swap.
+/* Anvil-strike and forge-flash are the visible parts of a single "stoke"
+ * event in Home.tsx (also stokes the ember pool). Both animations read
+ * intensity via CSS custom properties:
+ *
+ *   --uf-shake-amp    peak translateY of the strike (defaults to 9px)
+ *   --uf-flash-scale  peak scaleY of the flash gradient (defaults to 1)
+ *
+ * Home calls a unified `stoke(intensity)` with 0.75 on hover and 1.5 on
+ * mousedown; the variables are set inline before the class is (re-)applied
+ * so amplitude scales without authoring multiple keyframes.
  */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes uf-anvil-strike {
     0%   { transform: translateY(0); }
-    18%  { transform: translateY(9px); }
-    40%  { transform: translateY(-6px); }
-    62%  { transform: translateY(3px); }
+    18%  { transform: translateY(var(--uf-shake-amp, 9px)); }
+    40%  { transform: translateY(calc(var(--uf-shake-amp, 9px) * -0.67)); }
+    62%  { transform: translateY(calc(var(--uf-shake-amp, 9px) * 0.33)); }
     100% { transform: translateY(0); }
   }
   .uf-anvil-strike {
@@ -30,14 +36,14 @@
   }
 
   /* Forge-glow flash: scales out of the bottom of the viewport on the
-   * first 20% of the timeline, then opacity decays to 0. Pairs with each
-   * stoke burst; reads as a flame leaping up from the anvil. The element
-   * using this needs `transform-origin: bottom`.
+   * first 20% of the timeline (to peak scaleY = --uf-flash-scale), then
+   * opacity decays to 0. The element using this needs
+   * `transform-origin: bottom`.
    */
   @keyframes uf-forge-flash {
     0%   { transform: scaleY(0); opacity: 1; }
-    20%  { transform: scaleY(1); opacity: 1; }
-    100% { transform: scaleY(1); opacity: 0; }
+    20%  { transform: scaleY(var(--uf-flash-scale, 1)); opacity: 1; }
+    100% { transform: scaleY(var(--uf-flash-scale, 1)); opacity: 0; }
   }
 }
 
