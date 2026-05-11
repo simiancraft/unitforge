@@ -9,6 +9,7 @@
 
 import { useRef, useState } from 'react';
 import { Hammer } from 'lucide-react';
+import type { BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import type { LengthKey } from '~/lib/units.js';
@@ -35,11 +36,11 @@ const STRIKE_VARIANT = 1;
 const NAV_DELAY_MS = Math.round(STOKE_HOLD_MS * (2 / 3));
 
 export function Page() {
-  const [bench, setBench] = useState<{
-    fromKey: LengthKey;
-    toKey: LengthKey;
-    value: number;
-  }>({ fromKey: 'm', toKey: 'ft', value: 5 });
+  const [bench, setBench] = useState<BenchState<'length', LengthKey>>({
+    fromKey: 'm',
+    toKey: 'ft',
+    value: 5,
+  });
   const shakeRef = useRef<HTMLDivElement | null>(null);
   const stoke = useForgeStoke({
     holdMs: STOKE_HOLD_MS,
@@ -62,18 +63,16 @@ export function Page() {
     }, NAV_DELAY_MS);
   };
 
+  // `display: contents` removes the wrapper from the box tree so the
+  // ref lives only to receive the shake CSS class without inserting a
+  // layout box around KitLayout's zones.
   return (
-    <div ref={shakeRef}>
+    <div ref={shakeRef} className="contents">
     <KitLayout
       backdropZone={<ForgeBackdrop stoke={stoke} />}
       headerZone={<ForgeHeader />}
       benchZone={
-        <ForgeBench
-          fromKey={bench.fromKey}
-          toKey={bench.toKey}
-          value={bench.value}
-          onChange={setBench}
-        />
+        <ForgeBench state={bench} onChange={setBench} />
       }
       sectionsZone={
         <>

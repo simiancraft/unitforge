@@ -12,9 +12,11 @@
 
 import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { LENGTH_UNITS, type LengthKey } from '~/lib/units.js';
+import { LENGTH_UNITS, pickerOptions, type LengthKey } from '~/lib/units.js';
 import { round1 } from '~/lib/math.js';
 import { CodeLine } from '~/components/CodeBlock.js';
+import { UnitPicker } from '~/components/UnitPicker.js';
+import type { BenchState } from '~/components/kits/bench.js';
 import { useBenchValues } from '~/components/kits/use-bench-values.js';
 import { cn } from '~/lib/cn.js';
 
@@ -23,13 +25,12 @@ const MAX = 100;
 const STEP = 0.1;
 
 interface ForgeBenchProps {
-  fromKey: LengthKey;
-  toKey: LengthKey;
-  value: number;
-  onChange: (next: { fromKey: LengthKey; toKey: LengthKey; value: number }) => void;
+  state: BenchState<'length', LengthKey>;
+  onChange: (next: BenchState<'length', LengthKey>) => void;
 }
 
-export function ForgeBench({ fromKey, toKey, value, onChange }: ForgeBenchProps) {
+export function ForgeBench({ state, onChange }: ForgeBenchProps) {
+  const { fromKey, toKey, value } = state;
   const { fromOpt, toOpt, result } = useBenchValues({
     fromKey,
     toKey,
@@ -48,10 +49,12 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
       <div className="mono flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         {/* LEFT half: FROM picker + slider + live value */}
         <div className="flex flex-1 items-center gap-3">
-          <SlimSelect
+          <UnitPicker
+            label="from unit"
+            labelHidden
             value={fromKey}
-            ariaLabel="from unit"
-            onChange={(next) => onChange({ fromKey: next, toKey, value })}
+            options={pickerOptions(LENGTH_UNITS)}
+            onChange={(next) => onChange({ ...state, fromKey: next })}
           />
           <input
             type="range"
@@ -61,7 +64,7 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
             value={value}
             onChange={(e) => {
               const next = round1(Number(e.target.value));
-              if (Number.isFinite(next)) onChange({ fromKey, toKey, value: next });
+              if (Number.isFinite(next)) onChange({ ...state, value: next });
             }}
             onPointerDown={() => setSliderActive(true)}
             onPointerUp={() => setSliderActive(false)}
@@ -97,43 +100,17 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
             {result.toFixed(4)}
             <span className="sr-only"> {toOpt.label}</span>
           </span>
-          <SlimSelect
+          <UnitPicker
+            label="to unit"
+            labelHidden
             value={toKey}
-            ariaLabel="to unit"
-            onChange={(next) => onChange({ fromKey, toKey: next, value })}
+            options={pickerOptions(LENGTH_UNITS)}
+            onChange={(next) => onChange({ ...state, toKey: next })}
           />
         </div>
       </div>
 
       <CodeLine code={code} />
     </div>
-  );
-}
-
-// Themed select with no visible label, just an aria-label. Shared between
-// the two slim pickers in this file; the labeled-`UnitPicker` form lives
-// in components/UnitPicker.tsx for sections that want the eyebrow.
-function SlimSelect({
-  value,
-  ariaLabel,
-  onChange,
-}: {
-  value: LengthKey;
-  ariaLabel: string;
-  onChange: (next: LengthKey) => void;
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value as LengthKey)}
-      aria-label={ariaLabel}
-      className="rounded border border-uf-border bg-uf-bg px-2 py-1 text-sm text-uf-fg"
-    >
-      {LENGTH_UNITS.map((o) => (
-        <option key={o.key} value={o.key}>
-          {o.label}
-        </option>
-      ))}
-    </select>
   );
 }

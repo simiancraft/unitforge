@@ -74,17 +74,29 @@ export function findTheme(id: string): ThemeRecipe | undefined {
   return THEMES[id as ThemeId];
 }
 
-// Precomputed once at module init: every kit's light/dark pair. The
-// completeness of this map is enforced by ThemeId's template-literal
-// derivation + the THEMES type annotation above.
+// Precomputed once at module init: every kit's light/dark pair. ThemeId's
+// template-literal derivation guarantees coverage at the type layer; the
+// init below verifies it at runtime and throws if a kit ships only one
+// variant (catches typos that the type system might miss after a refactor).
 const PAIRS_BY_KIT: Record<KitId, { light: ThemeId; dark: ThemeId }> = (() => {
-  const map = {} as Record<KitId, { light: ThemeId; dark: ThemeId }>;
+  const partial: Partial<Record<KitId, Partial<{ light: ThemeId; dark: ThemeId }>>> = {};
   for (const recipe of Object.values(THEMES)) {
-    const slot = map[recipe.kit] ?? { light: 'forge-light', dark: 'forge-dark' };
+    const slot = partial[recipe.kit] ?? {};
     slot[recipe.variant] = recipe.id;
-    map[recipe.kit] = slot;
+    partial[recipe.kit] = slot;
   }
-  return map;
+  const result = {} as Record<KitId, { light: ThemeId; dark: ThemeId }>;
+  for (const [kit, slot] of Object.entries(partial) as Array<
+    [KitId, Partial<{ light: ThemeId; dark: ThemeId }>]
+  >) {
+    if (!slot.light || !slot.dark) {
+      throw new Error(
+        `Theme registry missing ${slot.light ? 'dark' : 'light'} variant for kit "${kit}"`,
+      );
+    }
+    result[kit] = { light: slot.light, dark: slot.dark };
+  }
+  return result;
 })();
 
 /** Pair of theme ids that belong to the same kit, surfaced for the toggle. */

@@ -15,6 +15,7 @@ import type { Dimension, Unit } from 'unitforge';
 import { type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { CodeLine } from '../CodeBlock.js';
+import { UnitPicker } from '../UnitPicker.js';
 import { useBenchValues } from './use-bench-values.js';
 import { round1 } from '~/lib/math.js';
 
@@ -77,20 +78,12 @@ export function Bench<D extends Dimension, K extends string>({
       </div>
 
       <div className="grid items-end gap-3 md:grid-cols-[1fr_auto_1fr]">
-        <label className="flex flex-col gap-1">
-          <span className="uf-eyebrow">from</span>
-          <select
-            value={state.fromKey}
-            onChange={(e) => onChange({ ...state, fromKey: e.target.value as K })}
-            className="mono rounded border border-uf-border bg-uf-bg px-2 py-1.5 text-sm text-uf-fg"
-          >
-            {options.map((o) => (
-              <option key={o.key} value={o.key}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <UnitPicker
+          label="from"
+          value={state.fromKey}
+          options={options}
+          onChange={(next) => onChange({ ...state, fromKey: next })}
+        />
 
         <ArrowRight
           size={20}
@@ -98,20 +91,12 @@ export function Bench<D extends Dimension, K extends string>({
           className="hidden text-uf-accent md:block md:justify-self-center"
         />
 
-        <label className="flex flex-col gap-1">
-          <span className="uf-eyebrow">to</span>
-          <select
-            value={state.toKey}
-            onChange={(e) => onChange({ ...state, toKey: e.target.value as K })}
-            className="mono rounded border border-uf-border bg-uf-bg px-2 py-1.5 text-sm text-uf-fg"
-          >
-            {options.map((o) => (
-              <option key={o.key} value={o.key}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <UnitPicker
+          label="to"
+          value={state.toKey}
+          options={options}
+          onChange={(next) => onChange({ ...state, toKey: next })}
+        />
       </div>
 
       <div className="mt-4 flex items-center gap-4">

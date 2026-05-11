@@ -66,7 +66,7 @@ function VerticalSlider({
   className,
 }: OrientedProps) {
   return (
-    <div className={cn('flex flex-col items-center gap-2', className)}>
+    <label className={cn('flex flex-col items-center gap-2', className)}>
       <SliderReadout value={value} suffix={suffix} />
       <input
         type="range"
@@ -75,7 +75,6 @@ function VerticalSlider({
         step={step}
         value={value}
         onChange={handleChange(onChange)}
-        aria-label={label}
         aria-orientation="vertical"
         aria-valuetext={suffix ? `${value.toFixed(2)} ${suffix}` : undefined}
         className="uf-slider accent-uf-accent"
@@ -87,7 +86,7 @@ function VerticalSlider({
         }}
       />
       <span className="uf-eyebrow">{label}</span>
-    </div>
+    </label>
   );
 }
 

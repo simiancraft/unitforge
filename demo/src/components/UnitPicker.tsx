@@ -1,14 +1,24 @@
 // Themed select for picking a unit. Generic over the key union so the
 // parent's setState callback narrows correctly (e.g. setFromKey takes
 // `LengthKey`, not plain `string`).
+//
+// The visible label can be hidden via `labelHidden`; the label still
+// labels the control for screen readers (rendered into an sr-only span).
+// Use this when the surrounding layout already conveys the field's role
+// (e.g. the slim ForgeBench, where the value's unit is implied by the
+// adjacent slider).
 
 import type { ChangeEvent } from 'react';
+import { cn } from '~/lib/cn.js';
 
 interface UnitPickerProps<K extends string> {
   label: string;
   value: K;
   options: ReadonlyArray<{ key: K; label: string }>;
   onChange: (key: K) => void;
+  /** Hide the visible eyebrow label; keep the screen-reader association. */
+  labelHidden?: boolean;
+  className?: string;
 }
 
 export function UnitPicker<K extends string>({
@@ -16,13 +26,15 @@ export function UnitPicker<K extends string>({
   value,
   options,
   onChange,
+  labelHidden,
+  className,
 }: UnitPickerProps<K>) {
   // e.target.value is `string`; the runtime invariant (`<option>` values
   // are drawn from `options`) lets the parent safely narrow to K.
   const handle = (e: ChangeEvent<HTMLSelectElement>) => onChange(e.target.value as K);
   return (
-    <label className="flex flex-col gap-1">
-      <span className="uf-eyebrow">{label}</span>
+    <label className={cn('flex flex-col gap-1', className)}>
+      <span className={cn('uf-eyebrow', labelHidden && 'sr-only')}>{label}</span>
       <select
         value={value}
         onChange={handle}
