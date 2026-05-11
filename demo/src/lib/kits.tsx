@@ -12,7 +12,7 @@
 import type { ComponentType } from 'react';
 import { Box, Database, type LucideIcon } from 'lucide-react';
 import { GeometryBackdrop } from '../components/kits/geometry/parts/geometry-backdrop.js';
-import { CircuitBg } from '../kits/data-storage/components/CircuitBg.js';
+import { DataStorageBackdrop } from '../components/kits/data-storage/parts/data-storage-backdrop.js';
 
 export type KitId = 'geometry' | 'data-storage';
 
@@ -44,6 +44,6 @@ export const KITS: ReadonlyArray<KitMeta> = [
       'bytes (decimal and IEC binary), bits; GB vs GiB, network throughput, RAM scaling.',
     theme: 'data-storage',
     icon: Database,
-    previewBg: ({ hovered }) => <CircuitBg inline pulse={hovered} />,
+    previewBg: ({ hovered }) => <DataStorageBackdrop inline pulse={hovered} />,
   },
 ];

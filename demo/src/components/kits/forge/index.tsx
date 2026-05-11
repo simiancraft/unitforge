@@ -24,7 +24,7 @@ import './forge.css';
 // (data-storage/geometry); their CSS bundles need to load here for the
 // scoped variables to resolve.
 import '../geometry/geometry.css';
-import '../../../kits/data-storage/data-storage.css';
+import '../data-storage/data-storage.css';
 
 const STOKE_HOLD_MS = 1200;
 const SHAKE_AMP_BASE_PX = 9;

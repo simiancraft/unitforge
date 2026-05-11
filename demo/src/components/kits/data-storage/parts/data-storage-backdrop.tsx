@@ -4,13 +4,13 @@
 // state" pattern adapted for data-storage: any time the page bench moves,
 // the page flashes a couple of traces.
 
-interface CircuitBgProps {
+interface DataStorageBackdropProps {
   inline?: boolean;
   /** Active = traces pulse (stroke-dashoffset animation). */
   pulse?: boolean;
 }
 
-export function CircuitBg({ inline, pulse = false }: CircuitBgProps) {
+export function DataStorageBackdrop({ inline, pulse = false }: DataStorageBackdropProps) {
   const className = inline
     ? 'absolute inset-0 pointer-events-none'
     : 'fixed inset-0 pointer-events-none -z-10';

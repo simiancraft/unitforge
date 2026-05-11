@@ -4,11 +4,14 @@
 // binary are clearly different; the user sees the gap.
 
 import { useState } from 'react';
+import { Cpu } from 'lucide-react';
 import { forge } from 'unitforge';
 import { byte } from 'unitforge/kits/data-storage';
-import { Result } from '../../../components/Result.js';
-import { Slider } from '../../../components/Slider.js';
-import { UnitPicker } from '../../../components/UnitPicker.js';
+import { CodeBlock } from '../../../CodeBlock.js';
+import { Result } from '../../../Result.js';
+import { Slider } from '../../../Slider.js';
+import { UnitPicker } from '../../../UnitPicker.js';
+import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import {
   DATA_BINARY_UNITS,
   DATA_BIT_UNITS,
@@ -16,7 +19,7 @@ import {
   findByKey,
   pickerOptions,
   DATA_ALL_UNITS,
-} from '../../../lib/units.js';
+} from '../../../../lib/units.js';
 
 // Per-unit slider bounds so the range stays pedagogical at every scale:
 // 1-1e6 bytes is interesting; 1-2000 GB is the canonical drive-size range.
@@ -42,6 +45,16 @@ function rangeFor(key: string) {
   return SLIDER_RANGE[key] ?? { min: 1, max: 2000, step: 1, init: 500 };
 }
 
+const CODE = `import { forge } from 'unitforge';
+import {
+  byte, gigabyte, gibibyte, megabit,
+} from 'unitforge/kits/data-storage';
+
+const bytes = forge(gigabyte, byte)(500); // 5e11
+const inGiB = forge(byte, gibibyte)(bytes); // 465.66
+const inMbit = forge(byte, megabit)(bytes); // 4e6
+`;
+
 export function HelloBytes() {
   const [value, setValue] = useState(500);
   const [unitKey, setUnitKeyRaw] = useState('GB');
@@ -49,8 +62,6 @@ export function HelloBytes() {
   const range = rangeFor(unitKey);
   const clamped = Math.min(Math.max(value, range.min), range.max);
 
-  // On unit change, reset the value to that unit's pedagogical default so
-  // the slider is always in a sensible position for the chosen scale.
   const setUnitKey = (next: string) => {
     setUnitKeyRaw(next);
     setValue(rangeFor(next).init);
@@ -79,31 +90,51 @@ export function HelloBytes() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <UnitPicker
-          label="input unit"
-          value={unitKey}
-          options={pickerOptions(DATA_ALL_UNITS)}
-          onChange={setUnitKey}
+    <SectionLayout
+      headerZone={
+        <SectionHeader
+          eyebrow="demo 01"
+          title="hello, bytes"
+          kicker="one value, every unit"
+          icon={<Cpu size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
         />
-        <Slider
-          label={`value (${fromUnit.key})`}
-          value={clamped}
-          min={range.min}
-          max={range.max}
-          step={range.step}
-          onChange={setValue}
-          suffix={fromUnit.key}
-        />
-      </div>
+      }
+      introZone={
+        <>
+          Pick a number and a unit; every other byte and bit unit renders
+          side by side. Decimal and binary columns sit next to each other
+          so the gap between (say) GB and GiB is visible at a glance.
+        </>
+      }
+      widgetZone={
+        <div className="flex flex-col gap-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <UnitPicker
+              label="input unit"
+              value={unitKey}
+              options={pickerOptions(DATA_ALL_UNITS)}
+              onChange={setUnitKey}
+            />
+            <Slider
+              label={`value (${fromUnit.key})`}
+              value={clamped}
+              min={range.min}
+              max={range.max}
+              step={range.step}
+              onChange={setValue}
+              suffix={fromUnit.key}
+            />
+          </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {renderRows(DATA_DECIMAL_UNITS, 'decimal (SI)')}
-        {renderRows(DATA_BINARY_UNITS, 'binary (IEC)')}
-        {renderRows(DATA_BIT_UNITS, 'bits')}
-      </div>
-    </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {renderRows(DATA_DECIMAL_UNITS, 'decimal (SI)')}
+            {renderRows(DATA_BINARY_UNITS, 'binary (IEC)')}
+            {renderRows(DATA_BIT_UNITS, 'bits')}
+          </div>
+        </div>
+      }
+      codeZone={<CodeBlock code={CODE} />}
+    />
   );
 }
 

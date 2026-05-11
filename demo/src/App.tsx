@@ -8,7 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { VERSION } from 'unitforge/version';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { KITS, type KitId } from './lib/kits.js';
-import { DataStoragePage } from './kits/data-storage/index.js';
+import { Page as DataStoragePage } from './components/kits/data-storage/index.js';
 import { Page as GeometryPage } from './components/kits/geometry/index.js';
 import { Page as ForgePage } from './components/kits/forge/index.js';
 
