@@ -155,21 +155,20 @@ body {
     animation: uf-anvil-strike 280ms ease-out;
   }
 
-  /* Ember burst on tile hover. Particles emit outward from origin via
-   * CSS custom properties --dx / --dy set inline on each particle.
+  /* Forge-glow flash: instant opacity 1 (the 0% keyframe), decays to 0
+   * over the duration applied at the call site. Pairs with each stoke
+   * burst so the bottom of the viewport flares like a struck billet.
    */
-  @keyframes uf-ember-burst {
-    0% {
-      transform: translate3d(0, 0, 0) scale(1);
-      opacity: 0;
-    }
-    10% {
-      opacity: 0.95;
-    }
-    100% {
-      transform: translate3d(var(--dx, 0), var(--dy, 0), 0) scale(0.4);
-      opacity: 0;
-    }
+  @keyframes uf-forge-flash {
+    0%   { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes uf-forge-flash {
+    0%, 100% { opacity: 0.25; }
   }
 }
 
