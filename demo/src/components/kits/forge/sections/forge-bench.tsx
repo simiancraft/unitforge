@@ -12,9 +12,7 @@ import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { forge } from 'unitforge';
 import { LENGTH_UNITS, findByKey, type LengthKey } from '../../../../lib/units.js';
-import { CopyButton } from '../../../CodeBlock.js';
-import { useTheme } from '../../../theme/provider.js';
-import { useHighlighted } from '../../../theme/use-highlighted.js';
+import { CodeLine } from '../../../CodeBlock.js';
 
 const MIN = 0.1;
 const MAX = 100;
@@ -144,36 +142,7 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
         </div>
       </div>
 
-      <BenchCodeLine code={code} />
-    </div>
-  );
-}
-
-function BenchCodeLine({ code }: { code: string }) {
-  const { activeTheme } = useTheme();
-  const html = useHighlighted(code, 'ts', activeTheme.shikiTheme);
-  const codeFrameClass = activeTheme.codeFrameClass;
-  return (
-    <div
-      className={`relative mono rounded text-xs overflow-hidden ${codeFrameClass ?? ''}`}
-      style={{
-        background: 'var(--uf-code-bg)',
-        border: '1px solid var(--uf-border)',
-      }}
-    >
-      <div className="absolute bottom-0.5 right-0.5 z-10">
-        <CopyButton code={code} />
-      </div>
-      {html ? (
-        <div
-          className="uf-code-scroll px-3 py-2 pr-12 [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!whitespace-pre"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      ) : (
-        <pre className="uf-code-scroll m-0 px-3 py-2 pr-12" style={{ color: 'var(--uf-fg)' }}>
-          {code}
-        </pre>
-      )}
+      <CodeLine code={code} />
     </div>
   );
 }

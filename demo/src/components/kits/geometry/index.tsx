@@ -7,11 +7,12 @@
 // code-frame chrome) lives at the root ThemeProvider; the kit is a pure
 // renderer.
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Box } from 'lucide-react';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
+import { usePulse } from '../use-pulse.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { CircleMachine } from './sections/circle-machine.js';
 import { HelloUnit } from './sections/hello-unit.js';
@@ -40,18 +41,9 @@ export function Page() {
   });
   const cellSize = CELL_PX_BY_UNIT[bench.fromKey] ?? 12;
 
-  // Brief "the paper rippled" flash when the bench changes; mirrors the
-  // data-storage pulse so geometry also breathes when interacted with.
-  const [paperPulse, setPaperPulse] = useState(false);
-  const timerRef = useRef<number | null>(null);
-  useEffect(() => {
-    setPaperPulse(true);
-    if (timerRef.current !== null) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => setPaperPulse(false), 600);
-    return () => {
-      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
-    };
-  }, [bench.fromKey, bench.toKey, bench.value]);
+  // Brief "the paper rippled" flash whenever the bench changes; mirrors
+  // the data-storage trace pulse so geometry also breathes on interact.
+  const paperPulse = usePulse([bench.fromKey, bench.toKey, bench.value], 600);
 
   return (
     <KitLayout

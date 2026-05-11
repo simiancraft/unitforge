@@ -15,9 +15,7 @@ import type { Dimension, ForgeInput, Unit } from 'unitforge';
 import { forge } from 'unitforge';
 import { type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { CopyButton } from '../CodeBlock.js';
-import { useTheme } from '../theme/provider.js';
-import { useHighlighted } from '../theme/use-highlighted.js';
+import { CodeLine } from '../CodeBlock.js';
 
 export interface BenchState<D extends Dimension = Dimension, K extends string = string> {
   fromKey: K;
@@ -168,39 +166,9 @@ export function Bench<D extends Dimension, K extends string>({
         </span>
       </div>
 
-      <LiveCodeLine code={codeFor(state, result)} />
-    </div>
-  );
-}
-
-function LiveCodeLine({ code }: { code: string }) {
-  const { activeTheme } = useTheme();
-  const html = useHighlighted(code, 'ts', activeTheme.shikiTheme);
-  const codeFrameClass = activeTheme.codeFrameClass;
-  return (
-    <div
-      className={`relative mono mt-3 rounded text-xs overflow-hidden ${codeFrameClass ?? ''}`}
-      style={{
-        background: 'var(--uf-code-bg)',
-        border: '1px solid var(--uf-border)',
-      }}
-    >
-      <div className="absolute bottom-0.5 right-0.5 z-10">
-        <CopyButton code={code} />
+      <div className="mt-3">
+        <CodeLine code={codeFor(state, result)} />
       </div>
-      {html ? (
-        <div
-          className="uf-code-scroll px-3 py-2 pr-12 [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!whitespace-pre"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      ) : (
-        <pre
-          className="uf-code-scroll m-0 px-3 py-2 pr-12"
-          style={{ color: 'var(--uf-fg)' }}
-        >
-          {code}
-        </pre>
-      )}
     </div>
   );
 }

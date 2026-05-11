@@ -58,6 +58,41 @@ export function CodeBlock({ code, lang = 'ts', className = '' }: CodeBlockProps)
   );
 }
 
+/**
+ * Compact inline variant of CodeBlock — no "unitforge" eyebrow, tighter
+ * padding, mono. Used by Bench and ForgeBench to render the live forge()
+ * call beneath their controls.
+ */
+export function CodeLine({ code, lang = 'ts' }: { code: string; lang?: Lang }) {
+  const { activeTheme } = useTheme();
+  const html = useHighlighted(code, lang, activeTheme.shikiTheme);
+  const codeFrameClass = activeTheme.codeFrameClass;
+  return (
+    <div
+      className={`relative mono rounded text-xs overflow-hidden ${codeFrameClass ?? ''}`}
+      style={{
+        background: 'var(--uf-code-bg)',
+        border: '1px solid var(--uf-border)',
+      }}
+    >
+      <div className="absolute bottom-0.5 right-0.5 z-10">
+        <CopyButton code={code} />
+      </div>
+      {html ? (
+        <div
+          className="uf-code-scroll px-3 py-2 pr-12 [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!whitespace-pre"
+          // shiki output is generated from string literals we author; not user-controlled.
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <pre className="uf-code-scroll m-0 px-3 py-2 pr-12" style={{ color: 'var(--uf-fg)' }}>
+          {code}
+        </pre>
+      )}
+    </div>
+  );
+}
+
 export function CopyButton({ code, label = 'copy' }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
 

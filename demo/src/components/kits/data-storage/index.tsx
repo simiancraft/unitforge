@@ -7,11 +7,12 @@
 // CRT chrome class) lives at the root ThemeProvider; the kit is a pure
 // renderer.
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Database } from 'lucide-react';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
+import { usePulse } from '../use-pulse.js';
 import { DataStorageBackdrop } from './parts/data-storage-backdrop.js';
 import { DriveVsOs } from './sections/drive-vs-os.js';
 import { HelloBytes } from './sections/hello-bytes.js';
@@ -26,19 +27,9 @@ export function Page() {
     value: 500,
   });
 
-  // Pulse the circuit traces briefly each time the bench moves. We flip
-  // `pulse` to true on change and back to false 1.6s later so the
-  // animation has time to play and then rests.
-  const [pulse, setPulse] = useState(false);
-  const timerRef = useRef<number | null>(null);
-  useEffect(() => {
-    setPulse(true);
-    if (timerRef.current !== null) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => setPulse(false), 1600);
-    return () => {
-      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
-    };
-  }, [bench.fromKey, bench.toKey, bench.value]);
+  // Pulse the circuit traces briefly each time the bench moves; 1.6s
+  // lets the keyframe play out and then rest.
+  const pulse = usePulse([bench.fromKey, bench.toKey, bench.value], 1600);
 
   return (
     <KitLayout
