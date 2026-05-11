@@ -138,7 +138,7 @@ function KitCard({
         className="uf-flare-bg"
         style={{ transition: 'opacity 300ms ease', opacity: hovered ? 0.9 : 0.45 }}
       >
-        {kit.id === 'geometry' && <GridPaperBg inline cellSize={hovered ? 18 : 12} />}
+        {kit.id === 'geometry' && <GridPaperBg inline scale={hovered ? 1.5 : 1} />}
         {kit.id === 'data-storage' && <CircuitBg inline pulse={hovered} />}
       </div>
       <div className="uf-flare-content flex flex-col gap-3">

@@ -56,7 +56,7 @@
 
   --uf-display: 'Caveat', 'Georgia', cursive;
   --uf-grid: #3e7fa6;
-  --uf-grid-faint: #3e7fa61f;
+  --uf-grid-faint: #3e7fa666; /* ~40% alpha; was 12% and barely visible */
 }
 
 [data-theme='data-storage'] {

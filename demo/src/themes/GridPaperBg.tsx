@@ -13,12 +13,18 @@ interface GridPaperBgProps {
   cellSize?: number;
   /** When true, the coarse grid flashes briefly. Reset by parent after ~600ms. */
   pulse?: boolean;
+  /**
+   * CSS scale applied to the whole grid; transitions smoothly so hovers
+   * on a kit card visibly "zoom in" on the paper without re-rendering
+   * SVG pattern attributes (which would snap instantly).
+   */
+  scale?: number;
 }
 
-export function GridPaperBg({ inline, cellSize = 12, pulse }: GridPaperBgProps) {
+export function GridPaperBg({ inline, cellSize = 12, pulse, scale = 1 }: GridPaperBgProps) {
   const className = inline
-    ? 'absolute inset-0 pointer-events-none'
-    : 'fixed inset-0 pointer-events-none -z-10';
+    ? 'absolute inset-0 pointer-events-none overflow-hidden'
+    : 'fixed inset-0 pointer-events-none -z-10 overflow-hidden';
 
   const coarse = cellSize * 5;
 
@@ -28,11 +34,20 @@ export function GridPaperBg({ inline, cellSize = 12, pulse }: GridPaperBgProps) 
       className={className}
       style={{
         zIndex: inline ? 0 : -1,
-        opacity: pulse ? 1.2 : 0.85,
+        opacity: pulse ? 1.15 : 0.95,
         transition: 'opacity 600ms cubic-bezier(0.22,1,0.36,1)',
       }}
     >
-      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        width="100%"
+        height="100%"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{
+          transform: `scale(${scale})`,
+          transformOrigin: 'center',
+          transition: 'transform 400ms cubic-bezier(0.22,1,0.36,1)',
+        }}
+      >
         <defs>
           <pattern
             id="uf-grid-fine"
@@ -44,8 +59,7 @@ export function GridPaperBg({ inline, cellSize = 12, pulse }: GridPaperBgProps) 
               d={`M ${cellSize} 0 L 0 0 0 ${cellSize}`}
               fill="none"
               stroke="var(--uf-grid-faint)"
-              strokeWidth="0.5"
-              style={{ transition: 'd 400ms cubic-bezier(0.22,1,0.36,1)' }}
+              strokeWidth="0.8"
             />
           </pattern>
           <pattern
@@ -58,8 +72,8 @@ export function GridPaperBg({ inline, cellSize = 12, pulse }: GridPaperBgProps) 
               d={`M ${coarse} 0 L 0 0 0 ${coarse}`}
               fill="none"
               stroke="var(--uf-grid)"
-              strokeWidth="0.6"
-              opacity="0.45"
+              strokeWidth="0.9"
+              opacity="0.7"
             />
           </pattern>
         </defs>
