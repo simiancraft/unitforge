@@ -121,9 +121,10 @@ export function CircleMachine() {
             opacity="0.85"
           />
           <text
-            x={cx + svgR / 2}
-            y={cy - 8}
-            textAnchor="middle"
+            x={cx + svgR + 14}
+            y={cy}
+            textAnchor="start"
+            dominantBaseline="middle"
             style={{
               fontFamily: 'var(--uf-display)',
               fontSize: '18px',
