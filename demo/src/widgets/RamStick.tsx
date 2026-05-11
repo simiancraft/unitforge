@@ -1,18 +1,18 @@
-// RAM-module visualizer. A stylized DIMM with eight memory chips. The user
-// slides a capacity in GiB; the chips light up proportionally and the legend
-// renders the same quantity in decimal GB and bytes. The "flair" of the
-// data-storage page: an animated piece of hardware on screen, reacting to
-// state.
+// RAM-module visualizer. Memory chips boot in sequence with a stagger as
+// capacity scales; each chip's status LED breathes when active. Slide the
+// capacity and you watch the DIMM "post". The same forged value renders
+// in the decimal-GB family alongside.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
 import { Result } from '../components/Result.js';
 import { Slider } from '../components/Slider.js';
 
 const CHIPS = 8;
-const VIEW_W = 440;
-const VIEW_H = 130;
+const VIEW_W = 460;
+const VIEW_H = 140;
+const STAGGER_MS = 65;
 
 export function RamStick() {
   const [gibValue, setGibValue] = useState(16);
@@ -20,16 +20,38 @@ export function RamStick() {
   const inBytes = forge(gibibyte, byte)(gibValue);
   const inGB = forge(gibibyte, gigabyte)(gibValue);
 
-  // Total RAM the stick visually represents (largest tick on the slider).
   const max = 64;
-  const litChips = Math.min(CHIPS, Math.max(0, Math.round((gibValue / max) * CHIPS)));
+  const targetLit = Math.min(CHIPS, Math.max(0, Math.round((gibValue / max) * CHIPS)));
 
-  const chipW = (VIEW_W - 80) / CHIPS - 8;
-  const chipH = 50;
+  // Animate `litCount` toward `targetLit` with a stagger so chips boot
+  // visibly. When the user moves the slider down, the chips dim in
+  // reverse stagger.
+  const [litCount, setLitCount] = useState(targetLit);
+  useEffect(() => {
+    if (litCount === targetLit) return;
+    const step = litCount < targetLit ? 1 : -1;
+    const t = window.setTimeout(() => setLitCount(litCount + step), STAGGER_MS);
+    return () => window.clearTimeout(t);
+  }, [litCount, targetLit]);
+
+  const chipW = (VIEW_W - 100) / CHIPS - 8;
+  const chipH = 52;
   const chipY = 40;
 
   return (
     <div className="flex flex-col gap-4">
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .uf-led-active {
+            animation: uf-led-breathe 1.8s ease-in-out infinite;
+          }
+          @keyframes uf-led-breathe {
+            0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 1px var(--uf-fg)); }
+            50%      { opacity: 1;   filter: drop-shadow(0 0 4px var(--uf-fg)); }
+          }
+        }
+      `}</style>
+
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         xmlns="http://www.w3.org/2000/svg"
@@ -40,62 +62,104 @@ export function RamStick() {
           x={4}
           y={20}
           width={VIEW_W - 8}
-          height={90}
-          rx={4}
+          height={96}
+          rx={5}
           fill="var(--uf-card)"
           stroke="var(--uf-trace)"
-          strokeOpacity="0.5"
+          strokeOpacity="0.6"
         />
-        {/* gold contact fingers along the bottom */}
-        {Array.from({ length: 22 }).map((_, i) => (
-          <rect
-            key={i}
-            x={20 + i * ((VIEW_W - 60) / 22)}
-            y={104}
-            width={(VIEW_W - 60) / 22 - 1.5}
-            height={6}
-            fill="var(--uf-trace)"
-            opacity="0.85"
-          />
-        ))}
+
+        {/* SPD chip (small square left of the chips) */}
+        <rect
+          x={20}
+          y={chipY + 14}
+          width={18}
+          height={22}
+          rx={2}
+          fill="var(--uf-bg)"
+          stroke="var(--uf-trace)"
+          strokeOpacity="0.7"
+        />
+        <text
+          x={29}
+          y={chipY + 28}
+          textAnchor="middle"
+          className="mono"
+          fontSize="6"
+          fill="var(--uf-muted)"
+        >
+          SPD
+        </text>
+
         {/* memory chips */}
         {Array.from({ length: CHIPS }).map((_, i) => {
-          const isLit = i < litChips;
+          const isLit = i < litCount;
           return (
             <g key={i}>
               <rect
-                x={40 + i * (chipW + 8)}
+                x={48 + i * (chipW + 8)}
                 y={chipY}
                 width={chipW}
                 height={chipH}
-                rx={2}
+                rx={2.5}
                 fill={isLit ? 'var(--uf-accent)' : 'var(--uf-bg)'}
-                fillOpacity={isLit ? 0.85 : 0.6}
+                fillOpacity={isLit ? 0.82 : 0.55}
                 stroke="var(--uf-trace)"
                 strokeOpacity="0.7"
                 style={{
-                  transition: 'fill 220ms ease, fill-opacity 220ms ease',
+                  transition:
+                    'fill 220ms ease, fill-opacity 220ms ease',
                 }}
               />
-              {/* status LED on each chip */}
+              {/* chip pin rows (cosmetic) */}
+              <line
+                x1={48 + i * (chipW + 8) + 3}
+                y1={chipY + chipH - 3}
+                x2={48 + i * (chipW + 8) + chipW - 3}
+                y2={chipY + chipH - 3}
+                stroke="var(--uf-trace)"
+                strokeOpacity="0.55"
+                strokeWidth="0.6"
+              />
+              {/* status LED in upper-right of each chip */}
               <circle
-                cx={40 + i * (chipW + 8) + chipW - 6}
+                cx={48 + i * (chipW + 8) + chipW - 6}
                 cy={chipY + 6}
-                r={2}
+                r={2.2}
                 fill={isLit ? 'var(--uf-fg)' : 'var(--uf-muted)'}
-                opacity={isLit ? 1 : 0.4}
+                opacity={isLit ? 1 : 0.35}
+                className={isLit ? 'uf-led-active' : undefined}
               />
             </g>
           );
         })}
-        {/* notch */}
-        <rect
-          x={VIEW_W / 2 - 6}
-          y={104}
-          width={12}
-          height={10}
-          fill="var(--uf-bg)"
-        />
+
+        {/* gold contact fingers */}
+        {Array.from({ length: 26 }).map((_, i) => (
+          <rect
+            key={i}
+            x={28 + i * ((VIEW_W - 76) / 26)}
+            y={108}
+            width={(VIEW_W - 76) / 26 - 1.8}
+            height={6}
+            fill="var(--uf-trace)"
+            opacity="0.9"
+          />
+        ))}
+        {/* keying notch */}
+        <rect x={VIEW_W / 2 - 6} y={108} width={12} height={10} fill="var(--uf-card)" />
+
+        {/* POST status label */}
+        <text
+          x={VIEW_W - 8}
+          y={14}
+          textAnchor="end"
+          className="mono"
+          fontSize="8"
+          fill={litCount === targetLit ? 'var(--uf-accent)' : 'var(--uf-muted)'}
+        >
+          {litCount === targetLit ? `POST · ${litCount * (max / CHIPS)} GiB OK` : 'POST · …'}
+        </text>
       </svg>
 
       <Slider
