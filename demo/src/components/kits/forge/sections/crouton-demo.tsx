@@ -18,6 +18,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { cn } from '~/lib/cn.js';
 
 const COUNT = 'count' as const;
 
@@ -106,20 +107,18 @@ export function CroutonDemo() {
 
           <div className="grid items-center gap-4 grid-cols-[1fr_auto_1fr]">
             <div className="flex justify-center">
-              <Glyph glyph="🌾" count={wheat} label="wheat" />
+              <PileGlyph glyph="🌾" count={wheat} label="wheat" />
             </div>
-            <span className="text-xl" style={{ color: 'var(--uf-muted)' }}>
-              +
-            </span>
+            <span className="text-xl text-uf-muted">+</span>
             <div className="flex justify-center">
-              <Glyph glyph="🪨" count={ore} label="ore" />
+              <PileGlyph glyph="🪨" count={ore} label="ore" />
             </div>
           </div>
 
           <Result label="cities built" value={`${cities}`} variant="hero" />
 
           <div className="flex items-center justify-center">
-            <Glyph glyph="🏰" count={cities} label="cities" variant="large" highlight />
+            <HeroGlyph glyph="🏰" count={cities} label="cities" />
           </div>
         </div>
       }
@@ -158,42 +157,49 @@ function ResourceSlider({
   );
 }
 
-function Glyph({
-  glyph,
-  count,
-  label,
-  highlight,
-  variant = 'auto',
-}: {
+// Pile glyph: resource accumulation. Font size shrinks as count grows so
+// the row stays a single line up to slider max (30).
+const PILE_SIZE_BUCKETS = [
+  { upTo: 5, size: 'text-2xl md:text-3xl' },
+  { upTo: 10, size: 'text-xl md:text-2xl' },
+  { upTo: 20, size: 'text-lg md:text-xl' },
+  { upTo: Number.POSITIVE_INFINITY, size: 'text-base md:text-lg' },
+] as const;
+
+interface GlyphProps {
   glyph: string;
   count: number;
   label: string;
-  highlight?: boolean;
-  /**
-   * `auto` (resource piles) shrinks the per-glyph font size as count grows
-   * so 30 items don't overflow the card. `large` (the city payoff) holds
-   * a fixed prominent size regardless of count.
-   */
-  variant?: 'auto' | 'large';
-}) {
-  const sizeClass =
-    variant === 'large'
-      ? 'text-4xl md:text-5xl'
-      : count <= 5
-        ? 'text-2xl md:text-3xl'
-        : count <= 10
-          ? 'text-xl md:text-2xl'
-          : count <= 20
-            ? 'text-lg md:text-xl'
-            : 'text-base md:text-lg';
+}
 
+function PileGlyph({ glyph, count, label }: GlyphProps) {
+  const sizeClass =
+    PILE_SIZE_BUCKETS.find((b) => count <= b.upTo)?.size ?? PILE_SIZE_BUCKETS[0].size;
   return (
     <span
-      className={`inline-flex flex-wrap items-center justify-center gap-0.5 leading-none ${sizeClass}`}
-      style={{ color: highlight ? 'var(--uf-accent)' : 'var(--uf-fg)' }}
+      className={cn(
+        'inline-flex flex-wrap items-center justify-center gap-0.5 leading-none text-uf-fg',
+        sizeClass,
+      )}
     >
       {Array.from({ length: count }, (_, i) => (
-        <span key={i} aria-hidden>
+        <span key={`${label}-${i}`} aria-hidden>
+          {glyph}
+        </span>
+      ))}
+      <span className="sr-only">
+        {count} {label}
+      </span>
+    </span>
+  );
+}
+
+// Hero glyph: the city payoff. Fixed large size, accent color.
+function HeroGlyph({ glyph, count, label }: GlyphProps) {
+  return (
+    <span className="inline-flex flex-wrap items-center justify-center gap-0.5 text-4xl leading-none text-uf-accent md:text-5xl">
+      {Array.from({ length: count }, (_, i) => (
+        <span key={`${label}-${i}`} aria-hidden>
           {glyph}
         </span>
       ))}

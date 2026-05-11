@@ -102,13 +102,11 @@ function BreadcrumbBar({ kitLabel }: { kitLabel: string }) {
   return (
     <nav
       aria-label="breadcrumb"
-      className="mb-8 flex items-center justify-between"
-      style={{ color: 'var(--uf-muted)' }}
+      className="mb-8 flex items-center justify-between text-uf-muted"
     >
       <a
         href="#/"
-        className="mono inline-flex items-center gap-2 text-xs uppercase tracking-wider"
-        style={{ color: 'var(--uf-fg)' }}
+        className="mono inline-flex items-center gap-2 text-xs uppercase tracking-wider text-uf-fg"
       >
         <ArrowLeft size={14} strokeWidth={2} />
         unitforge
@@ -122,15 +120,11 @@ function BreadcrumbBar({ kitLabel }: { kitLabel: string }) {
 
 function Footer() {
   return (
-    <footer
-      className="mt-16 flex flex-col items-center gap-1 text-center text-xs"
-      style={{ color: 'var(--uf-muted)' }}
-    >
+    <footer className="mt-16 flex flex-col items-center gap-1 text-center text-xs text-uf-muted">
       <span className="mono">v{VERSION}</span>
       <a
         href="https://github.com/simiancraft/unitforge"
-        className="underline"
-        style={{ color: 'var(--uf-fg)' }}
+        className="underline text-uf-fg"
       >
         github.com/simiancraft/unitforge
       </a>

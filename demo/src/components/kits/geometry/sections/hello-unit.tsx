@@ -42,7 +42,7 @@ export function HelloUnit() {
           eyebrow="demo 01"
           title="hello, unit"
           kicker="within-dimension"
-          iconZone={<Ruler size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<Ruler size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
       introZone={

@@ -41,10 +41,7 @@ export function Page() {
           <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">
             data-storage
           </h1>
-          <p
-            className="mt-2 max-w-2xl text-sm leading-relaxed"
-            style={{ color: 'var(--uf-muted)' }}
-          >
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-uf-muted">
             Decimal bytes (kilobyte through petabyte), IEC binary bytes
             (kibibyte through pebibyte), and bits. The board pulses as you
             scrub the bench; every conversion is a real forge call against the

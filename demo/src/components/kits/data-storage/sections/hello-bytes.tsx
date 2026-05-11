@@ -104,7 +104,7 @@ export function HelloBytes() {
           eyebrow="demo 01"
           title="hello, bytes"
           kicker="one value, every unit"
-          iconZone={<Cpu size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<Cpu size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
       introZone={

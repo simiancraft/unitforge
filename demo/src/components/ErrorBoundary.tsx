@@ -30,27 +30,17 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div
           role="alert"
-          className="mx-auto mt-12 max-w-xl rounded-lg border p-6"
-          style={{
-            background: 'var(--uf-card)',
-            borderColor: 'var(--uf-border)',
-            color: 'var(--uf-fg)',
-          }}
+          className="mx-auto mt-12 max-w-xl rounded-lg border border-uf-border bg-uf-card p-6 text-uf-fg"
         >
-          <p className="uf-eyebrow" style={{ color: 'var(--uf-accent)' }}>
-            something broke
-          </p>
+          <p className="uf-eyebrow text-uf-accent">something broke</p>
           <p className="mt-2 text-sm">
             A widget failed to render. Reset by{' '}
-            <a href="#/" className="underline" style={{ color: 'var(--uf-fg)' }}>
+            <a href="#/" className="underline text-uf-fg">
               going home
             </a>
             .
           </p>
-          <pre
-            className="mono mt-3 overflow-x-auto rounded px-3 py-2 text-xs"
-            style={{ background: 'var(--uf-code-bg)', color: 'var(--uf-muted)' }}
-          >
+          <pre className="mono mt-3 overflow-x-auto rounded bg-uf-code-bg px-3 py-2 text-xs text-uf-muted">
             {this.state.error.message}
           </pre>
         </div>

@@ -84,7 +84,7 @@ export function RectangleMachine() {
           eyebrow="demo 02"
           title="rectangle machine"
           kicker="cross-dimensional"
-          iconZone={<Square size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<Square size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
       introZone={

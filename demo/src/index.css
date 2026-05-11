@@ -16,6 +16,12 @@
   --color-uf-card: var(--uf-card);
   --color-uf-border: var(--uf-border);
   --color-uf-code-bg: var(--uf-code-bg);
+  /* Kit-specific accent tokens: trace is data-storage's copper-pad gold;
+   * grid is geometry's blueprint line. Themes without these vars resolve
+   * the utility to undefined (silently no-op), which matches the
+   * inline-style behavior they replaced. */
+  --color-uf-trace: var(--uf-trace);
+  --color-uf-grid: var(--uf-grid);
 }
 
 :root {

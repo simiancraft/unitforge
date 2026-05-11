@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { useTheme } from './theme/provider.js';
 import { useHighlighted } from './theme/use-highlighted.js';
+import { cn } from '~/lib/cn.js';
 
 type Lang = 'ts' | 'tsx' | 'js';
 
@@ -16,7 +17,7 @@ interface CodeBlockProps {
   className?: string;
 }
 
-export function CodeBlock({ code, lang = 'ts', className = '' }: CodeBlockProps) {
+export function CodeBlock({ code, lang = 'ts', className }: CodeBlockProps) {
   const { activeTheme } = useTheme();
   const html = useHighlighted(code, lang, activeTheme.shikiTheme);
   const codeFrameClass = activeTheme.codeFrameClass;
@@ -25,18 +26,13 @@ export function CodeBlock({ code, lang = 'ts', className = '' }: CodeBlockProps)
     <div
       role="region"
       aria-label="code sample"
-      className={`relative overflow-hidden rounded-lg text-xs leading-relaxed ${codeFrameClass ?? ''} ${className}`}
-      style={{
-        background: 'var(--uf-code-bg)',
-        border: '1px solid var(--uf-border)',
-      }}
+      className={cn(
+        'relative overflow-hidden rounded-lg border border-uf-border bg-uf-code-bg text-xs leading-relaxed',
+        codeFrameClass,
+        className,
+      )}
     >
-      <span
-        className="uf-eyebrow absolute right-2 top-2 z-10"
-        style={{ color: 'var(--uf-muted)' }}
-      >
-        unitforge
-      </span>
+      <span className="uf-eyebrow absolute right-2 top-2 z-10 text-uf-muted">unitforge</span>
       <div className="absolute bottom-0.5 right-0.5 z-10">
         <CopyButton code={code} />
       </div>
@@ -47,12 +43,7 @@ export function CodeBlock({ code, lang = 'ts', className = '' }: CodeBlockProps)
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : (
-        <pre
-          className="uf-code-scroll mono m-0 px-4 py-4 text-xs"
-          style={{ color: 'var(--uf-fg)' }}
-        >
-          {code}
-        </pre>
+        <pre className="uf-code-scroll mono m-0 px-4 py-4 text-xs text-uf-fg">{code}</pre>
       )}
     </div>
   );
@@ -69,11 +60,10 @@ export function CodeLine({ code, lang = 'ts' }: { code: string; lang?: Lang }) {
   const codeFrameClass = activeTheme.codeFrameClass;
   return (
     <div
-      className={`relative mono rounded text-xs overflow-hidden ${codeFrameClass ?? ''}`}
-      style={{
-        background: 'var(--uf-code-bg)',
-        border: '1px solid var(--uf-border)',
-      }}
+      className={cn(
+        'relative mono overflow-hidden rounded border border-uf-border bg-uf-code-bg text-xs',
+        codeFrameClass,
+      )}
     >
       <div className="absolute bottom-0.5 right-0.5 z-10">
         <CopyButton code={code} />
@@ -85,9 +75,7 @@ export function CodeLine({ code, lang = 'ts' }: { code: string; lang?: Lang }) {
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : (
-        <pre className="uf-code-scroll m-0 px-3 py-2 pr-12" style={{ color: 'var(--uf-fg)' }}>
-          {code}
-        </pre>
+        <pre className="uf-code-scroll m-0 px-3 py-2 pr-12 text-uf-fg">{code}</pre>
       )}
     </div>
   );
@@ -112,13 +100,10 @@ export function CopyButton({ code, label = 'copy' }: { code: string; label?: str
       onClick={onClick}
       title={copied ? 'copied' : label}
       aria-label={copied ? 'copied' : label}
-      className="flex h-7 w-7 items-center justify-center rounded border transition-opacity hover:opacity-100"
-      style={{
-        background: 'var(--uf-card)',
-        color: copied ? 'var(--uf-accent)' : 'var(--uf-fg)',
-        borderColor: 'var(--uf-border)',
-        opacity: 0.7,
-      }}
+      className={cn(
+        'flex h-7 w-7 items-center justify-center rounded border border-uf-border bg-uf-card opacity-70 transition-opacity hover:opacity-100',
+        copied ? 'text-uf-accent' : 'text-uf-fg',
+      )}
     >
       {copied ? <Check size={14} strokeWidth={2.2} /> : <Copy size={14} strokeWidth={2.2} />}
     </button>

@@ -42,6 +42,10 @@ export interface KitEntry {
   Page: ComponentType;
 }
 
+// Order matters: forge is element [0] because it's the home/default
+// route. App.tsx's hash-router falls back to KITS[0] when the URL hash
+// doesn't match any kit id. Subsequent entries surface as cards in the
+// home page's kits-grid in declaration order.
 export const KITS: ReadonlyArray<KitEntry> = [
   { meta: forgeMeta, Page: ForgePage },
   { meta: geometryMeta, Page: GeometryPage },

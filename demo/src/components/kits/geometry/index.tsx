@@ -53,10 +53,7 @@ export function Page() {
         <header className="flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 01</p>
           <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">geometry</h1>
-          <p
-            className="mt-2 max-w-2xl text-sm leading-relaxed"
-            style={{ color: 'var(--uf-muted)' }}
-          >
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-uf-muted">
             Length, area, and volume; metric and imperial; cross-dimensional
             conversions for rectangles, circles, and spheres. Pick any unit for
             any input. Watch the engineering paper retick as you change units

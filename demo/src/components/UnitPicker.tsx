@@ -26,12 +26,7 @@ export function UnitPicker<K extends string>({
       <select
         value={value}
         onChange={handle}
-        className="mono rounded border px-2 py-1 text-sm"
-        style={{
-          background: 'var(--uf-card)',
-          color: 'var(--uf-fg)',
-          borderColor: 'var(--uf-border)',
-        }}
+        className="mono rounded border border-uf-border bg-uf-card px-2 py-1 text-sm text-uf-fg"
       >
         {options.map((o) => (
           <option key={o.key} value={o.key}>

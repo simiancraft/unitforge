@@ -72,19 +72,12 @@ export function Bench<D extends Dimension, K extends string>({
 
   return (
     <div
-      className="uf-card relative rounded-lg p-4 md:p-5"
+      className="uf-card relative rounded-lg p-4 shadow-md md:p-5"
       role="region"
       aria-label={label}
-      style={{
-        background: 'var(--uf-card)',
-        borderColor: 'var(--uf-border)',
-        boxShadow: '0 6px 24px -12px rgba(0,0,0,0.35)',
-      }}
     >
       <div className="mb-3 flex items-center justify-between">
-        <span className="uf-eyebrow" style={{ color: 'var(--uf-accent)' }}>
-          {label}
-        </span>
+        <span className="uf-eyebrow text-uf-accent">{label}</span>
         <span className="uf-eyebrow">live</span>
       </div>
 
@@ -94,12 +87,7 @@ export function Bench<D extends Dimension, K extends string>({
           <select
             value={state.fromKey}
             onChange={(e) => onChange({ ...state, fromKey: e.target.value as K })}
-            className="mono rounded border px-2 py-1.5 text-sm"
-            style={{
-              background: 'var(--uf-bg)',
-              color: 'var(--uf-fg)',
-              borderColor: 'var(--uf-border)',
-            }}
+            className="mono rounded border border-uf-border bg-uf-bg px-2 py-1.5 text-sm text-uf-fg"
           >
             {options.map((o) => (
               <option key={o.key} value={o.key}>
@@ -112,7 +100,7 @@ export function Bench<D extends Dimension, K extends string>({
         <ArrowRight
           size={20}
           strokeWidth={1.8}
-          style={{ color: 'var(--uf-accent)', justifySelf: 'center' }}
+          className="hidden text-uf-accent md:block md:justify-self-center"
         />
 
         <label className="flex flex-col gap-1">
@@ -120,12 +108,7 @@ export function Bench<D extends Dimension, K extends string>({
           <select
             value={state.toKey}
             onChange={(e) => onChange({ ...state, toKey: e.target.value as K })}
-            className="mono rounded border px-2 py-1.5 text-sm"
-            style={{
-              background: 'var(--uf-bg)',
-              color: 'var(--uf-fg)',
-              borderColor: 'var(--uf-border)',
-            }}
+            className="mono rounded border border-uf-border bg-uf-bg px-2 py-1.5 text-sm text-uf-fg"
           >
             {options.map((o) => (
               <option key={o.key} value={o.key}>
@@ -144,30 +127,23 @@ export function Bench<D extends Dimension, K extends string>({
           step={step}
           value={state.value}
           onChange={handleValue}
-          className="flex-1"
+          className="flex-1 accent-uf-accent"
           aria-label={`value in ${fromOpt.label}`}
-          style={{ accentColor: 'var(--uf-accent)' }}
+          aria-valuetext={`${formatLive(state.value)} ${fromOpt.label}`}
         />
-        <div
-          className="mono tabular-nums whitespace-nowrap text-xl md:text-2xl"
-          style={{ color: 'var(--uf-accent)' }}
-        >
+        <div className="mono whitespace-nowrap text-xl tabular-nums text-uf-accent md:text-2xl">
           {formatLive(state.value)} {fromOpt.key}
         </div>
       </div>
 
-      <div
-        className="mt-3 flex items-baseline justify-between gap-3 border-t pt-3"
-        style={{ borderColor: 'var(--uf-border)' }}
-      >
+      <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-uf-border pt-3">
         <span className="uf-eyebrow">result</span>
         <span
-          className="mono tabular-nums text-2xl md:text-3xl"
-          style={{ color: 'var(--uf-fg)' }}
+          className="mono text-2xl tabular-nums text-uf-fg md:text-3xl"
           aria-live="polite"
           aria-atomic="true"
         >
-          {formatLive(result)} <span style={{ color: 'var(--uf-muted)' }}>{toOpt.key}</span>
+          {formatLive(result)} <span className="text-uf-muted">{toOpt.key}</span>
         </span>
       </div>
 

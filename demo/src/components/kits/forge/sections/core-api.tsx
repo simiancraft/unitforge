@@ -65,7 +65,7 @@ export function CoreApi() {
           Define, then Forge!
         </h2>
       </header>
-      <p className="max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--uf-muted)' }}>
+      <p className="max-w-2xl text-sm leading-relaxed text-uf-muted">
         That's the whole surface. The Settlers-of-Crouton demo above stitched
         all three together. Kits are values built from the same primitives; you can use
         the kits, build your own, or both.
@@ -74,18 +74,8 @@ export function CoreApi() {
         {CARDS.map((c) => (
           <div key={c.name} className="flex flex-col gap-3">
             <div>
-              <code
-                className="mono text-base font-semibold"
-                style={{ color: 'var(--uf-accent)' }}
-              >
-                {c.name}
-              </code>
-              <p
-                className="mt-1 text-xs leading-relaxed"
-                style={{ color: 'var(--uf-muted)' }}
-              >
-                {c.blurb}
-              </p>
+              <code className="mono text-base font-semibold text-uf-accent">{c.name}</code>
+              <p className="mt-1 text-xs leading-relaxed text-uf-muted">{c.blurb}</p>
             </div>
             <CodeBlock code={c.code} className="min-h-[200px]" />
           </div>

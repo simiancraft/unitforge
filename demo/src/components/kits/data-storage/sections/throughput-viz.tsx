@@ -57,7 +57,7 @@ export function ThroughputViz() {
           eyebrow="demo 03"
           title="throughput"
           kicker="Gbit/s ↔ MB/s"
-          iconZone={<Gauge size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<Gauge size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
       introZone={
@@ -127,8 +127,8 @@ export function ThroughputViz() {
               }}
             />
             <span
-              className="mono absolute inset-0 flex items-center justify-center text-xs"
-              style={{ color: 'var(--uf-bg)', mixBlendMode: 'difference' }}
+              className="mono absolute inset-0 flex items-center justify-center text-xs text-uf-bg"
+              style={{ mixBlendMode: 'difference' }}
             >
               {targetGB.toFixed(0)} GB · @ {mbPerSec.toFixed(1)} MB/s
             </span>

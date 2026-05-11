@@ -19,14 +19,7 @@
 // the bundle; the [data-theme='<id>'] cascade resolves regardless of
 // which theme is active. Adding a kit needs no edits here.
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import {
   findTheme,
   THEMES,
@@ -93,19 +86,20 @@ export function ThemeProvider({ initialThemeId, children }: ThemeProviderProps) 
     document.documentElement.dataset.theme = activeTheme.id;
   }, [activeTheme.id]);
 
-  const setTheme = useCallback((id: ThemeId) => {
+  // React Compiler v1 auto-memoizes these; no manual useCallback needed.
+  const setTheme = (id: ThemeId) => {
     const recipe = findTheme(id);
     if (!recipe) return;
     setActiveId(id);
     const current = readStorage();
     writeStorage({ ...current, [recipe.kit]: id });
-  }, []);
+  };
 
-  const setThemeForKit = useCallback((kit: KitId, fallback: ThemeId) => {
+  const setThemeForKit = (kit: KitId, fallback: ThemeId) => {
     const stored = readStorage()[kit];
     const next = stored && findTheme(stored) ? stored : fallback;
     setActiveId(next);
-  }, []);
+  };
 
   return (
     <Ctx.Provider value={{ activeTheme, setTheme, setThemeForKit }}>

@@ -46,8 +46,8 @@ import {
   terabyte,
 } from 'unitforge/kits/data-storage';
 
-export interface UnitOption<D extends Dimension = Dimension> {
-  key: string;
+export interface UnitOption<D extends Dimension = Dimension, K extends string = string> {
+  key: K;
   label: string;
   unit: Unit<D, number>;
 }
@@ -134,10 +134,13 @@ export function findByKey<
   return found as Extract<L[number], { key: K }>;
 }
 
+/**
+ * Project a unit catalog onto the `key`+`label` shape `UnitPicker` accepts.
+ * The return type preserves the literal `key` union, so the picker's `K`
+ * generic narrows correctly at the call site (no widening to `string`).
+ */
 export function pickerOptions<L extends ReadonlyArray<{ key: string; label: string }>>(
   list: L,
-): ReadonlyArray<Pick<L[number], 'key' | 'label'>> {
-  return list.map(({ key, label }) => ({ key, label })) as ReadonlyArray<
-    Pick<L[number], 'key' | 'label'>
-  >;
+): ReadonlyArray<{ key: L[number]['key']; label: string }> {
+  return list.map(({ key, label }) => ({ key, label }));
 }

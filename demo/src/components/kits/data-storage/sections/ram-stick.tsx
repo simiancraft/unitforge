@@ -54,7 +54,7 @@ export function RamStick() {
           eyebrow="demo 04 · flair"
           title="RAM stick"
           kicker="memory you can light up"
-          iconZone={<MemoryStick size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<MemoryStick size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
       introZone={

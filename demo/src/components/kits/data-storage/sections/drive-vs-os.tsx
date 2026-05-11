@@ -46,7 +46,7 @@ export function DriveVsOs() {
           eyebrow="demo 02"
           title="drive vs OS"
           kicker="why 1 TB shows up as 931 GiB"
-          iconZone={<HardDrive size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<HardDrive size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
       introZone={
@@ -78,20 +78,17 @@ export function DriveVsOs() {
               boxShadow: '0 2px 0 rgba(0,0,0,0.3) inset',
             }}
           >
-            <div
-              className="mono text-[10px] uppercase tracking-[0.3em]"
-              style={{ color: 'var(--uf-trace)' }}
-            >
+            <div className="mono text-[10px] uppercase tracking-[0.3em] text-uf-trace">
               drive label
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="mono text-4xl font-bold" style={{ color: 'var(--uf-fg)' }}>
+              <span className="mono text-4xl font-bold text-uf-fg">
                 {inTB >= 1 ? inTB.toFixed(inTB < 10 ? 1 : 0) : (marketedGB / 1).toFixed(0)}
               </span>
-              <span className="mono text-2xl" style={{ color: 'var(--uf-accent)' }}>
+              <span className="mono text-2xl text-uf-accent">
                 {inTB >= 1 ? 'TB' : 'GB'}
               </span>
-              <span className="mono ml-auto text-xs" style={{ color: 'var(--uf-muted)' }}>
+              <span className="mono ml-auto text-xs text-uf-muted">
                 {marketedGB.toFixed(0)} GB · 1 GB = 1,000,000,000 bytes
               </span>
             </div>
@@ -114,7 +111,7 @@ export function DriveVsOs() {
                 borderBottom: '1px solid var(--uf-border)',
               }}
             >
-              <span className="mono uppercase tracking-wider" style={{ color: 'var(--uf-muted)' }}>
+              <span className="mono uppercase tracking-wider text-uf-muted">
                 local disk (c:) · properties
               </span>
               <div className="flex gap-1">

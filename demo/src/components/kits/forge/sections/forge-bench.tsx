@@ -13,6 +13,7 @@ import { ArrowRight } from 'lucide-react';
 import { LENGTH_UNITS, findByKey, type LengthKey } from '~/lib/units.js';
 import { convert } from '~/lib/convert.js';
 import { CodeLine } from '~/components/CodeBlock.js';
+import { cn } from '~/lib/cn.js';
 
 const MIN = 0.1;
 const MAX = 100;
@@ -47,12 +48,7 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
               onChange({ fromKey: e.target.value as LengthKey, toKey, value })
             }
             aria-label="from unit"
-            className="rounded border px-2 py-1 text-sm"
-            style={{
-              background: 'var(--uf-bg)',
-              color: 'var(--uf-fg)',
-              borderColor: 'var(--uf-border)',
-            }}
+            className="rounded border border-uf-border bg-uf-bg px-2 py-1 text-sm text-uf-fg"
           >
             {LENGTH_UNITS.map((o) => (
               <option key={o.key} value={o.key}>
@@ -75,13 +71,10 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
             onPointerCancel={() => setSliderActive(false)}
             onBlur={() => setSliderActive(false)}
             aria-label={`value in ${fromOpt.label}`}
-            className="h-3 flex-1"
-            style={{ accentColor: 'var(--uf-accent)' }}
+            aria-valuetext={`${value.toFixed(2)} ${fromOpt.label}`}
+            className="h-3 flex-1 accent-uf-accent"
           />
-          <span
-            className="tabular-nums whitespace-nowrap text-lg"
-            style={{ color: 'var(--uf-accent)' }}
-          >
+          <span className="whitespace-nowrap text-lg tabular-nums text-uf-accent">
             {value.toFixed(2)} {fromOpt.key}
           </span>
         </div>
@@ -91,29 +84,20 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
             user is actively dragging the slider, so the user's eye
             follows the trail toward the live output. */}
         <div
-          className="flex flex-1 items-center gap-1 self-center"
-          style={{
-            opacity: sliderActive ? 1 : 0.5,
-            transition: 'opacity 220ms ease',
-          }}
+          className={cn(
+            'flex flex-1 items-center gap-1 self-center transition-opacity duration-200',
+            sliderActive ? 'opacity-100' : 'opacity-50',
+          )}
         >
-          <span
-            className="flex-1 border-t-2 border-dotted"
-            style={{ borderColor: 'var(--uf-accent)' }}
-            aria-hidden
-          />
-          <ArrowRight
-            size={18}
-            strokeWidth={1.8}
-            style={{ color: 'var(--uf-accent)' }}
-          />
+          <span className="flex-1 border-t-2 border-dotted border-uf-accent" aria-hidden />
+          <ArrowRight size={18} strokeWidth={1.8} className="text-uf-accent" />
         </div>
 
         {/* RIGHT half: result + TO picker. Content-width on purpose so
             the dotted trail in the middle gets the room. */}
         <div className="flex items-center justify-end gap-3">
           <span
-            className="tabular-nums whitespace-nowrap text-2xl md:text-3xl"
+            className="whitespace-nowrap text-2xl tabular-nums md:text-3xl"
             aria-live="polite"
             aria-atomic="true"
           >
@@ -126,12 +110,7 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
               onChange({ fromKey, toKey: e.target.value as LengthKey, value })
             }
             aria-label="to unit"
-            className="rounded border px-2 py-1 text-sm"
-            style={{
-              background: 'var(--uf-bg)',
-              color: 'var(--uf-fg)',
-              borderColor: 'var(--uf-border)',
-            }}
+            className="rounded border border-uf-border bg-uf-bg px-2 py-1 text-sm text-uf-fg"
           >
             {LENGTH_UNITS.map((o) => (
               <option key={o.key} value={o.key}>
