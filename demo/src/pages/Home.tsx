@@ -22,7 +22,7 @@ const AMBIENT_BOOST = 1;
 const AMBIENT_SPEED_SCALE = 1;
 const AMBIENT_MAX_DELAY_SEC = 4;
 
-const STOKE_COUNT = 48;
+const STOKE_COUNT = 72;
 const STOKE_BOOST = 2;
 const STOKE_SPEED_SCALE = 0.26; // faster rise, like a struck anvil throwing sparks (75% faster than 0.45)
 const STOKE_MAX_DELAY_SEC = 0.35; // tight: nearly every particle starts together
