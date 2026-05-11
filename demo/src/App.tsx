@@ -1,8 +1,7 @@
 // Router shell. Reads window.location.hash, looks up the active kit from
-// the registry, sets data-theme on <html> from that kit's meta, and renders
-// the kit's Page. ErrorBoundary catches widget-level throws; skip-link
-// supports keyboard-only navigation. Reduced-motion users don't get smooth
-// scrolls.
+// the registry, and renders that kit's Page wrapped in the root
+// ThemeProvider. The provider owns the data-theme cascade on <html> and
+// per-kit theme persistence in localStorage.
 //
 // Adding a new kit: register it in components/kits/registry.ts. App.tsx
 // requires no edits.
@@ -12,9 +11,12 @@ import { ArrowLeft } from 'lucide-react';
 import { VERSION } from 'unitforge/version';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { findKit } from './components/kits/registry.js';
+import { ThemeProvider, useTheme } from './components/theme/provider.js';
+import { findTheme, pairForKit, type ThemeId } from './components/theme/recipes.js';
+import { ThemeToggle } from './components/theme/toggle.js';
 
-// 'forge' is the default route (#/ or empty hash); other kits route at #/<id>.
 const DEFAULT_KIT_ID = 'forge';
+const STORAGE_KEY = 'unitforge.themes';
 
 function parseHash(): string {
   const raw = window.location.hash.replace(/^#\/?/, '');
@@ -35,27 +37,64 @@ function useHashRoute(): string {
   return route;
 }
 
+/**
+ * Compute the theme to activate on initial mount, honoring localStorage
+ * so the first paint matches the user's last choice for the active kit
+ * (no flash of the wrong theme).
+ */
+function getInitialThemeId(): ThemeId {
+  const route = parseHash();
+  const kit = findKit(route);
+  const fallback = kit?.meta.defaultThemeId ?? 'forge-dark';
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw || !kit) return fallback;
+    const parsed = JSON.parse(raw) as Record<string, string>;
+    const stored = parsed[kit.meta.id];
+    if (stored && findTheme(stored)) return stored as ThemeId;
+  } catch {
+    // ignore
+  }
+  return fallback;
+}
+
 export function App() {
+  return (
+    <ThemeProvider initialThemeId={getInitialThemeId()}>
+      <RouteShell />
+    </ThemeProvider>
+  );
+}
+
+function RouteShell() {
   const route = useHashRoute();
+  const { setThemeForKit } = useTheme();
   const active = findKit(route) ?? findKit(DEFAULT_KIT_ID);
   const Page = active?.Page;
-  const theme = active?.meta.theme ?? 'home';
 
-  // Theme cascade lives on <html> so the body's `background: var(--uf-bg)`
-  // resolves to the kit palette and paints the viewport. The route
-  // container below stays transparent so the fixed-position background
-  // flair (embers / grid / circuit) shows through.
+  // On hash change, honor the destination kit's stored theme or fall
+  // back to its default. The initial mount is handled by ThemeProvider's
+  // initialThemeId; this effect covers subsequent navigation.
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    if (active) setThemeForKit(active.meta.id, active.meta.defaultThemeId);
+  }, [active, setThemeForKit]);
 
   const isHome = route === DEFAULT_KIT_ID;
+
+  const pair = active ? pairForKit(active.meta.id) : null;
 
   return (
     <div className="relative min-h-screen">
       <a href="#main" className="uf-skip-link">
         skip to content
       </a>
+      {pair && active ? (
+        <ThemeToggle
+          light={pair.light}
+          dark={pair.dark}
+          defaultTheme={active.meta.defaultThemeId}
+        />
+      ) : null}
       <main id="main" className="relative mx-auto max-w-6xl px-6 py-10 md:py-14">
         {isHome ? null : <BreadcrumbBar kitLabel={active?.meta.label ?? route} />}
         <ErrorBoundary>{Page ? <Page /> : null}</ErrorBoundary>

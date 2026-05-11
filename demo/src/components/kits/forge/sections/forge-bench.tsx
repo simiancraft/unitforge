@@ -8,13 +8,13 @@
 // Row 2: code block with the minimal imports + the live forge() call.
 
 import type { ChangeEvent } from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { forge } from 'unitforge';
 import { LENGTH_UNITS, findByKey } from '../../../../lib/units.js';
-import { cachedHighlight, highlight } from '../../../../lib/highlighter.js';
 import { CopyButton } from '../../../CodeBlock.js';
-import { useKitTheme } from '../../theme.js';
+import { useTheme } from '../../../theme/provider.js';
+import { useHighlighted } from '../../../theme/use-highlighted.js';
 
 const MIN = 0.1;
 const MAX = 100;
@@ -150,22 +150,9 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
 }
 
 function BenchCodeLine({ code }: { code: string }) {
-  const { shikiTheme, codeFrameClass } = useKitTheme();
-  const [html, setHtml] = useState<string | null>(
-    cachedHighlight(code, 'ts', shikiTheme) ?? null,
-  );
-  useEffect(() => {
-    setHtml(cachedHighlight(code, 'ts', shikiTheme) ?? null);
-    let cancelled = false;
-    highlight(code, 'ts', shikiTheme)
-      .then((rendered) => {
-        if (!cancelled) setHtml(rendered);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [code, shikiTheme]);
+  const { activeTheme } = useTheme();
+  const html = useHighlighted(code, 'ts', activeTheme.shikiTheme);
+  const codeFrameClass = activeTheme.codeFrameClass;
   return (
     <div
       className={`relative mono rounded text-xs overflow-hidden ${codeFrameClass ?? ''}`}

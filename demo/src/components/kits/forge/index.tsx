@@ -8,7 +8,7 @@
 // click defers route navigation until ~2/3 of the burst has played.
 
 import { useState } from 'react';
-import { Hammer, type LucideIcon } from 'lucide-react';
+import { Hammer } from 'lucide-react';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { ForgeBackdrop } from './parts/forge-backdrop.js';
@@ -19,12 +19,6 @@ import { KitsGrid } from './sections/kits-grid.js';
 import { CoreApi } from './sections/core-api.js';
 import { CroutonDemo } from './sections/crouton-demo.js';
 import { useForgeStoke } from './use-forge-stoke.js';
-import './forge.css';
-// Kit-card previews on the kits-grid render in their target kit's theme
-// (data-storage/geometry); their CSS bundles need to load here for the
-// scoped variables to resolve.
-import '../geometry/geometry.css';
-import '../data-storage/data-storage.css';
 
 const STOKE_HOLD_MS = 1200;
 const SHAKE_AMP_BASE_PX = 9;
@@ -92,16 +86,13 @@ export function Page() {
   );
 }
 
-// Meta is exported for the registry (step 5 will populate KITS with it).
-// Forge has no previewBg because the home page doesn't render itself as a
-// kit-card; previewBg stays optional in KitMeta so this stays clean.
-export const meta: KitMeta & { icon: LucideIcon } = {
+// Forge never appears in a kits-grid as a card (it IS the home page);
+// previewBg is a noop. Default theme is the hot-metal dark variant.
+export const meta: KitMeta = {
   id: 'forge',
   label: 'unitforge',
   blurb: 'forge anything measurable.',
-  theme: 'home',
+  defaultThemeId: 'forge-dark',
   icon: Hammer,
-  // previewBg intentionally omitted; forge never appears in a kits-grid
-  // as a card (it IS the home).
   previewBg: () => null,
 };

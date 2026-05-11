@@ -2,12 +2,17 @@
 // App.tsx looks up { Page, meta } by id to dispatch hash routes; the forge
 // kit's kits-grid section iterates KITS to render navigation cards.
 //
+// A kit's meta declares its `defaultThemeId`; the theme registry
+// (components/theme/recipes.ts) owns everything visual. The two
+// registries are parallel: a kit references themes by id; themes don't
+// reference kits beyond their kit field.
+//
 // Adding a kit: drop a folder at components/kits/<kit>/ exporting
-// { Page, meta }, then import + append it below. Two consumers, one source
-// of truth.
+// { Page, meta }, then import + append it below.
 
 import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import type { KitId, ThemeId } from '../theme/recipes.js';
 import { Page as ForgePage, meta as forgeMeta } from './forge/index.js';
 import { Page as GeometryPage, meta as geometryMeta } from './geometry/index.js';
 import {
@@ -16,11 +21,11 @@ import {
 } from './data-storage/index.js';
 
 export interface KitMeta {
-  id: string;
+  id: KitId;
   label: string;
   blurb: string;
-  /** data-theme value applied to <html> when this kit is active. */
-  theme: string;
+  /** Theme to activate when the user navigates to this kit and has no stored preference. */
+  defaultThemeId: ThemeId;
   /** Lucide icon for the navigation card. */
   icon: LucideIcon;
   /** Inline backdrop preview component used by the navigation card. */

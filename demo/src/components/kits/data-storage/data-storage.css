@@ -1,9 +1,12 @@
-/* Data-storage / PCB-phosphor theme: green-black surface, phosphor green
- * foreground, amber LED accent, copper trace tokens, scanline overlay.
- * Imported from `pages/DataStorage.tsx`.
+/* Data-storage theme: PCB-phosphor at night (dark variant) + silkscreen
+ * datasheet by day (light variant). CRT chrome only applies to the dark
+ * variant via codeFrameClass on the recipe.
+ *
+ * Loaded eagerly by the theme provider; activated via the
+ * [data-theme='data-storage-{dark,light}'] selectors.
  */
 
-[data-theme='data-storage'] {
+[data-theme='data-storage-dark'] {
   /* Contrast-tuned: muted #6e9c7e (6.0:1), border #a06a2e (4.1:1) so
    * card edges read.
    */
@@ -20,8 +23,28 @@
   --uf-trace-faint: #c8881e22;
 }
 
-/* Subtle phosphor scanline shimmer for data-storage panels. */
-[data-theme='data-storage'] .uf-scanlines::before {
+/* Silkscreen / datasheet daylight: cream bg with PCB-green forest tones
+ * and amber accent (resistor-color-code adjacent so the kit identity
+ * survives the light flip).
+ */
+[data-theme='data-storage-light'] {
+  --uf-bg: #f4f1e8;
+  --uf-fg: #0f3d2e;
+  --uf-muted: #6b7a6f;
+  --uf-accent: #c47b1f;
+  --uf-card: #fdfbf3;
+  --uf-border: #a8b1a4;
+  --uf-code-bg: #f0f4ed;
+
+  --uf-display: 'JetBrains Mono', ui-monospace, monospace;
+  --uf-trace: #7c8a36;
+  --uf-trace-faint: #7c8a3622;
+}
+
+/* Subtle phosphor scanline shimmer (dark only; light variant is a
+ * printed silkscreen, no scanlines).
+ */
+[data-theme='data-storage-dark'] .uf-scanlines::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -35,11 +58,10 @@
   );
 }
 
-/* CRT chrome for code blocks. Applied via KitTheme's codeFrameClass
- * ('uf-code-crt') from the data-storage kit page. Heavier scanlines
- * over the snippet itself + a soft radial vignette darkening the
- * corners + a phosphor glow on the rendered code. Inspired by
- * chromonym's LiveSnippet component.
+/* CRT chrome for code blocks; only loaded on data-storage-dark via the
+ * codeFrameClass on the recipe. Heavier scanlines over the snippet
+ * itself + a soft radial vignette darkening the corners + a phosphor
+ * glow on the rendered code. Inspired by chromonym's LiveSnippet.
  */
 .uf-code-crt {
   position: relative;
@@ -77,4 +99,3 @@
 .uf-code-crt pre span {
   text-shadow: 0 0 4px var(--uf-fg);
 }
-

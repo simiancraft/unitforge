@@ -2,10 +2,10 @@
 // styled via `.uf-code-scroll` (thin, theme-aware, only visible when
 // overflow exists). Falls back to plain <pre> until shiki resolves.
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
-import { useKitTheme } from './kits/theme.js';
-import { cachedHighlight, highlight } from '../lib/highlighter.js';
+import { useTheme } from './theme/provider.js';
+import { useHighlighted } from './theme/use-highlighted.js';
 
 type Lang = 'ts' | 'tsx' | 'js';
 
@@ -17,23 +17,9 @@ interface CodeBlockProps {
 }
 
 export function CodeBlock({ code, lang = 'ts', className = '' }: CodeBlockProps) {
-  const { shikiTheme, codeFrameClass } = useKitTheme();
-  const [html, setHtml] = useState<string | null>(
-    cachedHighlight(code, lang, shikiTheme) ?? null,
-  );
-
-  useEffect(() => {
-    setHtml(cachedHighlight(code, lang, shikiTheme) ?? null);
-    let cancelled = false;
-    highlight(code, lang, shikiTheme)
-      .then((rendered) => {
-        if (!cancelled) setHtml(rendered);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [code, lang, shikiTheme]);
+  const { activeTheme } = useTheme();
+  const html = useHighlighted(code, lang, activeTheme.shikiTheme);
+  const codeFrameClass = activeTheme.codeFrameClass;
 
   return (
     <div

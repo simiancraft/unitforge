@@ -3,7 +3,7 @@
 // with what's actually used.
 //
 // To add a new theme, drop it in THEME_LOADERS and reference it by name
-// from a kit page's <KitThemeProvider>.
+// from a recipe in components/theme/recipes.ts.
 
 interface Highlighter {
   codeToHtml: (
@@ -18,7 +18,9 @@ const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   'github-dark': () => import('shiki/themes/github-dark.mjs'),
   'github-light': () => import('shiki/themes/github-light.mjs'),
   'vitesse-light': () => import('shiki/themes/vitesse-light.mjs'),
+  'vitesse-dark': () => import('shiki/themes/vitesse-dark.mjs'),
   'synthwave-84': () => import('shiki/themes/synthwave-84.mjs'),
+  'light-plus': () => import('shiki/themes/light-plus.mjs'),
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;

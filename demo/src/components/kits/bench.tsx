@@ -13,11 +13,11 @@
 
 import type { Dimension, ForgeInput, Unit } from 'unitforge';
 import { forge } from 'unitforge';
-import { useEffect, useState, type ChangeEvent } from 'react';
+import { type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { CopyButton } from '../CodeBlock.js';
-import { useKitTheme } from './theme.js';
-import { cachedHighlight, highlight } from '../../lib/highlighter.js';
+import { useTheme } from '../theme/provider.js';
+import { useHighlighted } from '../theme/use-highlighted.js';
 
 export interface BenchState<D extends Dimension> {
   fromKey: string;
@@ -170,22 +170,9 @@ export function Bench<D extends Dimension>({
 }
 
 function LiveCodeLine({ code }: { code: string }) {
-  const { shikiTheme, codeFrameClass } = useKitTheme();
-  const [html, setHtml] = useState<string | null>(
-    cachedHighlight(code, 'ts', shikiTheme) ?? null,
-  );
-  useEffect(() => {
-    setHtml(cachedHighlight(code, 'ts', shikiTheme) ?? null);
-    let cancelled = false;
-    highlight(code, 'ts', shikiTheme)
-      .then((rendered) => {
-        if (!cancelled) setHtml(rendered);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [code, shikiTheme]);
+  const { activeTheme } = useTheme();
+  const html = useHighlighted(code, 'ts', activeTheme.shikiTheme);
+  const codeFrameClass = activeTheme.codeFrameClass;
   return (
     <div
       className={`relative mono mt-3 rounded text-xs overflow-hidden ${codeFrameClass ?? ''}`}

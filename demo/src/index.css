@@ -9,19 +9,13 @@
  */
 
 :root {
-  /* Brand baseline (used by the masthead + footer regardless of route). */
-  --uf-brand: #f97316;
-
-  /* Default = home theme tokens; per-route overrides land via the
-   * [data-theme='<kit>'] selectors in kits/<kit>/<kit>.css.
+  /* Brand baseline and font stacks (theme-independent). All themed
+   * tokens (--uf-bg, --uf-fg, --uf-accent, etc.) live in the kit CSS
+   * files keyed by [data-theme='<kit>-<variant>'] selectors. The
+   * ThemeProvider always sets a valid data-theme on <html>, so the kit
+   * blocks always match.
    */
-  --uf-bg: #0d0d0d;
-  --uf-fg: #f4ede0;
-  --uf-muted: #9b8e7e;
-  --uf-accent: #f97316;
-  --uf-card: #161412;
-  --uf-border: #2b231a;
-  --uf-code-bg: #0a0908;
+  --uf-brand: #f97316;
 
   --uf-display: 'Georgia', 'Times New Roman', serif;
   --uf-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,

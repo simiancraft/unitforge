@@ -1,11 +1,9 @@
-/* Home / forge theme: hot-metal palette, anvil-strike keyframes, forge-
- * base flash keyframe, hammer-icon cursor. Imported from `pages/Home.tsx`.
+/* Forge theme: hot-metal palette (dark variant) + tempered-steel daylight
+ * (light variant) + anvil-strike keyframes + forge-glow keyframe + hammer
+ * cursor. Loaded eagerly by the theme provider; activated via the
+ * [data-theme='forge-{dark,light}'] selectors.
  */
 
-/* Aldrich (SIL OFL 1.1, Matthew Desmond / madtype). Self-hosted from
- * /fonts/. License: public/fonts/Aldrich-OFL.txt. Single-weight; the
- * wordmark uses -webkit-text-stroke to add a touch of beef.
- */
 @font-face {
   font-family: 'Aldrich';
   src: url('/fonts/Aldrich-Regular.ttf') format('truetype');
@@ -21,29 +19,44 @@
   letter-spacing: -0.005em;
   line-height: 1;
 }
-.uf-wordmark-unit { color: #c8c4be; }
+.uf-wordmark-unit { color: var(--uf-wordmark-unit-color, #c8c4be); }
 .uf-wordmark-forge { color: var(--uf-accent); }
 
-[data-theme='home'] {
+/* Forge-dark: black bg, hot orange accent, parchment foreground. */
+[data-theme='forge-dark'] {
   --uf-bg: #0d0d0d;
   --uf-fg: #f4ede0;
   --uf-muted: #9b8e7e;
   --uf-accent: #f97316;
   --uf-card: #161412;
-  --uf-border: #7a6948; /* warm-leather; raised from #2b231a (1.26:1 -> 3.65:1) */
+  --uf-border: #7a6948;
   --uf-code-bg: #0a0908;
+  --uf-wordmark-unit-color: #c8c4be;
+}
+
+/* Forge-light: tempered-steel daylight, deeper orange so it still reads
+ * against a warm cream, foreground a smoky dark warm-gray.
+ */
+[data-theme='forge-light'] {
+  --uf-bg: #f5f0e8;
+  --uf-fg: #1f1611;
+  --uf-muted: #6b5d4f;
+  --uf-accent: #c2410c;
+  --uf-card: #fbf7f0;
+  --uf-border: #c9bba8;
+  --uf-code-bg: #fefcf7;
+  --uf-wordmark-unit-color: #6b5d4f;
 }
 
 /* Anvil-strike and forge-flash are the visible parts of a single "stoke"
- * event in Home.tsx (also stokes the ember pool). Both animations read
- * intensity via CSS custom properties:
+ * event in the forge kit (also stokes the ember pool). Both animations
+ * read intensity via CSS custom properties:
  *
  *   --uf-shake-amp    peak translateY of the strike (defaults to 9px)
- *   --uf-flash-scale  peak scaleY of the flash gradient (defaults to 1)
  *
- * Home calls a unified `stoke(intensity)` with 0.75 on hover and 1.5 on
- * mousedown; the variables are set inline before the class is (re-)applied
- * so amplitude scales without authoring multiple keyframes.
+ * The forge kit calls a unified `stoke(intensity)` with 0.75 on hover and
+ * higher on mousedown; the variables are set inline before the class is
+ * (re-)applied so amplitude scales without authoring multiple keyframes.
  */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes uf-anvil-strike {
@@ -90,7 +103,7 @@
  * element using this class.
  */
 .uf-forge-glow-1 {
-  height: 20.4vh; /* 24vh, 15% smaller */
+  height: 20.4vh;
   background: linear-gradient(
     to top,
     rgba(255, 250, 220, 1) 0%,
@@ -116,7 +129,7 @@
 }
 
 .uf-forge-glow-3 {
-  height: 50.4vh; /* 42vh, 20% larger */
+  height: 50.4vh;
   background: linear-gradient(
     to top,
     rgba(255, 252, 235, 1) 0%,

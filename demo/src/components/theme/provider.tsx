@@ -1,0 +1,126 @@
+// ThemeProvider — root-level provider that owns the active theme and
+// orchestrates its side effects (data-theme cascade on <html>, persistence
+// in localStorage). Recipes carry the rest (shiki theme name, frame
+// chrome class, future: fonts/icons/music).
+//
+// Consumers call useTheme() to read the active recipe; route shells call
+// setThemeForKit(kit, fallback) on mount to honor per-kit persistence
+// before any toggle UI mounts. Toggles call setTheme(id) directly.
+//
+// Per-kit persistence shape in localStorage:
+//   "unitforge.themes" -> JSON { [kitId]: themeId }
+// Each kit remembers the user's last selection independently, so a user
+// who flipped geometry to dark keeps that choice even after visiting
+// other kits.
+//
+// All kit CSS files are eagerly imported here so the [data-theme='<id>']
+// cascade resolves regardless of which theme is active. CSS is small;
+// pre-loading every variant means the home page's kit-card previews
+// (which paint in their destination kit's theme via data-theme on a
+// subtree) work without per-page CSS coordination.
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react';
+import {
+  findTheme,
+  THEMES,
+  type KitId,
+  type ThemeId,
+  type ThemeRecipe,
+} from './recipes.js';
+
+// Eager CSS imports for every kit. The data-theme selectors inside each
+// file declare both variants, so loading the file once makes every
+// recipe's CSS variables resolvable.
+import '../kits/forge/forge.css';
+import '../kits/geometry/geometry.css';
+import '../kits/data-storage/data-storage.css';
+
+const STORAGE_KEY = 'unitforge.themes';
+
+interface ThemeContextValue {
+  activeTheme: ThemeRecipe;
+  /** Set the active theme directly; persists per-kit. */
+  setTheme: (id: ThemeId) => void;
+  /**
+   * Activate the user's last-selected theme for this kit (from
+   * localStorage), falling back to `fallback` if none is stored. Route
+   * shells call this on mount so navigation respects user preferences.
+   */
+  setThemeForKit: (kit: KitId, fallback: ThemeId) => void;
+}
+
+const Ctx = createContext<ThemeContextValue | null>(null);
+
+function readStorage(): Partial<Record<KitId, ThemeId>> {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (parsed && typeof parsed === 'object') {
+      return parsed as Partial<Record<KitId, ThemeId>>;
+    }
+  } catch {
+    // SSR / locked-down storage; ignore.
+  }
+  return {};
+}
+
+function writeStorage(next: Partial<Record<KitId, ThemeId>>): void {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // Quota / locked-down storage; ignore.
+  }
+}
+
+interface ThemeProviderProps {
+  /** Default theme to activate before any route shell calls setThemeForKit. */
+  initialThemeId: ThemeId;
+  children: ReactNode;
+}
+
+export function ThemeProvider({ initialThemeId, children }: ThemeProviderProps) {
+  const [activeId, setActiveId] = useState<ThemeId>(initialThemeId);
+  const activeTheme = THEMES[activeId];
+
+  // data-theme cascade on <html> so body.background var resolves and
+  // paints the viewport beyond the route container.
+  useEffect(() => {
+    document.documentElement.dataset.theme = activeTheme.id;
+  }, [activeTheme.id]);
+
+  const setTheme = useCallback((id: ThemeId) => {
+    const recipe = findTheme(id);
+    if (!recipe) return;
+    setActiveId(id);
+    const current = readStorage();
+    writeStorage({ ...current, [recipe.kit]: id });
+  }, []);
+
+  const setThemeForKit = useCallback((kit: KitId, fallback: ThemeId) => {
+    const stored = readStorage()[kit];
+    const next = stored && findTheme(stored) ? stored : fallback;
+    setActiveId(next);
+  }, []);
+
+  return (
+    <Ctx.Provider value={{ activeTheme, setTheme, setThemeForKit }}>
+      {children}
+    </Ctx.Provider>
+  );
+}
+
+export function useTheme(): ThemeContextValue {
+  const v = useContext(Ctx);
+  if (!v) {
+    throw new Error('useTheme called outside <ThemeProvider>; wrap the app root.');
+  }
+  return v;
+}

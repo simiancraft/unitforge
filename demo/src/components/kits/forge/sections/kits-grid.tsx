@@ -40,7 +40,7 @@ export function KitsGrid({
           <NavigationCard
             key={meta.id}
             href={`#/${meta.id}`}
-            theme={meta.theme}
+            theme={meta.defaultThemeId}
             icon={meta.icon}
             label={meta.label}
             blurb={meta.blurb}
