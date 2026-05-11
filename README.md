@@ -10,119 +10,199 @@
 
 # unitforge
 
+[![npm version](https://img.shields.io/npm/v/unitforge?color=cb3837&logo=npm)](https://www.npmjs.com/package/unitforge)
+[![Types: included](https://img.shields.io/npm/types/unitforge?color=3178c6&logo=typescript)](https://www.npmjs.com/package/unitforge)
 [![CI](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml/badge.svg)](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/simiancraft/unitforge?logo=codecov)](https://codecov.io/github/simiancraft/unitforge)
+[![Bundle size](https://img.shields.io/badge/bundle-0.3--2.6%20kB%20gz-informational)](#tree-shaking-and-bundle-size)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/simiancraft/unitforge/badge)](https://securityscorecards.dev/viewer/?uri=github.com/simiancraft/unitforge)
-[![Types: included](https://img.shields.io/npm/types/unitforge?color=3178c6&logo=typescript)](https://www.npmjs.com/package/unitforge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 <p align="center">
   <code>defineUnit</code> &nbsp;•&nbsp; <code>defineConversion</code> &nbsp;•&nbsp; <code>forge</code>
 </p>
 
-A units library for arbitrary domains; not just physics. Inventory, lab assays, game state, finance, astronomy, and SI-physics all share the same shape: three primitives, three additive registries, tree-shakeable per-export.
+**A units library that does not assume you are doing physics.** Three primitives — `defineUnit`, `defineConversion`, `forge` — work against any unit and any dimension you import. Ships a `geometry` kit (8 LENGTH, 8 AREA, 6 VOLUME units; 7 cross-dimensional derivations: rectangle, square, circle area; box, cube, sphere, cylinder volume); bring your own dimensions and units (game state, finance, lab assays, packaging, factions) with full TypeScript inference and zero registration. Tree-shakes per-export — you only pay for what you import.
 
-> **Status: pre-1.0.** API not stable; do not depend on it for production. PLANNING.md captures the full v1 design intent (some sections describe kits not yet shipped). Track progress in [GitHub issues](https://github.com/simiancraft/unitforge/issues).
+<sub>Every public export ships with JSDoc; autocomplete and hover do the teaching.</sub>
+
+```ts
+import { defineUnit, defineConversion, forge, ValidationError } from 'unitforge';
+import { LENGTH } from 'unitforge/dimensions';
+import { meter, centimeter, squareMeter, areaFromLengthAndWidth } from 'unitforge/kits/geometry';
+
+// Within-dimension: from-unit, to-unit, done.
+forge(meter, centimeter)(1.5);                                 // 150
+
+// Cross-dimensional: pass a defineConversion via the config.
+const area = forge({ length: meter, width: meter }, squareMeter, { via: areaFromLengthAndWidth });
+area({ length: 5, width: 3 });                                 // 15  (m²)
+
+// Mixed input units work; library normalizes to base before compute.
+const areaMixed = forge({ length: centimeter, width: meter }, squareMeter, { via: areaFromLengthAndWidth });
+areaMixed({ length: 200, width: 3 });                          // 6   (200 cm = 2 m, 2 × 3 = 6 m²)
+
+// Validators reject negatives; failures aggregate into one ValidationError.
+try { area({ length: -5, width: -3 }); }
+catch (err) {
+  if (err instanceof ValidationError) err.failures;            // 2 failures: { key:'length', ... }, { key:'width', ... }
+}
+
+// Bring your own dimension. Inventory, finance, game state — same shape.
+const PALLET = 'pallet' as const;
+const SHIPMENT = 'shipment' as const;
+const pallet = defineUnit({
+  name: 'pallet', dimension: PALLET, toBase: (v) => v, fromBase: (b) => b, base: true,
+});
+const shipment = defineUnit({
+  name: 'shipment', dimension: SHIPMENT, toBase: (v) => v, fromBase: (b) => b, base: true,
+});
+const truckloadsFromPallets = defineConversion({
+  inputs: { pallets: PALLET },
+  output: SHIPMENT,
+  validate: { pallets: (v) => v >= 0 || 'pallets must be >= 0' },
+  compute: ({ pallets }) => Math.ceil(pallets / 26),           // a 53' truck fits ≈ 26 pallets
+});
+const truckloadsNeeded = forge({ pallets: pallet }, shipment, { via: truckloadsFromPallets });
+truckloadsNeeded({ pallets: 100 });                            // 4
+```
+
+The same machinery handles `length × width = area`, `pallets ÷ pallets-per-truck = trucks`, `voltage ÷ resistance = current`, or `dose ÷ patient-weight = mg/kg`. The library doesn't ship a unit table for your domain; it ships the primitives so you can declare your domain and use it the same day.
 
 ## Install
 
 ```sh
+bun add unitforge
+pnpm add unitforge
+yarn add unitforge
 npm install unitforge
-# or:  bun add unitforge
-# or:  pnpm add unitforge
 ```
 
-Requires Node 22+, ESM-only, TypeScript `moduleResolution: "node16" | "nodenext" | "bundler"`.
+Requires Node 22+, ESM-only (`"type": "module"`), TypeScript `moduleResolution: "node16" | "nodenext" | "bundler"`. No CJS build; no peer dependencies.
 
-## What it does
+## API
 
-Three primitives: `defineUnit` produces a unit; `defineConversion` produces a cross-dimensional conversion; `forge` consumes both and returns a converter function.
+Three primitives. Two factories produce values; one consumer turns those values into a converter function.
 
-### Within-dimension conversion
+### `defineUnit(spec)` — make a unit value
+
+A unit is a value with a `name`, a `dimension`, and `toBase` / `fromBase` functions. The base unit of each dimension carries `base: true`. Spec is type-checked; `safeCopy` rejects prototype-pollution keys at definition time.
 
 ```ts
-import { forge } from 'unitforge';
-import { meter, centimeter } from 'unitforge/kits/geometry';
+function defineUnit<D extends Dimension, T = number>(spec: Unit<D, T>): Unit<D, T>;
 
-const toCm = forge(meter, centimeter);
-toCm(1.5); // 150
+import { defineUnit } from 'unitforge';
+import { LENGTH } from 'unitforge/dimensions';
+
+const meter = defineUnit({
+  name: 'meter', dimension: LENGTH, toBase: (v) => v, fromBase: (b) => b, base: true,
+});
+
+const inch = defineUnit({
+  name: 'inch', dimension: LENGTH,
+  toBase: (v) => v * 0.0254, fromBase: (b) => b / 0.0254,
+});
 ```
 
-### Cross-dimensional derivation
+Authoring convention for kit-shipped units: inline `toBase`/`fromBase` closures (don't `...spread` a helper into the spec; CallExpressions inside the spec literal defeat per-export tree-shaking even with `/*#__PURE__*/`). The exported `linear(scale)` helper is for ad-hoc userland use where bundle size doesn't matter.
 
-`forge` accepts an object-shaped `from`, a single-unit `to`, and a `defineConversion` value via `ForgeConfig.via`. The conversion's `compute` runs in base units; mixed input units (cm + m, etc.) are normalized for you.
+### `defineConversion(spec)` — make a cross-dim conversion value
+
+A `Conversion` declares its input shape (a map of field name → dimension), its output (a single dimension or a record of dimensions), optional validators, and a `compute` function that runs in base units.
 
 ```ts
-import { forge } from 'unitforge';
-import {
-  meter,
-  centimeter,
-  squareMeter,
-  areaFromLengthAndWidth,
-} from 'unitforge/kits/geometry';
+function defineConversion<
+  Inputs extends Record<string, Dimension>,
+  Output extends Dimension | Record<string, Dimension>,
+  T = number,
+>(spec: Conversion<Inputs, Output, T>): Conversion<Inputs, Output, T>;
 
-const area = forge(
-  { length: meter, width: meter },
-  squareMeter,
-  { via: areaFromLengthAndWidth },
-);
+import { defineConversion } from 'unitforge';
+import { LENGTH, AREA } from 'unitforge/dimensions';
 
-area({ length: 5, width: 3 }); // 15  (m²)
-
-// Mixed input units work; library normalizes to base before compute.
-const areaMixed = forge(
-  { length: centimeter, width: meter },
-  squareMeter,
-  { via: areaFromLengthAndWidth },
-);
-areaMixed({ length: 200, width: 3 }); // 6  (200 cm = 2 m, 2 × 3 = 6 m²)
+const areaFromCircleRadius = defineConversion({
+  inputs: { radius: LENGTH },
+  output: AREA,
+  validate: { radius: (v) => v >= 0 || 'radius must be >= 0' },
+  compute: ({ radius }) => Math.PI * radius * radius,
+});
 ```
 
-### Validation
+`compute` is **always** written in base units. The library normalizes inputs from whatever unit the call site uses (cm, ft, mi, …) before calling `compute`, then denormalizes the result back into the target unit. You write `length * width`; the consumer writes `forge({ length: centimeter, width: foot }, squareMeter, …)` and it works.
 
-Conversions can declare per-input validators. Failures are aggregated into a single `ValidationError`; `inputs` and `failures` are frozen at construction so a downstream catcher can't mutate them.
+Validators may return `true`/`undefined` to pass, a string to reject with that message, or throw (the original error preserved on the failure record's `cause`). All validators run; failures aggregate into a single `ValidationError`.
+
+### `forge(from, to, config?)` — make a converter function
+
+Three overloads collectively cover the three real shapes the library supports. Each overload's `config` shape is inlined narrowly so the type system catches mismatches at the call site.
 
 ```ts
-import { forge, ValidationError } from 'unitforge';
-import { meter, squareMeter, areaFromLengthAndWidth } from 'unitforge/kits/geometry';
+// Within-dimension: scalar in, scalar out, no `via`. NoInfer<D> on `to`
+// guarantees `forge(meter, squareMeter)` is a compile error.
+function forge<D extends Dimension, T = number>(
+  from: ForgeInput<D, T>,
+  to: ForgeInput<NoInfer<D>, T>,
+  config?: { precision?: number; memoize?: number },
+): (value: T) => T;
 
-const area = forge(
-  { length: meter, width: meter },
-  squareMeter,
-  { via: areaFromLengthAndWidth },
-);
+// Cross-dimensional, scalar output: object in, scalar out, `via` required.
+function forge<I extends Record<string, Dimension>, O extends Dimension, T = number>(
+  from: ForgeInput<I, T>,
+  to: ForgeOutput<O, T>,
+  config: { via: Conversion<I, O, T>; validate?: ValidatorMap<I, T>; precision?: number; memoize?: number },
+): (input: { [K in keyof I]: T }) => T;
 
-try {
-  area({ length: -5, width: -3 });
-} catch (err) {
-  if (err instanceof ValidationError) {
-    err.failures;
-    // [{ key: 'length', stage: 'definition', value: -5, message: 'length must be >= 0' },
-    //  { key: 'width',  stage: 'definition', value: -3, message: 'width must be >= 0' }]
-  }
-}
+// Cross-dimensional, object output: object in, object out, `via` required.
+function forge<I extends Record<string, Dimension>, O extends Record<string, Dimension>, T = number>(
+  from: ForgeInput<I, T>,
+  to: ForgeOutput<O, T>,
+  config: { via: Conversion<I, O, T>; validate?: ValidatorMap<I, T>; precision?: number; memoize?: number },
+): (input: { [K in keyof I]: T }) => { [K in keyof O]: T };
 ```
+
+The pipeline on the cross-dim path: defensive copy of input → cache check (memoize-on only) → run all validators (aggregate failures) → throw `ValidationError` if any → normalize inputs to base units → run `compute` → denormalize to target unit(s) → write to cache → return. Within-dim path skips validators and shape-walking; it's a closed-over two-call lambda with optional rounding.
 
 ## What ships in 0.x
 
-The `geometry` kit ships **8 LENGTH units** (meter, centimeter, millimeter, kilometer, inch, foot, yard, mile), **8 AREA units** (square variants of the LENGTH units, plus acre and hectare), **6 VOLUME units** (cubic metric and imperial, plus liter and milliliter), and **7 cross-dimensional conversions** (rectangle, square, circle area; box, cube, sphere, cylinder volume). Every unit and conversion is named, typed, and tree-shakeable per-export. Full listings in [`src/kits/geometry/`](./src/kits/geometry/).
+| Kit | Dimensions | Units | Conversions |
+| --- | --- | --- | --- |
+| `geometry` | LENGTH, AREA, VOLUME | 22 (8 LENGTH + 8 AREA + 6 VOLUME) | 7 |
 
-More kits planned: `si`, `imperial`, `cooking`, `inventory`, `pharmacy`. See PLANNING.md.
+**`geometry` units:**
+
+- **LENGTH:** `meter` (base), `millimeter`, `centimeter`, `kilometer`, `inch`, `foot`, `yard`, `mile`. Imperial values use the exact post-1959 international-yard ratios.
+- **AREA:** `squareMeter` (base), `squareMillimeter`, `squareCentimeter`, `squareKilometer`, `squareInch`, `squareFoot`, `acre`, `hectare`.
+- **VOLUME:** `cubicMeter` (base), `cubicCentimeter`, `cubicInch`, `cubicFoot`, `liter`, `milliliter`.
+
+**`geometry` conversions:**
+
+- **AREA:** `areaFromLengthAndWidth` (rectangle), `areaFromSquareSide`, `areaFromCircleRadius` (π · r²).
+- **VOLUME:** `volumeFromLengthAndWidthAndHeight` (box), `volumeFromCubeSide`, `volumeFromSphereRadius` ((4/3) π r³), `volumeFromCylinderRadiusAndHeight` (π r² h).
+
+More kits planned for v1: `si`, `imperial`, `cooking`, `inventory`, `pharmacy`. See PLANNING.md.
 
 ## Configuration
 
-`ForgeConfig` accepts `precision`, `memoize`, and (for cross-dim) `validate` and `via`.
+`ForgeConfig` accepts four options. Same option means the same thing on every overload it appears on.
+
+| Option | Type | Effect |
+| --- | --- | --- |
+| `via` | `Conversion<I, O, T>` | **Required** for cross-dim. Carries the input shape, validator map, and `compute`. |
+| `validate` | `ValidatorMap<I, T>` | Call-site validators, additive on top of the conversion's own. |
+| `precision` | `number` (non-negative integer) | Rounds output AND cache key to this many decimal places. |
+| `memoize` | `number` (0 to `MEMO_CAP_MAX`) | FIFO bounded-cache cap. `0` or absent = off. `DEFAULT_MEMO_CAP = 1024`. |
 
 ```ts
-// precision: integer decimal places; rounds output AND cache key
-const toCmRounded = forge(meter, centimeter, { precision: 1 });
-toCmRounded(1.5678); // 156.8
+import { forge, DEFAULT_MEMO_CAP } from 'unitforge';
+import { meter, centimeter } from 'unitforge/kits/geometry';
 
-// memoize: FIFO bounded cache; pass an integer cap (DEFAULT_MEMO_CAP = 1024)
-import { DEFAULT_MEMO_CAP } from 'unitforge';
-const toCmCached = forge(meter, centimeter, { memoize: DEFAULT_MEMO_CAP });
-toCmCached(1.5); // computed
-toCmCached(1.5); // cache hit
+// precision: rounds output and cache key
+forge(meter, centimeter, { precision: 1 })(1.5678);            // 156.8
+
+// memoize: FIFO bounded cache; reads do NOT promote (not LRU)
+const cached = forge(meter, centimeter, { memoize: DEFAULT_MEMO_CAP });
+cached(1.5);                                                   // computed
+cached(1.5);                                                   // cache hit (no toBase/fromBase calls)
 ```
 
 ## Subpath imports
@@ -133,16 +213,61 @@ toCmCached(1.5); // cache hit
 | `unitforge/dimensions` | `LENGTH`, `AREA`, `VOLUME`, `DIMENSIONS` tuple, `Dimension` type |
 | `unitforge/kits/<kit>` | every unit and conversion shipped by `<kit>` (currently only `geometry`) |
 | `unitforge/validation` | `ValidationError`, `ValidationFailure` type |
-| `unitforge/version` | `VERSION: string` (read from `package.json` at runtime; on its own subpath because the JSON import would otherwise inline `package.json` into every consumer bundle) |
+| `unitforge/version` | `VERSION: string` (read from `package.json` at runtime; on its own subpath because the JSON import would inline `package.json` into every consumer bundle) |
+
+## Tree-shaking and bundle size
+
+- `"sideEffects": false` in `package.json`.
+- Every kit unit and conversion is `/*#__PURE__*/`-marked, so importing only `meter` drops `centimeter`, `squareMeter`, and every other unused export.
+- All exports are named; no default export.
+- Per-kit subpath (`unitforge/kits/<name>`) so importing from `geometry` never pulls a sibling kit.
+
+**Tarball:** `npm pack` produces ≈ 45 kB packed / 195 kB unpacked (56 files, all under `dist/`); that's the install-size figure. Your **production bundle** pays only for what you actually import, measured with `esbuild --bundle --minify --tree-shaking=true`:
+
+| Import | min | gzip |
+| --- | --- | --- |
+| `import { meter } from 'unitforge/kits/geometry'` | 347 B | **267 B** |
+| `import { forge } + meter, centimeter` (within-dim) | 3.9 kB | **1.7 kB** |
+| `import { forge } + cross-dim conversion` (forge + 3 kit values) | 4.2 kB | **1.9 kB** |
+| `import * as g from 'unitforge/kits/geometry'` + everything from main barrel | 7.3 kB | **2.6 kB** |
+| `import { VERSION } from 'unitforge/version'` (opt-in, inlines `package.json`) | 2.2 kB | **1.0 kB** |
+
+The gzip column is what actually lands in your production build.
+
+## Types
+
+Re-exported from the root barrel — `import type { ... } from 'unitforge'`:
+
+| Category | Types |
+| --- | --- |
+| Core values | `Unit<D, T>`, `Conversion<I, O, T>` |
+| Dimensions | `Dimension` (also from `unitforge/dimensions`) |
+| Forge surface | `ForgeInput<I, T>`, `ForgeOutput<O, T>`, `UnitMap<M, T>`, `ForgeConfig<T>` |
+| Validation | `ValidatorMap<I, T>`, `ValidationFailure` |
+
+`Dimension` uses the `(string & {})` brand so user-defined dimensions (`'pallet' as const`) are accepted without collapsing the union, while built-ins (`LENGTH`, `AREA`, `VOLUME`) still surface in autocomplete. The `BUILTIN_DIMENSIONS` tuple in `dimensions.ts` is the single source of truth; adding a built-in dimension is a one-line edit.
+
+## Development
+
+```sh
+bun install
+bun run lint        # biome
+bun run typecheck   # tsgo (TypeScript native preview); checks src/ AND test/
+bun test            # bun's built-in runner
+bun run build
+bun run check:package  # publint + attw --profile esm-only
+```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Community
 
 - Bugs and feature requests: [GitHub issues](https://github.com/simiancraft/unitforge/issues)
-- Security: please use [private vulnerability reporting](https://github.com/simiancraft/unitforge/security/advisories/new); see [SECURITY.md](./SECURITY.md)
-- Contributing: [CONTRIBUTING.md](./CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
+- Security: [private vulnerability reporting](https://github.com/simiancraft/unitforge/security/advisories/new); see [SECURITY.md](./SECURITY.md)
+- Code of conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
 
 ## License
 
-MIT, copyright Jesse Harlin (the-simian). See [LICENSE](./LICENSE).
+MIT © [the-simian](https://github.com/the-simian). See [LICENSE](./LICENSE) and [NOTICE.md](./NOTICE.md).
 
-Made by [Simiancraft](https://github.com/simiancraft).
+<p align="center"><sub>Crafted with care by <a href="https://simiancraft.com">Simiancraft</a>.</sub></p>
