@@ -161,20 +161,18 @@ export function Home() {
         key={`forge-flash-${flashKey}`}
         aria-hidden
         className={`${FORGE_GLOW_VARIANTS[flashKey % FORGE_GLOW_VARIANTS.length]} fixed bottom-0 left-0 w-screen pointer-events-none`}
-        style={
-          {
-            zIndex: -2,
-            opacity: 0,
-            transformOrigin: 'bottom',
-            // Custom-property values must be strings for some engines to
-            // parse them reliably; bare numbers can silently fall back.
-            ['--uf-flash-scale' as string]: `${flashIntensity}`,
-            animation:
-              flashKey > 0
-                ? `uf-forge-flash ${STOKE_FLASH_DECAY_MS}ms ease-out forwards`
-                : 'none',
-          } as React.CSSProperties
-        }
+        style={{
+          zIndex: -2,
+          opacity: 0,
+          transformOrigin: 'bottom',
+          // Intensity scaling composes with the keyframe's `transform`.
+          // CSS `scale` is a separate property and multiplies in.
+          scale: `1 ${flashIntensity}`,
+          animation:
+            flashKey > 0
+              ? `uf-forge-flash ${STOKE_FLASH_DECAY_MS}ms ease-out forwards`
+              : 'none',
+        }}
       />
       <EmberStream
         intensity={1}

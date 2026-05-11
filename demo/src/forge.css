@@ -36,14 +36,15 @@
   }
 
   /* Forge-glow flash: scales out of the bottom of the viewport on the
-   * first 20% of the timeline (to peak scaleY = --uf-flash-scale), then
-   * opacity decays to 0. The element using this needs
-   * `transform-origin: bottom`.
+   * first 20% of the timeline, then opacity decays to 0. The element
+   * using this needs `transform-origin: bottom`. Intensity scaling is
+   * applied at the call site via the CSS `scale` property, which
+   * composes with this keyframe's `transform`.
    */
   @keyframes uf-forge-flash {
     0%   { transform: scaleY(0); opacity: 1; }
-    20%  { transform: scaleY(var(--uf-flash-scale, 1)); opacity: 1; }
-    100% { transform: scaleY(var(--uf-flash-scale, 1)); opacity: 0; }
+    20%  { transform: scaleY(1); opacity: 1; }
+    100% { transform: scaleY(1); opacity: 0; }
   }
 }
 
