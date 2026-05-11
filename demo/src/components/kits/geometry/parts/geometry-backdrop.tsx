@@ -6,7 +6,7 @@
 // Renders as a fixed-position aria-hidden layer behind page content; SVG
 // patterns stay crisp at any zoom level.
 
-interface GridPaperBgProps {
+interface GeometryBackdropProps {
   /** Render inline (sized to parent) instead of fixed to viewport. */
   inline?: boolean;
   /** Fine grid spacing in pixels. Driven by the page bench's unit choice. */
@@ -21,7 +21,7 @@ interface GridPaperBgProps {
   scale?: number;
 }
 
-export function GridPaperBg({ inline, cellSize = 12, pulse, scale = 1 }: GridPaperBgProps) {
+export function GeometryBackdrop({ inline, cellSize = 12, pulse, scale = 1 }: GeometryBackdropProps) {
   const className = inline
     ? 'absolute inset-0 pointer-events-none overflow-hidden'
     : 'fixed inset-0 pointer-events-none -z-10 overflow-hidden';

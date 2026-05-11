@@ -23,7 +23,7 @@ import './forge.css';
 // Kit-card previews on the kits-grid render in their target kit's theme
 // (data-storage/geometry); their CSS bundles need to load here for the
 // scoped variables to resolve.
-import '../../../kits/geometry/geometry.css';
+import '../geometry/geometry.css';
 import '../../../kits/data-storage/data-storage.css';
 
 const STOKE_HOLD_MS = 1200;

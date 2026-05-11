@@ -1,4 +1,4 @@
-// ForgeBench — the page's persistent "instrument". A compact unit-to-unit
+// Bench — the page's persistent "instrument". A compact unit-to-unit
 // converter pinned to the top of each kit page; updates as the user moves
 // its slider or rotates the unit pickers. The bench's state is owned by
 // the page (so the page's themed background can react to it), so the
@@ -15,9 +15,9 @@ import type { Dimension, ForgeInput, Unit } from 'unitforge';
 import { forge } from 'unitforge';
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { CopyButton } from './CodeBlock.js';
-import { useKitTheme } from './kits/theme.js';
-import { cachedHighlight, highlight } from '../lib/highlighter.js';
+import { CopyButton } from '../CodeBlock.js';
+import { useKitTheme } from './theme.js';
+import { cachedHighlight, highlight } from '../../lib/highlighter.js';
 
 export interface BenchState<D extends Dimension> {
   fromKey: string;
@@ -38,7 +38,7 @@ interface BenchProps<D extends Dimension> {
   label?: string;
 }
 
-export function ForgeBench<D extends Dimension>({
+export function Bench<D extends Dimension>({
   state,
   onChange,
   options,

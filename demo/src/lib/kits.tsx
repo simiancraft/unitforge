@@ -11,7 +11,7 @@
 
 import type { ComponentType } from 'react';
 import { Box, Database, type LucideIcon } from 'lucide-react';
-import { GridPaperBg } from '../kits/geometry/components/GridPaperBg.js';
+import { GeometryBackdrop } from '../components/kits/geometry/parts/geometry-backdrop.js';
 import { CircuitBg } from '../kits/data-storage/components/CircuitBg.js';
 
 export type KitId = 'geometry' | 'data-storage';
@@ -35,7 +35,7 @@ export const KITS: ReadonlyArray<KitMeta> = [
     blurb: 'length, area, volume; metric and imperial; rectangle, circle, sphere derivations.',
     theme: 'geometry',
     icon: Box,
-    previewBg: ({ hovered }) => <GridPaperBg inline scale={hovered ? 1.5 : 1} />,
+    previewBg: ({ hovered }) => <GeometryBackdrop inline scale={hovered ? 1.5 : 1} />,
   },
   {
     id: 'data-storage',
