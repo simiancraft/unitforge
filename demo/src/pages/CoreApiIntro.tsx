@@ -57,7 +57,7 @@ export function CoreApiIntro() {
       <header className="flex flex-col gap-1">
         <p className="uf-eyebrow">core api</p>
         <h2 className="display text-3xl font-bold leading-tight md:text-4xl">
-          the three verbs you just used
+          Define, then Forge!
         </h2>
       </header>
       <p className="max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--uf-muted)' }}>
