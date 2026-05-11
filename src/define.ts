@@ -12,11 +12,19 @@ import type { Conversion, Dimension, Unit } from './types.js';
  * pollution. Returns the sanitized spec; the runtime cost lands at definition
  * time (module load), not per-conversion-call.
  *
+ * Authoring convention: kit-shipped units inline `toBase`/`fromBase` as
+ * arrow closures. The exported `linear(scale)` helper exists for ad-hoc
+ * userland use only; spreading `...linear(scale)` into a kit's spec
+ * defeats per-export tree-shaking because the CallExpression inside the
+ * literal forces bundlers to retain the outer `defineUnit(...)` even with
+ * a PURE annotation.
+ *
  * @example
  *   export const meter = defineUnit({
  *     name: 'meter',
  *     dimension: LENGTH,
- *     ...linear(1),
+ *     toBase: (v) => v,
+ *     fromBase: (b) => b,
  *     base: true,
  *   });
  */

@@ -22,7 +22,7 @@
   <code>defineUnit</code> &nbsp;•&nbsp; <code>defineConversion</code> &nbsp;•&nbsp; <code>forge</code>
 </p>
 
-**A units library that does not assume you are doing physics.** Three primitives — `defineUnit`, `defineConversion`, `forge` — work against any unit and any dimension you import. Ships a `geometry` kit (8 LENGTH, 8 AREA, 6 VOLUME units; 7 cross-dimensional derivations: rectangle, square, circle area; box, cube, sphere, cylinder volume); bring your own dimensions and units (game state, finance, lab assays, packaging, factions) with full TypeScript inference and zero registration. Tree-shakes per-export — you only pay for what you import.
+**A units library that does not assume you are doing physics.** Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import. Ships a `geometry` kit: 8 LENGTH, 8 AREA, 6 VOLUME units, plus 7 cross-dimensional derivations (rectangle, square, circle area; box, cube, sphere, cylinder volume). Bring your own dimensions and units (game state, finance, lab assays, packaging, factions) with full TypeScript inference and zero registration. Tree-shakes per-export; you only pay for what you import.
 
 <sub>Every public export ships with JSDoc; autocomplete and hover do the teaching.</sub>
 
@@ -48,7 +48,7 @@ catch (err) {
   if (err instanceof ValidationError) err.failures;            // 2 failures: { key:'length', ... }, { key:'width', ... }
 }
 
-// Bring your own dimension. Inventory, finance, game state — same shape.
+// Bring your own dimension. Inventory, finance, game state; same shape.
 const PALLET = 'pallet' as const;
 const SHIPMENT = 'shipment' as const;
 const pallet = defineUnit({
@@ -84,7 +84,7 @@ Requires Node 22+, ESM-only (`"type": "module"`), TypeScript `moduleResolution: 
 
 Three primitives. Two factories produce values; one consumer turns those values into a converter function.
 
-### `defineUnit(spec)` — make a unit value
+### `defineUnit(spec)`: make a unit value
 
 A unit is a value with a `name`, a `dimension`, and `toBase` / `fromBase` functions. The base unit of each dimension carries `base: true`. Spec is type-checked; `safeCopy` rejects prototype-pollution keys at definition time.
 
@@ -104,9 +104,27 @@ const inch = defineUnit({
 });
 ```
 
-Authoring convention for kit-shipped units: inline `toBase`/`fromBase` closures (don't `...spread` a helper into the spec; CallExpressions inside the spec literal defeat per-export tree-shaking even with `/*#__PURE__*/`). The exported `linear(scale)` helper is for ad-hoc userland use where bundle size doesn't matter.
+Authoring convention for kit-shipped units: inline `toBase`/`fromBase` closures (don't `...spread` a helper into the spec; CallExpressions inside the spec literal defeat per-export tree-shaking even with `/*#__PURE__*/`). The exported `linear(scale)` helper is for ad-hoc userland use where bundle size doesn't matter (see below).
 
-### `defineConversion(spec)` — make a cross-dim conversion value
+### `linear(scale)`: sugar for the linear-unit case
+
+Returns a `{ toBase, fromBase }` pair for a unit whose conversion to base is multiplication by a constant scale. Convenient for one-off userland definitions.
+
+```ts
+import { defineUnit, linear } from 'unitforge';
+import { LENGTH } from 'unitforge/dimensions';
+
+// Userland one-off; ad-hoc, not tree-shake-critical.
+const handspan = defineUnit({
+  name: 'handspan',
+  dimension: LENGTH,
+  ...linear(0.235), // 23.5 cm
+});
+```
+
+Do NOT use `...linear(scale)` inside kit unit definitions; the spread of a function call defeats per-export tree-shaking even when the `defineUnit(...)` outer call is `/*#__PURE__*/`-marked. Inline the closures instead.
+
+### `defineConversion(spec)`: make a cross-dim conversion value
 
 A `Conversion` declares its input shape (a map of field name → dimension), its output (a single dimension or a record of dimensions), optional validators, and a `compute` function that runs in base units.
 
@@ -132,7 +150,7 @@ const areaFromCircleRadius = defineConversion({
 
 Validators may return `true`/`undefined` to pass, a string to reject with that message, or throw (the original error preserved on the failure record's `cause`). All validators run; failures aggregate into a single `ValidationError`.
 
-### `forge(from, to, config?)` — make a converter function
+### `forge(from, to, config?)`: make a converter function
 
 Three overloads collectively cover the three real shapes the library supports. Each overload's `config` shape is inlined narrowly so the type system catches mismatches at the call site.
 
@@ -183,14 +201,16 @@ More kits planned for v1: `si`, `imperial`, `cooking`, `inventory`, `pharmacy`. 
 
 ## Configuration
 
-`ForgeConfig` accepts four options. Same option means the same thing on every overload it appears on.
+The four options the `forge` overloads accept. Same option name means the same thing on every overload it appears on.
 
 | Option | Type | Effect |
 | --- | --- | --- |
 | `via` | `Conversion<I, O, T>` | **Required** for cross-dim. Carries the input shape, validator map, and `compute`. |
 | `validate` | `ValidatorMap<I, T>` | Call-site validators, additive on top of the conversion's own. |
 | `precision` | `number` (non-negative integer) | Rounds output AND cache key to this many decimal places. |
-| `memoize` | `number` (0 to `MEMO_CAP_MAX`) | FIFO bounded-cache cap. `0` or absent = off. `DEFAULT_MEMO_CAP = 1024`. |
+| `memoize` | `number` (0 to `MEMO_CAP_MAX`, which is `1_048_576`) | FIFO bounded-cache cap. `0` or absent = off. `DEFAULT_MEMO_CAP = 1024`. |
+
+**On `ForgeConfig<T>`:** the type is exported from the root barrel for userland wrappers (e.g., a helper function that takes a config and forwards it to `forge`). The `forge` overloads themselves do NOT take `ForgeConfig<T>` directly; each overload inlines its own narrow config shape so `via` can be tied to the call's inferred `Inputs`/`Output`. If your wrapper passes a `ForgeConfig`-typed value into a CROSS-DIM `forge` call, the loose `via?` won't satisfy the narrow `via:` constraint; either narrow `via` in your wrapper's own generic signature, or write the inline config object literal at the `forge` call site.
 
 ```ts
 import { forge, DEFAULT_MEMO_CAP } from 'unitforge';
@@ -222,7 +242,7 @@ cached(1.5);                                                   // cache hit (no 
 - All exports are named; no default export.
 - Per-kit subpath (`unitforge/kits/<name>`) so importing from `geometry` never pulls a sibling kit.
 
-**Tarball:** `npm pack` produces ≈ 45 kB packed / 195 kB unpacked (56 files, all under `dist/`); that's the install-size figure. Your **production bundle** pays only for what you actually import, measured with `esbuild --bundle --minify --tree-shaking=true`:
+**Tarball:** `npm pack` produces ≈ 48 kB packed / 203 kB unpacked (56 files, all under `dist/`); that's the install-size figure. Your **production bundle** pays only for what you actually import, measured with `esbuild --bundle --minify --tree-shaking=true`:
 
 | Import | min | gzip |
 | --- | --- | --- |
@@ -236,7 +256,7 @@ The gzip column is what actually lands in your production build.
 
 ## Types
 
-Re-exported from the root barrel — `import type { ... } from 'unitforge'`:
+Re-exported from the root barrel (`import type { ... } from 'unitforge'`):
 
 | Category | Types |
 | --- | --- |
