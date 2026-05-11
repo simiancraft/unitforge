@@ -91,7 +91,7 @@ export function Home() {
     // `scale: var(--uf-flash-scale, 1)` and picks up the new value at
     // paint, sidestepping any React state-batching race on the keyed
     // remount.
-    document.body.style.setProperty('--uf-flash-scale', String(intensity));
+    document.body.style.setProperty('--uf-flash-scale-y', String(intensity));
     setFlashKey((k) => k + 1);
 
     const main = document.getElementById('main');
@@ -170,10 +170,11 @@ export function Home() {
           opacity: 0,
           transformOrigin: 'bottom',
           // Intensity scaling composes with the keyframe's `transform`.
-          // The value lives on document.body via --uf-flash-scale (set
-          // synchronously in stoke), so the newly-keyed div picks up
-          // the right scale at paint with no React state-batching race.
-          scale: 'var(--uf-flash-scale, 1)',
+          // X-axis pinned to 1 (the flash should span viewport width
+          // regardless of intensity); Y reads the CSS var that stoke()
+          // writes synchronously to document.body before the keyed
+          // remount, dodging React state-batching races.
+          scale: '1 var(--uf-flash-scale-y, 1)',
           animation:
             flashKey > 0
               ? `uf-forge-flash ${STOKE_FLASH_DECAY_MS}ms ease-out forwards`
