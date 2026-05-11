@@ -118,12 +118,15 @@ export function CroutonDemo() {
             />
           </div>
 
-          <div className="flex flex-col items-center gap-3 text-2xl md:text-3xl">
-            <div className="flex items-center justify-center gap-3">
-              <Glyph glyph="🌲" count={wood} label="wood" />
-              <span style={{ color: 'var(--uf-muted)' }}>+</span>
-              <Glyph glyph="🧱" count={brick} label="brick" />
-            </div>
+          <div className="flex items-center justify-center gap-3 text-2xl md:text-3xl">
+            <Glyph glyph="🌲" count={wood} label="wood" />
+            <span style={{ color: 'var(--uf-muted)' }}>+</span>
+            <Glyph glyph="🧱" count={brick} label="brick" />
+          </div>
+
+          <Result label="roads built" value={`${roads}`} emphasis />
+
+          <div className="flex items-center justify-center text-2xl md:text-3xl">
             <Glyph
               glyph="🛣️"
               count={roads}
@@ -132,8 +135,6 @@ export function CroutonDemo() {
               highlight
             />
           </div>
-
-          <Result label="roads built" value={`${roads}`} emphasis />
         </div>
 
         <CodeBlock code={CODE} />
