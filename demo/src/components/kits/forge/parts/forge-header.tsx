@@ -6,7 +6,7 @@ export function ForgeHeader() {
   return (
     <header className="flex flex-col items-center text-center gap-4">
       <img
-        src="./unitforge-glyph.svg"
+        src="./unitforge-glyph.png"
         alt=""
         width={128}
         height={128}
