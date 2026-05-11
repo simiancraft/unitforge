@@ -1,6 +1,7 @@
-// Forge / blacksmith ember background for the home theme. A handful of
-// drifting orange particles with random delays and durations; CSS-driven,
-// no JS animation loop.
+// Forge / blacksmith ember background for the home theme. Embers drift
+// up continuously; an optional `intensity` prop boosts the emission so
+// the page can react to interaction (e.g. hovering a kit card makes the
+// forge breathe brighter for a beat).
 
 const EMBERS = Array.from({ length: 18 }, (_, i) => ({
   id: i,
@@ -11,7 +12,12 @@ const EMBERS = Array.from({ length: 18 }, (_, i) => ({
   drift: ((i * 11) % 30) - 15,
 }));
 
-export function ForgeEmberBg() {
+interface ForgeEmberBgProps {
+  /** 0..1; ramps overall opacity + glow. Default 1. */
+  intensity?: number;
+}
+
+export function ForgeEmberBg({ intensity = 1 }: ForgeEmberBgProps) {
   return (
     <>
       <style>{`
@@ -32,7 +38,11 @@ export function ForgeEmberBg() {
       <div
         aria-hidden
         className="fixed inset-0 pointer-events-none overflow-hidden"
-        style={{ zIndex: -1 }}
+        style={{
+          zIndex: -1,
+          opacity: Math.max(0, Math.min(1, intensity)),
+          transition: 'opacity 600ms cubic-bezier(0.22,1,0.36,1)',
+        }}
       >
         {EMBERS.map((e) => (
           <span
@@ -46,7 +56,7 @@ export function ForgeEmberBg() {
                 height: `${e.size}px`,
                 background:
                   'radial-gradient(circle, rgba(249,180,76,0.95) 0%, rgba(249,115,22,0.5) 50%, transparent 80%)',
-                boxShadow: '0 0 6px rgba(249,180,76,0.6)',
+                boxShadow: `0 0 ${6 + intensity * 4}px rgba(249,180,76,${0.45 + intensity * 0.25})`,
                 ['--drift' as string]: `${e.drift}px`,
                 animation: `uf-ember-rise ${e.duration}s linear infinite`,
                 animationDelay: `${e.delay}s`,

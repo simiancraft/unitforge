@@ -13,8 +13,9 @@
 
 import type { Dimension, ForgeInput, Unit } from 'unitforge';
 import { forge } from 'unitforge';
-import type { ChangeEvent } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { cachedHighlight, highlight } from '../lib/highlighter.js';
 
 export interface BenchState<D extends Dimension> {
   fromKey: string;
@@ -156,16 +157,42 @@ export function ForgeBench<D extends Dimension>({
         </span>
       </div>
 
-      <pre
-        className="mono mt-3 overflow-x-auto rounded px-3 py-2 text-xs"
-        style={{
-          background: 'var(--uf-code-bg)',
-          color: 'var(--uf-fg)',
-          border: '1px solid var(--uf-border)',
-        }}
-      >
-        {codeFor(state, result)}
-      </pre>
+      <LiveCodeLine code={codeFor(state, result)} />
+    </div>
+  );
+}
+
+function LiveCodeLine({ code }: { code: string }) {
+  const [html, setHtml] = useState<string | null>(cachedHighlight(code) ?? null);
+  useEffect(() => {
+    let cancelled = false;
+    highlight(code)
+      .then((rendered) => {
+        if (!cancelled) setHtml(rendered);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [code]);
+  return (
+    <div
+      className="mono mt-3 overflow-x-auto rounded text-xs"
+      style={{
+        background: 'var(--uf-code-bg)',
+        border: '1px solid var(--uf-border)',
+      }}
+    >
+      {html ? (
+        <div
+          className="px-3 py-2 [&_pre]:!bg-transparent [&_pre]:!m-0"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <pre className="m-0 px-3 py-2" style={{ color: 'var(--uf-fg)' }}>
+          {code}
+        </pre>
+      )}
     </div>
   );
 }

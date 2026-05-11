@@ -1,13 +1,10 @@
-// Lazy-loaded shiki-highlighted code block. Uses the fine-grained
-// `shiki/core` API so we only ship the wasm engine + ts/tsx/js grammars,
-// not the full bundled-language catalogue. A module-level Map caches
-// `codeToHtml` output keyed by `(code, lang)` so identical snippets
-// rendered on multiple pages don't re-run the highlighter on each mount.
-//
-// Until the highlighter resolves, raw code renders in <pre> so the
-// section reads correctly even before the JS chunk arrives.
+// Lazy shiki-highlighted code block. Delegates the highlighter setup +
+// (code, lang) result cache to `lib/highlighter.ts` so other surfaces
+// (the ForgeBench live code line) can share the same wasm + grammar
+// instance. Falls back to plain <pre> until shiki resolves.
 
 import { useEffect, useState } from 'react';
+import { cachedHighlight, highlight } from '../lib/highlighter.js';
 
 type Lang = 'ts' | 'tsx' | 'js';
 
@@ -16,56 +13,23 @@ interface CodeBlockProps {
   lang?: Lang;
 }
 
-interface Highlighter {
-  codeToHtml: (code: string, opts: { lang: string; theme: string }) => string;
-}
-
-let highlighterPromise: Promise<Highlighter> | null = null;
-const htmlCache = new Map<string, string>();
-
-async function getHighlighter(): Promise<Highlighter> {
-  if (!highlighterPromise) {
-    highlighterPromise = (async () => {
-      const [{ createHighlighterCore }, { createOnigurumaEngine }] = await Promise.all([
-        import('shiki/core'),
-        import('shiki/engine/oniguruma'),
-      ]);
-      const h = await createHighlighterCore({
-        themes: [import('shiki/themes/github-dark.mjs')],
-        langs: [
-          import('shiki/langs/typescript.mjs'),
-          import('shiki/langs/tsx.mjs'),
-          import('shiki/langs/javascript.mjs'),
-        ],
-        engine: createOnigurumaEngine(import('shiki/wasm')),
-      });
-      return h as unknown as Highlighter;
-    })();
-  }
-  return highlighterPromise;
-}
-
 export function CodeBlock({ code, lang = 'ts' }: CodeBlockProps) {
-  const cacheKey = `${lang}::${code}`;
-  const [html, setHtml] = useState<string | null>(htmlCache.get(cacheKey) ?? null);
+  const [html, setHtml] = useState<string | null>(cachedHighlight(code, lang) ?? null);
 
   useEffect(() => {
     if (html !== null) return;
     let cancelled = false;
-    getHighlighter()
-      .then((h) => {
-        if (cancelled) return;
-        const rendered = h.codeToHtml(code, { lang, theme: 'github-dark' });
-        htmlCache.set(cacheKey, rendered);
-        setHtml(rendered);
+    highlight(code, lang)
+      .then((rendered) => {
+        if (!cancelled) setHtml(rendered);
       })
       .catch(() => {
-        // Silent fallback to <pre>; raw code is already legible.
+        // Silent fallback; raw code already renders in <pre>.
       });
     return () => {
       cancelled = true;
     };
-  }, [cacheKey, code, html, lang]);
+  }, [code, lang, html]);
 
   return (
     <div

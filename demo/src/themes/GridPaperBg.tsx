@@ -11,9 +11,11 @@ interface GridPaperBgProps {
   inline?: boolean;
   /** Fine grid spacing in pixels. Driven by the page bench's unit choice. */
   cellSize?: number;
+  /** When true, the coarse grid flashes briefly. Reset by parent after ~600ms. */
+  pulse?: boolean;
 }
 
-export function GridPaperBg({ inline, cellSize = 12 }: GridPaperBgProps) {
+export function GridPaperBg({ inline, cellSize = 12, pulse }: GridPaperBgProps) {
   const className = inline
     ? 'absolute inset-0 pointer-events-none'
     : 'fixed inset-0 pointer-events-none -z-10';
@@ -21,7 +23,15 @@ export function GridPaperBg({ inline, cellSize = 12 }: GridPaperBgProps) {
   const coarse = cellSize * 5;
 
   return (
-    <div aria-hidden className={className} style={{ zIndex: inline ? 0 : -1 }}>
+    <div
+      aria-hidden
+      className={className}
+      style={{
+        zIndex: inline ? 0 : -1,
+        opacity: pulse ? 1.2 : 0.85,
+        transition: 'opacity 600ms cubic-bezier(0.22,1,0.36,1)',
+      }}
+    >
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern

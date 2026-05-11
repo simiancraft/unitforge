@@ -3,7 +3,7 @@
 // currently-selected "from" unit; the bench is always visible while the
 // user scrolls through the demos below.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Compass, Ruler, Square } from 'lucide-react';
 import { DemoSection } from '../components/DemoSection.js';
 import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
@@ -34,14 +34,22 @@ export function GeometryPage() {
   });
   const cellSize = CELL_PX_BY_UNIT[bench.fromKey] ?? 12;
 
-  const options = useMemo(
-    () => LENGTH_UNITS.map((o) => ({ key: o.key, label: o.label, unit: o.unit })),
-    [],
-  );
+  // Brief "the paper rippled" flash when the bench changes; mirrors the
+  // data-storage pulse so geometry also breathes when interacted with.
+  const [paperPulse, setPaperPulse] = useState(false);
+  const timerRef = useRef<number | null>(null);
+  useEffect(() => {
+    setPaperPulse(true);
+    if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => setPaperPulse(false), 600);
+    return () => {
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+    };
+  }, [bench.fromKey, bench.toKey, bench.value]);
 
   return (
     <>
-      <GridPaperBg cellSize={cellSize} />
+      <GridPaperBg cellSize={cellSize} pulse={paperPulse} />
 
       <header className="flex flex-col gap-2">
         <p className="uf-eyebrow">kit · 01</p>
@@ -61,7 +69,7 @@ export function GeometryPage() {
         <ForgeBench
           state={bench}
           onChange={setBench}
-          options={options}
+          options={LENGTH_UNITS.map((o) => ({ key: o.key, label: o.label, unit: o.unit }))}
           min={0.1}
           max={100}
           step={0.1}
