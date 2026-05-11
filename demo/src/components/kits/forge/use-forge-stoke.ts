@@ -71,6 +71,7 @@ export function useForgeStoke({
   const variantCounterRef = useRef(0);
   const aTimer = useRef<number | null>(null);
   const bTimer = useRef<number | null>(null);
+  const shakeTimer = useRef<number | null>(null);
 
   // Refs let stoke() pick the round-robin target from the *latest* slot
   // state without depending on the closure that captured them. Avoids the
@@ -84,11 +85,13 @@ export function useForgeStoke({
     slotBRef.current = slotB;
   }, [slotB]);
 
-  // Clear any in-flight timers on unmount.
+  // Clear any in-flight timers on unmount so a stoke that fires right
+  // before route navigation doesn't write to a detached DOM node.
   useEffect(() => {
     return () => {
       if (aTimer.current !== null) window.clearTimeout(aTimer.current);
       if (bTimer.current !== null) window.clearTimeout(bTimer.current);
+      if (shakeTimer.current !== null) window.clearTimeout(shakeTimer.current);
     };
   }, []);
 
@@ -116,7 +119,8 @@ export function useForgeStoke({
       target.classList.remove('uf-anvil-strike');
       void target.offsetWidth;
       target.classList.add('uf-anvil-strike');
-      window.setTimeout(() => {
+      if (shakeTimer.current !== null) window.clearTimeout(shakeTimer.current);
+      shakeTimer.current = window.setTimeout(() => {
         target.classList.remove('uf-anvil-strike');
       }, shakeDurationMs);
     }

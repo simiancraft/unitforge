@@ -89,13 +89,13 @@ export function ThroughputViz() {
             suffix="GB"
           />
 
+          {/* Sweep is animated by CSS; current fill % isn't React-tracked,
+              so role="progressbar" would lie via aria-valuenow. Use img +
+              aria-label to describe the animation honestly. */}
           <div
             className="relative h-9 overflow-hidden rounded border border-uf-border bg-uf-bg"
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={100}
-            aria-valuetext={`fills over ${formatDuration(realSeconds)} at ${mbPerSec.toFixed(1)} megabytes per second`}
+            role="img"
+            aria-label={`bar sweep over ${formatDuration(realSeconds)} at ${mbPerSec.toFixed(1)} megabytes per second`}
           >
             <div
               key={tick}

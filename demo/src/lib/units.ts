@@ -4,7 +4,7 @@
 // against `UnitOption<D>`. `findByKey` consumes that key union, so
 // typos are caught at compile time instead of throwing in render.
 
-import type { Dimension, Unit } from 'unitforge';
+import type { Dimension, ForgeInput } from 'unitforge';
 import {
   acre,
   centimeter,
@@ -46,10 +46,15 @@ import {
   terabyte,
 } from 'unitforge/kits/data-storage';
 
+/**
+ * One row in a kit's unit catalog. `unit` is typed as `ForgeInput<D,
+ * number>` (wider than `Unit<D, number>`) so it's directly assignable to
+ * `forge`'s scalar overload without a cast even when D is generic.
+ */
 export interface UnitOption<D extends Dimension = Dimension, K extends string = string> {
   key: K;
   label: string;
-  unit: Unit<D, number>;
+  unit: ForgeInput<D, number>;
 }
 
 export const LENGTH_UNITS = [

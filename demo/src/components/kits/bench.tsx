@@ -11,7 +11,7 @@
 // don't read from the bench; this lets each page have one canonical
 // instrument plus several escalating explorations.
 
-import type { Dimension, Unit } from 'unitforge';
+import type { Dimension, ForgeInput } from 'unitforge';
 import { type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { CodeLine } from '../CodeBlock.js';
@@ -32,7 +32,7 @@ export interface BenchState<D extends Dimension = Dimension, K extends string = 
 interface BenchProps<D extends Dimension, K extends string> {
   state: BenchState<D, K>;
   onChange: (next: BenchState<D, K>) => void;
-  options: ReadonlyArray<{ key: K; label: string; unit: Unit<D, number> }>;
+  options: ReadonlyArray<{ key: K; label: string; unit: ForgeInput<D, number> }>;
   /** Slider bounds (in fromKey units). */
   min: number;
   max: number;

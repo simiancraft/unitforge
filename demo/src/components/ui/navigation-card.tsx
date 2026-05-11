@@ -57,16 +57,12 @@ export function NavigationCard({
   const handleLeave = () => setHovered(false);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLAnchorElement>) => {
-    if (e.key === 'Enter') {
-      // Anchors fire native click on Enter; let onPress run alongside so
-      // the strike animation plays and onClick still handles deferred nav.
-      onPress?.();
-      return;
-    }
-    if (e.key === ' ') {
-      // Anchors don't activate on Space natively; we have to fire both
-      // the press effect AND simulate the click so navigation still
-      // happens. preventDefault stops the page from scrolling.
+    if (e.key === 'Enter' || e.key === ' ') {
+      // Anchors fire native click on Enter but NOT on Space; uniform
+      // path is to preventDefault and synthesize the click ourselves
+      // after onPress so the strike animation plays the same way for
+      // both keys (otherwise Enter would race the browser's native
+      // click and could skip the deferred-strike window).
       e.preventDefault();
       onPress?.();
       e.currentTarget.click();

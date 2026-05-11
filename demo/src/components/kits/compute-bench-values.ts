@@ -3,13 +3,13 @@
 // and <ForgeBench> (slim home variant) consume this so the runtime logic
 // only lives in one place; the layouts stay distinct.
 
-import type { Dimension, ForgeInput, Unit } from 'unitforge';
+import type { Dimension, ForgeInput } from 'unitforge';
 import { forge } from 'unitforge';
 
 interface BenchOption<D extends Dimension, K extends string> {
   key: K;
   label: string;
-  unit: Unit<D, number>;
+  unit: ForgeInput<D, number>;
 }
 
 interface ComputeBenchValuesArgs<D extends Dimension, K extends string> {
@@ -36,12 +36,6 @@ export function computeBenchValues<D extends Dimension, K extends string>({
   // deep-link state), fall back to options[0].
   const fromOpt = options.find((o) => o.key === fromKey) ?? options[0]!;
   const toOpt = options.find((o) => o.key === toKey) ?? options[0]!;
-  // Cast: TS cannot prove `ForgeInput<D> = Unit<D>` for a generic
-  // `D extends Dimension`. The runtime invariant is enforced by the
-  // options array (every unit shares dimension D).
-  const result = forge(
-    fromOpt.unit as ForgeInput<D, number>,
-    toOpt.unit as ForgeInput<D, number>,
-  )(value);
+  const result = forge(fromOpt.unit, toOpt.unit)(value);
   return { fromOpt, toOpt, result };
 }
