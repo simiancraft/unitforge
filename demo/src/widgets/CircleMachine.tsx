@@ -78,11 +78,10 @@ export function CircleMachine() {
       <div className="flex flex-col items-center gap-3">
         <svg
           ref={svgRef}
-          width={VIEW}
-          height={VIEW}
           viewBox={`0 0 ${VIEW} ${VIEW}`}
           xmlns="http://www.w3.org/2000/svg"
-          className="block touch-none"
+          className="block h-auto w-full max-w-full touch-none"
+          style={{ maxWidth: `${VIEW}px` }}
         >
           <defs>
             <filter id="uf-circle-shadow" x="-30%" y="-30%" width="160%" height="160%">

@@ -90,11 +90,10 @@ export function RectangleMachine() {
         <div className="flex-1 flex flex-col items-center gap-3">
           <svg
             ref={svgRef}
-            width={VIEW_W}
-            height={VIEW_H}
             viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
             xmlns="http://www.w3.org/2000/svg"
-            className="block touch-none"
+            className="block h-auto w-full max-w-full touch-none"
+            style={{ maxWidth: `${VIEW_W}px` }}
           >
             <defs>
               <filter id="uf-rect-shadow" x="-20%" y="-20%" width="140%" height="140%">
