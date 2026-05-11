@@ -2,12 +2,14 @@
 // Used by the forge kit's kits-grid to navigate between kits; the
 // component itself doesn't know about kits, just renders the leaf chrome.
 //
-// Backdrop content is a zone (caller passes a ReactNode) so the kit owns
-// "what does my card look like in rest vs hover" without this file
-// switching on kit id. data-theme on the <a> scopes CSS variables so the
-// card paints in the linked kit's palette regardless of where it lives.
+// Hover state lives inside the card. The kit supplies the preview as a
+// component (typed `{ hovered: boolean }`) so the kit's preview can
+// react visually (scaling, pulsing) without the parent grid relaying a
+// flag prop back down. Keyboard Enter / Space activate the same paths
+// as mouse Enter / mouseDown.
 
-import type { ReactNode } from 'react';
+import { useState, type KeyboardEvent, type MouseEvent } from 'react';
+import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
 interface NavigationCardProps {
@@ -17,13 +19,22 @@ interface NavigationCardProps {
   icon: LucideIcon;
   label: string;
   blurb: string;
-  /** Backdrop layer painted behind the card text; opacity lifts on hover. */
-  background?: ReactNode;
-  hovered: boolean;
-  onEnter: () => void;
-  onLeave: () => void;
-  onMouseDown: () => void;
-  onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  /**
+   * Component painted behind the card text. Receives the card's local
+   * hover state so the kit can scale/pulse its preview without the
+   * parent grid coordinating.
+   */
+  backgroundZone?: ComponentType<{ hovered: boolean }>;
+  /** Fired when the pointer enters OR keyboard focus lands. Use for hover-stoke effects. */
+  onActivate?: () => void;
+  /** Fired when the pointer goes down OR Enter/Space is pressed. Use for strike-stoke effects. */
+  onPress?: () => void;
+  /**
+   * Fired when the link is clicked OR Enter/Space activated. The caller
+   * receives the synthetic event so it can preventDefault() and defer
+   * navigation (e.g. for a strike animation before the route swaps).
+   */
+  onClick?: (e: MouseEvent<HTMLAnchorElement>) => void;
 }
 
 export function NavigationCard({
@@ -32,53 +43,50 @@ export function NavigationCard({
   icon: Icon,
   label,
   blurb,
-  background,
-  hovered,
-  onEnter,
-  onLeave,
-  onMouseDown,
+  backgroundZone: BackgroundZone,
+  onActivate,
+  onPress,
   onClick,
 }: NavigationCardProps) {
+  const [hovered, setHovered] = useState(false);
+
+  const handleEnter = () => {
+    setHovered(true);
+    onActivate?.();
+  };
+  const handleLeave = () => setHovered(false);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLAnchorElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      onPress?.();
+    }
+  };
+
   return (
     <a
       href={href}
       data-theme={theme}
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
-      onFocus={onEnter}
-      onBlur={onLeave}
-      onMouseDown={onMouseDown}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      onFocus={handleEnter}
+      onBlur={handleLeave}
+      onMouseDown={onPress}
+      onKeyDown={handleKeyDown}
       onClick={onClick}
-      className="uf-flare-card uf-anvil-cursor group relative flex flex-col gap-3 rounded-lg border p-6 transition-transform hover:-translate-y-1"
-      style={{
-        background: 'var(--uf-card)',
-        borderColor: 'var(--uf-border)',
-        color: 'var(--uf-fg)',
-        minHeight: '180px',
-      }}
+      className="uf-flare-card uf-anvil-cursor group relative flex min-h-[180px] flex-col gap-3 rounded-lg border border-uf-border bg-uf-card p-6 text-uf-fg transition-transform hover:-translate-y-1"
     >
-      <div
-        className="uf-flare-bg"
-        style={{ transition: 'opacity 300ms ease', opacity: hovered ? 0.9 : 0.45 }}
-      >
-        {background}
+      <div className="uf-flare-bg">
+        {BackgroundZone ? <BackgroundZone hovered={hovered} /> : null}
       </div>
       <div className="uf-flare-content flex flex-col gap-3">
         <div className="flex items-center gap-3">
-          <Icon size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />
-          <span
-            className="mono text-base uppercase tracking-wider font-semibold"
-            style={{ color: 'var(--uf-accent)' }}
-          >
+          <Icon size={28} strokeWidth={1.5} className="text-uf-accent" />
+          <span className="mono text-base font-semibold uppercase tracking-wider text-uf-accent">
             {label}
           </span>
         </div>
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--uf-muted)' }}>
-          {blurb}
-        </p>
-        <span className="mono mt-auto text-xs" style={{ color: 'var(--uf-fg)' }}>
-          enter →
-        </span>
+        <p className="text-sm leading-relaxed text-uf-muted">{blurb}</p>
+        <span className="mono mt-auto text-xs text-uf-fg">enter →</span>
       </div>
     </a>
   );

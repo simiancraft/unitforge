@@ -84,7 +84,7 @@ export function CircleMachine() {
           eyebrow="demo 03"
           title="circle machine"
           kicker="π · r²"
-          icon={<Compass size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<Compass size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
         />
       }
       introZone={
@@ -208,7 +208,7 @@ export function CircleMachine() {
             />
           </div>
 
-          <Result label="area" value={`${area.toFixed(4)} ${areaOpt.key}`} emphasis />
+          <Result label="area" value={`${area.toFixed(4)} ${areaOpt.key}`} variant="hero" />
           <Result label="circumference" value={`${circumference.toFixed(4)} ${circOpt.key}`} />
         </div>
       }

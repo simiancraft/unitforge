@@ -39,7 +39,6 @@ export function Page() {
     toKey: LengthKey;
     value: number;
   }>({ fromKey: 'm', toKey: 'ft', value: 5 });
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const stoke = useForgeStoke({
     holdMs: STOKE_HOLD_MS,
     shakeAmpBasePx: SHAKE_AMP_BASE_PX,
@@ -47,19 +46,14 @@ export function Page() {
     variantCount: FORGE_GLOW_VARIANT_COUNT,
   });
 
-  const onTileEnter = (id: string) => {
-    setHoveredId(id);
-    stoke.stoke(STOKE_HOVER_INTENSITY);
+  const onTileActivate = () => stoke.stoke(STOKE_HOVER_INTENSITY);
+  const onTilePress = () => stoke.stoke(STOKE_STRIKE_INTENSITY, STRIKE_VARIANT);
+  const onTileClick = (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    window.setTimeout(() => {
+      window.location.hash = `#/${id}`;
+    }, NAV_DELAY_MS);
   };
-  const onTileLeave = () => setHoveredId(null);
-  const onTileMouseDown = () => stoke.stoke(STOKE_STRIKE_INTENSITY, STRIKE_VARIANT);
-  const onTileClick =
-    (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
-      e.preventDefault();
-      window.setTimeout(() => {
-        window.location.hash = `#/${id}`;
-      }, NAV_DELAY_MS);
-    };
 
   return (
     <KitLayout
@@ -77,11 +71,9 @@ export function Page() {
         <>
           <KitsGrid
             currentKitId="forge"
-            hoveredId={hoveredId}
-            onTileEnter={onTileEnter}
-            onTileLeave={onTileLeave}
-            onTileMouseDown={onTileMouseDown}
-            onTileClick={onTileClick}
+            onActivate={onTileActivate}
+            onPress={onTilePress}
+            onClick={onTileClick}
           />
           <CroutonDemo />
           <CoreApi />

@@ -42,7 +42,7 @@ export function HelloUnit() {
           eyebrow="demo 01"
           title="hello, unit"
           kicker="within-dimension"
-          icon={<Ruler size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<Ruler size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
         />
       }
       introZone={
@@ -80,7 +80,7 @@ export function HelloUnit() {
           <Result
             label={`${value.toFixed(2)} ${from.key} =`}
             value={`${result.toFixed(4)} ${to.key}`}
-            emphasis
+            variant="hero"
           />
         </div>
       }

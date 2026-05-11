@@ -84,7 +84,7 @@ export function RectangleMachine() {
           eyebrow="demo 02"
           title="rectangle machine"
           kicker="cross-dimensional"
-          icon={<Square size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<Square size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
         />
       }
       introZone={
@@ -243,7 +243,7 @@ export function RectangleMachine() {
             </div>
           </div>
 
-          <Result label="area" value={`${area.toFixed(4)} ${areaOpt.key}`} emphasis />
+          <Result label="area" value={`${area.toFixed(4)} ${areaOpt.key}`} variant="hero" />
         </div>
       }
       codeZone={<CodeBlock code={CODE} />}

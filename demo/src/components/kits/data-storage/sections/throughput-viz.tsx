@@ -57,7 +57,7 @@ export function ThroughputViz() {
           eyebrow="demo 03"
           title="throughput"
           kicker="Gbit/s ↔ MB/s"
-          icon={<Gauge size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<Gauge size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
         />
       }
       introZone={
@@ -134,7 +134,7 @@ export function ThroughputViz() {
             </span>
           </div>
 
-          <Result label="bandwidth" value={`${mbPerSec.toFixed(1)} MB/s`} emphasis />
+          <Result label="bandwidth" value={`${mbPerSec.toFixed(1)} MB/s`} variant="hero" />
           <Result
             label={isRealtime ? 'time to fill' : 'time to fill (sweep capped)'}
             value={formatDuration(realSeconds)}

@@ -1,8 +1,10 @@
-// Themed range slider with an optional unit-picker dropdown attached.
-// Two orientations: 'horizontal' (default) and 'vertical' (for inputs whose
-// orientation maps to the visual axis they control).
+// Themed range slider. Two orientations dispatched via a lookup table so
+// each render path is small and side-by-side: 'horizontal' is the default,
+// 'vertical' is for inputs whose orientation maps to the axis they
+// visually control (e.g. rectangle width).
 
 import type { ChangeEvent } from 'react';
+import { cn } from '../lib/cn.js';
 
 interface SliderProps {
   label: string;
@@ -13,61 +15,31 @@ interface SliderProps {
   onChange: (n: number) => void;
   orientation?: 'horizontal' | 'vertical';
   suffix?: string;
+  className?: string;
 }
 
-export function Slider({
+export function Slider({ orientation = 'horizontal', ...rest }: SliderProps) {
+  const Component = ORIENTATIONS[orientation];
+  return <Component {...rest} />;
+}
+
+interface OrientedProps extends Omit<SliderProps, 'orientation'> {}
+
+function HorizontalSlider({
   label,
   value,
   min,
   max,
   step = 0.1,
   onChange,
-  orientation = 'horizontal',
   suffix,
-}: SliderProps) {
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const next = Number(e.target.value);
-    if (Number.isFinite(next)) onChange(next);
-  };
-
-  if (orientation === 'vertical') {
-    return (
-      <div className="flex flex-col items-center gap-2">
-        <span className="mono text-sm tabular-nums">
-          {value.toFixed(2)}
-          {suffix && <span className="ml-1 opacity-60">{suffix}</span>}
-        </span>
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={handleChange}
-          aria-label={label}
-          aria-orientation="vertical"
-          className="uf-slider"
-          style={{
-            writingMode: 'vertical-lr' as never,
-            direction: 'rtl',
-            width: '8px',
-            height: '180px',
-            accentColor: 'var(--uf-accent)',
-          }}
-        />
-        <span className="uf-eyebrow">{label}</span>
-      </div>
-    );
-  }
-
+  className,
+}: OrientedProps) {
   return (
-    <label className="flex flex-1 flex-col gap-2">
+    <label className={cn('flex flex-1 flex-col gap-2', className)}>
       <div className="flex items-baseline justify-between">
         <span className="uf-eyebrow">{label}</span>
-        <span className="mono text-sm tabular-nums">
-          {value.toFixed(2)}
-          {suffix && <span className="ml-1 opacity-60">{suffix}</span>}
-        </span>
+        <SliderReadout value={value} suffix={suffix} />
       </div>
       <input
         type="range"
@@ -75,10 +47,65 @@ export function Slider({
         max={max}
         step={step}
         value={value}
-        onChange={handleChange}
-        className="uf-slider w-full"
-        style={{ accentColor: 'var(--uf-accent)' }}
+        onChange={handleChange(onChange)}
+        className="uf-slider w-full accent-uf-accent"
       />
     </label>
   );
+}
+
+function VerticalSlider({
+  label,
+  value,
+  min,
+  max,
+  step = 0.1,
+  onChange,
+  suffix,
+  className,
+}: OrientedProps) {
+  return (
+    <div className={cn('flex flex-col items-center gap-2', className)}>
+      <SliderReadout value={value} suffix={suffix} />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={handleChange(onChange)}
+        aria-label={label}
+        aria-orientation="vertical"
+        className="uf-slider accent-uf-accent"
+        style={{
+          writingMode: 'vertical-lr',
+          direction: 'rtl',
+          width: '8px',
+          height: '180px',
+        }}
+      />
+      <span className="uf-eyebrow">{label}</span>
+    </div>
+  );
+}
+
+const ORIENTATIONS = {
+  horizontal: HorizontalSlider,
+  vertical: VerticalSlider,
+} as const;
+
+function SliderReadout({ value, suffix }: { value: number; suffix?: string }) {
+  return (
+    <span className="mono text-sm tabular-nums">
+      {value.toFixed(2)}
+      {suffix ? <span className="ml-1 opacity-60">{suffix}</span> : null}
+    </span>
+  );
+}
+
+function handleChange(onChange: (n: number) => void) {
+  return (e: ChangeEvent<HTMLInputElement>) => {
+    const next = Number(e.target.value);
+    if (Number.isFinite(next)) onChange(next);
+  };
 }

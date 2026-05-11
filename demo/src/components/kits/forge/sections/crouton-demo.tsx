@@ -116,7 +116,7 @@ export function CroutonDemo() {
             </div>
           </div>
 
-          <Result label="cities built" value={`${cities}`} emphasis />
+          <Result label="cities built" value={`${cities}`} variant="hero" />
 
           <div className="flex items-center justify-center">
             <Glyph glyph="🏰" count={cities} label="cities" variant="large" highlight />

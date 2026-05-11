@@ -2,60 +2,47 @@
 // card. Reads from the central registry; adding a kit picks it up here
 // automatically.
 //
-// Hover/strike side effects are passed in: the forge chassis owns the
-// stoke state, this section relays card events back up. Click navigation
-// is delayed by the caller so the visual burst finishes before the route
-// swaps.
+// Hover/strike side effects are passed in (the forge chassis owns the
+// stoke state). The "which card is hovered" state lives in CSS via
+// .uf-flare-card:hover, so this section doesn't track it.
 
-import { KITS } from '../../registry.js';
+import type { MouseEvent } from 'react';
+import { KITS, type KitEntry, type KitMeta } from '../../registry.js';
 import { NavigationCard } from '../../../ui/navigation-card.js';
 
 interface KitsGridProps {
   /** Id of the currently active kit; excluded from the grid. */
   currentKitId: string;
-  /** Which kit, if any, is currently hovered. */
-  hoveredId: string | null;
-  onTileEnter: (id: string) => void;
-  onTileLeave: () => void;
-  onTileMouseDown: () => void;
-  onTileClick: (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  onActivate: (id: string) => void;
+  onPress: () => void;
+  onClick: (id: string) => (e: MouseEvent<HTMLAnchorElement>) => void;
 }
 
-export function KitsGrid({
-  currentKitId,
-  hoveredId,
-  onTileEnter,
-  onTileLeave,
-  onTileMouseDown,
-  onTileClick,
-}: KitsGridProps) {
+type CardEntry = KitEntry & { meta: KitMeta & { previewBg: NonNullable<KitMeta['previewBg']> } };
+
+export function KitsGrid({ currentKitId, onActivate, onPress, onClick }: KitsGridProps) {
+  // Type guard narrows away the optional previewBg so the map below
+  // doesn't need an `as NonNullable` escape hatch.
   const others = KITS.filter(
-    (k) => k.meta.id !== currentKitId && k.meta.previewBg !== undefined,
+    (k): k is CardEntry => k.meta.id !== currentKitId && k.meta.previewBg !== undefined,
   );
 
   return (
     <div className="grid gap-5 md:grid-cols-2">
-      {others.map(({ meta }) => {
-        // Filter above guarantees previewBg is defined.
-        const PreviewBg = meta.previewBg as NonNullable<typeof meta.previewBg>;
-        const hovered = hoveredId === meta.id;
-        return (
-          <NavigationCard
-            key={meta.id}
-            href={`#/${meta.id}`}
-            theme={meta.defaultThemeId}
-            icon={meta.icon}
-            label={meta.label}
-            blurb={meta.blurb}
-            hovered={hovered}
-            background={<PreviewBg hovered={hovered} />}
-            onEnter={() => onTileEnter(meta.id)}
-            onLeave={onTileLeave}
-            onMouseDown={onTileMouseDown}
-            onClick={onTileClick(meta.id)}
-          />
-        );
-      })}
+      {others.map(({ meta }) => (
+        <NavigationCard
+          key={meta.id}
+          href={`#/${meta.id}`}
+          theme={meta.defaultThemeId}
+          icon={meta.icon}
+          label={meta.label}
+          blurb={meta.blurb}
+          backgroundZone={meta.previewBg}
+          onActivate={() => onActivate(meta.id)}
+          onPress={onPress}
+          onClick={onClick(meta.id)}
+        />
+      ))}
     </div>
   );
 }

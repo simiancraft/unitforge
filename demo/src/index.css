@@ -1,12 +1,22 @@
 @import 'tailwindcss';
 
 /*
- * Shared theme infrastructure. Per-kit palettes + kit-specific keyframes
- * live in `kits/<kit>/<kit>.css`, imported from their corresponding page
- * component. This file holds only the cross-kit defaults (`:root`),
- * layout primitives (`.uf-card`, `.uf-eyebrow`, `.uf-flare-card`), and
- * global utilities (`.uf-skip-link`, `.uf-code-scroll`, `:focus-visible`).
+ * Tailwind v4 theme tokens. Each `--color-uf-*` maps to a `--uf-*` CSS var
+ * that the kit CSS files override per data-theme; this means utilities
+ * like `bg-uf-card`, `text-uf-fg`, `border-uf-border` resolve to the
+ * active kit's palette at runtime. The `@theme inline` form references
+ * the existing vars instead of computing static values, so the kit's
+ * data-theme cascade is the single source of truth for palette values.
  */
+@theme inline {
+  --color-uf-bg: var(--uf-bg);
+  --color-uf-fg: var(--uf-fg);
+  --color-uf-muted: var(--uf-muted);
+  --color-uf-accent: var(--uf-accent);
+  --color-uf-card: var(--uf-card);
+  --color-uf-border: var(--uf-border);
+  --color-uf-code-bg: var(--uf-code-bg);
+}
 
 :root {
   /* Brand baseline and font stacks (theme-independent). All themed
@@ -130,6 +140,11 @@ pre,
   z-index: 0;
   pointer-events: none;
   opacity: 0.4;
+  transition: opacity 300ms ease;
+}
+.uf-flare-card:hover > .uf-flare-bg,
+.uf-flare-card:focus-within > .uf-flare-bg {
+  opacity: 0.9;
 }
 .uf-flare-card > .uf-flare-content {
   position: relative;

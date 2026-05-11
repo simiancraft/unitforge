@@ -46,7 +46,7 @@ export function DriveVsOs() {
           eyebrow="demo 02"
           title="drive vs OS"
           kicker="why 1 TB shows up as 931 GiB"
-          icon={<HardDrive size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
+          iconZone={<HardDrive size={28} strokeWidth={1.5} style={{ color: 'var(--uf-accent)' }} />}
         />
       }
       introZone={
@@ -214,7 +214,7 @@ export function DriveVsOs() {
           <Result
             label="apparent gap"
             value={`${(marketedGB - inGiB).toFixed(2)} (≈ ${(lossFraction * 100).toFixed(2)}%)`}
-            emphasis
+            variant="hero"
           />
         </div>
       }
