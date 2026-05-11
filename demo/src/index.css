@@ -2,7 +2,7 @@
 
 /*
  * Shared theme infrastructure. Per-kit palettes + kit-specific keyframes
- * live in `themes/<kit>.css`, imported from their corresponding page
+ * live in `kits/<kit>/<kit>.css`, imported from their corresponding page
  * component. This file holds only the cross-kit defaults (`:root`),
  * layout primitives (`.uf-card`, `.uf-eyebrow`, `.uf-flare-card`), and
  * global utilities (`.uf-skip-link`, `.uf-code-scroll`, `:focus-visible`).
@@ -13,7 +13,7 @@
   --uf-brand: #f97316;
 
   /* Default = home theme tokens; per-route overrides land via the
-   * [data-theme='<kit>'] selectors in themes/<kit>.css.
+   * [data-theme='<kit>'] selectors in kits/<kit>/<kit>.css.
    */
   --uf-bg: #0d0d0d;
   --uf-fg: #f4ede0;

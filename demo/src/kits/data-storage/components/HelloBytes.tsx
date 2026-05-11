@@ -6,9 +6,9 @@
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte } from 'unitforge/kits/data-storage';
-import { Result } from '../components/Result.js';
-import { Slider } from '../components/Slider.js';
-import { UnitPicker } from '../components/UnitPicker.js';
+import { Result } from '../../../components/Result.js';
+import { Slider } from '../../../components/Slider.js';
+import { UnitPicker } from '../../../components/UnitPicker.js';
 import {
   DATA_BINARY_UNITS,
   DATA_BIT_UNITS,
@@ -16,7 +16,7 @@ import {
   findByKey,
   pickerOptions,
   DATA_ALL_UNITS,
-} from '../lib/units.js';
+} from '../../../lib/units.js';
 
 // Per-unit slider bounds so the range stays pedagogical at every scale:
 // 1-1e6 bytes is interesting; 1-2000 GB is the canonical drive-size range.

@@ -7,8 +7,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, gigabit, gigabyte, megabyte } from 'unitforge/kits/data-storage';
-import { Result } from '../components/Result.js';
-import { Slider } from '../components/Slider.js';
+import { Result } from '../../../components/Result.js';
+import { Slider } from '../../../components/Slider.js';
 
 const MAX_VIEW_SECONDS = 12; // cap the on-screen sweep so very-fast or very-slow rates remain perceivable
 

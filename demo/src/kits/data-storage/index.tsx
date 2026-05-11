@@ -5,15 +5,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Cpu, Gauge, HardDrive, MemoryStick } from 'lucide-react';
-import { DemoSection } from '../components/DemoSection.js';
-import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
-import { CircuitBg } from '../themes/CircuitBg.js';
-import { DATA_ALL_UNITS, findByKey } from '../lib/units.js';
-import { DriveVsOs } from '../widgets/DriveVsOs.js';
-import { HelloBytes } from '../widgets/HelloBytes.js';
-import { RamStick } from '../widgets/RamStick.js';
-import { ThroughputViz } from '../widgets/ThroughputViz.js';
-import '../themes/data-storage.css';
+import { DemoSection } from '../../components/DemoSection.js';
+import { ForgeBench, type BenchState } from '../../components/ForgeBench.js';
+import { CircuitBg } from './components/CircuitBg.js';
+import { DATA_ALL_UNITS, findByKey } from '../../lib/units.js';
+import { DriveVsOs } from './components/DriveVsOs.js';
+import { HelloBytes } from './components/HelloBytes.js';
+import { RamStick } from './components/RamStick.js';
+import { ThroughputViz } from './components/ThroughputViz.js';
+import './data-storage.css';
 
 export function DataStoragePage() {
   const [bench, setBench] = useState<BenchState<'data'>>({

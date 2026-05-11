@@ -8,8 +8,8 @@ import { ArrowLeft } from 'lucide-react';
 import { VERSION } from 'unitforge/version';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { KITS, type KitId } from './lib/kits.js';
-import { DataStoragePage } from './pages/DataStorage.js';
-import { GeometryPage } from './pages/Geometry.js';
+import { DataStoragePage } from './kits/data-storage/index.js';
+import { GeometryPage } from './kits/geometry/index.js';
 import { Home } from './pages/Home.js';
 
 type Route = 'home' | KitId;

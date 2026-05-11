@@ -10,12 +10,12 @@
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { areaFromLengthAndWidth } from 'unitforge/kits/geometry';
-import { Result } from '../components/Result.js';
-import { Slider } from '../components/Slider.js';
-import { UnitPicker } from '../components/UnitPicker.js';
-import { useSvgPointerDrag } from '../hooks/useSvgPointerDrag.js';
-import { clamp, round1 } from '../lib/math.js';
-import { AREA_UNITS, findByKey, LENGTH_UNITS, pickerOptions } from '../lib/units.js';
+import { Result } from '../../../components/Result.js';
+import { Slider } from '../../../components/Slider.js';
+import { UnitPicker } from '../../../components/UnitPicker.js';
+import { useSvgPointerDrag } from '../../../hooks/useSvgPointerDrag.js';
+import { clamp, round1 } from '../../../lib/math.js';
+import { AREA_UNITS, findByKey, LENGTH_UNITS, pickerOptions } from '../../../lib/units.js';
 
 const VIEW_W = 340;
 const VIEW_H = 260;

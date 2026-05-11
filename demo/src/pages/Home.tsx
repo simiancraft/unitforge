@@ -11,15 +11,15 @@ import { useRef, useState } from 'react';
 import { Box, Database } from 'lucide-react';
 import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
 import { findByKey, LENGTH_UNITS } from '../lib/units.js';
-import { CircuitBg } from '../themes/CircuitBg.js';
-import { EmberStream } from '../themes/EmberStream.js';
-import { GridPaperBg } from '../themes/GridPaperBg.js';
+import { CircuitBg } from '../kits/data-storage/components/CircuitBg.js';
+import { EmberStream } from '../components/EmberStream.js';
+import { GridPaperBg } from '../kits/geometry/components/GridPaperBg.js';
 import { KITS } from '../lib/kits.js';
-import '../themes/home.css';
+import '../forge.css';
 // Kit-card backgrounds preview their target kit's theme inline, so the
 // kit-CSS bundles need to load on home too.
-import '../themes/geometry.css';
-import '../themes/data-storage.css';
+import '../kits/geometry/geometry.css';
+import '../kits/data-storage/data-storage.css';
 
 // ─── tweakables ──────────────────────────────────────────────────────────
 const AMBIENT_COUNT = 32;
@@ -40,7 +40,7 @@ const STOKE_MAX_DELAY_SEC = 0.52;
 const STOKE_HOLD_MS = 1200;
 const STOKE_FLASH_DECAY_MS = STOKE_HOLD_MS * 0.25; // forge-base flash, ~300ms
 
-// Three forge-glow variants in themes/home.css; round-robin per stoke so
+// Three forge-glow variants in forge.css; round-robin per stoke so
 // each strike has slight variation in height + stop placement.
 const FORGE_GLOW_VARIANTS = ['uf-forge-glow-1', 'uf-forge-glow-2', 'uf-forge-glow-3'] as const;
 // ─────────────────────────────────────────────────────────────────────────

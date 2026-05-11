@@ -5,14 +5,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Compass, Ruler, Square } from 'lucide-react';
-import { DemoSection } from '../components/DemoSection.js';
-import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
-import { GridPaperBg } from '../themes/GridPaperBg.js';
-import { findByKey, LENGTH_UNITS } from '../lib/units.js';
-import { CircleMachine } from '../widgets/CircleMachine.js';
-import { HelloUnit } from '../widgets/HelloUnit.js';
-import { RectangleMachine } from '../widgets/RectangleMachine.js';
-import '../themes/geometry.css';
+import { DemoSection } from '../../components/DemoSection.js';
+import { ForgeBench, type BenchState } from '../../components/ForgeBench.js';
+import { GridPaperBg } from './components/GridPaperBg.js';
+import { findByKey, LENGTH_UNITS } from '../../lib/units.js';
+import { CircleMachine } from './components/CircleMachine.js';
+import { HelloUnit } from './components/HelloUnit.js';
+import { RectangleMachine } from './components/RectangleMachine.js';
+import './geometry.css';
 
 // Grid cell size in pixels, per "from" unit. The grid background reads this
 // and reticks; the effect is "the paper resamples when you change units".

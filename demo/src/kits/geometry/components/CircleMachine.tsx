@@ -5,12 +5,12 @@
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { areaFromCircleRadius, meter } from 'unitforge/kits/geometry';
-import { Result } from '../components/Result.js';
-import { Slider } from '../components/Slider.js';
-import { UnitPicker } from '../components/UnitPicker.js';
-import { useSvgPointerDrag } from '../hooks/useSvgPointerDrag.js';
-import { clamp, round1 } from '../lib/math.js';
-import { AREA_UNITS, findByKey, LENGTH_UNITS, pickerOptions } from '../lib/units.js';
+import { Result } from '../../../components/Result.js';
+import { Slider } from '../../../components/Slider.js';
+import { UnitPicker } from '../../../components/UnitPicker.js';
+import { useSvgPointerDrag } from '../../../hooks/useSvgPointerDrag.js';
+import { clamp, round1 } from '../../../lib/math.js';
+import { AREA_UNITS, findByKey, LENGTH_UNITS, pickerOptions } from '../../../lib/units.js';
 
 const VIEW = 280;
 const PAD = 24;

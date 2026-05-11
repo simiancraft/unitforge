@@ -4,10 +4,10 @@
 
 import { useState } from 'react';
 import { forge } from 'unitforge';
-import { Result } from '../components/Result.js';
-import { Slider } from '../components/Slider.js';
-import { UnitPicker } from '../components/UnitPicker.js';
-import { findByKey, LENGTH_UNITS, pickerOptions } from '../lib/units.js';
+import { Result } from '../../../components/Result.js';
+import { Slider } from '../../../components/Slider.js';
+import { UnitPicker } from '../../../components/UnitPicker.js';
+import { findByKey, LENGTH_UNITS, pickerOptions } from '../../../lib/units.js';
 
 export function HelloUnit() {
   const [value, setValue] = useState(5);

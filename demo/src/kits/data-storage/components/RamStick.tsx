@@ -6,8 +6,8 @@
 import { useEffect, useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
-import { Result } from '../components/Result.js';
-import { Slider } from '../components/Slider.js';
+import { Result } from '../../../components/Result.js';
+import { Slider } from '../../../components/Slider.js';
 
 const CHIPS = 8;
 const VIEW_W = 460;
