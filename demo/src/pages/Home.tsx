@@ -137,11 +137,11 @@ export function Home() {
     stoke(STOKE_STRIKE_INTENSITY);
   };
 
-  // Delay the hash navigation by ~180ms after the click so the anvil-
-  // strike has time to land before the new route renders. Long enough
-  // to perceive the impact; short enough that the page still feels
-  // responsive.
-  const NAV_DELAY_MS = 180;
+  // Delay the hash navigation until ~2/3 of the stoke burst has played
+  // so the user sees the impact (shake + flash + flurry crest) before
+  // the route swaps. Tied to STOKE_HOLD_MS so retuning the burst
+  // automatically retunes the delay.
+  const NAV_DELAY_MS = Math.round(STOKE_HOLD_MS * (2 / 3));
   const onTileClick = (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     window.setTimeout(() => {
