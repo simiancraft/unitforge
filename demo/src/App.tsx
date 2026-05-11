@@ -39,16 +39,16 @@ export function App() {
   const theme = route === 'home' ? 'home' : route;
   const kitMeta = route === 'home' ? null : KITS.find((k) => k.id === route);
 
+  // Theme cascade lives on <html> so the body's `background: var(--uf-bg)`
+  // resolves to the kit palette and paints the viewport. The route
+  // container below stays transparent so the fixed-position background
+  // flair (embers / grid / circuit) shows through.
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
   return (
-    <div
-      data-theme={theme}
-      className="relative min-h-screen"
-      style={{
-        background: 'var(--uf-bg)',
-        color: 'var(--uf-fg)',
-        transition: 'background-color 600ms cubic-bezier(0.22,1,0.36,1), color 600ms cubic-bezier(0.22,1,0.36,1)',
-      }}
-    >
+    <div data-theme={theme} className="relative min-h-screen">
       <a href="#main" className="uf-skip-link">
         skip to content
       </a>
