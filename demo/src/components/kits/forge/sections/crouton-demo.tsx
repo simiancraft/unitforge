@@ -14,9 +14,10 @@
 
 import { useState } from 'react';
 import { defineConversion, defineUnit, forge } from 'unitforge';
-import { CodeBlock } from '../components/CodeBlock.js';
-import { Result } from '../components/Result.js';
-import { Slider } from '../components/Slider.js';
+import { CodeBlock } from '../../../CodeBlock.js';
+import { Result } from '../../../Result.js';
+import { Slider } from '../../../Slider.js';
+import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 const COUNT = 'count' as const;
 
@@ -84,37 +85,23 @@ export function CroutonDemo() {
   const cities = citiesFromResources({ wheat, ore });
 
   return (
-    <section className="flex flex-col gap-5">
-      <header className="flex flex-col gap-1">
-        <p className="uf-eyebrow">build your own kit</p>
-        <h2 className="display flex items-center gap-3 text-3xl font-bold leading-tight md:text-4xl">
-          forge a city
-        </h2>
-      </header>
-      <p className="max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--uf-muted)' }}>
-        Custom dimensions are first-class. Invent one called{' '}
-        <code className="mono">COUNT</code>; build three units inside it with{' '}
-        <code className="mono">defineUnit</code>; declare the city recipe (2 wheat
-        + 3 ore = 1 city) with <code className="mono">defineConversion</code>;
-        and <code className="mono">forge()</code> the converter. Same shape the
-        library uses for its own kits.
-      </p>
-
-      <div className="grid gap-5 md:grid-cols-[1.1fr_1fr]">
-        <div className="uf-card relative flex flex-col gap-4 overflow-hidden rounded-lg p-5">
+    <SectionLayout
+      headerZone={<SectionHeader eyebrow="build your own kit" title="forge a city" />}
+      introZone={
+        <>
+          Custom dimensions are first-class. Invent one called{' '}
+          <code className="mono">COUNT</code>; build three units inside it with{' '}
+          <code className="mono">defineUnit</code>; declare the city recipe (2 wheat
+          + 3 ore = 1 city) with <code className="mono">defineConversion</code>;
+          and <code className="mono">forge()</code> the converter. Same shape the
+          library uses for its own kits.
+        </>
+      }
+      widgetZone={
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3">
-            <ResourceSlider
-              glyph="🌾"
-              label="wheat"
-              value={wheat}
-              onChange={setWheat}
-            />
-            <ResourceSlider
-              glyph="🪨"
-              label="ore"
-              value={ore}
-              onChange={setOre}
-            />
+            <ResourceSlider glyph="🌾" label="wheat" value={wheat} onChange={setWheat} />
+            <ResourceSlider glyph="🪨" label="ore" value={ore} onChange={setOre} />
           </div>
 
           <div className="grid items-center gap-4 grid-cols-[1fr_auto_1fr]">
@@ -135,10 +122,9 @@ export function CroutonDemo() {
             <Glyph glyph="🏰" count={cities} label="cities" variant="large" highlight />
           </div>
         </div>
-
-        <CodeBlock code={CODE} />
-      </div>
-    </section>
+      }
+      codeZone={<CodeBlock code={CODE} />}
+    />
   );
 }
 

@@ -1,5 +1,6 @@
-// HomeBench — the slim, two-line forge instrument on the root page. Reads
-// as an interactive horizontal rule between the masthead and the kits.
+// ForgeBench (slim home variant) — the two-line forge instrument on the
+// root page. Reads as an interactive horizontal rule between the masthead
+// and the kits.
 //
 // Row 1: FROM unit on the left (picker + slider + live value), TO unit on
 //        the right (result + picker). No chrome, no "LIVE" badge, no
@@ -10,23 +11,23 @@ import type { ChangeEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { forge } from 'unitforge';
-import { LENGTH_UNITS, findByKey } from '../lib/units.js';
-import { cachedHighlight, highlight } from '../lib/highlighter.js';
-import { CopyButton } from '../components/CodeBlock.js';
-import { useKitTheme } from '../components/kits/theme.js';
+import { LENGTH_UNITS, findByKey } from '../../../../lib/units.js';
+import { cachedHighlight, highlight } from '../../../../lib/highlighter.js';
+import { CopyButton } from '../../../CodeBlock.js';
+import { useKitTheme } from '../../theme.js';
 
 const MIN = 0.1;
 const MAX = 100;
 const STEP = 0.1;
 
-interface HomeBenchProps {
+interface ForgeBenchProps {
   fromKey: string;
   toKey: string;
   value: number;
   onChange: (next: { fromKey: string; toKey: string; value: number }) => void;
 }
 
-export function HomeBench({ fromKey, toKey, value, onChange }: HomeBenchProps) {
+export function ForgeBench({ fromKey, toKey, value, onChange }: ForgeBenchProps) {
   const fromOpt = findByKey(LENGTH_UNITS, fromKey);
   const toOpt = findByKey(LENGTH_UNITS, toKey);
   const result = forge(fromOpt.unit, toOpt.unit)(value);

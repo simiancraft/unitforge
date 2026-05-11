@@ -10,7 +10,7 @@ import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { KITS, type KitId } from './lib/kits.js';
 import { DataStoragePage } from './kits/data-storage/index.js';
 import { GeometryPage } from './kits/geometry/index.js';
-import { Home } from './pages/Home.js';
+import { Page as ForgePage } from './components/kits/forge/index.js';
 
 type Route = 'home' | KitId;
 
@@ -55,7 +55,7 @@ export function App() {
       <main id="main" className="relative mx-auto max-w-6xl px-6 py-10 md:py-14">
         {route !== 'home' && <BreadcrumbBar kitLabel={kitMeta?.label ?? route} />}
         <ErrorBoundary>
-          {route === 'home' && <Home />}
+          {route === 'home' && <ForgePage />}
           {route === 'geometry' && <GeometryPage />}
           {route === 'data-storage' && <DataStoragePage />}
         </ErrorBoundary>

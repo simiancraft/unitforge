@@ -3,7 +3,7 @@
 // library is small; deep enough to send a reader into a kit or into the
 // "build your own kit" demo below.
 
-import { CodeBlock } from '../components/CodeBlock.js';
+import { CodeBlock } from '../../../CodeBlock.js';
 
 const FORGE_CODE = `import { forge } from 'unitforge';
 import { meter, foot } from 'unitforge/kits/geometry';
@@ -56,7 +56,7 @@ const CARDS: Card[] = [
   },
 ];
 
-export function CoreApiIntro() {
+export function CoreApi() {
   return (
     <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-1">
