@@ -60,7 +60,7 @@ export function HelloBytes() {
   const inBytes = forge(fromUnit.unit, byte)(clamped);
 
   const renderRows = (
-    list: typeof DATA_DECIMAL_UNITS,
+    list: ReadonlyArray<{ key: string; label: string; unit: typeof byte }>,
     family: string,
   ): React.ReactNode => (
     <div className="flex flex-col gap-1">

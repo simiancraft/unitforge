@@ -4,7 +4,7 @@
 
 import type { ChangeEvent } from 'react';
 
-interface UnitOption {
+interface PickerOption {
   key: string;
   label: string;
 }
@@ -12,7 +12,7 @@ interface UnitOption {
 interface UnitPickerProps {
   label: string;
   value: string;
-  options: ReadonlyArray<UnitOption>;
+  options: ReadonlyArray<PickerOption>;
   onChange: (key: string) => void;
 }
 

@@ -1,8 +1,10 @@
-// Per-kit unit option catalogs for the demo UnitPicker dropdowns. Kept in
-// one place so widgets can import a stable `{ key, label, value }[]` shape
-// instead of building option lists inline.
+// Per-kit unit option catalogs for the demo UnitPicker dropdowns. Lists
+// use `as const satisfies` so each catalog's `key` field is a literal
+// union (autocompleted at the call site) while still being verified
+// against `UnitOption<D>`. `findByKey` consumes that key union, so
+// typos are caught at compile time instead of throwing in render.
 
-import type { Unit } from 'unitforge';
+import type { Dimension, Unit } from 'unitforge';
 import {
   acre,
   centimeter,
@@ -44,13 +46,13 @@ import {
   terabyte,
 } from 'unitforge/kits/data-storage';
 
-export interface UnitOption<D extends string = string> {
+export interface UnitOption<D extends Dimension = Dimension> {
   key: string;
   label: string;
   unit: Unit<D, number>;
 }
 
-export const LENGTH_UNITS: ReadonlyArray<UnitOption<'length'>> = [
+export const LENGTH_UNITS = [
   { key: 'mm', label: 'millimeter', unit: millimeter },
   { key: 'cm', label: 'centimeter', unit: centimeter },
   { key: 'm', label: 'meter', unit: meter },
@@ -59,9 +61,9 @@ export const LENGTH_UNITS: ReadonlyArray<UnitOption<'length'>> = [
   { key: 'ft', label: 'foot', unit: foot },
   { key: 'yd', label: 'yard', unit: yard },
   { key: 'mi', label: 'mile', unit: mile },
-];
+] as const satisfies ReadonlyArray<UnitOption<'length'>>;
 
-export const AREA_UNITS: ReadonlyArray<UnitOption<'area'>> = [
+export const AREA_UNITS = [
   { key: 'mm2', label: 'square millimeter', unit: squareMillimeter },
   { key: 'cm2', label: 'square centimeter', unit: squareCentimeter },
   { key: 'm2', label: 'square meter', unit: squareMeter },
@@ -69,58 +71,58 @@ export const AREA_UNITS: ReadonlyArray<UnitOption<'area'>> = [
   { key: 'ft2', label: 'square foot', unit: squareFoot },
   { key: 'acre', label: 'acre', unit: acre },
   { key: 'ha', label: 'hectare', unit: hectare },
-];
+] as const satisfies ReadonlyArray<UnitOption<'area'>>;
 
-export const VOLUME_UNITS: ReadonlyArray<UnitOption<'volume'>> = [
+export const VOLUME_UNITS = [
   { key: 'cc', label: 'cubic centimeter', unit: cubicCentimeter },
   { key: 'in3', label: 'cubic inch', unit: cubicInch },
   { key: 'ft3', label: 'cubic foot', unit: cubicFoot },
   { key: 'm3', label: 'cubic meter', unit: cubicMeter },
   { key: 'L', label: 'liter', unit: liter },
   { key: 'mL', label: 'milliliter', unit: milliliter },
-];
+] as const satisfies ReadonlyArray<UnitOption<'volume'>>;
 
-export const DATA_DECIMAL_UNITS: ReadonlyArray<UnitOption<'data'>> = [
+export const DATA_DECIMAL_UNITS = [
   { key: 'B', label: 'byte', unit: byte },
   { key: 'kB', label: 'kilobyte', unit: kilobyte },
   { key: 'MB', label: 'megabyte', unit: megabyte },
   { key: 'GB', label: 'gigabyte', unit: gigabyte },
   { key: 'TB', label: 'terabyte', unit: terabyte },
   { key: 'PB', label: 'petabyte', unit: petabyte },
-];
+] as const satisfies ReadonlyArray<UnitOption<'data'>>;
 
-export const DATA_BINARY_UNITS: ReadonlyArray<UnitOption<'data'>> = [
+export const DATA_BINARY_UNITS = [
   { key: 'KiB', label: 'kibibyte', unit: kibibyte },
   { key: 'MiB', label: 'mebibyte', unit: mebibyte },
   { key: 'GiB', label: 'gibibyte', unit: gibibyte },
   { key: 'TiB', label: 'tebibyte', unit: tebibyte },
   { key: 'PiB', label: 'pebibyte', unit: pebibyte },
-];
+] as const satisfies ReadonlyArray<UnitOption<'data'>>;
 
-export const DATA_BIT_UNITS: ReadonlyArray<UnitOption<'data'>> = [
+export const DATA_BIT_UNITS = [
   { key: 'bit', label: 'bit', unit: bit },
   { key: 'kbit', label: 'kilobit', unit: kilobit },
   { key: 'Mbit', label: 'megabit', unit: megabit },
   { key: 'Gbit', label: 'gigabit', unit: gigabit },
-];
+] as const satisfies ReadonlyArray<UnitOption<'data'>>;
 
-export const DATA_ALL_UNITS: ReadonlyArray<UnitOption<'data'>> = [
+export const DATA_ALL_UNITS = [
   ...DATA_DECIMAL_UNITS,
   ...DATA_BINARY_UNITS,
   ...DATA_BIT_UNITS,
-];
+] as const satisfies ReadonlyArray<UnitOption<'data'>>;
 
-export function findByKey<D extends string>(
-  list: ReadonlyArray<UnitOption<D>>,
-  key: string,
-): UnitOption<D> {
+export function findByKey<L extends ReadonlyArray<{ key: string }>>(
+  list: L,
+  key: L[number]['key'] | string,
+): L[number] {
   const found = list.find((o) => o.key === key);
   if (!found) throw new Error(`Unknown unit key: ${key}`);
   return found;
 }
 
-export function pickerOptions<D extends string>(
-  list: ReadonlyArray<UnitOption<D>>,
-) {
+export function pickerOptions(
+  list: ReadonlyArray<{ key: string; label: string }>,
+): ReadonlyArray<{ key: string; label: string }> {
   return list.map(({ key, label }) => ({ key, label }));
 }
