@@ -28,17 +28,26 @@ export interface UseForgeStokeArgs {
   shakeAmpBasePx: number;
   /** Duration (ms) of the shake animation; used to schedule class removal. */
   shakeDurationMs: number;
+  /** How many flash-variant classes exist; the round-robin cycles 0..N-1. */
+  variantCount: number;
   /** Element id that receives the shake class + CSS var. Defaults to "main". */
   shakeTargetId?: string;
 }
 
 export interface UseForgeStokeResult {
-  /** Trigger a stoke event with the given intensity (1.0 = baseline). */
-  stoke: (intensity: number) => void;
+  /**
+   * Trigger a stoke event with the given intensity (1.0 = baseline).
+   * Optional `variantOverride` pins the flash variant (0..variantCount-1)
+   * instead of advancing the round-robin; useful for events that should
+   * always read at the same size (e.g. mousedown).
+   */
+  stoke: (intensity: number, variantOverride?: number) => void;
   /** Most-recent intensity; the flash element scales by this value. */
   flashIntensity: number;
   /** Counter bumped on every stoke; use as the flash element's `key`. */
   flashKey: number;
+  /** Index 0..variantCount-1 of the flash class to apply on this stoke. */
+  flashVariant: number;
   slotA: StokeSlot;
   slotB: StokeSlot;
 }
@@ -47,12 +56,15 @@ export function useForgeStoke({
   holdMs,
   shakeAmpBasePx,
   shakeDurationMs,
+  variantCount,
   shakeTargetId = 'main',
 }: UseForgeStokeArgs): UseForgeStokeResult {
   const [slotA, setSlotA] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
   const [slotB, setSlotB] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
   const [flashKey, setFlashKey] = useState(0);
   const [flashIntensity, setFlashIntensity] = useState(1);
+  const [flashVariant, setFlashVariant] = useState(0);
+  const variantCounterRef = useRef(0);
   const aTimer = useRef<number | null>(null);
   const bTimer = useRef<number | null>(null);
 
@@ -76,12 +88,20 @@ export function useForgeStoke({
     };
   }, []);
 
-  const stoke = (intensity: number) => {
+  const stoke = (intensity: number, variantOverride?: number) => {
     // Flash: react state. The gradient div uses `key={flashKey}` to
-    // force a remount, and reads intensity as a prop/style value
-    // straight from this state — no CSS-variable indirection.
+    // force a remount, and reads intensity + variant as inline style
+    // values straight from state — committed together in the same
+    // render so the new keyed element paints with all three correct.
     setFlashIntensity(intensity);
     setFlashKey((k) => k + 1);
+    if (variantOverride !== undefined) {
+      setFlashVariant(variantOverride);
+    } else {
+      const next = variantCounterRef.current % variantCount;
+      variantCounterRef.current += 1;
+      setFlashVariant(next);
+    }
 
     // Shake: direct DOM. <main> isn't a child of this hook's owner so
     // class manipulation via id-lookup is the simplest seam. CSS var
@@ -130,5 +150,5 @@ export function useForgeStoke({
     }
   };
 
-  return { stoke, flashIntensity, flashKey, slotA, slotB };
+  return { stoke, flashIntensity, flashKey, flashVariant, slotA, slotB };
 }

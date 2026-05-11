@@ -60,11 +60,12 @@ export function Home() {
 
   // Everything stoke-related lives in this hook: shake side effects,
   // the two-slot particle pool with timers, and the flash key + most-
-  // recent intensity. Home just reads what it needs and renders.
-  const { stoke, flashKey, flashIntensity, slotA, slotB } = useForgeStoke({
+  // recent intensity + active variant.
+  const { stoke, flashKey, flashIntensity, flashVariant, slotA, slotB } = useForgeStoke({
     holdMs: STOKE_HOLD_MS,
     shakeAmpBasePx: SHAKE_AMP_BASE_PX,
     shakeDurationMs: SHAKE_DURATION_MS,
+    variantCount: FORGE_GLOW_VARIANTS.length,
   });
 
   const onTileEnter = (id: string) => {
@@ -72,8 +73,12 @@ export function Home() {
     stoke(STOKE_HOVER_INTENSITY);
   };
 
+  // Clicks always read at the same physical size; pin to variant 2 (the
+  // median height) so the strike intensity isn't compounded by an
+  // unrelated round-robin variant change.
+  const STRIKE_VARIANT = 1;
   const onTileMouseDown = () => {
-    stoke(STOKE_STRIKE_INTENSITY);
+    stoke(STOKE_STRIKE_INTENSITY, STRIKE_VARIANT);
   };
 
   // Delay the hash navigation until ~2/3 of the stoke burst has played
@@ -99,7 +104,7 @@ export function Home() {
       <div
         key={`forge-flash-${flashKey}`}
         aria-hidden
-        className={`${FORGE_GLOW_VARIANTS[flashKey % FORGE_GLOW_VARIANTS.length]} fixed bottom-0 left-0 w-screen pointer-events-none`}
+        className={`${FORGE_GLOW_VARIANTS[flashVariant]} fixed bottom-0 left-0 w-screen pointer-events-none`}
         style={{
           zIndex: -2,
           opacity: 0,
