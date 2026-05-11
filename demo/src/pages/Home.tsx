@@ -117,6 +117,18 @@ export function Home() {
     stoke();
   };
 
+  // Delay the hash navigation by ~180ms after the click so the anvil-
+  // strike has time to land before the new route renders. Long enough
+  // to perceive the impact; short enough that the page still feels
+  // responsive.
+  const NAV_DELAY_MS = 180;
+  const onTileClick = (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    window.setTimeout(() => {
+      window.location.hash = `#/${id}`;
+    }, NAV_DELAY_MS);
+  };
+
   return (
     <>
       <div
@@ -191,6 +203,7 @@ export function Home() {
               onEnter={() => onTileEnter(kit.id)}
               onLeave={() => setHovered(null)}
               onMouseDown={onTileMouseDown}
+              onClick={onTileClick(kit.id)}
             />
           ))}
         </div>
@@ -209,12 +222,14 @@ function KitCard({
   onEnter,
   onLeave,
   onMouseDown,
+  onClick,
 }: {
   kit: (typeof KITS)[number];
   hovered: boolean;
   onEnter: () => void;
   onLeave: () => void;
   onMouseDown: () => void;
+  onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const Icon = kit.icon;
   const PreviewBg = kit.previewBg;
@@ -227,6 +242,7 @@ function KitCard({
       onFocus={onEnter}
       onBlur={onLeave}
       onMouseDown={onMouseDown}
+      onClick={onClick}
       className="uf-flare-card uf-anvil-cursor group relative flex flex-col gap-3 rounded-lg border p-6 transition-transform hover:-translate-y-1"
       style={{
         background: 'var(--uf-card)',

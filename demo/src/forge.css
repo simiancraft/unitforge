@@ -13,15 +13,16 @@
 }
 
 /* Anvil-strike: brief one-shot vertical translate played when the user
- * presses a kit card. ~280ms, ~3px peak; below the threshold of
- * "vestibular alarm" per WAI motion guidance but enough to read as impact.
+ * presses a kit card. ~280ms, ~9px peak (3x the prior 3px); reads as a
+ * real hammer hit. Navigation is delayed by ~180ms in Home so the user
+ * feels the rumble before the route swap.
  */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes uf-anvil-strike {
     0%   { transform: translateY(0); }
-    18%  { transform: translateY(3px); }
-    40%  { transform: translateY(-2px); }
-    62%  { transform: translateY(1px); }
+    18%  { transform: translateY(9px); }
+    40%  { transform: translateY(-6px); }
+    62%  { transform: translateY(3px); }
     100% { transform: translateY(0); }
   }
   .uf-anvil-strike {
