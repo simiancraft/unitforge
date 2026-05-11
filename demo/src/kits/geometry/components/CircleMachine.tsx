@@ -141,8 +141,7 @@ export function CircleMachine() {
             stroke="var(--uf-accent)"
             strokeWidth="2"
             cursor="ew-resize"
-            role="button"
-            aria-label={`resize circle, radius ${radius.toFixed(2)} ${radiusOpt.key}`}
+            aria-hidden
             {...handlers}
           />
           <circle

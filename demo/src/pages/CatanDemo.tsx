@@ -119,11 +119,11 @@ export function CatanDemo() {
           </div>
 
           <div className="flex items-center justify-center gap-2 text-2xl md:text-3xl">
-            <Glyph glyph="🌲" count={wood} />
+            <Glyph glyph="🌲" count={wood} label="wood" />
             <span style={{ color: 'var(--uf-muted)' }}>+</span>
-            <Glyph glyph="🧱" count={brick} />
+            <Glyph glyph="🧱" count={brick} label="brick" />
             <span style={{ color: 'var(--uf-accent)' }}>→</span>
-            <Glyph glyph="🛣️" count={roads} highlight />
+            <Glyph glyph="🛣️" count={roads} label="roads" highlight />
           </div>
 
           <Result label="roads built" value={`${roads}`} emphasis />
@@ -168,10 +168,12 @@ function ResourceSlider({
 function Glyph({
   glyph,
   count,
+  label,
   highlight,
 }: {
   glyph: string;
   count: number;
+  label: string;
   highlight?: boolean;
 }) {
   // Render up to 5 glyphs as a "stack"; for higher counts show "× n" to
@@ -183,7 +185,10 @@ function Glyph({
       style={{ color: highlight ? 'var(--uf-accent)' : 'var(--uf-fg)' }}
     >
       <span aria-hidden>{glyph.repeat(visible)}</span>
-      <span className="mono text-sm" style={{ color: 'var(--uf-muted)' }}>
+      <span className="sr-only">
+        {count} {label}
+      </span>
+      <span className="mono text-sm" style={{ color: 'var(--uf-muted)' }} aria-hidden>
         × {count}
       </span>
     </span>

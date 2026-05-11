@@ -91,8 +91,13 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
 
         {/* RIGHT half: result + TO picker */}
         <div className="flex flex-1 items-center justify-end gap-3">
-          <span className="tabular-nums whitespace-nowrap text-2xl md:text-3xl">
+          <span
+            className="tabular-nums whitespace-nowrap text-2xl md:text-3xl"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             {result.toFixed(4)}
+            <span className="sr-only"> {toOpt.label}</span>
           </span>
           <select
             value={toKey}

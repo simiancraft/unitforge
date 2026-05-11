@@ -154,7 +154,12 @@ export function ForgeBench<D extends Dimension>({
         style={{ borderColor: 'var(--uf-border)' }}
       >
         <span className="uf-eyebrow">result</span>
-        <span className="mono tabular-nums text-2xl md:text-3xl" style={{ color: 'var(--uf-fg)' }}>
+        <span
+          className="mono tabular-nums text-2xl md:text-3xl"
+          style={{ color: 'var(--uf-fg)' }}
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {formatLive(result)} <span style={{ color: 'var(--uf-muted)' }}>{toOpt.key}</span>
         </span>
       </div>

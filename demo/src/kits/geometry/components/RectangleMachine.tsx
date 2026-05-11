@@ -177,8 +177,7 @@ export function RectangleMachine() {
               stroke="var(--uf-accent)"
               strokeWidth="2"
               cursor="nwse-resize"
-              role="button"
-              aria-label={`resize rectangle, currently ${length.toFixed(2)} ${lengthOpt.key} by ${width.toFixed(2)} ${widthOpt.key}`}
+              aria-hidden
               {...handlers}
             />
             <circle
