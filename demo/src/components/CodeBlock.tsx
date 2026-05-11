@@ -12,9 +12,11 @@ type Lang = 'ts' | 'tsx' | 'js';
 interface CodeBlockProps {
   code: string;
   lang?: Lang;
+  /** Optional extra classes (e.g. `min-h-[350px]` to align grid heights). */
+  className?: string;
 }
 
-export function CodeBlock({ code, lang = 'ts' }: CodeBlockProps) {
+export function CodeBlock({ code, lang = 'ts', className = '' }: CodeBlockProps) {
   const { shikiTheme, codeFrameClass } = useKitTheme();
   const [html, setHtml] = useState<string | null>(
     cachedHighlight(code, lang, shikiTheme) ?? null,
@@ -37,7 +39,7 @@ export function CodeBlock({ code, lang = 'ts' }: CodeBlockProps) {
     <div
       role="region"
       aria-label="code sample"
-      className={`relative overflow-hidden rounded-lg text-xs leading-relaxed ${codeFrameClass ?? ''}`}
+      className={`relative overflow-hidden rounded-lg text-xs leading-relaxed ${codeFrameClass ?? ''} ${className}`}
       style={{
         background: 'var(--uf-code-bg)',
         border: '1px solid var(--uf-border)',
