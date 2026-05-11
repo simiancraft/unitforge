@@ -1,4 +1,4 @@
-# unitforge — Agent Instructions
+# unitforge: Agent Instructions
 
 A units-of-measure library for arbitrary domains. Three free functions; three additive registries (dimensions, kits, conversions); first-class custom dimensions and packaging units. Not a physics library.
 

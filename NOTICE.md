@@ -17,7 +17,7 @@ Kits that reference external standards, named systems, or registered trademarks 
 
 Examples of standards likely to appear in future kits:
 
-- **SI base units** — definitions per the BIPM (Bureau International des Poids et Mesures).
-- **Imperial / US customary units** — definitions per NIST.
-- **Pharmacological IU** — definitions per USP / WHO.
-- **Astronomical units** — definitions per the IAU.
+- **SI base units:** definitions per the BIPM (Bureau International des Poids et Mesures).
+- **Imperial / US customary units:** definitions per NIST.
+- **Pharmacological IU:** definitions per USP / WHO.
+- **Astronomical units:** definitions per the IAU.

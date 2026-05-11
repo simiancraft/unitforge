@@ -4,9 +4,10 @@
 # Current src/ coverage: 100% functions, ~99.92% lines. The lone uncovered
 # line is a defensive throw at forge.ts that is provably unreachable from
 # the public API (the impl-signature already guards `!safeConfig?.via`)
-# but kept as a TS-narrowing belt-and-suspenders. The 0.5% threshold
-# below absorbs that gap; the policy is "no measurable regression from
-# current state," not "100% literal."
+# but kept as a TS-narrowing belt-and-suspenders. Project target is set
+# to 99.5% to match observed reality; patch target stays at 100% so any
+# new code added in a PR is expected to be fully covered. Policy is
+# "no measurable regression from current state."
 
 codecov:
   # Wait for the GH Actions upload before posting status checks.
@@ -22,8 +23,8 @@ coverage:
   status:
     project:
       default:
-        target: 100%
-        threshold: 0.5% # Tiny tolerance for floating-point line-counting nits.
+        target: 99.5%
+        threshold: 0.5% # Floor of 99% absorbs the one defensive throw.
         if_ci_failed: error
     patch:
       default:

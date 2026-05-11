@@ -14,7 +14,7 @@
 [![Types: included](https://img.shields.io/npm/types/unitforge?color=3178c6&logo=typescript)](https://www.npmjs.com/package/unitforge)
 [![CI](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml/badge.svg)](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/simiancraft/unitforge?logo=codecov)](https://codecov.io/github/simiancraft/unitforge)
-[![Bundle size](https://img.shields.io/badge/bundle-0.3--2.6%20kB%20gz-informational)](#tree-shaking-and-bundle-size)
+[![Bundle size](https://img.shields.io/badge/bundle-0.3--2.7%20kB%20gz-informational)](#tree-shaking-and-bundle-size)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/simiancraft/unitforge/badge)](https://securityscorecards.dev/viewer/?uri=github.com/simiancraft/unitforge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
@@ -242,14 +242,14 @@ cached(1.5);                                                   // cache hit (no 
 - All exports are named; no default export.
 - Per-kit subpath (`unitforge/kits/<name>`) so importing from `geometry` never pulls a sibling kit.
 
-**Tarball:** `npm pack` produces ≈ 48 kB packed / 203 kB unpacked (56 files, all under `dist/`); that's the install-size figure. Your **production bundle** pays only for what you actually import, measured with `esbuild --bundle --minify --tree-shaking=true`:
+**Tarball:** `npm pack` produces ≈ 48 kB packed / 207 kB unpacked (56 files, all under `dist/`); that's the install-size figure. Your **production bundle** pays only for what you actually import, measured with `esbuild --bundle --minify --tree-shaking=true`:
 
 | Import | min | gzip |
 | --- | --- | --- |
 | `import { meter } from 'unitforge/kits/geometry'` | 347 B | **267 B** |
 | `import { forge } + meter, centimeter` (within-dim) | 3.9 kB | **1.7 kB** |
 | `import { forge } + cross-dim conversion` (forge + 3 kit values) | 4.2 kB | **1.9 kB** |
-| `import * as g from 'unitforge/kits/geometry'` + everything from main barrel | 7.3 kB | **2.6 kB** |
+| `import * as g from 'unitforge/kits/geometry'` + everything from main barrel | 7.4 kB | **2.7 kB** |
 | `import { VERSION } from 'unitforge/version'` (opt-in, inlines `package.json`) | 2.2 kB | **1.0 kB** |
 
 The gzip column is what actually lands in your production build.
