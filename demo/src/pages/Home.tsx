@@ -13,12 +13,13 @@
 // forge-glow flash at the bottom of the viewport (one of three height
 // variants for variation).
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CroutonDemo } from './CroutonDemo.js';
 import { CoreApiIntro } from './CoreApiIntro.js';
 import { EmberStream } from '../components/EmberStream.js';
 import { HomeBench } from './HomeBench.js';
+import { useForgeStoke } from '../hooks/useForgeStoke.js';
 import { KITS } from '../lib/kits.js';
 import '../forge.css';
 // Kit-card backgrounds preview their target kit's theme inline (the
@@ -53,84 +54,18 @@ const STOKE_STRIKE_INTENSITY = 3;
 const SHAKE_AMP_BASE_PX = 9; // peak translateY at intensity 1.0
 const SHAKE_DURATION_MS = 320;
 
-interface StokeSlot {
-  key: number;
-  expiresAt: number | null;
-  intensity: number;
-}
-
 export function Home() {
   const [bench, setBench] = useState({ fromKey: 'm', toKey: 'ft', value: 5 });
   const [hovered, setHovered] = useState<string | null>(null);
-  const [slotA, setSlotA] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
-  const [slotB, setSlotB] = useState<StokeSlot>({ key: 0, expiresAt: null, intensity: 1 });
-  const [flashKey, setFlashKey] = useState(0);
-  const aTimer = useRef<number | null>(null);
-  const bTimer = useRef<number | null>(null);
 
-  // Clear any in-flight stoke timers on unmount so HMR / route-change
-  // doesn't leave dangling setStates that fire against a stale tree.
-  useEffect(() => {
-    return () => {
-      if (aTimer.current !== null) window.clearTimeout(aTimer.current);
-      if (bTimer.current !== null) window.clearTimeout(bTimer.current);
-    };
-  }, []);
-
-  // Unified "stoke" event — flash + particles + shake all coupled and
-  // scaled together by `intensity`. Hover = 0.75, strike = 1.5, baseline
-  // reference = 1.0. Each call:
-  //   - bumps flashKey (remounts the gradient div, restarts the keyframe)
-  //   - records flashIntensity so the gradient's --uf-flash-scale picks
-  //     up the new peak before the next render
-  //   - picks the more-stale ember-stoke slot, bumps its key + intensity
-  //   - sets --uf-shake-amp on <main> and (re-)applies uf-anvil-strike
-  const stoke = (intensity: number) => {
-    // Write the intensity to a CSS variable on <body> SYNCHRONOUSLY,
-    // before queueing the React render. The flash element reads
-    // `scale: var(--uf-flash-scale, 1)` and picks up the new value at
-    // paint, sidestepping any React state-batching race on the keyed
-    // remount.
-    document.body.style.setProperty('--uf-flash-scale-y', String(intensity));
-    setFlashKey((k) => k + 1);
-
-    const main = document.getElementById('main');
-    if (main) {
-      main.style.setProperty('--uf-shake-amp', `${SHAKE_AMP_BASE_PX * intensity}px`);
-      main.classList.remove('uf-anvil-strike');
-      void main.offsetWidth;
-      main.classList.add('uf-anvil-strike');
-      window.setTimeout(() => {
-        main.classList.remove('uf-anvil-strike');
-      }, SHAKE_DURATION_MS);
-    }
-
-    const now = Date.now();
-    const aLive = slotA.expiresAt !== null && slotA.expiresAt > now;
-    const bLive = slotB.expiresAt !== null && slotB.expiresAt > now;
-    let target: 'A' | 'B';
-    if (aLive && bLive) {
-      target = (slotA.expiresAt ?? 0) <= (slotB.expiresAt ?? 0) ? 'A' : 'B';
-    } else if (aLive) {
-      target = 'B';
-    } else {
-      target = 'A';
-    }
-    const newExpiry = now + STOKE_HOLD_MS;
-    if (target === 'A') {
-      setSlotA((s) => ({ key: s.key + 1, expiresAt: newExpiry, intensity }));
-      if (aTimer.current !== null) window.clearTimeout(aTimer.current);
-      aTimer.current = window.setTimeout(() => {
-        setSlotA((s) => ({ ...s, expiresAt: null }));
-      }, STOKE_HOLD_MS);
-    } else {
-      setSlotB((s) => ({ key: s.key + 1, expiresAt: newExpiry, intensity }));
-      if (bTimer.current !== null) window.clearTimeout(bTimer.current);
-      bTimer.current = window.setTimeout(() => {
-        setSlotB((s) => ({ ...s, expiresAt: null }));
-      }, STOKE_HOLD_MS);
-    }
-  };
+  // Everything stoke-related lives in this hook: shake side effects,
+  // the two-slot particle pool with timers, and the flash key + most-
+  // recent intensity. Home just reads what it needs and renders.
+  const { stoke, flashKey, flashIntensity, slotA, slotB } = useForgeStoke({
+    holdMs: STOKE_HOLD_MS,
+    shakeAmpBasePx: SHAKE_AMP_BASE_PX,
+    shakeDurationMs: SHAKE_DURATION_MS,
+  });
 
   const onTileEnter = (id: string) => {
     setHovered(id);
@@ -169,12 +104,12 @@ export function Home() {
           zIndex: -2,
           opacity: 0,
           transformOrigin: 'bottom',
-          // Intensity scaling composes with the keyframe's `transform`.
-          // X-axis pinned to 1 (the flash should span viewport width
-          // regardless of intensity); Y reads the CSS var that stoke()
-          // writes synchronously to document.body before the keyed
-          // remount, dodging React state-batching races.
-          scale: '1 var(--uf-flash-scale-y, 1)',
+          // X stays at 1 so the flash spans viewport width; Y is the
+          // most-recent intensity from useForgeStoke. The element is
+          // keyed on flashKey so each stoke remounts the div with the
+          // current intensity baked into the inline style — no CSS var
+          // indirection, no state-batching race.
+          scale: `1 ${flashIntensity}`,
           animation:
             flashKey > 0
               ? `uf-forge-flash ${STOKE_FLASH_DECAY_MS}ms ease-out forwards`

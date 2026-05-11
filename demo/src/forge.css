@@ -2,6 +2,28 @@
  * base flash keyframe, hammer-icon cursor. Imported from `pages/Home.tsx`.
  */
 
+/* Aldrich (SIL OFL 1.1, Matthew Desmond / madtype). Self-hosted from
+ * /fonts/. License: public/fonts/Aldrich-OFL.txt. Single-weight; the
+ * wordmark uses -webkit-text-stroke to add a touch of beef.
+ */
+@font-face {
+  font-family: 'Aldrich';
+  src: url('/fonts/Aldrich-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.uf-wordmark {
+  font-family: 'Aldrich', system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  -webkit-text-stroke: 0.75px currentColor;
+}
+.uf-wordmark-unit { color: #c8c4be; }
+.uf-wordmark-forge { color: var(--uf-accent); }
+
 [data-theme='home'] {
   --uf-bg: #0d0d0d;
   --uf-fg: #f4ede0;
