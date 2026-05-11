@@ -117,12 +117,16 @@ export function CroutonDemo() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Glyph glyph="🌾" count={wheat} label="wheat" />
+          <div className="grid items-center gap-4 grid-cols-[1fr_auto_1fr]">
+            <div className="flex justify-center">
+              <Glyph glyph="🌾" count={wheat} label="wheat" />
+            </div>
             <span className="text-xl" style={{ color: 'var(--uf-muted)' }}>
               +
             </span>
-            <Glyph glyph="🪨" count={ore} label="ore" />
+            <div className="flex justify-center">
+              <Glyph glyph="🪨" count={ore} label="ore" />
+            </div>
           </div>
 
           <Result label="cities built" value={`${cities}`} emphasis />
