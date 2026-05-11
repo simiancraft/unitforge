@@ -3,13 +3,13 @@
 // the page can react to interaction (e.g. hovering a kit card makes the
 // forge breathe brighter for a beat).
 
-const EMBERS = Array.from({ length: 18 }, (_, i) => ({
+const EMBERS = Array.from({ length: 36 }, (_, i) => ({
   id: i,
-  left: (i * 53 + 7) % 100,
-  size: 2 + ((i * 13) % 4),
-  delay: ((i * 37) % 100) / 10,
-  duration: 8 + ((i * 7) % 6),
-  drift: ((i * 11) % 30) - 15,
+  left: (i * 37 + 7) % 100,
+  size: 3 + ((i * 13) % 5),
+  delay: ((i * 41) % 100) / 10,
+  duration: 7 + ((i * 7) % 5),
+  drift: ((i * 11) % 36) - 18,
 }));
 
 interface ForgeEmberBgProps {
@@ -24,14 +24,14 @@ export function ForgeEmberBg({ intensity = 1 }: ForgeEmberBgProps) {
         @media (prefers-reduced-motion: no-preference) {
           @keyframes uf-ember-rise {
             0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
-            15%  { opacity: 0.85; }
-            85%  { opacity: 0.5; }
-            100% { transform: translate3d(var(--drift, 0px), -110vh, 0) scale(0.5); opacity: 0; }
+            10%  { opacity: 1; }
+            75%  { opacity: 0.75; }
+            100% { transform: translate3d(var(--drift, 0px), -110vh, 0) scale(0.4); opacity: 0; }
           }
         }
         @media (prefers-reduced-motion: reduce) {
           @keyframes uf-ember-rise {
-            0%, 100% { opacity: 0.3; }
+            0%, 100% { opacity: 0.4; }
           }
         }
       `}</style>
@@ -55,8 +55,8 @@ export function ForgeEmberBg({ intensity = 1 }: ForgeEmberBgProps) {
                 width: `${e.size}px`,
                 height: `${e.size}px`,
                 background:
-                  'radial-gradient(circle, rgba(249,180,76,0.95) 0%, rgba(249,115,22,0.5) 50%, transparent 80%)',
-                boxShadow: `0 0 ${6 + intensity * 4}px rgba(249,180,76,${0.45 + intensity * 0.25})`,
+                  'radial-gradient(circle, rgba(255,220,150,1) 0%, rgba(249,115,22,0.85) 45%, transparent 80%)',
+                boxShadow: `0 0 ${8 + intensity * 6}px rgba(249,180,76,${0.7 + intensity * 0.3})`,
                 ['--drift' as string]: `${e.drift}px`,
                 animation: `uf-ember-rise ${e.duration}s linear infinite`,
                 animationDelay: `${e.delay}s`,

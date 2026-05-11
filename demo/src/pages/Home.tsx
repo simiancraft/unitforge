@@ -58,6 +58,11 @@ export function Home() {
     window.setTimeout(() => {
       setBursts((b) => b.filter((x) => x.id !== burst.id));
     }, 1300);
+  };
+
+  // Hammer hits the anvil on click, not on hover; the strike rings briefly
+  // and the user is carried into the kit page mid-animation.
+  const onTileClick = () => {
     triggerStrike();
   };
 
@@ -108,6 +113,7 @@ export function Home() {
               hovered={hovered === kit.id}
               onEnter={(e) => onTileEnter(kit.id, e)}
               onLeave={() => setHovered(null)}
+              onClick={onTileClick}
             />
           ))}
         </div>
@@ -121,11 +127,13 @@ function KitCard({
   hovered,
   onEnter,
   onLeave,
+  onClick,
 }: {
   kit: (typeof KITS)[number];
   hovered: boolean;
   onEnter: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   onLeave: () => void;
+  onClick: () => void;
 }) {
   const Icon = kit.id === 'geometry' ? Box : Database;
   return (
@@ -136,6 +144,7 @@ function KitCard({
       onMouseLeave={onLeave}
       onFocus={(e) => onEnter(e as unknown as React.MouseEvent<HTMLAnchorElement>)}
       onBlur={onLeave}
+      onClick={onClick}
       className="uf-flare-card uf-anvil-cursor group relative flex flex-col gap-3 rounded-lg border p-6 transition-transform hover:-translate-y-1"
       style={{
         background: 'var(--uf-card)',
