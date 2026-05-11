@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { Check, Copy } from 'lucide-react';
+import { useKitTheme } from './KitTheme.js';
 import { cachedHighlight, highlight } from '../lib/highlighter.js';
 
 type Lang = 'ts' | 'tsx' | 'js';
@@ -14,12 +15,15 @@ interface CodeBlockProps {
 }
 
 export function CodeBlock({ code, lang = 'ts' }: CodeBlockProps) {
-  const [html, setHtml] = useState<string | null>(cachedHighlight(code, lang) ?? null);
+  const { shikiTheme } = useKitTheme();
+  const [html, setHtml] = useState<string | null>(
+    cachedHighlight(code, lang, shikiTheme) ?? null,
+  );
 
   useEffect(() => {
-    if (html !== null) return;
+    setHtml(cachedHighlight(code, lang, shikiTheme) ?? null);
     let cancelled = false;
-    highlight(code, lang)
+    highlight(code, lang, shikiTheme)
       .then((rendered) => {
         if (!cancelled) setHtml(rendered);
       })
@@ -27,7 +31,7 @@ export function CodeBlock({ code, lang = 'ts' }: CodeBlockProps) {
     return () => {
       cancelled = true;
     };
-  }, [code, lang, html]);
+  }, [code, lang, shikiTheme]);
 
   return (
     <div

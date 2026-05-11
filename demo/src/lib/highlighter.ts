@@ -1,15 +1,31 @@
-// Shared shiki/core singleton. CodeBlock and ForgeBench both highlight
-// the same TS/TSX/JS code; we share one lazy import + one wasm instance
-// across them.
+// Shared shiki/core singleton. Multiple themes are supported; each is
+// lazy-loaded the first time it's requested so the bundle weight scales
+// with what's actually used.
+//
+// To add a new theme, drop it in THEME_LOADERS and reference it by name
+// from a kit page's <KitThemeProvider>.
 
 interface Highlighter {
-  codeToHtml: (code: string, opts: { lang: string; theme: string }) => string;
+  codeToHtml: (
+    code: string,
+    opts: { lang: string; theme: string },
+  ) => string;
+  loadTheme: (mod: unknown) => Promise<void>;
+  getLoadedThemes: () => string[];
 }
 
+const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
+  'github-dark': () => import('shiki/themes/github-dark.mjs'),
+  'github-light': () => import('shiki/themes/github-light.mjs'),
+  'rose-pine-dawn': () => import('shiki/themes/rose-pine-dawn.mjs'),
+  'synthwave-84': () => import('shiki/themes/synthwave-84.mjs'),
+};
+
 let highlighterPromise: Promise<Highlighter> | null = null;
+const loadedThemes = new Set<string>();
 const htmlCache = new Map<string, string>();
 
-export async function getHighlighter(): Promise<Highlighter> {
+function getHighlighter(): Promise<Highlighter> {
   if (!highlighterPromise) {
     highlighterPromise = (async () => {
       const [{ createHighlighterCore }, { createOnigurumaEngine }] = await Promise.all([
@@ -17,7 +33,7 @@ export async function getHighlighter(): Promise<Highlighter> {
         import('shiki/engine/oniguruma'),
       ]);
       const h = await createHighlighterCore({
-        themes: [import('shiki/themes/github-dark.mjs')],
+        themes: [],
         langs: [
           import('shiki/langs/typescript.mjs'),
           import('shiki/langs/tsx.mjs'),
@@ -31,16 +47,40 @@ export async function getHighlighter(): Promise<Highlighter> {
   return highlighterPromise;
 }
 
-export async function highlight(code: string, lang: 'ts' | 'tsx' | 'js' = 'ts'): Promise<string> {
-  const key = `${lang}::${code}`;
+async function ensureTheme(theme: string): Promise<void> {
+  if (loadedThemes.has(theme)) return;
+  const loader = THEME_LOADERS[theme];
+  if (!loader) {
+    throw new Error(
+      `Unknown shiki theme: '${theme}'. Add it to THEME_LOADERS in lib/highlighter.ts.`,
+    );
+  }
+  const [h, mod] = await Promise.all([getHighlighter(), loader()]);
+  if (!h.getLoadedThemes().includes(theme)) {
+    await h.loadTheme(mod);
+  }
+  loadedThemes.add(theme);
+}
+
+export async function highlight(
+  code: string,
+  lang: 'ts' | 'tsx' | 'js' = 'ts',
+  theme = 'github-dark',
+): Promise<string> {
+  const key = `${theme}::${lang}::${code}`;
   const cached = htmlCache.get(key);
   if (cached) return cached;
+  await ensureTheme(theme);
   const h = await getHighlighter();
-  const rendered = h.codeToHtml(code, { lang, theme: 'github-dark' });
+  const rendered = h.codeToHtml(code, { lang, theme });
   htmlCache.set(key, rendered);
   return rendered;
 }
 
-export function cachedHighlight(code: string, lang: 'ts' | 'tsx' | 'js' = 'ts'): string | undefined {
-  return htmlCache.get(`${lang}::${code}`);
+export function cachedHighlight(
+  code: string,
+  lang: 'ts' | 'tsx' | 'js' = 'ts',
+  theme = 'github-dark',
+): string | undefined {
+  return htmlCache.get(`${theme}::${lang}::${code}`);
 }

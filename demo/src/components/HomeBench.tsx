@@ -14,6 +14,7 @@ import { foot, meter } from 'unitforge/kits/geometry';
 import { LENGTH_UNITS, findByKey } from '../lib/units.js';
 import { cachedHighlight, highlight } from '../lib/highlighter.js';
 import { CopyButton } from './CodeBlock.js';
+import { useKitTheme } from './KitTheme.js';
 
 const MIN = 0.1;
 const MAX = 100;
@@ -128,10 +129,14 @@ forge(${fromOpt.label.replace(/\s/g, '')}, ${toOpt.label.replace(/\s/g, '')})(${
 }
 
 function BenchCodeLine({ code }: { code: string }) {
-  const [html, setHtml] = useState<string | null>(cachedHighlight(code) ?? null);
+  const { shikiTheme } = useKitTheme();
+  const [html, setHtml] = useState<string | null>(
+    cachedHighlight(code, 'ts', shikiTheme) ?? null,
+  );
   useEffect(() => {
+    setHtml(cachedHighlight(code, 'ts', shikiTheme) ?? null);
     let cancelled = false;
-    highlight(code)
+    highlight(code, 'ts', shikiTheme)
       .then((rendered) => {
         if (!cancelled) setHtml(rendered);
       })
@@ -139,7 +144,7 @@ function BenchCodeLine({ code }: { code: string }) {
     return () => {
       cancelled = true;
     };
-  }, [code]);
+  }, [code, shikiTheme]);
   return (
     <div
       className="relative mono rounded text-xs"

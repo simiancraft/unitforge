@@ -16,6 +16,7 @@ import { forge } from 'unitforge';
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { CopyButton } from './CodeBlock.js';
+import { useKitTheme } from './KitTheme.js';
 import { cachedHighlight, highlight } from '../lib/highlighter.js';
 
 export interface BenchState<D extends Dimension> {
@@ -164,10 +165,14 @@ export function ForgeBench<D extends Dimension>({
 }
 
 function LiveCodeLine({ code }: { code: string }) {
-  const [html, setHtml] = useState<string | null>(cachedHighlight(code) ?? null);
+  const { shikiTheme } = useKitTheme();
+  const [html, setHtml] = useState<string | null>(
+    cachedHighlight(code, 'ts', shikiTheme) ?? null,
+  );
   useEffect(() => {
+    setHtml(cachedHighlight(code, 'ts', shikiTheme) ?? null);
     let cancelled = false;
-    highlight(code)
+    highlight(code, 'ts', shikiTheme)
       .then((rendered) => {
         if (!cancelled) setHtml(rendered);
       })
@@ -175,7 +180,7 @@ function LiveCodeLine({ code }: { code: string }) {
     return () => {
       cancelled = true;
     };
-  }, [code]);
+  }, [code, shikiTheme]);
   return (
     <div
       className="relative mono mt-3 rounded text-xs"

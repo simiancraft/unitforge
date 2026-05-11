@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Cpu, Gauge, HardDrive, MemoryStick } from 'lucide-react';
 import { DemoSection } from '../../components/DemoSection.js';
 import { ForgeBench, type BenchState } from '../../components/ForgeBench.js';
+import { KitThemeProvider } from '../../components/KitTheme.js';
 import { CircuitBg } from './components/CircuitBg.js';
 import { DATA_ALL_UNITS, findByKey } from '../../lib/units.js';
 import { DriveVsOs } from './components/DriveVsOs.js';
@@ -37,7 +38,7 @@ export function DataStoragePage() {
   }, [bench.fromKey, bench.toKey, bench.value]);
 
   return (
-    <>
+    <KitThemeProvider values={{ shikiTheme: 'synthwave-84' }}>
       <CircuitBg pulse={pulse} />
 
       <header className="relative uf-scanlines flex flex-col gap-2">
@@ -138,7 +139,7 @@ export function DataStoragePage() {
           code={RAM_CODE}
         />
       </div>
-    </>
+    </KitThemeProvider>
   );
 }
 
