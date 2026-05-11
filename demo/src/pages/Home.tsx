@@ -40,10 +40,18 @@ export function Home() {
   const triggerStrike = () => {
     const main = document.getElementById('main');
     if (!main) return;
+    // Defensive remove in case a previous strike's cleanup didn't fire
+    // (route change unmounted us mid-timer). Reflow to flush the class
+    // change so the next add is a fresh animation start.
     main.classList.remove('uf-anvil-strike');
-    // Force a reflow so removing-then-adding the class restarts the animation.
     void main.offsetWidth;
     main.classList.add('uf-anvil-strike');
+    // Clear the class once the animation finishes so subsequent presses
+    // start from a no-class state. Without this the reflow-restart trick
+    // becomes unreliable after the first cycle on some Chromium builds.
+    window.setTimeout(() => {
+      main.classList.remove('uf-anvil-strike');
+    }, 320);
   };
 
   const onTileEnter = (id: string, e: React.MouseEvent<HTMLAnchorElement>) => {
