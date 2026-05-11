@@ -116,6 +116,7 @@ export function Home() {
           zIndex: -2,
           background: 'linear-gradient(to top, var(--uf-accent) 0%, transparent 100%)',
           opacity: 0,
+          transformOrigin: 'bottom',
           animation:
             flashKey > 0
               ? `uf-forge-flash ${STOKE_FLASH_DECAY_MS}ms ease-out forwards`

@@ -155,20 +155,22 @@ body {
     animation: uf-anvil-strike 280ms ease-out;
   }
 
-  /* Forge-glow flash: instant opacity 1 (the 0% keyframe), decays to 0
-   * over the duration applied at the call site. Pairs with each stoke
-   * burst so the bottom of the viewport flares like a struck billet.
+  /* Forge-glow flash: scales out of the bottom of the viewport on the
+   * first 20% of the timeline, then opacity decays to 0. Pairs with
+   * each stoke burst; reads as a flame leaping up from the anvil.
+   * The element using this needs `transform-origin: bottom`.
    */
   @keyframes uf-forge-flash {
-    0%   { opacity: 1; }
-    100% { opacity: 0; }
+    0%   { transform: scaleY(0); opacity: 1; }
+    20%  { transform: scaleY(1); opacity: 1; }
+    100% { transform: scaleY(1); opacity: 0; }
   }
 
 }
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes uf-forge-flash {
-    0%, 100% { opacity: 0.25; }
+    0%, 100% { transform: scaleY(1); opacity: 0.25; }
   }
 }
 
