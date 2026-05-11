@@ -8,9 +8,9 @@
 
 import { useState } from 'react';
 import { defineConversion, defineUnit, forge } from 'unitforge';
-import { CodeBlock } from './CodeBlock.js';
-import { Result } from './Result.js';
-import { Slider } from './Slider.js';
+import { CodeBlock } from '../components/CodeBlock.js';
+import { Result } from '../components/Result.js';
+import { Slider } from '../components/Slider.js';
 
 // Each resource is its own dimension (Catan wood and Catan brick aren't
 // directly interconvertible). ROAD is the produced structure.

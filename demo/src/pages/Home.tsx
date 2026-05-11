@@ -15,10 +15,10 @@
 
 import { useRef, useState } from 'react';
 import { Box, Database } from 'lucide-react';
-import { CatanDemo } from '../components/CatanDemo.js';
-import { CoreApiIntro } from '../components/CoreApiIntro.js';
+import { CatanDemo } from './CatanDemo.js';
+import { CoreApiIntro } from './CoreApiIntro.js';
 import { EmberStream } from '../components/EmberStream.js';
-import { HomeBench } from '../components/HomeBench.js';
+import { HomeBench } from './HomeBench.js';
 import { CircuitBg } from '../kits/data-storage/components/CircuitBg.js';
 import { GridPaperBg } from '../kits/geometry/components/GridPaperBg.js';
 import { KITS } from '../lib/kits.js';

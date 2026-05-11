@@ -10,11 +10,10 @@ import type { ChangeEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { forge } from 'unitforge';
-import { foot, meter } from 'unitforge/kits/geometry';
 import { LENGTH_UNITS, findByKey } from '../lib/units.js';
 import { cachedHighlight, highlight } from '../lib/highlighter.js';
-import { CopyButton } from './CodeBlock.js';
-import { useKitTheme } from './KitTheme.js';
+import { CopyButton } from '../components/CodeBlock.js';
+import { useKitTheme } from '../components/KitTheme.js';
 
 const MIN = 0.1;
 const MAX = 100;
@@ -32,16 +31,10 @@ export function HomeBench({ fromKey, toKey, value, onChange }: HomeBenchProps) {
   const toOpt = findByKey(LENGTH_UNITS, toKey);
   const result = forge(fromOpt.unit, toOpt.unit)(value);
 
-  // Reference the imported `meter`/`foot` so the example imports show up
-  // as actually-used at the top of the page (lets bundlers tree-shake
-  // honestly + keeps lint happy in case unused-imports gets stricter).
-  void meter;
-  void foot;
-
   const code = `import { forge } from 'unitforge';
-import { ${fromOpt.label.replace(/\s/g, '')}, ${toOpt.label.replace(/\s/g, '')} } from 'unitforge/kits/geometry';
+import { ${fromOpt.label}, ${toOpt.label} } from 'unitforge/kits/geometry';
 
-forge(${fromOpt.label.replace(/\s/g, '')}, ${toOpt.label.replace(/\s/g, '')})(${value}); // ${result.toFixed(4)}`;
+forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
 
   return (
     <div className="flex flex-col gap-3">
