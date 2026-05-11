@@ -46,6 +46,25 @@
   }
 }
 
+/* Forge-base glow: multi-stop gradient that reads as a flame standing
+ * out of the bottom of the viewport. Bottom 5% is white-hot, then a
+ * hot-orange peak around 13%, then a long burnt-orange tail that fades
+ * to transparent so the column feels wispy like a candle tip rather
+ * than a solid block. Pairs with the uf-forge-flash keyframe + scaleY
+ * animation on the element using this class.
+ */
+.uf-forge-glow {
+  background: linear-gradient(
+    to top,
+    rgba(255, 250, 220, 1) 0%,
+    rgba(255, 200, 100, 0.98) 5%,
+    rgba(249, 115, 22, 0.9) 13%,
+    rgba(170, 60, 10, 0.55) 32%,
+    rgba(120, 35, 5, 0.18) 65%,
+    transparent 100%
+  );
+}
+
 /* Anvil / hammer cursor on the home kit tiles; lucide Hammer SVG inlined
  * as a data-URI with brand orange stroke.
  */

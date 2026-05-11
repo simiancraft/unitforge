@@ -40,7 +40,7 @@ const STOKE_MAX_DELAY_SEC = 0.52;
 const STOKE_HOLD_MS = 1200;
 const STOKE_FLASH_DECAY_MS = STOKE_HOLD_MS * 0.25; // forge-base flash, ~300ms
 
-const FORGE_GLOW_HEIGHT_VH = 15;
+const FORGE_GLOW_HEIGHT_VH = 33;
 // ─────────────────────────────────────────────────────────────────────────
 
 interface StokeSlot {
@@ -115,11 +115,10 @@ export function Home() {
       <div
         key={`forge-flash-${flashKey}`}
         aria-hidden
-        className="fixed bottom-0 left-0 right-0 pointer-events-none"
+        className="uf-forge-glow fixed bottom-0 left-0 right-0 pointer-events-none"
         style={{
           height: `${FORGE_GLOW_HEIGHT_VH}vh`,
           zIndex: -2,
-          background: 'linear-gradient(to top, var(--uf-accent) 0%, transparent 100%)',
           opacity: 0,
           transformOrigin: 'bottom',
           animation:
