@@ -34,13 +34,12 @@ function getHighlighter(): Promise<Highlighter> {
         import('shiki/core'),
         import('shiki/engine/oniguruma'),
       ]);
+      // Demo snippets are all TypeScript today; the tsx/javascript grammars
+      // are heavy (~175 KB each gzipped) and unused. Add them back when a
+      // section ships a JSX or vanilla-JS sample.
       const h = await createHighlighterCore({
         themes: [],
-        langs: [
-          import('shiki/langs/typescript.mjs'),
-          import('shiki/langs/tsx.mjs'),
-          import('shiki/langs/javascript.mjs'),
-        ],
+        langs: [import('shiki/langs/typescript.mjs')],
         engine: createOnigurumaEngine(import('shiki/wasm')),
       });
       return h as unknown as Highlighter;

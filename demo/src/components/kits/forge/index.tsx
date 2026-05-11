@@ -51,7 +51,11 @@ export function Page() {
 
   const onTileActivate = () => stoke.stoke(STOKE_HOVER_INTENSITY);
   const onTilePress = () => stoke.stoke(STOKE_STRIKE_INTENSITY, STRIKE_VARIANT);
+  // Defer navigation so the strike animation plays out, but only when
+  // the user is performing the default click. Modifier keys + middle
+  // clicks should keep their native behavior (open in new tab/window).
   const onTileClick = (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     window.setTimeout(() => {
       window.location.hash = `#/${id}`;

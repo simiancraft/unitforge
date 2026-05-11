@@ -120,13 +120,18 @@ export type AreaKey = (typeof AREA_UNITS)[number]['key'];
 export type VolumeKey = (typeof VOLUME_UNITS)[number]['key'];
 export type DataKey = (typeof DATA_ALL_UNITS)[number]['key'];
 
-export function findByKey<L extends ReadonlyArray<{ key: string }>>(
-  list: L,
-  key: L[number]['key'],
-): L[number] {
+/**
+ * Look up an entry by `key`. The return type is narrowed to the exact
+ * tuple element so `findByKey(LENGTH_UNITS, 'm').key` hovers as the
+ * literal `'m'`, not the full key union.
+ */
+export function findByKey<
+  L extends ReadonlyArray<{ key: string }>,
+  K extends L[number]['key'],
+>(list: L, key: K): Extract<L[number], { key: K }> {
   const found = list.find((o) => o.key === key);
   if (!found) throw new Error(`Unknown unit key: ${String(key)}`);
-  return found;
+  return found as Extract<L[number], { key: K }>;
 }
 
 export function pickerOptions<L extends ReadonlyArray<{ key: string; label: string }>>(

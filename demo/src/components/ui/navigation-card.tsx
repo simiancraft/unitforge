@@ -58,6 +58,9 @@ export function NavigationCard({
 
   const handleKeyDown = (e: KeyboardEvent<HTMLAnchorElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
+      // Anchors don't activate on Space by default; preventDefault stops
+      // the page-scroll behavior and lets onPress drive the strike.
+      if (e.key === ' ') e.preventDefault();
       onPress?.();
     }
   };

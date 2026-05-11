@@ -48,6 +48,7 @@ function HorizontalSlider({
         step={step}
         value={value}
         onChange={handleChange(onChange)}
+        aria-valuetext={suffix ? `${value.toFixed(2)} ${suffix}` : undefined}
         className="uf-slider w-full accent-uf-accent"
       />
     </label>
@@ -76,6 +77,7 @@ function VerticalSlider({
         onChange={handleChange(onChange)}
         aria-label={label}
         aria-orientation="vertical"
+        aria-valuetext={suffix ? `${value.toFixed(2)} ${suffix}` : undefined}
         className="uf-slider accent-uf-accent"
         style={{
           writingMode: 'vertical-lr',
