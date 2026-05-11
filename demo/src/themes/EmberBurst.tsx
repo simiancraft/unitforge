@@ -1,9 +1,8 @@
 // A short-lived radial burst of ember particles, anchored to a viewport-
 // space coordinate. Used on home when the visitor hovers a kit tile;
 // reads as a hammer-on-anvil spark plume that pairs with the
-// `uf-anvil-strike` percussion on the page.
-
-import { useMemo } from 'react';
+// `uf-anvil-strike` percussion on the page. Particle layout is purely
+// derived from the loop index; the React Compiler memoizes it.
 
 interface EmberBurstProps {
   x: number;
@@ -11,23 +10,19 @@ interface EmberBurstProps {
 }
 
 export function EmberBurst({ x, y }: EmberBurstProps) {
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 14 }, (_, i) => {
-        const angle = (i / 14) * Math.PI * 2 + ((i * 17) % 7) / 20;
-        // Bias upward so the burst feels like sparks flying off an anvil
-        // rather than a perfectly spherical explosion.
-        const upBias = -10 - ((i * 7) % 18);
-        const dist = 50 + ((i * 13) % 60);
-        return {
-          dx: Math.cos(angle) * dist,
-          dy: Math.sin(angle) * dist + upBias,
-          delay: ((i * 23) % 100) / 1000,
-          size: 2 + ((i * 5) % 3),
-        };
-      }),
-    [],
-  );
+  const particles = Array.from({ length: 90 }, (_, i) => {
+    const angle = (i / 14) * Math.PI * 2 + ((i * 17) % 7) / 20;
+    // Bias upward so the burst feels like sparks flying off an anvil
+    // rather than a perfectly spherical explosion.
+    const upBias = -10 - ((i * 7) % 18);
+    const dist = 50 + ((i * 13) % 60);
+    return {
+      dx: Math.cos(angle) * dist,
+      dy: Math.sin(angle) * dist + upBias,
+      delay: ((i * 23) % 100) / 10,
+      size: 2 + ((i * 5) % 3),
+    };
+  });
 
   return (
     <div
