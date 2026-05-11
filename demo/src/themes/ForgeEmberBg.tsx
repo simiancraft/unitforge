@@ -15,11 +15,18 @@ export function ForgeEmberBg() {
   return (
     <>
       <style>{`
-        @keyframes uf-ember-rise {
-          0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
-          15%  { opacity: 0.85; }
-          85%  { opacity: 0.5; }
-          100% { transform: translate3d(var(--drift, 0px), -110vh, 0) scale(0.5); opacity: 0; }
+        @media (prefers-reduced-motion: no-preference) {
+          @keyframes uf-ember-rise {
+            0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+            15%  { opacity: 0.85; }
+            85%  { opacity: 0.5; }
+            100% { transform: translate3d(var(--drift, 0px), -110vh, 0) scale(0.5); opacity: 0; }
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          @keyframes uf-ember-rise {
+            0%, 100% { opacity: 0.3; }
+          }
         }
       `}</style>
       <div

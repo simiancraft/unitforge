@@ -1,11 +1,12 @@
-// Router shell. Reads window.location.hash, derives a route, and renders
-// the corresponding themed page. The `data-theme` attribute on the route
-// container switches the entire CSS variable bundle (see index.css), so the
-// whole page feels like it crossed into a different visual world.
+// Router shell. Reads window.location.hash, derives a route, sets
+// data-theme on the route container, and renders the corresponding page.
+// Error boundary catches widget-level throws; skip-link supports
+// keyboard-only navigation. Reduced-motion users don't get smooth scrolls.
 
 import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { VERSION } from 'unitforge/version';
+import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { KITS, type KitId } from './lib/kits.js';
 import { DataStoragePage } from './pages/DataStorage.js';
 import { GeometryPage } from './pages/Geometry.js';
@@ -24,7 +25,8 @@ function useHashRoute(): Route {
   useEffect(() => {
     const handler = () => {
       setRoute(parseHash());
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
     };
     window.addEventListener('hashchange', handler);
     return () => window.removeEventListener('hashchange', handler);
@@ -39,11 +41,16 @@ export function App() {
 
   return (
     <div data-theme={theme} className="relative min-h-screen">
-      <main className="relative mx-auto max-w-5xl px-6 py-10 md:py-14">
+      <a href="#main" className="uf-skip-link">
+        skip to content
+      </a>
+      <main id="main" className="relative mx-auto max-w-5xl px-6 py-10 md:py-14">
         {route !== 'home' && <BreadcrumbBar kitLabel={kitMeta?.label ?? route} />}
-        {route === 'home' && <Home />}
-        {route === 'geometry' && <GeometryPage />}
-        {route === 'data-storage' && <DataStoragePage />}
+        <ErrorBoundary>
+          {route === 'home' && <Home />}
+          {route === 'geometry' && <GeometryPage />}
+          {route === 'data-storage' && <DataStoragePage />}
+        </ErrorBoundary>
         <Footer />
       </main>
     </div>
@@ -53,18 +60,21 @@ export function App() {
 function BreadcrumbBar({ kitLabel }: { kitLabel: string }) {
   return (
     <nav
+      aria-label="breadcrumb"
       className="mb-8 flex items-center justify-between"
       style={{ color: 'var(--uf-muted)' }}
     >
       <a
         href="#/"
-        className="mono inline-flex items-center gap-2 text-xs uppercase tracking-wider transition-colors"
+        className="mono inline-flex items-center gap-2 text-xs uppercase tracking-wider"
         style={{ color: 'var(--uf-fg)' }}
       >
         <ArrowLeft size={14} strokeWidth={2} />
         unitforge
       </a>
-      <span className="uf-eyebrow">kit · {kitLabel}</span>
+      <span className="uf-eyebrow" aria-current="page">
+        kit · {kitLabel}
+      </span>
     </nav>
   );
 }

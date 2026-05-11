@@ -38,37 +38,41 @@
   --uf-muted: #9b8e7e;
   --uf-accent: #f97316;
   --uf-card: #161412;
-  --uf-border: #2b231a;
+  --uf-border: #7a6948; /* warm-leather; raised from #2b231a (1.26:1 -> 3.65:1) */
   --uf-code-bg: #0a0908;
 }
 
 [data-theme='geometry'] {
-  /* engineering-paper cream + navy ink + red pencil */
+  /* engineering-paper cream + navy ink + red pencil. Contrast-tuned per
+   * WCAG AA: muted #4d566b (6.4:1), accent #b73a3b (5:1), grid #3e7fa6 (3.8:1).
+   */
   --uf-bg: #f6efdc;
   --uf-fg: #1a2238;
-  --uf-muted: #5b6479;
-  --uf-accent: #c84647;
+  --uf-muted: #4d566b;
+  --uf-accent: #b73a3b;
   --uf-card: #fffaf0;
   --uf-border: #2b3553;
   --uf-code-bg: #1a2238;
 
   --uf-display: 'Caveat', 'Georgia', cursive;
-  --uf-grid: #6aa1c8; /* cyan grid lines */
-  --uf-grid-faint: #6aa1c81f;
+  --uf-grid: #3e7fa6;
+  --uf-grid-faint: #3e7fa61f;
 }
 
 [data-theme='data-storage'] {
-  /* PCB green-black + phosphor + amber LED */
+  /* PCB green-black + phosphor + amber LED. Contrast-tuned: muted
+   * #6e9c7e (6.0:1), border #a06a2e (4.1:1) so card edges read.
+   */
   --uf-bg: #0a1410;
   --uf-fg: #a3ff7f;
-  --uf-muted: #4f7a5f;
+  --uf-muted: #6e9c7e;
   --uf-accent: #ffb000;
   --uf-card: #0f1f18;
-  --uf-border: #7a4f1c;
+  --uf-border: #a06a2e;
   --uf-code-bg: #050a08;
 
   --uf-display: 'JetBrains Mono', ui-monospace, monospace;
-  --uf-trace: #c8881e; /* copper trace */
+  --uf-trace: #c8881e;
   --uf-trace-faint: #c8881e22;
 }
 
@@ -85,8 +89,38 @@ body {
   font-family: var(--uf-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  transition: background-color 600ms cubic-bezier(0.22, 1, 0.36, 1),
-    color 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    transition: background-color 600ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* Visible focus ring across every interactive surface; themed via --uf-accent. */
+:where(a, button, select, input, [role='slider'], [tabindex]):focus-visible {
+  outline: 2px solid var(--uf-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link for keyboard users; visible only when focused. */
+.uf-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  padding: 6px 12px;
+  background: var(--uf-card);
+  color: var(--uf-fg);
+  font-family: var(--uf-mono);
+  font-size: 12px;
+  border: 1px solid var(--uf-accent);
+  border-radius: 4px;
+  z-index: 100;
+}
+.uf-skip-link:focus {
+  left: 8px;
 }
 
 code,

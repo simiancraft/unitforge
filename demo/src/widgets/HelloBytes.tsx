@@ -18,12 +18,46 @@ import {
   DATA_ALL_UNITS,
 } from '../lib/units.js';
 
+// Per-unit slider bounds so the range stays pedagogical at every scale:
+// 1-1e6 bytes is interesting; 1-2000 GB is the canonical drive-size range.
+const SLIDER_RANGE: Record<string, { min: number; max: number; step: number; init: number }> = {
+  B: { min: 1, max: 1_000_000, step: 1000, init: 500_000 },
+  kB: { min: 1, max: 10_000, step: 1, init: 500 },
+  MB: { min: 1, max: 10_000, step: 1, init: 500 },
+  GB: { min: 1, max: 2000, step: 1, init: 500 },
+  TB: { min: 0.1, max: 100, step: 0.1, init: 1 },
+  PB: { min: 0.01, max: 10, step: 0.01, init: 1 },
+  KiB: { min: 1, max: 10_000, step: 1, init: 500 },
+  MiB: { min: 1, max: 10_000, step: 1, init: 500 },
+  GiB: { min: 1, max: 2000, step: 1, init: 500 },
+  TiB: { min: 0.1, max: 100, step: 0.1, init: 1 },
+  PiB: { min: 0.01, max: 10, step: 0.01, init: 1 },
+  bit: { min: 1, max: 1_000_000, step: 1000, init: 1000 },
+  kbit: { min: 1, max: 10_000, step: 1, init: 1000 },
+  Mbit: { min: 1, max: 10_000, step: 1, init: 100 },
+  Gbit: { min: 0.1, max: 100, step: 0.1, init: 1 },
+};
+
+function rangeFor(key: string) {
+  return SLIDER_RANGE[key] ?? { min: 1, max: 2000, step: 1, init: 500 };
+}
+
 export function HelloBytes() {
   const [value, setValue] = useState(500);
-  const [unitKey, setUnitKey] = useState('GB');
+  const [unitKey, setUnitKeyRaw] = useState('GB');
+
+  const range = rangeFor(unitKey);
+  const clamped = Math.min(Math.max(value, range.min), range.max);
+
+  // On unit change, reset the value to that unit's pedagogical default so
+  // the slider is always in a sensible position for the chosen scale.
+  const setUnitKey = (next: string) => {
+    setUnitKeyRaw(next);
+    setValue(rangeFor(next).init);
+  };
 
   const fromUnit = findByKey(DATA_ALL_UNITS, unitKey);
-  const inBytes = forge(fromUnit.unit, byte)(value);
+  const inBytes = forge(fromUnit.unit, byte)(clamped);
 
   const renderRows = (
     list: typeof DATA_DECIMAL_UNITS,
@@ -55,10 +89,10 @@ export function HelloBytes() {
         />
         <Slider
           label={`value (${fromUnit.key})`}
-          value={value}
-          min={1}
-          max={unitKey === 'B' ? 1_000_000 : 2000}
-          step={unitKey === 'B' ? 1000 : 1}
+          value={clamped}
+          min={range.min}
+          max={range.max}
+          step={range.step}
           onChange={setValue}
           suffix={fromUnit.key}
         />
