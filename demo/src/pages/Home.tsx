@@ -1,18 +1,25 @@
 // Home page. Forge-themed: simple-version unitforge mark, ember streams,
-// hot-metal accent kit cards.
+// hot-metal accent kit cards, then a "three verbs" core-API teaser and a
+// build-your-own Catan demo. Reads top-down as:
 //
-// Ember layering: one ambient EmberStream always running, plus a pool of
-// two "stoke" EmberStreams that are restarted via key bumps on hover. The
-// pool is round-robin: each stoke routes to whichever slot is more stale
-// (idle, or expiring sooner), so rapid back-and-forth hovers keep one
-// layer brightening while another is still fading.
+//   1. icon + the thesis "forge anything measurable"
+//   2. interactive horizontal rule (HomeBench)
+//   3. kits with reactive themed previews
+//   4. core api intro (three primitives + tiny snippets)
+//   5. byo Catan demo
+//
+// Ember layering: one ambient stream + two stoke slots on a round-robin
+// so rapid hovers stack flurries. Each stoke also fires a multi-stop
+// forge-glow flash at the bottom of the viewport (one of three height
+// variants for variation).
 
 import { useRef, useState } from 'react';
 import { Box, Database } from 'lucide-react';
-import { ForgeBench, type BenchState } from '../components/ForgeBench.js';
-import { findByKey, LENGTH_UNITS } from '../lib/units.js';
-import { CircuitBg } from '../kits/data-storage/components/CircuitBg.js';
+import { CatanDemo } from '../components/CatanDemo.js';
+import { CoreApiIntro } from '../components/CoreApiIntro.js';
 import { EmberStream } from '../components/EmberStream.js';
+import { HomeBench } from '../components/HomeBench.js';
+import { CircuitBg } from '../kits/data-storage/components/CircuitBg.js';
 import { GridPaperBg } from '../kits/geometry/components/GridPaperBg.js';
 import { KITS } from '../lib/kits.js';
 import '../forge.css';
@@ -30,18 +37,12 @@ const AMBIENT_MAX_DELAY_SEC = 4;
 
 const STOKE_COUNT = 72;
 const STOKE_BOOST = 2;
-// Wider speed variance than ambient so the burst reads as flurry, not
-// a coherent layer. Fastest = 1.04s (was 1.56s; 50% faster); slowest =
-// 3.575s (was 2.86s; 25% slower). Median ~2.3s, near the previous
-// uniform-scale stoke timing.
 const STOKE_DURATION_MIN = 1.04;
 const STOKE_DURATION_MAX = 3.575;
 const STOKE_MAX_DELAY_SEC = 0.52;
 const STOKE_HOLD_MS = 1200;
-const STOKE_FLASH_DECAY_MS = STOKE_HOLD_MS * 0.25; // forge-base flash, ~300ms
+const STOKE_FLASH_DECAY_MS = STOKE_HOLD_MS * 0.25;
 
-// Three forge-glow variants in forge.css; round-robin per stoke so
-// each strike has slight variation in height + stop placement.
 const FORGE_GLOW_VARIANTS = ['uf-forge-glow-1', 'uf-forge-glow-2', 'uf-forge-glow-3'] as const;
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -51,11 +52,7 @@ interface StokeSlot {
 }
 
 export function Home() {
-  const [bench, setBench] = useState<BenchState<'length'>>({
-    fromKey: 'm',
-    toKey: 'ft',
-    value: 5,
-  });
+  const [bench, setBench] = useState({ fromKey: 'm', toKey: 'ft', value: 5 });
   const [hovered, setHovered] = useState<string | null>(null);
   const [slotA, setSlotA] = useState<StokeSlot>({ key: 0, expiresAt: null });
   const [slotB, setSlotB] = useState<StokeSlot>({ key: 0, expiresAt: null });
@@ -68,9 +65,6 @@ export function Home() {
     const now = Date.now();
     const aLive = slotA.expiresAt !== null && slotA.expiresAt > now;
     const bLive = slotB.expiresAt !== null && slotB.expiresAt > now;
-    // Pick the more-stale slot: an idle one if available, else whichever
-    // is expiring sooner. Third rapid hover lands on the same slot as the
-    // first, "shuffling" the most-stale instance with a fresh burst.
     let target: 'A' | 'B';
     if (aLive && bLive) {
       target = (slotA.expiresAt ?? 0) <= (slotB.expiresAt ?? 0) ? 'A' : 'B';
@@ -79,7 +73,6 @@ export function Home() {
     } else {
       target = 'A';
     }
-
     const newExpiry = now + STOKE_HOLD_MS;
     if (target === 'A') {
       setSlotA((s) => ({ key: s.key + 1, expiresAt: newExpiry }));
@@ -155,8 +148,8 @@ export function Home() {
         maxDelaySec={STOKE_MAX_DELAY_SEC}
       />
 
-      <section className="flex flex-col gap-10">
-        <div className="flex flex-col items-center text-center gap-3">
+      <section className="flex flex-col gap-12">
+        <header className="flex flex-col items-center text-center gap-4">
           <img
             src="./unitforge-simple.png"
             alt=""
@@ -165,27 +158,16 @@ export function Home() {
             className="h-32 w-32 select-none"
             draggable={false}
           />
-          <p className="uf-eyebrow">forge anything measurable</p>
-          <p
-            className="max-w-xl text-sm leading-relaxed"
-            style={{ color: 'var(--uf-muted)' }}
-          >
-            Units, dimensions, and conversions are values you import. Try a
-            quick conversion below, or pick a kit and play with a domain.
-          </p>
-        </div>
+          <h1 className="display text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+            forge anything measurable
+          </h1>
+        </header>
 
-        <ForgeBench
-          state={bench}
+        <HomeBench
+          fromKey={bench.fromKey}
+          toKey={bench.toKey}
+          value={bench.value}
           onChange={setBench}
-          options={LENGTH_UNITS.map((o) => ({ key: o.key, label: o.label, unit: o.unit }))}
-          min={0.1}
-          max={100}
-          step={0.1}
-          codeFor={(s, r) =>
-            `forge(${findByKey(LENGTH_UNITS, s.fromKey).label}, ${findByKey(LENGTH_UNITS, s.toKey).label})(${s.value}); // ${r.toFixed(4)}`
-          }
-          label="try unitforge"
         />
 
         <div className="grid gap-5 md:grid-cols-2">
@@ -200,6 +182,10 @@ export function Home() {
             />
           ))}
         </div>
+
+        <CoreApiIntro />
+
+        <CatanDemo />
       </section>
     </>
   );
