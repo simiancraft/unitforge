@@ -39,11 +39,14 @@ export function CodeBlock({ code, lang = 'ts' }: CodeBlockProps) {
         border: '1px solid var(--uf-border)',
       }}
     >
-      <div className="absolute right-2 top-2 z-10 flex items-center gap-2">
+      <span
+        className="uf-eyebrow absolute right-2 top-2 z-10"
+        style={{ color: 'var(--uf-muted)' }}
+      >
+        unitforge
+      </span>
+      <div className="absolute bottom-2 right-2 z-10">
         <CopyButton code={code} />
-        <span className="uf-eyebrow" style={{ color: 'var(--uf-muted)' }}>
-          unitforge
-        </span>
       </div>
       {html ? (
         <div
@@ -80,17 +83,17 @@ export function CopyButton({ code, label = 'copy' }: { code: string; label?: str
     <button
       type="button"
       onClick={onClick}
+      title={copied ? 'copied' : label}
       aria-label={copied ? 'copied' : label}
-      className="flex items-center gap-1 rounded border px-2 py-1 text-[10px] uppercase tracking-wider transition-opacity"
+      className="flex h-7 w-7 items-center justify-center rounded border transition-opacity hover:opacity-100"
       style={{
         background: 'var(--uf-card)',
         color: copied ? 'var(--uf-accent)' : 'var(--uf-fg)',
         borderColor: 'var(--uf-border)',
-        opacity: 0.85,
+        opacity: 0.7,
       }}
     >
-      {copied ? <Check size={12} strokeWidth={2.2} /> : <Copy size={12} strokeWidth={2.2} />}
-      {copied ? 'copied' : label}
+      {copied ? <Check size={14} strokeWidth={2.2} /> : <Copy size={14} strokeWidth={2.2} />}
     </button>
   );
 }

@@ -184,17 +184,17 @@ function LiveCodeLine({ code }: { code: string }) {
         border: '1px solid var(--uf-border)',
       }}
     >
-      <div className="absolute right-2 top-1.5 z-10">
+      <div className="absolute bottom-1.5 right-1.5 z-10">
         <CopyButton code={code} />
       </div>
       {html ? (
         <div
-          className="uf-code-scroll px-3 py-2 pr-24 [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!whitespace-pre"
+          className="uf-code-scroll px-3 py-2 pr-12 [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!whitespace-pre"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : (
         <pre
-          className="uf-code-scroll m-0 px-3 py-2 pr-24"
+          className="uf-code-scroll m-0 px-3 py-2 pr-12"
           style={{ color: 'var(--uf-fg)' }}
         >
           {code}
