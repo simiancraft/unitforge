@@ -34,17 +34,19 @@ export function useSvgPointerDrag({ getHandleCenter, onDrag }: UseSvgPointerDrag
   const dragRef = useRef<{ offsetX: number; offsetY: number } | null>(null);
   const pendingRef = useRef<SvgPoint | null>(null);
   const rafRef = useRef<number | null>(null);
-  // onDrag captured at rAF-schedule time would be stale by the time the
-  // frame fires (parent rerenders after each setState); read through a
-  // ref so flush always calls the latest closure.
-  const onDragRef = useRef(onDrag);
-  onDragRef.current = onDrag;
 
+  // flush is re-created each render and closes over the current onDrag.
+  // A scheduled rAF carries whichever flush was passed at schedule time;
+  // its onDrag closure may be one render stale by the time the frame
+  // fires, but onDrag is a setState callback which is reference-stable
+  // for useState, so a "stale" closure still routes to the latest state.
+  // Writing a ref during render to bypass that staleness would trip
+  // React Compiler's no-refs-during-render rule.
   const flush = () => {
     rafRef.current = null;
     const p = pendingRef.current;
     pendingRef.current = null;
-    if (p) onDragRef.current(p);
+    if (p) onDrag(p);
   };
 
   const cancelPending = () => {
