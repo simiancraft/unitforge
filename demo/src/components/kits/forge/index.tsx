@@ -7,19 +7,20 @@
 // mousedown fires a stoke event with the appropriate intensity; the
 // click defers route navigation until ~2/3 of the burst has played.
 
-import { useRef, useState } from 'react';
 import { Hammer } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { navigate } from '~/lib/router.js';
+import type { LengthKey } from '~/lib/units.js';
 import type { BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
-import type { LengthKey } from '~/lib/units.js';
 import { ForgeBackdrop } from './parts/forge-backdrop.js';
-import { ForgeHeader } from './parts/forge-header.js';
 import { FORGE_GLOW_VARIANT_COUNT } from './parts/forge-glow.js';
-import { ForgeBench } from './sections/forge-bench.js';
-import { KitsGrid } from './sections/kits-grid.js';
+import { ForgeHeader } from './parts/forge-header.js';
 import { CoreApi } from './sections/core-api.js';
 import { CroutonDemo } from './sections/crouton-demo.js';
+import { ForgeBench } from './sections/forge-bench.js';
+import { KitsGrid } from './sections/kits-grid.js';
 import { useForgeStoke } from './use-forge-stoke.js';
 import './forge.css';
 
@@ -36,7 +37,7 @@ const STRIKE_VARIANT = 1;
 const NAV_DELAY_MS = Math.round(STOKE_HOLD_MS * (2 / 3));
 
 export function Page() {
-  const [bench, setBench] = useState<BenchState<'length', LengthKey>>({
+  const [bench, setBench] = useState<BenchState<LengthKey>>({
     fromKey: 'm',
     toKey: 'ft',
     value: 5,
@@ -59,7 +60,7 @@ export function Page() {
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     window.setTimeout(() => {
-      window.location.hash = `#/${id}`;
+      navigate(id);
     }, NAV_DELAY_MS);
   };
 
@@ -68,25 +69,23 @@ export function Page() {
   // layout box around KitLayout's zones.
   return (
     <div ref={shakeRef} className="contents">
-    <KitLayout
-      backdropZone={<ForgeBackdrop stoke={stoke} />}
-      headerZone={<ForgeHeader />}
-      benchZone={
-        <ForgeBench state={bench} onChange={setBench} />
-      }
-      sectionsZone={
-        <>
-          <KitsGrid
-            currentKitId="forge"
-            onActivate={onTileActivate}
-            onPress={onTilePress}
-            onClick={onTileClick}
-          />
-          <CroutonDemo />
-          <CoreApi />
-        </>
-      }
-    />
+      <KitLayout
+        backdropZone={<ForgeBackdrop stoke={stoke} />}
+        headerZone={<ForgeHeader />}
+        benchZone={<ForgeBench state={bench} onChange={setBench} />}
+        sectionsZone={
+          <>
+            <KitsGrid
+              currentKitId="forge"
+              onActivate={onTileActivate}
+              onPress={onTilePress}
+              onClick={onTileClick}
+            />
+            <CroutonDemo />
+            <CoreApi />
+          </>
+        }
+      />
     </div>
   );
 }
@@ -96,7 +95,7 @@ export function Page() {
 export const meta: KitMeta = {
   id: 'forge',
   label: 'unitforge',
-  blurb: 'forge anything measurable.',
+  blurb: 'forge anything measurable. not just physics.',
   defaultThemeId: 'forge-dark',
   icon: Hammer,
 };
