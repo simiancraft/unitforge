@@ -1,5 +1,5 @@
-// Route-level error boundary. The demo's `findByKey` throws on an unknown
-// unit key (which can happen if a deep-link carries a stale key, or if a
+// Route-level error boundary. The demo's `findById` throws on an unknown
+// unit id (which can happen if a deep-link carries a stale id, or if a
 // future widget mounts before its data is ready). Catching here keeps a
 // bad slice from blanking the entire app.
 

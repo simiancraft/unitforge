@@ -13,7 +13,7 @@
 // the demo playful and instantly recognizable.
 
 import { useState } from 'react';
-import { defineConversion, defineUnit, forge } from 'unitforge';
+import { defineConversion, defineUnit, forge, type Unit } from 'unitforge';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
@@ -131,45 +131,47 @@ function CroutonWidget({ wheat, ore, cities, onWheatChange, onOreChange }: Crout
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3">
-        <ResourceSlider glyph="🌾" label="wheat" value={wheat} onChange={onWheatChange} />
-        <ResourceSlider glyph="🪨" label="ore" value={ore} onChange={onOreChange} />
+        <ResourceSlider unit={wheatUnit} value={wheat} onChange={onWheatChange} />
+        <ResourceSlider unit={oreUnit} value={ore} onChange={onOreChange} />
       </div>
 
       <div className="grid items-center gap-4 grid-cols-[1fr_auto_1fr]">
         <div className="flex justify-center">
-          <PileGlyph glyph="🌾" count={wheat} label="wheat" />
+          <PileGlyph unit={wheatUnit} count={wheat} />
         </div>
         <span className="text-xl text-uf-muted">+</span>
         <div className="flex justify-center">
-          <PileGlyph glyph="🪨" count={ore} label="ore" />
+          <PileGlyph unit={oreUnit} count={ore} />
         </div>
       </div>
 
       <Result label="cities built" value={`${cities}`} variant="hero" />
 
       <div className="flex items-center justify-center">
-        <HeroGlyph glyph="🏰" count={cities} label="cities" />
+        <HeroGlyph unit={cityUnit} count={cities} />
       </div>
     </div>
   );
 }
 
+// ResourceSlider / PileGlyph / HeroGlyph take the unit directly; the
+// emoji glyph rides on `unit.symbol`, the SR-readable label on
+// `unit.label`. No parallel glyph/label props; the unit IS the metadata.
 interface ResourceSliderProps {
-  glyph: string;
-  label: string;
+  unit: Unit<'count', number>;
   value: number;
   onChange: (n: number) => void;
 }
 
-function ResourceSlider({ glyph, label, value, onChange }: ResourceSliderProps) {
+function ResourceSlider({ unit, value, onChange }: ResourceSliderProps) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-2xl" aria-hidden>
-        {glyph}
+        {unit.symbol}
       </span>
       <div className="flex-1">
         <Slider
-          label={label}
+          label={unit.label.toLowerCase()}
           value={value}
           min={0}
           max={CROUTON_MAX_COUNT}
@@ -182,12 +184,11 @@ function ResourceSlider({ glyph, label, value, onChange }: ResourceSliderProps) 
 }
 
 interface GlyphProps {
-  glyph: string;
+  unit: Unit<'count', number>;
   count: number;
-  label: string;
 }
 
-function PileGlyph({ glyph, count, label }: GlyphProps) {
+function PileGlyph({ unit, count }: GlyphProps) {
   const sizeClass =
     PILE_SIZE_BUCKETS.find((b) => count <= b.upTo)?.size ?? PILE_SIZE_BUCKETS[0].size;
   return (
@@ -199,27 +200,27 @@ function PileGlyph({ glyph, count, label }: GlyphProps) {
     >
       {GLYPH_SLOTS.slice(0, count).map((slot) => (
         <span key={slot.id} aria-hidden>
-          {glyph}
+          {unit.symbol}
         </span>
       ))}
       <span className="sr-only">
-        {count} {label}
+        {count} {unit.label.toLowerCase()}
       </span>
     </span>
   );
 }
 
 // Hero glyph: the city payoff. Fixed large size, accent color.
-function HeroGlyph({ glyph, count, label }: GlyphProps) {
+function HeroGlyph({ unit, count }: GlyphProps) {
   return (
     <span className="inline-flex flex-wrap items-center justify-center gap-0.5 text-4xl leading-none text-uf-accent md:text-5xl">
       {GLYPH_SLOTS.slice(0, count).map((slot) => (
         <span key={slot.id} aria-hidden>
-          {glyph}
+          {unit.symbol}
         </span>
       ))}
       <span className="sr-only">
-        {count} {label}
+        {count} {unit.label.toLowerCase()}
       </span>
     </span>
   );

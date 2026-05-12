@@ -90,16 +90,16 @@ function RamStickWidget({
       <RamStickVisual litCount={litCount} />
 
       <Slider
-        label="capacity (GiB)"
+        label={`capacity (${gibibyte.symbol})`}
         value={gibValue}
         min={1}
         max={RAMSTICK_MAX_GIB}
         step={1}
         onChange={onGibValueChange}
-        suffix="GiB"
+        suffix={gibibyte.symbol}
       />
-      <Result label="same value" value={`${inGB.toFixed(3)} GB`} />
-      <Result label="raw bytes" value={`${formatMagnitude(inBytes)} B`} />
+      <Result label="same value" value={`${inGB.toFixed(3)} ${gigabyte.symbol}`} />
+      <Result label="raw bytes" value={`${formatMagnitude(inBytes)} ${byte.symbol}`} />
     </div>
   );
 }
@@ -220,7 +220,7 @@ function RamStickVisual({ litCount }: RamStickVisualProps) {
         fontSize="8"
         fill="var(--uf-accent)"
       >
-        POST · {litCount * (RAMSTICK_MAX_GIB / CHIPS)} GiB OK
+        POST · {litCount * (RAMSTICK_MAX_GIB / CHIPS)} {gibibyte.symbol} OK
       </text>
     </svg>
   );

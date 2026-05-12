@@ -144,22 +144,22 @@ function ThroughputWidget({
   return (
     <div className="flex flex-col gap-4">
       <Slider
-        label="link rate (Gbit/s)"
+        label={`link rate (${gigabit.symbol}/s)`}
         value={gbits}
         min={0.05}
         max={100}
         step={0.05}
         onChange={onGbitsChange}
-        suffix="Gbit/s"
+        suffix={`${gigabit.symbol}/s`}
       />
       <Slider
-        label="target file size (GB)"
+        label={`target file size (${gigabyte.symbol})`}
         value={targetGB}
         min={1}
         max={1000}
         step={1}
         onChange={onTargetGBChange}
-        suffix="GB"
+        suffix={gigabyte.symbol}
       />
 
       {/* Sweep is animated by CSS; current fill % isn't React-tracked,
@@ -173,7 +173,11 @@ function ThroughputWidget({
         tick={tick}
       />
 
-      <Result label="bandwidth" value={`${mbPerSec.toFixed(1)} MB/s`} variant="hero" />
+      <Result
+        label="bandwidth"
+        value={`${mbPerSec.toFixed(1)} ${megabyte.symbol}/s`}
+        variant="hero"
+      />
       <Result
         label={isCapped ? 'time to fill (sweep capped)' : 'time to fill'}
         value={formatDuration(realSeconds)}
@@ -217,7 +221,7 @@ function ThroughputBar({
         }}
       />
       <span className="mono absolute inset-0 flex items-center justify-center text-xs text-neutral-500 mix-blend-color-burn">
-        {targetGB.toFixed(0)} GB · @ {mbPerSec.toFixed(1)} MB/s
+        {targetGB.toFixed(0)} {gigabyte.symbol} · @ {mbPerSec.toFixed(1)} {megabyte.symbol}/s
       </span>
     </div>
   );

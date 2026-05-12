@@ -1,6 +1,7 @@
-// Themed select for picking a unit. Generic over the key union so the
-// parent's setState callback narrows correctly (e.g. setFromKey takes
-// `LengthKey`, not plain `string`).
+// Themed select for picking a unit. Options come from `pickerOptions(LIST)`
+// in `lib/units.ts`, which projects each unit's `id` as the option key and
+// `label` as the visible dropdown text. Parents own the selected id as
+// state (plain string; the unit's `id` is the stable kebab-case identifier).
 //
 // The visible label can be hidden via `labelHidden`; the label still
 // labels the control for screen readers (rendered into an sr-only span).
