@@ -95,54 +95,12 @@ export interface Conversion<
   readonly inputs: Inputs;
   readonly output: Output;
   readonly validate?: ValidatorMap<Inputs, T>;
+  // NoInfer<T> on the return position prevents TS from inferring T from
+  // the compute function body, which would otherwise compete with the
+  // inference from the inputs side and break object-output conversions.
   readonly compute: Output extends Dimension
-    ? (vals: { [K in keyof Inputs]: T }) => T
+    ? (vals: { [K in keyof Inputs]: T }) => NoInfer<T>
     : Output extends Record<string, Dimension>
-      ? (vals: { [K in keyof Inputs]: T }) => { [K in keyof Output]: T }
+      ? (vals: { [K in keyof Inputs]: T }) => { [K in keyof Output]: NoInfer<T> }
       : never;
-}
-
-/**
- * Configuration for a single `forge()` call. Plain TypeScript interface;
- * consumers construct as object literal at the call site.
- *
- * **For type annotations on userland wrappers,** this is the right type to
- * import: e.g., `function myWrapper<I,O,T>(units: ..., cfg: ForgeConfig<T>)`.
- * The `forge` overloads themselves do NOT take `ForgeConfig<T>` directly —
- * each overload inlines a narrow config shape so `via` can be tied to the
- * call's inferred `Inputs`/`Output`. **Caveat for cross-dim wrappers:** if
- * your wrapper passes `cfg` straight into a CROSS-DIM `forge()` call, the
- * loose `via?: Conversion<Record<string, Dimension>, ...>` on this interface
- * will not satisfy the narrow `via: Conversion<Inputs, Output, T>` the
- * cross-dim overload requires. Either narrow `via` in your wrapper's own
- * generic signature, or write the inline `{ via, validate?, precision?,
- * memoize? }` shape directly.
- */
-export interface ForgeConfig<T = number> {
-  /** Cross-dim conversion value. Required when `from` is object-shaped. */
-  via?: Conversion<Record<string, Dimension>, Dimension | Record<string, Dimension>, T>;
-  /** Call-site validators, additive on top of the conversion's own. */
-  validate?: ValidatorMap<Record<string, Dimension>, T>;
-  /**
-   * Output rounding AND cache-key normalization. Native-number only at v1.
-   * Non-negative integer; `0` rounds to integer; absent means no rounding.
-   */
-  precision?: number;
-  /**
-   * FIFO bounded-cache cap. `0` or absent disables the cache entirely (no key
-   * construction, no Map). Bounds `[0, 1_048_576]`. `DEFAULT_MEMO_CAP = 1024`
-   * ships as a named constant for ergonomic opt-in.
-   *
-   * **Eviction policy:** when the cache reaches `cap` entries, the
-   * oldest-INSERTED entry is dropped to make room for the new one. Reads do
-   * NOT promote entries (this is FIFO, not LRU). For typical
-   * unit-conversion workloads (small repeating value sets), FIFO is
-   * indistinguishable from LRU; the per-hit path stays as cheap as possible
-   * (no delete-and-reinsert).
-   *
-   * **Implementation note:** backed by `Map` (the only JS primitive offering
-   * both key→value lookup and insertion-order iteration); `cap` bounds entry
-   * count, not byte size.
-   */
-  memoize?: number;
 }

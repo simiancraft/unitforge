@@ -16,15 +16,14 @@ import type {
 } from './types.js';
 
 // ─── Public overload set ─────────────────────────────────────────────────
-// (See PLANNING.md "Public type sketch (canonical)" for the source of truth.)
 //
-// Each overload inlines its own `config` shape rather than intersecting
-// `ForgeConfig<T>` with a narrow `via`. Two reasons: (1) the intersection
-// `ForgeConfig<T> & { via: Conversion<Inputs, Output, T> }` requires the
-// narrow `via` to satisfy the loose `Conversion<Record<string, Dimension>, ...>`
-// from ForgeConfig, which fails because `ValidatorMap` is invariant in
-// `Inputs`; (2) the inlined shape is the source of truth at the call site.
-// `ForgeConfig` remains exported for documentation/hover.
+// Each overload inlines its own `config` shape rather than sharing a base
+// interface. `ValidatorMap` is invariant in `Inputs`, so a loose
+// `Conversion<Record<string, Dimension>, ...>` base type can't be narrowed
+// at the call site without losing assignability; the inlined per-overload
+// shape ties `via` to the call's inferred `Inputs`/`Output` directly.
+// Callers pass an object literal; TS contextually types it against the
+// matched overload's config shape, so no shared config interface is needed.
 
 /** Within-dimension. Both `Unit`s. No `via`. Converter is unary `(value) => value`. */
 export function forge<D extends Dimension, T = number>(
@@ -91,7 +90,7 @@ export function forge(from: any, to: any, config?: any): any {
   if (!safeConfig?.via) {
     const fromObj = from as Record<string, unknown>;
     throw new Error(
-      `[unitforge] forge() received an object-shaped \`from\` with no \`via:\` in ForgeConfig.\n` +
+      `[unitforge] forge() received an object-shaped \`from\` with no \`via:\` in the config.\n` +
         `\`from\` keys: { ${Object.keys(fromObj).join(', ')} }\n` +
         `Cross-dimensional forging requires a defineConversion value passed as \`via:\`.`,
     );
@@ -159,11 +158,8 @@ function buildCrossDimConverter(
   memoCap: number,
   precisionMul: number | null,
 ): (input: Record<string, unknown>) => unknown {
-  const conversion = safeConfig.via;
-  if (!conversion) {
-    // Defensive: caller (forge) already guards this path, but narrow for TS.
-    throw new Error('[unitforge] internal: cross-dim build called without conversion.via');
-  }
+  // Caller (forge) guarantees `via` is set on this path; assertion narrows for TS.
+  const conversion = safeConfig.via as NonNullable<typeof safeConfig.via>;
 
   // safeCopy nested user-controlled key map (call-site validators).
   const callSiteValidate = safeConfig.validate ? safeCopy(safeConfig.validate) : undefined;
@@ -178,19 +174,24 @@ function buildCrossDimConverter(
   const cache = memoCap > 0 ? new Map<string, unknown>() : null;
 
   return (rawInput) => {
-    // 0: defensively copy the input ONCE at the top. All downstream operations
-    // (cache key, validators, base normalization) read from the safe copy.
-    // Hostile inputs with throwing property getters get '[throwing getter]'
-    // sentinels; validators see those and reject cleanly instead of crashing
-    // the converter mid-pipeline.
-    const input = safeShallowCopy(rawInput);
-
-    // 1-2: cache check (memoize-on only)
+    // 1-2: cache check first (memoize-on only). Build the key from
+    // rawInput directly so the cache-hit path skips the shallow-copy
+    // allocation entirely. Hostile getters on rawInput would already
+    // throw inside buildCacheKey here, which is the same behavior as
+    // the memoize-off path; the sentinel substitution in safeShallowCopy
+    // only protects the validator/compute stages on a miss.
     let key: string | null = null;
     if (cache) {
-      key = buildCacheKey(input, inputKeys, precisionMul);
+      key = buildCacheKey(rawInput, inputKeys, precisionMul);
       if (cache.has(key)) return cache.get(key);
     }
+
+    // 0 (deferred to miss-only): defensive shallow-copy of the input.
+    // All downstream operations (validators, base normalization) read
+    // from the safe copy. Hostile inputs with throwing property getters
+    // get '[throwing getter]' sentinels; validators see those and reject
+    // cleanly instead of crashing the converter mid-pipeline.
+    const input = safeShallowCopy(rawInput);
 
     // 3: aggregate all validator failures (no short-circuit)
     const failures: ValidationFailure[] = [];

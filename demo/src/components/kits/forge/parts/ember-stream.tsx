@@ -1,4 +1,4 @@
-// EmberStream — a configurable, restartable column of rising ember
+// EmberStream; a configurable, restartable column of rising ember
 // particles. One instance is the "ambient" stream (slow, well-spread
 // delays, baseline glow). On hover, the page mounts one of a pool of
 // "stoke" instances with shorter delays, smaller rise duration, more
@@ -50,15 +50,17 @@ function rand(i: number, offset: number): number {
   return (h >>> 0) / 0x100000000;
 }
 
-export function EmberStream({
-  count = 32,
-  boost = 1,
-  durationMin = DEFAULT_DURATION_MIN,
-  durationMax = DEFAULT_DURATION_MAX,
-  maxDelaySec = 4,
-  intensity = 1,
-}: EmberStreamProps) {
-  const visible = Math.max(0, Math.min(1, intensity));
+interface EmberLayerProps {
+  count: number;
+  boost: number;
+  durationMin: number;
+  durationMax: number;
+  maxDelaySec: number;
+}
+
+// Particle-pool renderer. Stable on (count, boost, durations, delay); the
+// React Compiler can memo this since `intensity` lives one level up.
+function EmberLayer({ count, boost, durationMin, durationMax, maxDelaySec }: EmberLayerProps) {
   const sizeMul = Math.min(1.7, boost);
   const durationRange = durationMax - durationMin;
 
@@ -72,6 +74,43 @@ export function EmberStream({
     swayAmp: (rand(i, 6) - 0.5) * SWAY_AMP_MAX * 2,
     swayPeriod: SWAY_PERIOD_MIN + rand(i, 7) * SWAY_PERIOD_RANGE,
   }));
+
+  return (
+    <>
+      {embers.map((e) => (
+        <span
+          key={e.id}
+          className="absolute rounded-full"
+          style={
+            {
+              bottom: '-20px',
+              left: `${e.left}%`,
+              width: `${e.size}px`,
+              height: `${e.size}px`,
+              background:
+                'radial-gradient(circle, rgba(255,220,150,1) 0%, rgba(249,115,22,0.85) 45%, transparent 80%)',
+              boxShadow: `0 0 ${8 + boost * 6}px rgba(249,180,76,${0.7 + boost * 0.15})`,
+              ['--drift' as string]: `${e.drift}px`,
+              ['--sway-amp' as string]: `${e.swayAmp}px`,
+              animation: `uf-ember-rise ${e.duration}s linear infinite, uf-ember-sway ${e.swayPeriod}s ease-in-out infinite`,
+              animationDelay: `${e.delay}s, ${e.delay}s`,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+    </>
+  );
+}
+
+export function EmberStream({
+  count = 32,
+  boost = 1,
+  durationMin = DEFAULT_DURATION_MIN,
+  durationMax = DEFAULT_DURATION_MAX,
+  maxDelaySec = 4,
+  intensity = 1,
+}: EmberStreamProps) {
+  const visible = Math.max(0, Math.min(1, intensity));
 
   return (
     <>
@@ -102,27 +141,13 @@ export function EmberStream({
           transition: 'opacity 700ms cubic-bezier(0.22,1,0.36,1)',
         }}
       >
-        {embers.map((e) => (
-          <span
-            key={e.id}
-            className="absolute rounded-full"
-            style={
-              {
-                bottom: '-20px',
-                left: `${e.left}%`,
-                width: `${e.size}px`,
-                height: `${e.size}px`,
-                background:
-                  'radial-gradient(circle, rgba(255,220,150,1) 0%, rgba(249,115,22,0.85) 45%, transparent 80%)',
-                boxShadow: `0 0 ${8 + boost * 6}px rgba(249,180,76,${0.7 + boost * 0.15})`,
-                ['--drift' as string]: `${e.drift}px`,
-                ['--sway-amp' as string]: `${e.swayAmp}px`,
-                animation: `uf-ember-rise ${e.duration}s linear infinite, uf-ember-sway ${e.swayPeriod}s ease-in-out infinite`,
-                animationDelay: `${e.delay}s, ${e.delay}s`,
-              } as React.CSSProperties
-            }
-          />
-        ))}
+        <EmberLayer
+          count={count}
+          boost={boost}
+          durationMin={durationMin}
+          durationMax={durationMax}
+          maxDelaySec={maxDelaySec}
+        />
       </div>
     </>
   );

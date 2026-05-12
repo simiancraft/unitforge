@@ -25,15 +25,18 @@ interface ResultProps extends VariantProps<typeof resultValue> {
 }
 
 export function Result({ label, value, variant, className }: ResultProps) {
+  // <dl>/<dt>/<dd> encodes the label↔value relationship for screen readers;
+  // visually identical to the prior <div><span>/<span> via the flex overrides
+  // + m-0 resets on the browser-default description-list margins.
   return (
-    <div
+    <dl
       className={cn(
-        'flex items-baseline justify-between border-t border-uf-border pt-2',
+        'm-0 flex items-baseline justify-between border-t border-uf-border pt-2',
         className,
       )}
     >
-      <span className="uf-eyebrow">{label}</span>
-      <span className={resultValue({ variant })}>{value}</span>
-    </div>
+      <dt className="uf-eyebrow">{label}</dt>
+      <dd className={cn('m-0', resultValue({ variant }))}>{value}</dd>
+    </dl>
   );
 }

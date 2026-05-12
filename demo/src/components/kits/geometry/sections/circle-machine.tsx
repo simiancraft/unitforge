@@ -121,7 +121,7 @@ export function CircleMachine() {
               viewBox={`0 0 ${VIEW} ${VIEW}`}
               xmlns="http://www.w3.org/2000/svg"
               className="block h-auto w-full max-w-full touch-none"
-              style={{ maxWidth: `${VIEW}px` }}
+              style={{ maxWidth: `${VIEW}px`, overflow: 'visible' }}
               aria-hidden="true"
             >
               <defs>

@@ -32,9 +32,9 @@ const STOKE_STRIKE_INTENSITY = 3;
 // Median variant (height 33vh). Clicks pin to this so the strike's
 // intensity isn't compounded by an unrelated round-robin variant change.
 const STRIKE_VARIANT = 1;
-// Wait until ~2/3 of the burst has played before the route swaps so the
-// user sees the impact before navigation.
-const NAV_DELAY_MS = Math.round(STOKE_HOLD_MS * (2 / 3));
+// Wait for the full burst to play before the route swaps so the user
+// sees the shake + embers land all the way. Same length as STOKE_HOLD_MS.
+const NAV_DELAY_MS = STOKE_HOLD_MS;
 
 export function ForgeScreen() {
   const [bench, setBench] = useState<BenchState<LengthKey>>({
