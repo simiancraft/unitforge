@@ -2,7 +2,7 @@
 
 > A units-of-measure library for arbitrary domains. Three primitives (`forge`, `defineUnit`, `defineConversion`) work against any dimension and unit a consumer (or kit author) declares. First-class custom dimensions for non-physical domains (game state, business metrics, simulation, packaging, factions); per-unit tree-shake; not just a physics library.
 
-UnitForge is a TypeScript unit conversion library built around atomic named exports. It has no global registry, no bundled lookup table, and no fluent string-dispatch API. Your import graph is your runtime conversion graph, so production bundles include only the units and conversions you import.
+unitforge is a TypeScript unit conversion library built around atomic named exports. It has no global registry, no bundled lookup table, and no fluent string-dispatch API. Your import graph is your runtime conversion graph, so production bundles include only the units and conversions you import.
 
 ## Status
 
