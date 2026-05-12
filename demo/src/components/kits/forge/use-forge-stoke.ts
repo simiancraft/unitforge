@@ -135,7 +135,11 @@ export function useForgeStoke({
     const bLive = b.expiresAt !== null && b.expiresAt > now;
     let pick: 'A' | 'B';
     if (aLive && bLive) {
-      pick = (a.expiresAt ?? 0) <= (b.expiresAt ?? 0) ? 'A' : 'B';
+      // Hoist null-coalesced values into locals: a LogicalExpression in
+      // a ternary's test position is a react-compiler bailout.
+      const aExpiry = a.expiresAt ?? 0;
+      const bExpiry = b.expiresAt ?? 0;
+      pick = aExpiry <= bExpiry ? 'A' : 'B';
     } else if (aLive) {
       pick = 'B';
     } else {
