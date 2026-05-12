@@ -125,6 +125,16 @@ export type AreaKey = (typeof AREA_UNITS)[number]['key'];
 export type VolumeKey = (typeof VOLUME_UNITS)[number]['key'];
 export type DataKey = (typeof DATA_ALL_UNITS)[number]['key'];
 
+// Full-option aliases for each catalog (key + label + unit). Sections
+// that forward a resolved option through props import these so the type
+// stays literal and the field set stays bound to the catalog's actual
+// shape. Pairs with `findByKey`; the same option shape that comes out
+// of `findByKey(LENGTH_UNITS, key)` is what these aliases describe.
+export type LengthOption = (typeof LENGTH_UNITS)[number];
+export type AreaOption = (typeof AREA_UNITS)[number];
+export type VolumeOption = (typeof VOLUME_UNITS)[number];
+export type DataOption = (typeof DATA_ALL_UNITS)[number];
+
 /**
  * Look up an entry by `key`. The return type is narrowed to the exact
  * tuple element so `findByKey(LENGTH_UNITS, 'm').key` hovers as the

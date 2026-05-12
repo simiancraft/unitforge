@@ -14,6 +14,10 @@ import { findByKey, LENGTH_UNITS, type LengthKey, pickerOptions } from '~/lib/un
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
 export function HelloUnit() {
+  // The chassis owns the forge call so buildCode can pick up `result`
+  // and the slider readout can show it without re-forging. The Widget
+  // re-derives `from`/`to` from the keys via findByKey; that lookup is
+  // cheap and avoids relaying the resolved options through props.
   const [value, setValue] = useState(5);
   const [fromKey, setFromKey] = useState<LengthKey>('m');
   const [toKey, setToKey] = useState<LengthKey>('ft');
@@ -46,8 +50,6 @@ export function HelloUnit() {
               value={value}
               fromKey={fromKey}
               toKey={toKey}
-              from={from}
-              to={to}
               result={result}
               onValueChange={setValue}
               onFromKeyChange={setFromKey}
@@ -67,14 +69,10 @@ export function HelloUnit() {
   );
 }
 
-type LengthOption = (typeof LENGTH_UNITS)[number];
-
 interface HelloUnitWidgetProps {
   value: number;
   fromKey: LengthKey;
   toKey: LengthKey;
-  from: LengthOption;
-  to: LengthOption;
   result: number;
   onValueChange: (next: number) => void;
   onFromKeyChange: (next: LengthKey) => void;
@@ -85,13 +83,13 @@ function HelloUnitWidget({
   value,
   fromKey,
   toKey,
-  from,
-  to,
   result,
   onValueChange,
   onFromKeyChange,
   onToKeyChange,
 }: HelloUnitWidgetProps) {
+  const from = findByKey(LENGTH_UNITS, fromKey);
+  const to = findByKey(LENGTH_UNITS, toKey);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2">

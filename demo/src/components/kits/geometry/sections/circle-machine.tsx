@@ -29,9 +29,6 @@ const MAX_R = 10;
 const MIN_R = 0.1;
 const SCALE = (VIEW / 2 - PAD) / MAX_R;
 
-type LengthOption = (typeof LENGTH_UNITS)[number];
-type AreaOption = (typeof AREA_UNITS)[number];
-
 export function CircleMachine() {
   const [radius, setRadius] = useState(3);
   const [radiusKey, setRadiusKey] = useState<LengthKey>('m');
@@ -91,9 +88,6 @@ export function CircleMachine() {
               radiusKey={radiusKey}
               areaKey={areaKey}
               circKey={circKey}
-              radiusOpt={radiusOpt}
-              areaOpt={areaOpt}
-              circOpt={circOpt}
               area={area}
               circumference={circumference}
               svgRef={svgRef}
@@ -127,9 +121,6 @@ interface CircleWidgetProps {
   radiusKey: LengthKey;
   areaKey: AreaKey;
   circKey: LengthKey;
-  radiusOpt: LengthOption;
-  areaOpt: AreaOption;
-  circOpt: LengthOption;
   area: number;
   circumference: number;
   svgRef: UseSvgPointerDrag['svgRef'];
@@ -145,9 +136,6 @@ function CircleWidget({
   radiusKey,
   areaKey,
   circKey,
-  radiusOpt,
-  areaOpt,
-  circOpt,
   area,
   circumference,
   svgRef,
@@ -157,6 +145,9 @@ function CircleWidget({
   onAreaKeyChange,
   onCircKeyChange,
 }: CircleWidgetProps) {
+  const radiusOpt = findByKey(LENGTH_UNITS, radiusKey);
+  const areaOpt = findByKey(AREA_UNITS, areaKey);
+  const circOpt = findByKey(LENGTH_UNITS, circKey);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-3">

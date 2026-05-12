@@ -35,9 +35,6 @@ const MAX_VAL = 10;
 const MIN_VAL = 0.1;
 const SCALE = Math.min((VIEW_W - PAD * 2) / MAX_VAL, (VIEW_H - PAD * 2) / MAX_VAL);
 
-type LengthOption = (typeof LENGTH_UNITS)[number];
-type AreaOption = (typeof AREA_UNITS)[number];
-
 export function RectangleMachine() {
   const [length, setLength] = useState(3);
   const [width, setWidth] = useState(2);
@@ -91,9 +88,6 @@ export function RectangleMachine() {
               lengthKey={lengthKey}
               widthKey={widthKey}
               areaKey={areaKey}
-              lengthOpt={lengthOpt}
-              widthOpt={widthOpt}
-              areaOpt={areaOpt}
               area={area}
               svgRef={svgRef}
               handlers={handlers}
@@ -121,9 +115,6 @@ interface RectangleWidgetProps {
   lengthKey: LengthKey;
   widthKey: LengthKey;
   areaKey: AreaKey;
-  lengthOpt: LengthOption;
-  widthOpt: LengthOption;
-  areaOpt: AreaOption;
   area: number;
   svgRef: UseSvgPointerDrag['svgRef'];
   handlers: UseSvgPointerDrag['handlers'];
@@ -140,9 +131,6 @@ function RectangleWidget({
   lengthKey,
   widthKey,
   areaKey,
-  lengthOpt,
-  widthOpt,
-  areaOpt,
   area,
   svgRef,
   handlers,
@@ -152,6 +140,9 @@ function RectangleWidget({
   onWidthKeyChange,
   onAreaKeyChange,
 }: RectangleWidgetProps) {
+  const lengthOpt = findByKey(LENGTH_UNITS, lengthKey);
+  const widthOpt = findByKey(LENGTH_UNITS, widthKey);
+  const areaOpt = findByKey(AREA_UNITS, areaKey);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-3">

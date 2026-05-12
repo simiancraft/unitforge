@@ -5,7 +5,6 @@
 
 import { Cpu } from 'lucide-react';
 import { useState } from 'react';
-import type { Unit } from 'unitforge';
 import { forge } from 'unitforge';
 import { byte, gibibyte, megabit } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
@@ -20,6 +19,7 @@ import {
   DATA_BIT_UNITS,
   DATA_DECIMAL_UNITS,
   type DataKey,
+  type DataOption,
   findByKey,
   pickerOptions,
 } from '~/lib/units.js';
@@ -52,7 +52,6 @@ interface BytesState {
   value: number;
 }
 
-type DataUnitOption = { key: string; label: string; unit: Unit<'data', number> };
 type SliderBounds = { min: number; max: number; step: number };
 
 export function HelloBytes() {
@@ -98,7 +97,6 @@ export function HelloBytes() {
             <HelloBytesWidget
               unitKey={state.unitKey}
               value={state.value}
-              fromUnit={fromUnit}
               range={range}
               inBytes={inBytes}
               onUnitKeyChange={handleUnitKeyChange}
@@ -117,7 +115,6 @@ export function HelloBytes() {
 interface HelloBytesWidgetProps {
   unitKey: DataKey;
   value: number;
-  fromUnit: DataUnitOption;
   range: SliderBounds;
   inBytes: number;
   onUnitKeyChange: (next: DataKey) => void;
@@ -127,12 +124,12 @@ interface HelloBytesWidgetProps {
 function HelloBytesWidget({
   unitKey,
   value,
-  fromUnit,
   range,
   inBytes,
   onUnitKeyChange,
   onValueChange,
 }: HelloBytesWidgetProps) {
+  const fromUnit = findByKey(DATA_ALL_UNITS, unitKey);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
@@ -166,7 +163,7 @@ function HelloBytesWidget({
 // inside without re-walking the SectionLayout chrome.
 interface ReadoutColumn {
   family: string;
-  units: ReadonlyArray<DataUnitOption>;
+  units: ReadonlyArray<DataOption>;
 }
 
 const READOUT_COLUMNS: readonly ReadoutColumn[] = [
