@@ -70,7 +70,9 @@ The differentiators that matter for the "not just physics" thesis are **cross-di
 
 ## Tree-shaking
 
-The library is per-export tree-shakable; your production bundle pays only for what you actually import. Measured with `esbuild --bundle --minify --tree-shaking=true`:
+Atomic by design: your import graph is the runtime graph. Every unit and every conversion is an independent named export, annotated `/*#__PURE__*/`; each spec inlines its math, with no global registry and no lookup table to drag in. Fluent APIs like `convert(5).from('m').to('ft')` can't tree-shake to zero; the chain dispatches against a registry, and the registry stays in the bundle.
+
+Production bundles pay only for what you actually import. Measured with `esbuild --bundle --minify --tree-shaking=true`:
 
 | Import | min | gzip |
 | --- | --- | --- |
@@ -180,6 +182,10 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table (te
 - Bugs and feature requests: [GitHub issues](https://github.com/simiancraft/unitforge/issues)
 - Security: [private vulnerability reporting](https://github.com/simiancraft/unitforge/security/advisories/new); see [SECURITY.md](./SECURITY.md)
 - Code of conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
+
+## For agents
+
+Read [`llms.txt`](./llms.txt) first. It is the canonical orientation document for this package, written for LLM ingestion: architecture, API surface, subpath exports, tree-shake implementation, and key files. The README is for humans evaluating the library; `llms.txt` is the same scope in a denser, more parseable shape.
 
 ## License
 
