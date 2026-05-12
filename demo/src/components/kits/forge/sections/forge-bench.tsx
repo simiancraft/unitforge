@@ -1,4 +1,4 @@
-// ForgeBench (slim home variant) — the two-line forge instrument on the
+// ForgeBench (slim home variant); the two-line forge instrument on the
 // root page. Reads as an interactive horizontal rule between the masthead
 // and the kits.
 //
@@ -20,9 +20,11 @@ import { cn } from '~/lib/cn.js';
 import { round1 } from '~/lib/math.js';
 import { LENGTH_UNITS, type LengthKey, pickerOptions } from '~/lib/units.js';
 
-const MIN = 0.1;
-const MAX = 100;
-const STEP = 0.1;
+// Slider bounds for the home-page forge bench, in the user-selected
+// from-unit (length). Local to this surface; other benches pick their own.
+const HOME_BENCH_MIN = 0.1;
+const HOME_BENCH_MAX = 100;
+const HOME_BENCH_STEP = 0.1;
 
 interface ForgeBenchProps {
   state: BenchState<LengthKey>;
@@ -58,9 +60,9 @@ forge(${fromOpt.label}, ${toOpt.label})(${value}); // ${result.toFixed(4)}`;
           />
           <input
             type="range"
-            min={MIN}
-            max={MAX}
-            step={STEP}
+            min={HOME_BENCH_MIN}
+            max={HOME_BENCH_MAX}
+            step={HOME_BENCH_STEP}
             value={value}
             onChange={(e) => {
               const next = round1(Number(e.target.value));

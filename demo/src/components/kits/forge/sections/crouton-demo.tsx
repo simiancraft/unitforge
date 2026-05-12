@@ -143,14 +143,26 @@ function ResourceSlider({
         {glyph}
       </span>
       <div className="flex-1">
-        <Slider label={label} value={value} min={0} max={30} step={1} onChange={onChange} />
+        <Slider
+          label={label}
+          value={value}
+          min={0}
+          max={CROUTON_MAX_COUNT}
+          step={1}
+          onChange={onChange}
+        />
       </div>
     </div>
   );
 }
 
+// Slider max + the size of the stable glyph-key pool below. Bumping this
+// requires bumping both literals; they're the same upper bound on a
+// single render's glyph count.
+const CROUTON_MAX_COUNT = 30;
+
 // Pile glyph: resource accumulation. Font size shrinks as count grows so
-// the row stays a single line up to slider max (30).
+// the row stays a single line up to slider max.
 const PILE_SIZE_BUCKETS = [
   { upTo: 5, size: 'text-2xl md:text-3xl' },
   { upTo: 10, size: 'text-xl md:text-2xl' },
@@ -160,8 +172,7 @@ const PILE_SIZE_BUCKETS = [
 
 // Stable key tokens, one per max-count slot; sliced by render `count` so
 // the glyph spans keep identity across re-renders without index-as-key.
-const GLYPH_SLOT_MAX = 30;
-const GLYPH_SLOTS = Array.from({ length: GLYPH_SLOT_MAX }, (_, i) => ({ id: `slot-${i}` }));
+const GLYPH_SLOTS = Array.from({ length: CROUTON_MAX_COUNT }, (_, i) => ({ id: `slot-${i}` }));
 
 interface GlyphProps {
   glyph: string;

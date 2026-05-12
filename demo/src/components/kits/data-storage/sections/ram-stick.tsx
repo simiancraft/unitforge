@@ -17,6 +17,7 @@ const VIEW_W = 460;
 const VIEW_H = 140;
 const STAGGER_MS = 65;
 const PINS = 26;
+const RAMSTICK_MAX_GIB = 64;
 
 const CHIP_SLOTS = Array.from({ length: CHIPS }, (_, i) => ({ id: `chip-${i}` }));
 const PIN_SLOTS = Array.from({ length: PINS }, (_, i) => ({ id: `pin-${i}` }));
@@ -36,8 +37,7 @@ export function RamStick() {
   const inBytes = forge(gibibyte, byte)(gibValue);
   const inGB = forge(gibibyte, gigabyte)(gibValue);
 
-  const max = 64;
-  const targetLit = Math.min(CHIPS, Math.max(0, Math.round((gibValue / max) * CHIPS)));
+  const targetLit = Math.min(CHIPS, Math.max(0, Math.round((gibValue / RAMSTICK_MAX_GIB) * CHIPS)));
 
   const [litCount, setLitCount] = useState(targetLit);
   useEffect(() => {
@@ -167,7 +167,9 @@ export function RamStick() {
               fontSize="8"
               fill={litCount === targetLit ? 'var(--uf-accent)' : 'var(--uf-muted)'}
             >
-              {litCount === targetLit ? `POST · ${litCount * (max / CHIPS)} GiB OK` : 'POST · …'}
+              {litCount === targetLit
+                ? `POST · ${litCount * (RAMSTICK_MAX_GIB / CHIPS)} GiB OK`
+                : 'POST · …'}
             </text>
           </svg>
 
@@ -175,7 +177,7 @@ export function RamStick() {
             label="capacity (GiB)"
             value={gibValue}
             min={1}
-            max={64}
+            max={RAMSTICK_MAX_GIB}
             step={1}
             onChange={setGibValue}
             suffix="GiB"

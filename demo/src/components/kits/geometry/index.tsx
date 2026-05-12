@@ -35,6 +35,12 @@ const CELL_PX_BY_UNIT: Record<LengthKey, number> = {
   mi: 28,
 };
 
+// Slider bounds for the geometry kit's bench, in the user-selected
+// from-unit. Local to this kit; other kits' benches pick their own.
+const GEOMETRY_BENCH_MIN = 0.1;
+const GEOMETRY_BENCH_MAX = 100;
+const GEOMETRY_BENCH_STEP = 0.1;
+
 export function GeometryScreen() {
   const [bench, setBench] = useState<BenchState<LengthKey>>({
     fromKey: 'm',
@@ -66,9 +72,9 @@ export function GeometryScreen() {
           state={bench}
           onChange={setBench}
           options={LENGTH_UNITS}
-          min={0.1}
-          max={100}
-          step={0.1}
+          min={GEOMETRY_BENCH_MIN}
+          max={GEOMETRY_BENCH_MAX}
+          step={GEOMETRY_BENCH_STEP}
           codeFor={(s, r) =>
             `forge(${findByKey(LENGTH_UNITS, s.fromKey).label}, ${findByKey(LENGTH_UNITS, s.toKey).label})(${s.value}); // ${r.toFixed(4)}`
           }

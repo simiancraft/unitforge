@@ -21,6 +21,12 @@ import { RamStick } from './sections/ram-stick.js';
 import { ThroughputViz } from './sections/throughput-viz.js';
 import './data-storage.css';
 
+// Slider bounds for the data-storage kit's bench, in the user-selected
+// from-unit. Local to this kit; other kits' benches pick their own.
+const DATA_STORAGE_BENCH_MIN = 1;
+const DATA_STORAGE_BENCH_MAX = 2000;
+const DATA_STORAGE_BENCH_STEP = 1;
+
 export function DataStorageScreen() {
   const [bench, setBench] = useState<BenchState<DataKey>>({
     fromKey: 'GB',
@@ -51,9 +57,9 @@ export function DataStorageScreen() {
           state={bench}
           onChange={setBench}
           options={DATA_ALL_UNITS}
-          min={1}
-          max={2000}
-          step={1}
+          min={DATA_STORAGE_BENCH_MIN}
+          max={DATA_STORAGE_BENCH_MAX}
+          step={DATA_STORAGE_BENCH_STEP}
           codeFor={(s, r) =>
             `forge(${findByKey(DATA_ALL_UNITS, s.fromKey).label}, ${findByKey(DATA_ALL_UNITS, s.toKey).label})(${s.value}); // ${r.toExponential(3)}`
           }
