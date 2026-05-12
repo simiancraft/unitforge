@@ -18,13 +18,13 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/simiancraft/unitforge/badge)](https://securityscorecards.dev/viewer/?uri=github.com/simiancraft/unitforge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-# Forge anything measurable.
+# Forge anything measurable. Not just physics.
 
-A units library that does not assume you are doing physics. Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
+Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
 
 ## Kits
 
-Ships with kits across multiple domains; define your own for anything else (game state, finance, lab assays, inventory, factions). Each link below runs the kit live against the built package:
+Ships with kits across multiple domains; define your own for anything else (game state, finance, lab assays, inventory, factions). See this in action with the [Settlers of Crouton demo](https://simiancraft.github.io/unitforge/#crouton): a custom dimension, three units, and a recipe that turns wheat + ore into cities. Each link below runs the kit live against the built package:
 
 - [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume; metric and imperial; rectangle, circle, sphere, and cylinder derivations.
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; covers GB-vs-GiB and Gbit-vs-MB.
@@ -58,131 +58,52 @@ Requires Node 22+, ESM-only (`"type": "module"`), TypeScript `moduleResolution: 
 
 ## Build your own
 
-Custom dimensions and units are first-class; the library's own kits use the same shape userland does.
+Three functions; three steps. The library's own kits use the same shape userland does.
 
-**Custom unit (any dimension you invent):**
-
-```ts
-import { defineUnit, forge } from 'unitforge';
-
-const GOLD = 'gold' as const;
-
-const piece = defineUnit({
-  name: 'piece',
-  dimension: GOLD,
-  toBase: (v) => v,
-  fromBase: (b) => b,
-  base: true,
-});
-
-const stack = defineUnit({
-  name: 'stack',
-  dimension: GOLD,
-  toBase: (v) => v * 100,
-  fromBase: (b) => b / 100,
-});
-
-forge(stack, piece)(3); // 300
-```
-
-**Custom cross-dim conversion:**
+1. `defineUnit` declares each unit value in a dimension you invent.
+2. `defineConversion` declares the recipe (within a dimension or across dimensions).
+3. `forge` returns the typed converter.
 
 ```ts
-import { defineConversion, defineUnit, forge } from 'unitforge';
+import { defineUnit, defineConversion, forge } from 'unitforge';
 
-const PALLET = 'pallet' as const;
-const SHIPMENT = 'shipment' as const;
+const COUNT = 'count' as const;
+const wheat = defineUnit({ name: 'wheat', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b, base: true });
+const ore   = defineUnit({ name: 'ore',   dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
+const city  = defineUnit({ name: 'city',  dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
 
-const pallet = defineUnit({
-  name: 'pallet',
-  dimension: PALLET,
-  toBase: (v) => v,
-  fromBase: (b) => b,
-  base: true,
-});
-const shipment = defineUnit({
-  name: 'shipment',
-  dimension: SHIPMENT,
-  toBase: (v) => v,
-  fromBase: (b) => b,
-  base: true,
+const buildCities = defineConversion({
+  inputs: { wheat: COUNT, ore: COUNT },
+  output: COUNT,
+  compute: ({ wheat, ore }) => Math.floor(Math.min(wheat / 2, ore / 3)),
 });
 
-const truckloadsFromPallets = defineConversion({
-  inputs: { pallets: PALLET },
-  output: SHIPMENT,
-  validate: { pallets: (v) => v >= 0 || 'pallets must be >= 0' },
-  compute: ({ pallets }) => Math.ceil(pallets / 26), // 53' truck fits ~26 pallets
-});
-
-forge(
-  { pallets: pallet },
-  shipment,
-  { via: truckloadsFromPallets },
-)({ pallets: 100 }); // 4
+const cities = forge({ wheat, ore }, city, { via: buildCities });
+cities({ wheat: 6, ore: 9 }); // 3
 ```
 
-### Building scaling factories
+**Drag the sliders and watch cities accumulate:** [Settlers of Crouton demo](https://simiancraft.github.io/unitforge/#crouton). Same code, live.
 
-For units whose conversion to base is multiplication by a constant, the exported `linear(scale)` helper returns the `{ toBase, fromBase }` pair so you can compose a custom unit alongside imports from a kit:
+For multiplicative units (handspans, pints, miles), the exported `linear(scale)` helper builds the `{ toBase, fromBase }` pair so you can compose alongside imports from a kit:
 
 ```ts
 import { defineUnit, forge, linear } from 'unitforge';
 import { LENGTH } from 'unitforge/dimensions';
-import { foot, meter } from 'unitforge/kits/geometry';
+import { foot } from 'unitforge/kits/geometry';
 
-const handspan = defineUnit({
-  name: 'handspan',
-  dimension: LENGTH,
-  ...linear(0.235), // 23.5 cm
-});
-
+const handspan = defineUnit({ name: 'handspan', dimension: LENGTH, ...linear(0.235) });
 forge(handspan, foot)(4); // 3.084
-forge(handspan, meter)(4); // 0.94
 ```
 
 > Inside kit-shipped unit definitions, inline the `toBase`/`fromBase` closures rather than spreading `linear(scale)`; the spread defeats per-export tree-shaking. The helper is for ad-hoc userland use where bundle size does not matter.
 
 ## API
 
-Three primitives. One consumer; two factories.
+Three primitives. One consumer (`forge`); two factories (`defineUnit`, `defineConversion`). Full type signatures live in `dist/index.d.ts`; the [`llms.txt`](./llms.txt) walks an agent through every overload.
 
 ### `forge(from, to, config?)`
 
-Returns a converter function. Within-dimension forges take a scalar and return a scalar; cross-dimensional forges take an object input and require `via:` in the config.
-
-```ts
-// Within-dimension. NoInfer<D> on `to` makes `forge(meter, squareMeter)` a compile error.
-function forge<D extends Dimension, T = number>(
-  from: ForgeInput<D, T>,
-  to: ForgeInput<NoInfer<D>, T>,
-  config?: { precision?: number; memoize?: number },
-): (value: T) => T;
-
-// Cross-dimensional, scalar output.
-function forge<I extends Record<string, Dimension>, O extends Dimension, T = number>(
-  from: ForgeInput<I, T>,
-  to: ForgeOutput<O, T>,
-  config: {
-    via: Conversion<I, O, T>;
-    validate?: ValidatorMap<I, T>;
-    precision?: number;
-    memoize?: number;
-  },
-): (input: { [K in keyof I]: T }) => T;
-
-// Cross-dimensional, object output.
-function forge<I extends Record<string, Dimension>, O extends Record<string, Dimension>, T = number>(
-  from: ForgeInput<I, T>,
-  to: ForgeOutput<O, T>,
-  config: {
-    via: Conversion<I, O, T>;
-    validate?: ValidatorMap<I, T>;
-    precision?: number;
-    memoize?: number;
-  },
-): (input: { [K in keyof I]: T }) => { [K in keyof O]: T };
-```
+Returns a converter function. Within-dimension forges take a scalar and return a scalar; cross-dimensional forges take an object input and require `via:` in the config. `NoInfer<D>` on the `to` side makes wrong-dimension calls (`forge(meter, squareMeter)`) a compile error.
 
 Cross-dim pipeline: defensive copy of input, cache check (if `memoize` is on), run every validator and aggregate failures, throw `ValidationError` if any failed, normalize inputs to base units, run `compute`, denormalize outputs, write to cache, return.
 
@@ -197,25 +118,11 @@ Cross-dim pipeline: defensive copy of input, cache check (if `memoize` is on), r
 
 ### `defineUnit(spec)`
 
-A unit value: `name`, `dimension`, `toBase`/`fromBase` functions, optional `base: true` for the canonical base of a dimension.
-
-```ts
-function defineUnit<D extends Dimension, T = number>(spec: Unit<D, T>): Unit<D, T>;
-```
-
-See the [Build your own](#build-your-own) section above for the typical call shape.
+A unit value: `name`, `dimension`, `toBase`/`fromBase` functions, optional `base: true` for the canonical base of a dimension. See [Build your own](#build-your-own) for the call shape.
 
 ### `defineConversion(spec)`
 
 A conversion value: input shape (field name to dimension), output (single dimension or a record of dimensions), optional validators, a `compute` function written in base units. The library normalizes inputs from whatever unit the call site uses before invoking `compute`, then denormalizes the result.
-
-```ts
-function defineConversion<
-  Inputs extends Record<string, Dimension>,
-  Output extends Dimension | Record<string, Dimension>,
-  T = number,
->(spec: Conversion<Inputs, Output, T>): Conversion<Inputs, Output, T>;
-```
 
 Validators may return `true`/`undefined` to pass, a string to reject with that message, or throw (the original error is preserved on `failure.cause`). All validators run on every call; failures aggregate into a single `ValidationError`.
 
@@ -249,15 +156,10 @@ Re-exported from the root barrel (`import type { ... } from 'unitforge'`):
 ## Development
 
 ```sh
-bun install
-bun run lint        # biome
-bun run typecheck   # tsgo (TypeScript native preview); checks src/ AND test/
-bun test            # bun's built-in runner
-bun run build
-bun run check:package  # publint + attw --profile esm-only
+bun install && bun run check
 ```
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table (test, typecheck, lint, build, packaging, knip).
 
 ## Community
 

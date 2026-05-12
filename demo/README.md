@@ -1,6 +1,6 @@
 # unitforge / demo
 
-> **forge anything measurable** — the interactive showcase that ships alongside the library.
+> **forge anything measurable. not just physics.** The interactive showcase that ships alongside the library.
 
 The demo is two things at once:
 
