@@ -13,36 +13,33 @@
 
 import { ArrowRight } from 'lucide-react';
 import type { ChangeEvent } from 'react';
-import type { Dimension, ForgeInput } from 'unitforge';
+import type { Dimension, Unit } from 'unitforge';
 import { formatMagnitude } from '~/lib/format.js';
 import { round1 } from '~/lib/math.js';
 import { CodeLine } from '../CodeBlock.js';
 import { UnitPicker } from '../UnitPicker.js';
 import { computeBenchValues } from './compute-bench-values.js';
 
-export interface BenchState<K extends string = string> {
-  fromKey: K;
-  toKey: K;
+export interface BenchState {
+  fromId: string;
+  toId: string;
   value: number;
 }
 
-interface BenchProps<D extends Dimension, K extends string> {
-  state: BenchState<K>;
-  onChange: (next: BenchState<K>) => void;
-  options: readonly [
-    { key: K; label: string; unit: ForgeInput<D, number> },
-    ...{ key: K; label: string; unit: ForgeInput<D, number> }[],
-  ];
-  /** Slider bounds (in fromKey units). */
+interface BenchProps<D extends Dimension> {
+  state: BenchState;
+  onChange: (next: BenchState) => void;
+  options: ReadonlyArray<Unit<D, number>>;
+  /** Slider bounds (in fromId units). */
   min: number;
   max: number;
   step: number;
   /** Short code-block snippet shown under the controls; receives the live values. */
-  codeFor: (s: BenchState<K>, result: number) => string;
+  codeFor: (s: BenchState, result: number) => string;
   label?: string;
 }
 
-export function Bench<D extends Dimension, K extends string>({
+export function Bench<D extends Dimension>({
   state,
   onChange,
   options,
@@ -51,10 +48,10 @@ export function Bench<D extends Dimension, K extends string>({
   step,
   codeFor,
   label = 'forge bench',
-}: BenchProps<D, K>) {
-  const { fromOpt, toOpt, result } = computeBenchValues({
-    fromKey: state.fromKey,
-    toKey: state.toKey,
+}: BenchProps<D>) {
+  const { fromUnit, toUnit, result } = computeBenchValues({
+    fromId: state.fromId,
+    toId: state.toId,
     value: state.value,
     options,
   });
@@ -66,6 +63,8 @@ export function Bench<D extends Dimension, K extends string>({
     if (Number.isFinite(next)) onChange({ ...state, value: next });
   };
 
+  const pickerOpts = options.map((u) => ({ key: u.id, label: u.label }));
+
   return (
     <section className="uf-card relative rounded-lg p-4 shadow-md md:p-5" aria-label={label}>
       <div className="mb-3 flex items-center justify-between">
@@ -76,9 +75,9 @@ export function Bench<D extends Dimension, K extends string>({
       <div className="grid items-end gap-3 md:grid-cols-[1fr_auto_1fr]">
         <UnitPicker
           label="from"
-          value={state.fromKey}
-          options={options}
-          onChange={(next) => onChange({ ...state, fromKey: next })}
+          value={state.fromId}
+          options={pickerOpts}
+          onChange={(next) => onChange({ ...state, fromId: next })}
         />
 
         <ArrowRight
@@ -89,9 +88,9 @@ export function Bench<D extends Dimension, K extends string>({
 
         <UnitPicker
           label="to"
-          value={state.toKey}
-          options={options}
-          onChange={(next) => onChange({ ...state, toKey: next })}
+          value={state.toId}
+          options={pickerOpts}
+          onChange={(next) => onChange({ ...state, toId: next })}
         />
       </div>
 
@@ -104,18 +103,18 @@ export function Bench<D extends Dimension, K extends string>({
           value={state.value}
           onChange={handleValue}
           className="flex-1 accent-uf-accent"
-          aria-label={`value in ${fromOpt.label}`}
-          aria-valuetext={`${formatMagnitude(state.value)} ${fromOpt.label}`}
+          aria-label={`value in ${fromUnit.label}`}
+          aria-valuetext={`${formatMagnitude(state.value)} ${fromUnit.label}`}
         />
         <div className="mono whitespace-nowrap text-xl tabular-nums text-uf-accent md:text-2xl">
-          {formatMagnitude(state.value)} {fromOpt.key}
+          {formatMagnitude(state.value)} {fromUnit.symbol}
         </div>
       </div>
 
       <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-uf-border pt-3">
         <span className="uf-eyebrow">result</span>
         <span className="mono text-2xl tabular-nums text-uf-fg md:text-3xl">
-          {formatMagnitude(result)} <span className="text-uf-muted">{toOpt.key}</span>
+          {formatMagnitude(result)} <span className="text-uf-muted">{toUnit.symbol}</span>
         </span>
       </div>
 

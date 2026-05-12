@@ -9,22 +9,22 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
-import { formatMagnitude } from '~/lib/format.js';
-import { findByKey, LENGTH_UNITS, type LengthKey, pickerOptions } from '~/lib/units.js';
+import { formatMagnitude, toJsName } from '~/lib/format.js';
+import { findById, LENGTH_UNITS, pickerOptions } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
 export function HelloUnit() {
   // The chassis owns the forge call so buildCode can pick up `result`
   // and the slider readout can show it without re-forging. The Widget
-  // re-derives `from`/`to` from the keys via findByKey; that lookup is
-  // cheap and avoids relaying the resolved options through props.
+  // re-derives `from`/`to` from the ids via findById; that lookup is
+  // cheap and avoids relaying the resolved units through props.
   const [value, setValue] = useState(5);
-  const [fromKey, setFromKey] = useState<LengthKey>('m');
-  const [toKey, setToKey] = useState<LengthKey>('ft');
+  const [fromId, setFromId] = useState('meter');
+  const [toId, setToId] = useState('foot');
 
-  const from = findByKey(LENGTH_UNITS, fromKey);
-  const to = findByKey(LENGTH_UNITS, toKey);
-  const result = forge(from.unit, to.unit)(value);
+  const from = findById(LENGTH_UNITS, fromId);
+  const to = findById(LENGTH_UNITS, toId);
+  const result = forge(from, to)(value);
 
   return (
     <SectionLayout
@@ -48,15 +48,15 @@ export function HelloUnit() {
           interactionZone={
             <HelloUnitWidget
               value={value}
-              fromKey={fromKey}
-              toKey={toKey}
+              fromId={fromId}
+              toId={toId}
               result={result}
               onValueChange={setValue}
-              onFromKeyChange={setFromKey}
-              onToKeyChange={setToKey}
+              onFromIdChange={setFromId}
+              onToIdChange={setToId}
             />
           }
-          codeZone={<CodeBlock code={buildCode(from.label, to.label, value, result)} />}
+          codeZone={<CodeBlock code={buildCode(from.id, to.id, value, result)} />}
         />
       }
       notesZone={
@@ -71,60 +71,62 @@ export function HelloUnit() {
 
 interface HelloUnitWidgetProps {
   value: number;
-  fromKey: LengthKey;
-  toKey: LengthKey;
+  fromId: string;
+  toId: string;
   result: number;
   onValueChange: (next: number) => void;
-  onFromKeyChange: (next: LengthKey) => void;
-  onToKeyChange: (next: LengthKey) => void;
+  onFromIdChange: (next: string) => void;
+  onToIdChange: (next: string) => void;
 }
 
 function HelloUnitWidget({
   value,
-  fromKey,
-  toKey,
+  fromId,
+  toId,
   result,
   onValueChange,
-  onFromKeyChange,
-  onToKeyChange,
+  onFromIdChange,
+  onToIdChange,
 }: HelloUnitWidgetProps) {
-  const from = findByKey(LENGTH_UNITS, fromKey);
-  const to = findByKey(LENGTH_UNITS, toKey);
+  const from = findById(LENGTH_UNITS, fromId);
+  const to = findById(LENGTH_UNITS, toId);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <UnitPicker
           label="from"
-          value={fromKey}
+          value={fromId}
           options={pickerOptions(LENGTH_UNITS)}
-          onChange={onFromKeyChange}
+          onChange={onFromIdChange}
         />
         <UnitPicker
           label="to"
-          value={toKey}
+          value={toId}
           options={pickerOptions(LENGTH_UNITS)}
-          onChange={onToKeyChange}
+          onChange={onToIdChange}
         />
       </div>
       <Slider
-        label={`value (${from.key})`}
+        label={`value (${from.symbol})`}
         value={value}
         min={0.1}
         max={10}
         step={0.1}
         onChange={onValueChange}
-        suffix={from.key}
+        suffix={from.symbol}
       />
       <Result
-        label={`${value.toFixed(2)} ${from.key} =`}
-        value={`${result.toFixed(4)} ${to.key}`}
+        label={`${value.toFixed(2)} ${from.symbol} =`}
+        value={`${result.toFixed(4)} ${to.symbol}`}
         variant="hero"
       />
     </div>
   );
 }
 
-function buildCode(fromName: string, toName: string, value: number, result: number): string {
+function buildCode(fromId: string, toId: string, value: number, result: number): string {
+  const fromName = toJsName(fromId);
+  const toName = toJsName(toId);
   return `import { forge } from 'unitforge';
 import { ${fromName}, ${toName} } from 'unitforge/kits/geometry';
 

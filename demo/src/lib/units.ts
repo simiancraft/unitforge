@@ -1,161 +1,106 @@
-// Per-kit unit option catalogs for the demo UnitPicker dropdowns. Lists
-// use `as const satisfies` so each catalog's `key` field is a literal
-// union (autocompleted at the call site) while still being verified
-// against `UnitOption<D>`. `findByKey` consumes that key union, so
-// typos are caught at compile time instead of throwing in render.
+// Per-kit unit catalogs for the demo. We don't enumerate kit exports
+// by hand; each catalog falls out of `Object.values(kitNamespace)`
+// filtered by the unit shape (and by `dimension` where the kit serves
+// more than one). Adding a new unit to a kit means the demo's
+// UnitPicker picks it up on the next build.
+//
+// Tradeoff: `import * as Kit` keeps every export reachable, so the
+// demo doesn't tree-shake unused units out of the kit. For a demo,
+// fine; the heavy bundle entries are shiki + react, not unit specs.
+//
+// State holds `unit.id` (kebab-case, persistence-safe). Display reads
+// `unit.symbol` for short suffixes ("m²", "GiB") and `unit.label` for
+// dropdown text and prose ("Square Meter", "Gibibyte"). Code-template
+// JS names derive from `unit.id` via `toJsName` in lib/format.
 
-import type { Dimension, ForgeInput } from 'unitforge';
-import {
-  bit,
-  byte,
-  gibibyte,
-  gigabit,
-  gigabyte,
-  kibibyte,
-  kilobit,
-  kilobyte,
-  mebibyte,
-  megabit,
-  megabyte,
-  pebibyte,
-  petabyte,
-  tebibyte,
-  terabyte,
-} from 'unitforge/kits/data-storage';
-import {
-  acre,
-  centimeter,
-  cubicCentimeter,
-  cubicFoot,
-  cubicInch,
-  cubicMeter,
-  foot,
-  hectare,
-  inch,
-  kilometer,
-  liter,
-  meter,
-  mile,
-  milliliter,
-  millimeter,
-  squareCentimeter,
-  squareFoot,
-  squareInch,
-  squareMeter,
-  squareMillimeter,
-  yard,
-} from 'unitforge/kits/geometry';
+import type { Dimension, Unit } from 'unitforge';
+import * as DataStorageKit from 'unitforge/kits/data-storage';
+import * as GeometryKit from 'unitforge/kits/geometry';
 
-/**
- * One row in a kit's unit catalog. `unit` is typed as `ForgeInput<D,
- * number>` (wider than `Unit<D, number>`) so it's directly assignable to
- * `forge`'s scalar overload without a cast even when D is generic.
- */
-export interface UnitOption<D extends Dimension = Dimension, K extends string = string> {
-  key: K;
-  label: string;
-  unit: ForgeInput<D, number>;
+function isUnit(value: unknown): value is Unit<Dimension, number> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { id?: unknown }).id === 'string' &&
+    typeof (value as { symbol?: unknown }).symbol === 'string' &&
+    typeof (value as { dimension?: unknown }).dimension === 'string' &&
+    typeof (value as { toBase?: unknown }).toBase === 'function' &&
+    typeof (value as { fromBase?: unknown }).fromBase === 'function'
+  );
 }
 
-export const LENGTH_UNITS = [
-  { key: 'mm', label: 'millimeter', unit: millimeter },
-  { key: 'cm', label: 'centimeter', unit: centimeter },
-  { key: 'm', label: 'meter', unit: meter },
-  { key: 'km', label: 'kilometer', unit: kilometer },
-  { key: 'in', label: 'inch', unit: inch },
-  { key: 'ft', label: 'foot', unit: foot },
-  { key: 'yd', label: 'yard', unit: yard },
-  { key: 'mi', label: 'mile', unit: mile },
-] as const satisfies ReadonlyArray<UnitOption<'length'>>;
+/**
+ * Pulls all units of a given dimension out of a kit namespace import.
+ * Returns a non-empty tuple type so consumers (Bench's `options` prop)
+ * can rely on `options[0]` existing without runtime checks.
+ */
+function unitsFromKit<D extends Dimension>(
+  kit: Record<string, unknown>,
+  dimension: D,
+): readonly [Unit<D, number>, ...Unit<D, number>[]] {
+  const matched = Object.values(kit)
+    .filter(isUnit)
+    .filter((u): u is Unit<D, number> => u.dimension === dimension);
+  if (matched.length === 0) {
+    throw new Error(`Kit exports no units with dimension '${dimension}'`);
+  }
+  return matched as unknown as readonly [Unit<D, number>, ...Unit<D, number>[]];
+}
 
-export const AREA_UNITS = [
-  { key: 'mm2', label: 'square millimeter', unit: squareMillimeter },
-  { key: 'cm2', label: 'square centimeter', unit: squareCentimeter },
-  { key: 'm2', label: 'square meter', unit: squareMeter },
-  { key: 'in2', label: 'square inch', unit: squareInch },
-  { key: 'ft2', label: 'square foot', unit: squareFoot },
-  { key: 'acre', label: 'acre', unit: acre },
-  { key: 'ha', label: 'hectare', unit: hectare },
-] as const satisfies ReadonlyArray<UnitOption<'area'>>;
+const geometryNs = GeometryKit as unknown as Record<string, unknown>;
+const dataNs = DataStorageKit as unknown as Record<string, unknown>;
 
-export const VOLUME_UNITS = [
-  { key: 'cc', label: 'cubic centimeter', unit: cubicCentimeter },
-  { key: 'in3', label: 'cubic inch', unit: cubicInch },
-  { key: 'ft3', label: 'cubic foot', unit: cubicFoot },
-  { key: 'm3', label: 'cubic meter', unit: cubicMeter },
-  { key: 'L', label: 'liter', unit: liter },
-  { key: 'mL', label: 'milliliter', unit: milliliter },
-] as const satisfies ReadonlyArray<UnitOption<'volume'>>;
+export const LENGTH_UNITS = unitsFromKit(geometryNs, 'length');
+export const AREA_UNITS = unitsFromKit(geometryNs, 'area');
+export const VOLUME_UNITS = unitsFromKit(geometryNs, 'volume');
 
-export const DATA_DECIMAL_UNITS = [
-  { key: 'B', label: 'byte', unit: byte },
-  { key: 'kB', label: 'kilobyte', unit: kilobyte },
-  { key: 'MB', label: 'megabyte', unit: megabyte },
-  { key: 'GB', label: 'gigabyte', unit: gigabyte },
-  { key: 'TB', label: 'terabyte', unit: terabyte },
-  { key: 'PB', label: 'petabyte', unit: petabyte },
-] as const satisfies ReadonlyArray<UnitOption<'data'>>;
+// The data dimension carries three semantic families (SI decimal, IEC
+// binary, bits) the demo wants to display separately. The lib doesn't
+// model that distinction on the unit, so we partition by id pattern:
+// kit ids are stable kebab-case strings (`'byte'`, `'kibibyte'`,
+// `'megabit'`) which the regexes recognize cleanly.
+const ALL_DATA_UNITS = unitsFromKit(dataNs, 'data');
 
-export const DATA_BINARY_UNITS = [
-  { key: 'KiB', label: 'kibibyte', unit: kibibyte },
-  { key: 'MiB', label: 'mebibyte', unit: mebibyte },
-  { key: 'GiB', label: 'gibibyte', unit: gibibyte },
-  { key: 'TiB', label: 'tebibyte', unit: tebibyte },
-  { key: 'PiB', label: 'pebibyte', unit: pebibyte },
-] as const satisfies ReadonlyArray<UnitOption<'data'>>;
-
-export const DATA_BIT_UNITS = [
-  { key: 'bit', label: 'bit', unit: bit },
-  { key: 'kbit', label: 'kilobit', unit: kilobit },
-  { key: 'Mbit', label: 'megabit', unit: megabit },
-  { key: 'Gbit', label: 'gigabit', unit: gigabit },
-] as const satisfies ReadonlyArray<UnitOption<'data'>>;
+export const DATA_BIT_UNITS = ALL_DATA_UNITS.filter((u) => /bit$/.test(u.id));
+export const DATA_BINARY_UNITS = ALL_DATA_UNITS.filter((u) => /ibyte$/.test(u.id));
+export const DATA_DECIMAL_UNITS = ALL_DATA_UNITS.filter(
+  (u) => /byte$/.test(u.id) && !/ibyte$/.test(u.id),
+);
 
 export const DATA_ALL_UNITS = [
   ...DATA_DECIMAL_UNITS,
   ...DATA_BINARY_UNITS,
   ...DATA_BIT_UNITS,
-] as const satisfies ReadonlyArray<UnitOption<'data'>>;
+] as const;
 
-// Key-union aliases for each catalog. Sections that hold a key in state
-// import these so useState('m') doesn't widen to plain string, and so
-// findByKey / UnitPicker callsites get literal-union autocomplete.
-export type LengthKey = (typeof LENGTH_UNITS)[number]['key'];
-export type AreaKey = (typeof AREA_UNITS)[number]['key'];
-export type VolumeKey = (typeof VOLUME_UNITS)[number]['key'];
-export type DataKey = (typeof DATA_ALL_UNITS)[number]['key'];
-
-// Full-option aliases for each catalog (key + label + unit). Sections
-// that forward a resolved option through props import these so the type
-// stays literal and the field set stays bound to the catalog's actual
-// shape. Pairs with `findByKey`; the same option shape that comes out
-// of `findByKey(LENGTH_UNITS, key)` is what these aliases describe.
-export type LengthOption = (typeof LENGTH_UNITS)[number];
-export type AreaOption = (typeof AREA_UNITS)[number];
-export type VolumeOption = (typeof VOLUME_UNITS)[number];
-export type DataOption = (typeof DATA_ALL_UNITS)[number];
+// Per-catalog type aliases for forwarding through component props. Each
+// entry is just a `Unit<D>`; `defineUnit` widens `symbol` to `string`, so
+// these aliases don't preserve literal-union narrowing of id or symbol
+// at the type level. State carries plain string ids; runtime `findById`
+// throws on miss.
+export type LengthUnit = Unit<'length', number>;
+export type AreaUnit = Unit<'area', number>;
+export type VolumeUnit = Unit<'volume', number>;
+export type DataUnit = Unit<'data', number>;
 
 /**
- * Look up an entry by `key`. The return type is narrowed to the exact
- * tuple element so `findByKey(LENGTH_UNITS, 'm').key` hovers as the
- * literal `'m'`, not the full key union.
+ * Look up a unit by its stable kebab-case `id`. Throws if the id isn't in
+ * the catalog so a deep-link with a stale id fails fast instead of
+ * silently rendering an "undefined" UnitPicker option.
  */
-export function findByKey<L extends ReadonlyArray<{ key: string }>, K extends L[number]['key']>(
-  list: L,
-  key: K,
-): Extract<L[number], { key: K }> {
-  const found = list.find((o) => o.key === key);
-  if (!found) throw new Error(`Unknown unit key: ${String(key)}`);
-  return found as Extract<L[number], { key: K }>;
+export function findById<U extends { id: string }>(list: ReadonlyArray<U>, id: string): U {
+  const found = list.find((u) => u.id === id);
+  if (!found) throw new Error(`Unknown unit id: ${id}`);
+  return found;
 }
 
 /**
- * Project a unit catalog onto the `key`+`label` shape `UnitPicker` accepts.
- * The return type preserves the literal `key` union, so the picker's `K`
- * generic narrows correctly at the call site (no widening to `string`).
+ * Project a catalog onto the `{ key, label }` shape `UnitPicker` accepts.
+ * Picker uses the unit's `id` as its option key (stable, persistence-safe)
+ * and the unit's `label` as the visible dropdown text.
  */
-export function pickerOptions<L extends ReadonlyArray<{ key: string; label: string }>>(
-  list: L,
-): ReadonlyArray<{ key: L[number]['key']; label: string }> {
-  return list.map(({ key, label }) => ({ key, label }));
+export function pickerOptions<U extends { id: string; label: string }>(
+  list: ReadonlyArray<U>,
+): ReadonlyArray<{ key: string; label: string }> {
+  return list.map((u) => ({ key: u.id, label: u.label }));
 }

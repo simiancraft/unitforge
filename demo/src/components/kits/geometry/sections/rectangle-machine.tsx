@@ -17,14 +17,7 @@ import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { clamp, round1 } from '~/lib/math.js';
-import {
-  AREA_UNITS,
-  type AreaKey,
-  findByKey,
-  LENGTH_UNITS,
-  type LengthKey,
-  pickerOptions,
-} from '~/lib/units.js';
+import { AREA_UNITS, findById, LENGTH_UNITS, pickerOptions } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import { type UseSvgPointerDrag, useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 
@@ -38,15 +31,15 @@ const SCALE = Math.min((VIEW_W - PAD * 2) / MAX_VAL, (VIEW_H - PAD * 2) / MAX_VA
 export function RectangleMachine() {
   const [length, setLength] = useState(3);
   const [width, setWidth] = useState(2);
-  const [lengthKey, setLengthKey] = useState<LengthKey>('m');
-  const [widthKey, setWidthKey] = useState<LengthKey>('m');
-  const [areaKey, setAreaKey] = useState<AreaKey>('m2');
+  const [lengthId, setLengthId] = useState('meter');
+  const [widthId, setWidthId] = useState('meter');
+  const [areaId, setAreaId] = useState('square-meter');
 
-  const lengthOpt = findByKey(LENGTH_UNITS, lengthKey);
-  const widthOpt = findByKey(LENGTH_UNITS, widthKey);
-  const areaOpt = findByKey(AREA_UNITS, areaKey);
+  const lengthUnit = findById(LENGTH_UNITS, lengthId);
+  const widthUnit = findById(LENGTH_UNITS, widthId);
+  const areaUnit = findById(AREA_UNITS, areaId);
 
-  const area = forge({ length: lengthOpt.unit, width: widthOpt.unit }, areaOpt.unit, {
+  const area = forge({ length: lengthUnit, width: widthUnit }, areaUnit, {
     via: areaFromLengthAndWidth,
   })({ length, width });
 
@@ -85,22 +78,22 @@ export function RectangleMachine() {
             <RectangleWidget
               length={length}
               width={width}
-              lengthKey={lengthKey}
-              widthKey={widthKey}
-              areaKey={areaKey}
+              lengthId={lengthId}
+              widthId={widthId}
+              areaId={areaId}
               area={area}
               svgRef={svgRef}
               handlers={handlers}
               onLengthChange={setLength}
               onWidthChange={setWidth}
-              onLengthKeyChange={setLengthKey}
-              onWidthKeyChange={setWidthKey}
-              onAreaKeyChange={setAreaKey}
+              onLengthIdChange={setLengthId}
+              onWidthIdChange={setWidthId}
+              onAreaIdChange={setAreaId}
             />
           }
           codeZone={
             <CodeBlock
-              code={buildCode(lengthOpt.label, widthOpt.label, areaOpt.label, length, width, area)}
+              code={buildCode(lengthUnit.id, widthUnit.id, areaUnit.id, length, width, area)}
             />
           }
         />
@@ -112,94 +105,94 @@ export function RectangleMachine() {
 interface RectangleWidgetProps {
   length: number;
   width: number;
-  lengthKey: LengthKey;
-  widthKey: LengthKey;
-  areaKey: AreaKey;
+  lengthId: string;
+  widthId: string;
+  areaId: string;
   area: number;
   svgRef: UseSvgPointerDrag['svgRef'];
   handlers: UseSvgPointerDrag['handlers'];
   onLengthChange: (next: number) => void;
   onWidthChange: (next: number) => void;
-  onLengthKeyChange: (next: LengthKey) => void;
-  onWidthKeyChange: (next: LengthKey) => void;
-  onAreaKeyChange: (next: AreaKey) => void;
+  onLengthIdChange: (next: string) => void;
+  onWidthIdChange: (next: string) => void;
+  onAreaIdChange: (next: string) => void;
 }
 
 function RectangleWidget({
   length,
   width,
-  lengthKey,
-  widthKey,
-  areaKey,
+  lengthId,
+  widthId,
+  areaId,
   area,
   svgRef,
   handlers,
   onLengthChange,
   onWidthChange,
-  onLengthKeyChange,
-  onWidthKeyChange,
-  onAreaKeyChange,
+  onLengthIdChange,
+  onWidthIdChange,
+  onAreaIdChange,
 }: RectangleWidgetProps) {
-  const lengthOpt = findByKey(LENGTH_UNITS, lengthKey);
-  const widthOpt = findByKey(LENGTH_UNITS, widthKey);
-  const areaOpt = findByKey(AREA_UNITS, areaKey);
+  const lengthUnit = findById(LENGTH_UNITS, lengthId);
+  const widthUnit = findById(LENGTH_UNITS, widthId);
+  const areaUnit = findById(AREA_UNITS, areaId);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <UnitPicker
           label="length (↔) unit"
-          value={lengthKey}
+          value={lengthId}
           options={pickerOptions(LENGTH_UNITS)}
-          onChange={onLengthKeyChange}
+          onChange={onLengthIdChange}
         />
         <UnitPicker
           label="width (↕) unit"
-          value={widthKey}
+          value={widthId}
           options={pickerOptions(LENGTH_UNITS)}
-          onChange={onWidthKeyChange}
+          onChange={onWidthIdChange}
         />
         <UnitPicker
           label="area unit"
-          value={areaKey}
+          value={areaId}
           options={pickerOptions(AREA_UNITS)}
-          onChange={onAreaKeyChange}
+          onChange={onAreaIdChange}
         />
       </div>
 
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-stretch">
         <Slider
-          label={`width ↕ (${widthOpt.key})`}
+          label={`width ↕ (${widthUnit.symbol})`}
           value={width}
           min={MIN_VAL}
           max={MAX_VAL}
           step={0.1}
           onChange={onWidthChange}
           orientation="vertical"
-          suffix={widthOpt.key}
+          suffix={widthUnit.symbol}
         />
 
         <div className="flex-1 flex flex-col items-center gap-3">
           <RectangleVisual
             length={length}
             width={width}
-            lengthKey={lengthOpt.key}
-            widthKey={widthOpt.key}
+            lengthSymbol={lengthUnit.symbol}
+            widthSymbol={widthUnit.symbol}
             svgRef={svgRef}
             handlers={handlers}
           />
           <Slider
-            label={`length ↔ (${lengthOpt.key})`}
+            label={`length ↔ (${lengthUnit.symbol})`}
             value={length}
             min={MIN_VAL}
             max={MAX_VAL}
             step={0.1}
             onChange={onLengthChange}
-            suffix={lengthOpt.key}
+            suffix={lengthUnit.symbol}
           />
         </div>
       </div>
 
-      <Result label="area" value={`${formatMagnitude(area)} ${areaOpt.key}`} variant="hero" />
+      <Result label="area" value={`${formatMagnitude(area)} ${areaUnit.symbol}`} variant="hero" />
     </div>
   );
 }
@@ -210,8 +203,8 @@ function RectangleWidget({
 interface RectangleVisualProps {
   length: number;
   width: number;
-  lengthKey: string;
-  widthKey: string;
+  lengthSymbol: string;
+  widthSymbol: string;
   svgRef: UseSvgPointerDrag['svgRef'];
   handlers: UseSvgPointerDrag['handlers'];
 }
@@ -219,8 +212,8 @@ interface RectangleVisualProps {
 function RectangleVisual({
   length,
   width,
-  lengthKey,
-  widthKey,
+  lengthSymbol,
+  widthSymbol,
   svgRef,
   handlers,
 }: RectangleVisualProps) {
@@ -292,7 +285,7 @@ function RectangleVisual({
           fill: 'var(--uf-accent)',
         }}
       >
-        {length.toFixed(2)} {lengthKey}
+        {length.toFixed(2)} {lengthSymbol}
       </text>
       <text
         x={PAD - 10}
@@ -305,7 +298,7 @@ function RectangleVisual({
           fill: 'var(--uf-accent)',
         }}
       >
-        {width.toFixed(2)} {widthKey}
+        {width.toFixed(2)} {widthSymbol}
       </text>
 
       <circle
@@ -331,19 +324,17 @@ function RectangleVisual({
 }
 
 function buildCode(
-  lengthLabel: string,
-  widthLabel: string,
-  areaLabel: string,
+  lengthId: string,
+  widthId: string,
+  areaId: string,
   length: number,
   width: number,
   area: number,
 ): string {
-  const lengthUnit = toJsName(lengthLabel);
-  const widthUnit = toJsName(widthLabel);
-  const areaUnit = toJsName(areaLabel);
-  const imports = [lengthUnit, widthUnit, areaUnit].filter(
-    (name, i, arr) => arr.indexOf(name) === i,
-  );
+  const lengthName = toJsName(lengthId);
+  const widthName = toJsName(widthId);
+  const areaName = toJsName(areaId);
+  const imports = Array.from(new Set([lengthName, widthName, areaName]));
   return `import { forge } from 'unitforge';
 import {
   areaFromLengthAndWidth,
@@ -351,8 +342,8 @@ import {
 } from 'unitforge/kits/geometry';
 
 const area = forge(
-  { length: ${lengthUnit}, width: ${widthUnit} },
-  ${areaUnit},
+  { length: ${lengthName}, width: ${widthName} },
+  ${areaName},
   { via: areaFromLengthAndWidth },
 );
 

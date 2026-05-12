@@ -9,8 +9,8 @@
 
 import { Database } from 'lucide-react';
 import { useState } from 'react';
-import { formatMagnitude } from '~/lib/format.js';
-import { DATA_ALL_UNITS, type DataKey, findByKey } from '~/lib/units.js';
+import { formatMagnitude, toJsName } from '~/lib/format.js';
+import { DATA_ALL_UNITS, findById } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
@@ -28,9 +28,9 @@ const DATA_STORAGE_BENCH_MAX = 2000;
 const DATA_STORAGE_BENCH_STEP = 1;
 
 export function DataStorageScreen() {
-  const [bench, setBench] = useState<BenchState<DataKey>>({
-    fromKey: 'GB',
-    toKey: 'GiB',
+  const [bench, setBench] = useState<BenchState>({
+    fromId: 'gigabyte',
+    toId: 'gibibyte',
     value: 500,
   });
 
@@ -56,7 +56,7 @@ export function DataStorageScreen() {
           max={DATA_STORAGE_BENCH_MAX}
           step={DATA_STORAGE_BENCH_STEP}
           codeFor={(s, r) =>
-            `forge(${findByKey(DATA_ALL_UNITS, s.fromKey).label}, ${findByKey(DATA_ALL_UNITS, s.toKey).label})(${formatMagnitude(s.value)}); // ${formatMagnitude(r)}`
+            `forge(${toJsName(findById(DATA_ALL_UNITS, s.fromId).id)}, ${toJsName(findById(DATA_ALL_UNITS, s.toId).id)})(${formatMagnitude(s.value)}); // ${formatMagnitude(r)}`
           }
           label="forge bench · data"
         />

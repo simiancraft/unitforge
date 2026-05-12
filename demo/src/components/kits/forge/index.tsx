@@ -10,7 +10,6 @@
 import { Hammer } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { navigate } from '~/lib/router.js';
-import type { LengthKey } from '~/lib/units.js';
 import type { BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
@@ -37,9 +36,9 @@ const STRIKE_VARIANT = 1;
 const NAV_DELAY_MS = STOKE_HOLD_MS;
 
 export function ForgeScreen() {
-  const [bench, setBench] = useState<BenchState<LengthKey>>({
-    fromKey: 'm',
-    toKey: 'ft',
+  const [bench, setBench] = useState<BenchState>({
+    fromId: 'meter',
+    toId: 'foot',
     value: 5,
   });
   const shakeRef = useRef<HTMLDivElement | null>(null);

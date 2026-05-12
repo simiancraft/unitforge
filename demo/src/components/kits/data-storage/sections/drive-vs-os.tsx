@@ -8,8 +8,8 @@
 
 import { HardDrive } from 'lucide-react';
 import { useState } from 'react';
-import { defineUnit, forge } from 'unitforge';
-import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
+import { defineUnit, forge, type Unit } from 'unitforge';
+import { byte, gibibyte, gigabyte, megabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
@@ -52,18 +52,22 @@ const musicAlbum = defineUnit({
   fromBase: (b) => b / 5e8,
 });
 
-interface FileType {
-  glyph: string;
-  label: string;
-  sizeNote: string;
-  unit: ReturnType<typeof defineUnit<'data', number>>;
-}
+// The unit itself carries glyph (`symbol`), display name (`label`), and
+// size (`toBase(1)` → bytes-per-file). No parallel metadata object; we
+// just keep an ordered list of the units we want to show, and render
+// everything off the unit fields directly.
+const FILE_TYPES: ReadonlyArray<Unit<'data', number>> = [hdMovie, aaaGame, musicAlbum];
 
-const FILE_TYPES: readonly FileType[] = [
-  { glyph: '🎬', label: 'HD movies', sizeNote: '4 GB each', unit: hdMovie },
-  { glyph: '🎮', label: 'AAA games', sizeNote: '80 GB each', unit: aaaGame },
-  { glyph: '🎵', label: 'lossless albums', sizeNote: '500 MB each', unit: musicAlbum },
-];
+// Pretty-print the per-file size by forging the unit's one-file byte
+// count back into GB or MB depending on magnitude. Dogfoods the same
+// `forge(gigabyte, …)` shape the rest of the row uses for counts.
+function formatPerFileSize(unit: Unit<'data', number>): string {
+  const bytesPerFile = unit.toBase(1);
+  const inGB = forge(byte, gigabyte)(bytesPerFile);
+  if (inGB >= 1) return `${formatMagnitude(inGB)} GB each`;
+  const inMB = forge(byte, megabyte)(bytesPerFile);
+  return `${formatMagnitude(inMB)} MB each`;
+}
 
 // Stable key tokens for the icon rows (avoid index-as-key on map outputs).
 const ICON_SLOTS = Array.from({ length: MAX_FILE_ICONS }, (_, i) => ({ id: `icon-${i}` }));
@@ -298,8 +302,8 @@ function FilesInfographic({ marketedGB, inGiB }: { marketedGB: number; inGiB: nu
         what fits · expectation vs OS-reported reality
       </span>
       <div className="flex flex-col gap-2">
-        {FILE_TYPES.map((type) => (
-          <FileTypeRow key={type.glyph} type={type} marketedGB={marketedGB} inGiB={inGiB} />
+        {FILE_TYPES.map((unit) => (
+          <FileTypeRow key={unit.id} unit={unit} marketedGB={marketedGB} inGiB={inGiB} />
         ))}
       </div>
     </div>
@@ -307,20 +311,20 @@ function FilesInfographic({ marketedGB, inGiB }: { marketedGB: number; inGiB: nu
 }
 
 interface FileTypeRowProps {
-  type: FileType;
+  unit: Unit<'data', number>;
   marketedGB: number;
   inGiB: number;
 }
 
-function FileTypeRow({ type, marketedGB, inGiB }: FileTypeRowProps) {
+function FileTypeRow({ unit, marketedGB, inGiB }: FileTypeRowProps) {
   // Promised: count of this file type that fit if you trust the box.
   // Realized: count if you take the OS-displayed number (which is GiB
   // shown in many tools as "GB") and divide by the file size in GB.
-  // forge(gigabyte, type.unit) handles both: pass marketedGB for the
+  // forge(gigabyte, unit) handles both: pass marketedGB for the
   // promise, pass inGiB for the OS-display-as-GB misread that produces
   // the perceived gap.
-  const promised = Math.floor(forge(gigabyte, type.unit)(marketedGB));
-  const realized = Math.floor(forge(gigabyte, type.unit)(inGiB));
+  const promised = Math.floor(forge(gigabyte, unit)(marketedGB));
+  const realized = Math.floor(forge(gigabyte, unit)(inGiB));
   const visible = Math.min(promised, MAX_FILE_ICONS);
   const realizedVisible = promised > 0 ? Math.floor((visible * realized) / promised) : 0;
   const sizeClass =
@@ -331,12 +335,12 @@ function FileTypeRow({ type, marketedGB, inGiB }: FileTypeRowProps) {
       <div className="w-32 shrink-0">
         <div className="text-xs text-uf-fg">
           <span className="mr-1" aria-hidden>
-            {type.glyph}
+            {unit.symbol}
           </span>
-          {type.label}
+          {unit.label}
         </div>
         <div className="text-[10px] text-uf-muted">
-          {type.sizeNote} · {realized} of {promised}
+          {formatPerFileSize(unit)} · {realized} of {promised}
         </div>
       </div>
       <div className={cn('flex flex-1 flex-wrap items-center gap-0.5 leading-none', sizeClass)}>
@@ -346,7 +350,7 @@ function FileTypeRow({ type, marketedGB, inGiB }: FileTypeRowProps) {
             className={i < realizedVisible ? undefined : 'opacity-25'}
             aria-hidden
           >
-            {type.glyph}
+            {unit.symbol}
           </span>
         ))}
         {promised > visible ? (

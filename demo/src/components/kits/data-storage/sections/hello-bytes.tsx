@@ -12,65 +12,70 @@ import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
 import { cn } from '~/lib/cn.js';
-import { formatMagnitude } from '~/lib/format.js';
+import { formatMagnitude, toJsName } from '~/lib/format.js';
 import {
   DATA_ALL_UNITS,
   DATA_BINARY_UNITS,
   DATA_BIT_UNITS,
   DATA_DECIMAL_UNITS,
-  type DataKey,
-  type DataOption,
-  findByKey,
+  type DataUnit,
+  findById,
   pickerOptions,
 } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
-// Per-unit slider bounds so the range stays pedagogical at every scale:
-// 1-1e6 bytes is interesting; 1-2000 GB is the canonical drive-size range.
-// Record<DataKey,...> means TS enforces a row for every unit; adding a
-// new data unit without a range here is a compile error.
-const SLIDER_RANGE: Record<DataKey, { min: number; max: number; step: number; init: number }> = {
-  B: { min: 1, max: 1_000_000, step: 1000, init: 500_000 },
-  kB: { min: 1, max: 10_000, step: 1, init: 500 },
-  MB: { min: 1, max: 10_000, step: 1, init: 500 },
-  GB: { min: 1, max: 2000, step: 1, init: 500 },
-  TB: { min: 0.1, max: 100, step: 0.1, init: 1 },
-  PB: { min: 0.01, max: 10, step: 0.01, init: 1 },
-  KiB: { min: 1, max: 10_000, step: 1, init: 500 },
-  MiB: { min: 1, max: 10_000, step: 1, init: 500 },
-  GiB: { min: 1, max: 2000, step: 1, init: 500 },
-  TiB: { min: 0.1, max: 100, step: 0.1, init: 1 },
-  PiB: { min: 0.01, max: 10, step: 0.01, init: 1 },
+interface SliderBounds {
+  min: number;
+  max: number;
+  step: number;
+  init: number;
+}
+
+// Per-unit slider bounds, keyed by the unit's stable id. 1-1e6 bytes is
+// interesting; 1-2000 GB is the canonical drive-size range. Missing ids
+// fall back to DEFAULT_BOUNDS at lookup time.
+const SLIDER_RANGE: Record<string, SliderBounds> = {
+  byte: { min: 1, max: 1_000_000, step: 1000, init: 500_000 },
+  kilobyte: { min: 1, max: 10_000, step: 1, init: 500 },
+  megabyte: { min: 1, max: 10_000, step: 1, init: 500 },
+  gigabyte: { min: 1, max: 2000, step: 1, init: 500 },
+  terabyte: { min: 0.1, max: 100, step: 0.1, init: 1 },
+  petabyte: { min: 0.01, max: 10, step: 0.01, init: 1 },
+  kibibyte: { min: 1, max: 10_000, step: 1, init: 500 },
+  mebibyte: { min: 1, max: 10_000, step: 1, init: 500 },
+  gibibyte: { min: 1, max: 2000, step: 1, init: 500 },
+  tebibyte: { min: 0.1, max: 100, step: 0.1, init: 1 },
+  pebibyte: { min: 0.01, max: 10, step: 0.01, init: 1 },
   bit: { min: 1, max: 1_000_000, step: 1000, init: 1000 },
-  kbit: { min: 1, max: 10_000, step: 1, init: 1000 },
-  Mbit: { min: 1, max: 10_000, step: 1, init: 100 },
-  Gbit: { min: 0.1, max: 100, step: 0.1, init: 1 },
+  kilobit: { min: 1, max: 10_000, step: 1, init: 1000 },
+  megabit: { min: 1, max: 10_000, step: 1, init: 100 },
+  gigabit: { min: 0.1, max: 100, step: 0.1, init: 1 },
 };
 
+const DEFAULT_BOUNDS: SliderBounds = { min: 1, max: 1000, step: 1, init: 100 };
+
 interface BytesState {
-  unitKey: DataKey;
+  unitId: string;
   value: number;
 }
 
-type SliderBounds = { min: number; max: number; step: number };
-
 export function HelloBytes() {
-  // value + unitKey held atomically: switching units resets value to that
+  // value + unitId held atomically: switching units resets value to that
   // unit's pedagogical default in the same render, so the slider never
   // briefly shows a clamped position that disagrees with the underlying
   // state.
-  const [state, setState] = useState<BytesState>({ unitKey: 'GB', value: 500 });
-  const range = SLIDER_RANGE[state.unitKey];
+  const [state, setState] = useState<BytesState>({ unitId: 'gigabyte', value: 500 });
+  const range = SLIDER_RANGE[state.unitId] ?? DEFAULT_BOUNDS;
 
-  const handleUnitKeyChange = (next: DataKey) => {
-    setState({ unitKey: next, value: SLIDER_RANGE[next].init });
+  const handleUnitIdChange = (next: string) => {
+    setState({ unitId: next, value: (SLIDER_RANGE[next] ?? DEFAULT_BOUNDS).init });
   };
   const handleValueChange = (next: number) => {
     setState((s) => ({ ...s, value: next }));
   };
 
-  const fromUnit = findByKey(DATA_ALL_UNITS, state.unitKey);
-  const inBytes = forge(fromUnit.unit, byte)(state.value);
+  const fromUnit = findById(DATA_ALL_UNITS, state.unitId);
+  const inBytes = forge(fromUnit, byte)(state.value);
   const inGiB = forge(byte, gibibyte)(inBytes);
   const inMbit = forge(byte, megabit)(inBytes);
 
@@ -95,16 +100,16 @@ export function HelloBytes() {
         <WidgetLayout
           interactionZone={
             <HelloBytesWidget
-              unitKey={state.unitKey}
+              unitId={state.unitId}
               value={state.value}
               range={range}
               inBytes={inBytes}
-              onUnitKeyChange={handleUnitKeyChange}
+              onUnitIdChange={handleUnitIdChange}
               onValueChange={handleValueChange}
             />
           }
           codeZone={
-            <CodeBlock code={buildCode(fromUnit.label, state.value, inBytes, inGiB, inMbit)} />
+            <CodeBlock code={buildCode(fromUnit.id, state.value, inBytes, inGiB, inMbit)} />
           }
         />
       }
@@ -113,40 +118,40 @@ export function HelloBytes() {
 }
 
 interface HelloBytesWidgetProps {
-  unitKey: DataKey;
+  unitId: string;
   value: number;
   range: SliderBounds;
   inBytes: number;
-  onUnitKeyChange: (next: DataKey) => void;
+  onUnitIdChange: (next: string) => void;
   onValueChange: (next: number) => void;
 }
 
 function HelloBytesWidget({
-  unitKey,
+  unitId,
   value,
   range,
   inBytes,
-  onUnitKeyChange,
+  onUnitIdChange,
   onValueChange,
 }: HelloBytesWidgetProps) {
-  const fromUnit = findByKey(DATA_ALL_UNITS, unitKey);
+  const fromUnit = findById(DATA_ALL_UNITS, unitId);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <UnitPicker
           label="input unit"
-          value={unitKey}
+          value={unitId}
           options={pickerOptions(DATA_ALL_UNITS)}
-          onChange={onUnitKeyChange}
+          onChange={onUnitIdChange}
         />
         <Slider
-          label={`value (${fromUnit.key})`}
+          label={`value (${fromUnit.symbol})`}
           value={value}
           min={range.min}
           max={range.max}
           step={range.step}
           onChange={onValueChange}
-          suffix={fromUnit.key}
+          suffix={fromUnit.symbol}
         />
       </div>
 
@@ -163,7 +168,7 @@ function HelloBytesWidget({
 // inside without re-walking the SectionLayout chrome.
 interface ReadoutColumn {
   family: string;
-  units: ReadonlyArray<DataOption>;
+  units: ReadonlyArray<DataUnit>;
 }
 
 const READOUT_COLUMNS: readonly ReadoutColumn[] = [
@@ -185,16 +190,16 @@ function ReadoutMatrix({ inBytes }: { inBytes: number }) {
       {READOUT_COLUMNS.map((col) => (
         <div key={col.family} className="flex flex-col gap-1">
           <span className="uf-eyebrow">{col.family}</span>
-          {col.units.map((opt) => {
-            const v = forge(byte, opt.unit)(inBytes);
+          {col.units.map((unit) => {
+            const v = forge(byte, unit)(inBytes);
             const formatted = formatMagnitude(v);
             const digitCount = formatted.match(/\d/g)?.length ?? 0;
             return (
               <Result
-                key={opt.key}
+                key={unit.id}
                 layout="stack"
-                label={opt.label}
-                value={`${formatted} ${opt.key}`}
+                label={unit.label}
+                value={`${formatted} ${unit.symbol}`}
                 valueClassName={cn(digitCount > LONG_DIGIT_THRESHOLD && 'text-xs')}
               />
             );
@@ -206,15 +211,14 @@ function ReadoutMatrix({ inBytes }: { inBytes: number }) {
 }
 
 function buildCode(
-  fromName: string,
+  fromId: string,
   value: number,
   bytes: number,
   inGiB: number,
   inMbit: number,
 ): string {
-  const imports = ['byte', 'gibibyte', 'megabit', fromName].filter(
-    (name, i, arr) => arr.indexOf(name) === i,
-  );
+  const fromName = toJsName(fromId);
+  const imports = Array.from(new Set(['byte', 'gibibyte', 'megabit', fromName]));
   return `import { forge } from 'unitforge';
 import {
   ${imports.join(', ')},

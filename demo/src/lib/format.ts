@@ -6,19 +6,13 @@
 // don't collapse to zero.
 
 /**
- * Turn a human label ("square millimeter") into the JS export name
- * the kits ship ("squareMillimeter"); the unit catalogs in units.ts
- * mirror that camelCase convention.
+ * Turn a kit unit's kebab-case `id` ("square-millimeter") into the
+ * JS export name the kit actually ships ("squareMillimeter"). Used by
+ * section files when templating import statements and forge call sites
+ * into the displayed code samples.
  */
-export function toJsName(label: string): string {
-  const parts = label.split(' ');
-  return (
-    parts[0] +
-    parts
-      .slice(1)
-      .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-      .join('')
-  );
+export function toJsName(id: string): string {
+  return id.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 }
 
 export function formatMagnitude(n: number): string {

@@ -12,14 +12,7 @@ import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { clamp, round1 } from '~/lib/math.js';
-import {
-  AREA_UNITS,
-  type AreaKey,
-  findByKey,
-  LENGTH_UNITS,
-  type LengthKey,
-  pickerOptions,
-} from '~/lib/units.js';
+import { AREA_UNITS, findById, LENGTH_UNITS, pickerOptions } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import { type UseSvgPointerDrag, useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 
@@ -31,21 +24,21 @@ const SCALE = (VIEW / 2 - PAD) / MAX_R;
 
 export function CircleMachine() {
   const [radius, setRadius] = useState(3);
-  const [radiusKey, setRadiusKey] = useState<LengthKey>('m');
-  const [areaKey, setAreaKey] = useState<AreaKey>('m2');
-  const [circKey, setCircKey] = useState<LengthKey>('m');
+  const [radiusId, setRadiusId] = useState('meter');
+  const [areaId, setAreaId] = useState('square-meter');
+  const [circId, setCircId] = useState('meter');
 
-  const radiusOpt = findByKey(LENGTH_UNITS, radiusKey);
-  const areaOpt = findByKey(AREA_UNITS, areaKey);
-  const circOpt = findByKey(LENGTH_UNITS, circKey);
+  const radiusUnit = findById(LENGTH_UNITS, radiusId);
+  const areaUnit = findById(AREA_UNITS, areaId);
+  const circUnit = findById(LENGTH_UNITS, circId);
 
-  const area = forge({ radius: radiusOpt.unit }, areaOpt.unit, { via: areaFromCircleRadius })({
+  const area = forge({ radius: radiusUnit }, areaUnit, { via: areaFromCircleRadius })({
     radius,
   });
 
-  const radiusInMeters = forge(radiusOpt.unit, meter)(radius);
+  const radiusInMeters = forge(radiusUnit, meter)(radius);
   const circumferenceInMeters = 2 * Math.PI * radiusInMeters;
-  const circumference = forge(meter, circOpt.unit)(circumferenceInMeters);
+  const circumference = forge(meter, circUnit)(circumferenceInMeters);
 
   // Handle is on the +x axis at the current radius; cx/cy are constants
   // derived from VIEW. getHandleCenter reads the latest radius via the
@@ -85,29 +78,22 @@ export function CircleMachine() {
           interactionZone={
             <CircleWidget
               radius={radius}
-              radiusKey={radiusKey}
-              areaKey={areaKey}
-              circKey={circKey}
+              radiusId={radiusId}
+              areaId={areaId}
+              circId={circId}
               area={area}
               circumference={circumference}
               svgRef={svgRef}
               handlers={handlers}
               onRadiusChange={setRadius}
-              onRadiusKeyChange={setRadiusKey}
-              onAreaKeyChange={setAreaKey}
-              onCircKeyChange={setCircKey}
+              onRadiusIdChange={setRadiusId}
+              onAreaIdChange={setAreaId}
+              onCircIdChange={setCircId}
             />
           }
           codeZone={
             <CodeBlock
-              code={buildCode(
-                radiusOpt.label,
-                areaOpt.label,
-                circOpt.label,
-                radius,
-                area,
-                circumference,
-              )}
+              code={buildCode(radiusUnit.id, areaUnit.id, circUnit.id, radius, area, circumference)}
             />
           }
         />
@@ -118,79 +104,82 @@ export function CircleMachine() {
 
 interface CircleWidgetProps {
   radius: number;
-  radiusKey: LengthKey;
-  areaKey: AreaKey;
-  circKey: LengthKey;
+  radiusId: string;
+  areaId: string;
+  circId: string;
   area: number;
   circumference: number;
   svgRef: UseSvgPointerDrag['svgRef'];
   handlers: UseSvgPointerDrag['handlers'];
   onRadiusChange: (next: number) => void;
-  onRadiusKeyChange: (next: LengthKey) => void;
-  onAreaKeyChange: (next: AreaKey) => void;
-  onCircKeyChange: (next: LengthKey) => void;
+  onRadiusIdChange: (next: string) => void;
+  onAreaIdChange: (next: string) => void;
+  onCircIdChange: (next: string) => void;
 }
 
 function CircleWidget({
   radius,
-  radiusKey,
-  areaKey,
-  circKey,
+  radiusId,
+  areaId,
+  circId,
   area,
   circumference,
   svgRef,
   handlers,
   onRadiusChange,
-  onRadiusKeyChange,
-  onAreaKeyChange,
-  onCircKeyChange,
+  onRadiusIdChange,
+  onAreaIdChange,
+  onCircIdChange,
 }: CircleWidgetProps) {
-  const radiusOpt = findByKey(LENGTH_UNITS, radiusKey);
-  const areaOpt = findByKey(AREA_UNITS, areaKey);
-  const circOpt = findByKey(LENGTH_UNITS, circKey);
+  const radiusUnit = findById(LENGTH_UNITS, radiusId);
+  const areaUnit = findById(AREA_UNITS, areaId);
+  const circUnit = findById(LENGTH_UNITS, circId);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <UnitPicker
           label="radius unit"
-          value={radiusKey}
+          value={radiusId}
           options={pickerOptions(LENGTH_UNITS)}
-          onChange={onRadiusKeyChange}
+          onChange={onRadiusIdChange}
         />
         <UnitPicker
           label="area unit"
-          value={areaKey}
+          value={areaId}
           options={pickerOptions(AREA_UNITS)}
-          onChange={onAreaKeyChange}
+          onChange={onAreaIdChange}
         />
         <UnitPicker
           label="circ. unit"
-          value={circKey}
+          value={circId}
           options={pickerOptions(LENGTH_UNITS)}
-          onChange={onCircKeyChange}
+          onChange={onCircIdChange}
         />
       </div>
 
       <div className="flex flex-col items-center gap-3">
         <CircleVisual
           radius={radius}
-          radiusKey={radiusOpt.key}
+          radiusSymbol={radiusUnit.symbol}
           svgRef={svgRef}
           handlers={handlers}
         />
         <Slider
-          label={`radius (${radiusOpt.key})`}
+          label={`radius (${radiusUnit.symbol})`}
           value={radius}
           min={MIN_R}
           max={MAX_R}
           step={0.1}
           onChange={onRadiusChange}
-          suffix={radiusOpt.key}
+          suffix={radiusUnit.symbol}
         />
       </div>
 
-      <Result label="area" value={`${formatMagnitude(area)} ${areaOpt.key}`} variant="hero" />
-      <Result label="circumference" value={`${formatMagnitude(circumference)} ${circOpt.key}`} />
+      <Result label="area" value={`${formatMagnitude(area)} ${areaUnit.symbol}`} variant="hero" />
+      <Result
+        label="circumference"
+        value={`${formatMagnitude(circumference)} ${circUnit.symbol}`}
+      />
     </div>
   );
 }
@@ -200,12 +189,12 @@ function CircleWidget({
 // memoize this on its own props once useSvgPointerDrag is clean.
 interface CircleVisualProps {
   radius: number;
-  radiusKey: string;
+  radiusSymbol: string;
   svgRef: UseSvgPointerDrag['svgRef'];
   handlers: UseSvgPointerDrag['handlers'];
 }
 
-function CircleVisual({ radius, radiusKey, svgRef, handlers }: CircleVisualProps) {
+function CircleVisual({ radius, radiusSymbol, svgRef, handlers }: CircleVisualProps) {
   const svgR = radius * SCALE;
   const cx = VIEW / 2;
   const cy = VIEW / 2;
@@ -282,7 +271,7 @@ function CircleVisual({ radius, radiusKey, svgRef, handlers }: CircleVisualProps
           fill: 'var(--uf-accent)',
         }}
       >
-        r = {radius.toFixed(2)} {radiusKey}
+        r = {radius.toFixed(2)} {radiusSymbol}
       </text>
 
       <circle
@@ -302,19 +291,17 @@ function CircleVisual({ radius, radiusKey, svgRef, handlers }: CircleVisualProps
 }
 
 function buildCode(
-  radiusLabel: string,
-  areaLabel: string,
-  circLabel: string,
+  radiusId: string,
+  areaId: string,
+  circId: string,
   radius: number,
   area: number,
   circumference: number,
 ): string {
-  const radiusUnit = toJsName(radiusLabel);
-  const areaUnit = toJsName(areaLabel);
-  const circUnit = toJsName(circLabel);
-  const imports = [radiusUnit, areaUnit, 'meter', circUnit].filter(
-    (name, i, arr) => arr.indexOf(name) === i,
-  );
+  const radiusName = toJsName(radiusId);
+  const areaName = toJsName(areaId);
+  const circName = toJsName(circId);
+  const imports = Array.from(new Set([radiusName, areaName, 'meter', circName]));
   return `import { forge } from 'unitforge';
 import {
   areaFromCircleRadius,
@@ -322,8 +309,8 @@ import {
 } from 'unitforge/kits/geometry';
 
 const circleArea = forge(
-  { radius: ${radiusUnit} },
-  ${areaUnit},
+  { radius: ${radiusName} },
+  ${areaName},
   { via: areaFromCircleRadius },
 );
 
@@ -331,9 +318,9 @@ circleArea({ radius: ${formatMagnitude(radius)} }); // ${formatMagnitude(area)}
 
 // Circumference is just 2π · r. Compute in canonical meters,
 // then re-forge into whatever length unit you want to show.
-const radiusInMeters = forge(${radiusUnit}, meter)(${formatMagnitude(radius)});
+const radiusInMeters = forge(${radiusName}, meter)(${formatMagnitude(radius)});
 const circumferenceInMeters = 2 * Math.PI * radiusInMeters;
-const circumference = forge(meter, ${circUnit})(circumferenceInMeters);
+const circumference = forge(meter, ${circName})(circumferenceInMeters);
 // ${formatMagnitude(circumference)}
 `;
 }
