@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
@@ -16,11 +17,15 @@ import { defineConfig } from 'vite';
 // a React-18 compatible runtime (this demo is on React 18.3).
 
 export default defineConfig({
-  plugins: [
-    react(),
-    babel({ presets: [reactCompilerPreset({ target: '18' })] }),
-    tailwindcss(),
-  ],
+  plugins: [react(), babel({ presets: [reactCompilerPreset({ target: '18' })] }), tailwindcss()],
+  resolve: {
+    alias: {
+      // Cross-folder imports use `~/foo` instead of `../../../foo`.
+      // Same-folder imports stay relative (`./parts/x`) so the
+      // "lives-next-to-me" signal isn't erased.
+      '~': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   // Deploy under /unitforge/ on GitHub Pages (repo name is the subpath).
   base: process.env.GITHUB_PAGES === 'true' ? '/unitforge/' : '/',
   server: {

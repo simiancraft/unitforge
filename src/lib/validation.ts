@@ -16,7 +16,7 @@ export interface ValidationFailure {
 
 /**
  * Thrown by a forged converter when one or more validators reject the input.
- * Aggregates ALL failures across both `ForgeConfig.validate` and
+ * Aggregates ALL failures across both the call-site `validate:` option and
  * `Conversion.validate` (no first-failure short-circuit).
  *
  * Construct via `new ValidationError(failures, inputs)`.
@@ -81,7 +81,7 @@ export function safeShallowCopy(src: Readonly<Record<string, unknown>>): Record<
 
 /**
  * Builds the error message from per-failure records. Iterates `failures` to
- * surface only the values the validator actually saw — never `JSON.stringify`s
+ * surface only the values the validator actually saw; never `JSON.stringify`s
  * the entire `inputs` object, which would throw on circular refs / BigInt and
  * could leak unexpected properties into the message.
  */

@@ -1,321 +1,157 @@
+// Router shell. Reads window.location.hash, looks up the active kit from
+// the registry, and renders that kit's Screen wrapped in the root
+// ThemeProvider. The provider owns the data-theme cascade on <html> and
+// per-kit theme persistence in localStorage.
+//
+// Adding a new kit: register it in components/kits/registry.ts. App.tsx
+// requires no edits.
+
+import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { forge } from 'unitforge';
-import {
-  areaFromLengthAndWidth,
-  foot,
-  meter,
-  squareFoot,
-  squareMeter,
-} from 'unitforge/kits/geometry';
-import {
-  bit,
-  byte,
-  gibibyte,
-  gigabit,
-  gigabyte,
-  megabyte,
-  terabyte,
-} from 'unitforge/kits/data-storage';
 import { VERSION } from 'unitforge/version';
+import { ErrorBoundary } from './components/ErrorBoundary.js';
+import { findKit, KITS } from './components/kits/registry.js';
+import { resolveInitialThemeId, ThemeProvider, useTheme } from './components/theme/provider.js';
+import { pairForKit, type ThemeId } from './components/theme/recipes.js';
+import { ThemeToggle } from './components/theme/toggle.js';
 
-type Route = 'home' | 'geometry' | 'data-storage';
+const DEFAULT_KIT_ID = 'forge';
 
-const KITS: { id: Exclude<Route, 'home'>; label: string; blurb: string }[] = [
-  {
-    id: 'geometry',
-    label: 'geometry',
-    blurb: 'length, area, volume; metric + imperial; cross-dim derivations (rectangle, circle, sphere, cylinder).',
-  },
-  {
-    id: 'data-storage',
-    label: 'data-storage',
-    blurb: 'bytes (decimal and IEC binary), bits; the canonical GB-vs-GiB and Gbit-vs-MB conversions.',
-  },
-];
+interface HashLocation {
+  route: string;
+  /** In-page anchor for `#<name>` hashes (no leading slash). */
+  anchor: string | null;
+}
 
-function useHashRoute(): Route {
-  const [route, setRoute] = useState<Route>(parseHash());
+function parseLocation(): HashLocation {
+  const hash = window.location.hash;
+  // Route navigation: `#/`, `#/geometry`, etc.
+  if (hash === '' || hash === '#' || hash.startsWith('#/')) {
+    const raw = hash.replace(/^#\/?/, '');
+    return { route: raw === '' ? DEFAULT_KIT_ID : raw, anchor: null };
+  }
+  // In-page anchor: `#crouton`, etc. Lands on the default kit (home);
+  // section-scrolling is handled below.
+  return { route: DEFAULT_KIT_ID, anchor: hash.slice(1) };
+}
+
+function useHashLocation(): HashLocation {
+  const [loc, setLoc] = useState<HashLocation>(parseLocation());
   useEffect(() => {
-    const handler = () => setRoute(parseHash());
+    const handler = () => {
+      const next = parseLocation();
+      setLoc(next);
+      // Route-change scroll-to-top is preserved; anchor scrolling is
+      // owned by the [anchor]-keyed effect in RouteShell so it fires
+      // after the destination route's DOM has committed.
+      if (!next.anchor) {
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+      }
+    };
     window.addEventListener('hashchange', handler);
     return () => window.removeEventListener('hashchange', handler);
   }, []);
-  return route;
+  return loc;
 }
 
-function parseHash(): Route {
-  const raw = window.location.hash.replace(/^#\/?/, '');
-  if (raw === 'geometry' || raw === 'data-storage') return raw;
-  return 'home';
+/**
+ * Compute the theme to activate on initial mount. Routes to
+ * resolveInitialThemeId in the provider module so localStorage logic and
+ * the storage key live in one file.
+ */
+function getInitialThemeId(): ThemeId {
+  // KITS is a non-empty tuple, so KITS[0] is always defined; no fallback
+  // branch needed.
+  const kit = findKit(parseLocation().route) ?? KITS[0];
+  return resolveInitialThemeId(kit.meta.id, kit.meta.defaultThemeId);
 }
 
 export function App() {
-  const route = useHashRoute();
+  // Lazy state initializer so getInitialThemeId; which reads
+  // window.location.hash and localStorage; runs only once on first
+  // mount, not on every <App/> render.
+  const [initialThemeId] = useState(getInitialThemeId);
   return (
-    <main className="mx-auto flex min-h-full max-w-5xl flex-col px-6 py-12">
-      <Header />
-      {route !== 'home' && <Breadcrumb current={route} />}
-      <div className="mt-8">
-        {route === 'home' && <Home />}
-        {route === 'geometry' && <GeometryPage />}
-        {route === 'data-storage' && <DataStoragePage />}
-      </div>
-      <Footer />
-    </main>
+    <ThemeProvider initialThemeId={initialThemeId}>
+      <RouteShell />
+    </ThemeProvider>
   );
 }
 
-function Header() {
+function RouteShell() {
+  const { route, anchor } = useHashLocation();
+  const { setThemeForKit } = useTheme();
+  const active = findKit(route) ?? findKit(DEFAULT_KIT_ID);
+  const Screen = active?.Screen;
+
+  // On hash change, honor the destination kit's stored theme or fall
+  // back to its default. The initial mount is handled by ThemeProvider's
+  // initialThemeId; this effect covers subsequent navigation.
+  useEffect(() => {
+    if (active) setThemeForKit(active.meta.id, active.meta.defaultThemeId);
+  }, [active, setThemeForKit]);
+
+  // Anchor scroll. Fires after the destination route's DOM commits so
+  // `getElementById` finds the section even on a fresh load of `#crouton`.
+  // Routes have already had scroll-to-top applied by the hashchange handler.
+  useEffect(() => {
+    if (!anchor) return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const id = requestAnimationFrame(() => {
+      const el = document.getElementById(anchor);
+      if (el) el.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [anchor]);
+
+  const isHome = route === DEFAULT_KIT_ID;
+
+  const pair = active ? pairForKit(active.meta.id) : null;
+
   return (
-    <header className="flex flex-col items-center text-center">
-      <a href="#/" className="contents">
-        <img
-          src="./unitforge-logo.png"
-          alt="unitforge"
-          className="h-24 w-24 rounded"
-          width={96}
-          height={96}
+    <div className="relative min-h-screen">
+      <a href="#main" className="uf-skip-link">
+        skip to content
+      </a>
+      {active && pair ? (
+        <ThemeToggle
+          light={pair.light}
+          dark={pair.dark}
+          defaultTheme={active.meta.defaultThemeId}
         />
-        <h1 className="mt-4 text-3xl font-bold tracking-tight">unitforge</h1>
-      </a>
-      <p className="mono mt-1 text-xs" style={{ color: 'var(--uf-muted)' }}>
-        v{VERSION} · live demo
-      </p>
-    </header>
+      ) : null}
+      <main id="main" className="relative mx-auto max-w-6xl px-6 py-10 md:py-14">
+        {isHome ? null : <BreadcrumbBar kitLabel={active?.meta.label ?? route} />}
+        <ErrorBoundary>{Screen ? <Screen /> : null}</ErrorBoundary>
+        <Footer />
+      </main>
+    </div>
   );
 }
 
-function Breadcrumb({ current }: { current: Exclude<Route, 'home'> }) {
+function BreadcrumbBar({ kitLabel }: { kitLabel: string }) {
   return (
-    <nav className="mono mt-6 text-xs" style={{ color: 'var(--uf-muted)' }}>
-      <a href="#/" className="underline" style={{ color: 'var(--uf-fg)' }}>
-        home
+    <nav aria-label="breadcrumb" className="mb-8 flex items-center justify-between text-uf-muted">
+      <a
+        href="#/"
+        className="mono inline-flex items-center gap-2 text-xs uppercase tracking-wider text-uf-fg"
+      >
+        <ArrowLeft size={14} strokeWidth={2} />
+        unitforge
       </a>
-      <span className="px-2">/</span>
-      <span>{current}</span>
+      <span className="uf-eyebrow" aria-current="page">
+        kit · {kitLabel}
+      </span>
     </nav>
-  );
-}
-
-function Home() {
-  return (
-    <section className="flex flex-col gap-6">
-      <p
-        className="mx-auto max-w-xl text-center text-sm leading-relaxed"
-        style={{ color: 'var(--uf-muted)' }}
-      >
-        Units, dimensions, and conversions are values you import. Pick a kit
-        to see real <code className="mono">forge()</code> calls running against
-        the built package.
-      </p>
-      <div className="grid gap-4 md:grid-cols-2">
-        {KITS.map((kit) => (
-          <a
-            key={kit.id}
-            href={`#/${kit.id}`}
-            className="flex flex-col rounded-lg border p-5 transition-colors"
-            style={{
-              background: 'var(--uf-card)',
-              borderColor: 'var(--uf-border)',
-            }}
-          >
-            <span
-              className="mono text-sm uppercase tracking-wider"
-              style={{ color: 'var(--uf-accent)' }}
-            >
-              {kit.label}
-            </span>
-            <span
-              className="mt-2 text-sm leading-relaxed"
-              style={{ color: 'var(--uf-muted)' }}
-            >
-              {kit.blurb}
-            </span>
-          </a>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function GeometryPage() {
-  const [length, setLength] = useState(2);
-  const [width, setWidth] = useState(3);
-
-  const areaInM2 = forge(
-    { length: meter, width: meter },
-    squareMeter,
-    { via: areaFromLengthAndWidth },
-  )({ length, width });
-
-  const areaInFt2 = forge(
-    { length: meter, width: meter },
-    squareFoot,
-    { via: areaFromLengthAndWidth },
-  )({ length, width });
-
-  const lengthInFt = forge(meter, foot)(length);
-
-  return (
-    <Card title="geometry" subtitle="rectangle area from length × width">
-      <Row>
-        <NumberInput label="length (m)" value={length} onChange={setLength} />
-        <NumberInput label="width (m)" value={width} onChange={setWidth} />
-      </Row>
-      <Result label="area" value={`${areaInM2.toFixed(3)} m²`} />
-      <Result label="area" value={`${areaInFt2.toFixed(3)} ft²`} />
-      <Result
-        label="length"
-        value={`${length} m = ${lengthInFt.toFixed(3)} ft`}
-        muted
-      />
-    </Card>
-  );
-}
-
-function DataStoragePage() {
-  const [gb, setGb] = useState(500);
-  const [bits, setBits] = useState(8);
-
-  const gibiResult = forge(gigabyte, gibibyte)(gb);
-  const tbResult = forge(gigabyte, terabyte)(gb);
-  const mbResult = forge(gigabyte, megabyte)(gb);
-  const gbitResult = forge(gigabyte, gigabit)(gb);
-
-  const bitsToBytes = forge(bit, byte)(bits);
-
-  return (
-    <div className="flex flex-col gap-6">
-      <Card
-        title="data-storage"
-        subtitle="decimal bytes ↔ IEC binary bytes ↔ throughput"
-      >
-        <Row>
-          <NumberInput label="drive size (GB)" value={gb} onChange={setGb} />
-        </Row>
-        <Result label="GiB" value={`${gibiResult.toFixed(3)} GiB`} />
-        <Result label="TB" value={`${tbResult.toFixed(3)} TB`} />
-        <Result label="MB" value={`${mbResult.toFixed(0)} MB`} />
-        <Result label="Gbit" value={`${gbitResult.toFixed(0)} Gbit`} muted />
-      </Card>
-      <Card title="data-storage" subtitle="bits ↔ bytes">
-        <Row>
-          <NumberInput label="bits" value={bits} onChange={setBits} />
-        </Row>
-        <Result label="bytes" value={`${bitsToBytes} B`} />
-      </Card>
-    </div>
-  );
-}
-
-function Card({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      className="flex flex-col rounded-lg border p-6"
-      style={{
-        background: 'var(--uf-card)',
-        borderColor: 'var(--uf-border)',
-      }}
-    >
-      <h2
-        className="mono text-sm uppercase tracking-wider"
-        style={{ color: 'var(--uf-accent)' }}
-      >
-        {title}
-      </h2>
-      <p className="mt-1 text-sm" style={{ color: 'var(--uf-muted)' }}>
-        {subtitle}
-      </p>
-      <div className="mt-4 flex flex-col gap-3">{children}</div>
-    </section>
-  );
-}
-
-function Row({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-wrap gap-3">{children}</div>;
-}
-
-function NumberInput({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (n: number) => void;
-}) {
-  return (
-    <label className="flex flex-1 flex-col gap-1">
-      <span className="mono text-xs" style={{ color: 'var(--uf-muted)' }}>
-        {label}
-      </span>
-      <input
-        type="number"
-        value={value}
-        onChange={(e) => {
-          const next = Number(e.target.value);
-          if (Number.isFinite(next)) onChange(next);
-        }}
-        className="mono rounded border px-2 py-1 text-sm"
-        style={{
-          background: 'var(--uf-bg)',
-          color: 'var(--uf-fg)',
-          borderColor: 'var(--uf-border)',
-        }}
-      />
-    </label>
-  );
-}
-
-function Result({
-  label,
-  value,
-  muted,
-}: {
-  label: string;
-  value: string;
-  muted?: boolean;
-}) {
-  return (
-    <div
-      className="flex items-baseline justify-between border-t pt-2"
-      style={{ borderColor: 'var(--uf-border)' }}
-    >
-      <span
-        className="mono text-xs uppercase tracking-wider"
-        style={{ color: 'var(--uf-muted)' }}
-      >
-        {label}
-      </span>
-      <span
-        className="mono text-sm"
-        style={{ color: muted ? 'var(--uf-muted)' : 'var(--uf-fg)' }}
-      >
-        {value}
-      </span>
-    </div>
   );
 }
 
 function Footer() {
   return (
-    <footer
-      className="mt-12 text-center text-xs"
-      style={{ color: 'var(--uf-muted)' }}
-    >
-      <a
-        href="https://github.com/simiancraft/unitforge"
-        className="underline"
-        style={{ color: 'var(--uf-fg)' }}
-      >
+    <footer className="mt-16 flex flex-col items-center gap-1 text-center text-xs text-uf-muted">
+      <span className="mono">v{VERSION}</span>
+      <a href="https://github.com/simiancraft/unitforge" className="underline text-uf-fg">
         github.com/simiancraft/unitforge
       </a>
     </footer>

@@ -9,10 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "unitforge": "file:..",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.14.0",
     "react": "^18.3.1",
     "react-compiler-runtime": "^1.0.0",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "shiki": "^4.0.2",
+    "tailwind-merge": "^3.6.0",
+    "unitforge": "file:.."
   },
   "devDependencies": {
     "@rolldown/plugin-babel": "^0.2.3",

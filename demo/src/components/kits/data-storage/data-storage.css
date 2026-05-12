@@ -1,0 +1,143 @@
+/* Data-storage theme: PCB-phosphor at night (dark variant) + silkscreen
+ * datasheet by day (light variant). CRT chrome only applies to the dark
+ * variant via codeFrameClass on the recipe.
+ *
+ * Loaded eagerly by the theme provider; activated via the
+ * [data-theme='data-storage-{dark,light}'] selectors.
+ */
+
+[data-theme="data-storage-dark"] {
+  /* Contrast-tuned: muted #6e9c7e (6.0:1), border #a06a2e (4.1:1) so
+   * card edges read.
+   */
+  --uf-bg: #0a1410;
+  --uf-fg: #a3ff7f;
+  --uf-muted: #6e9c7e;
+  --uf-accent: #ffb000;
+  --uf-card: #0f1f18;
+  --uf-border: #a06a2e;
+  --uf-code-bg: #050a08;
+
+  --uf-display: "JetBrains Mono", ui-monospace, monospace;
+  --uf-trace: #c8881e;
+  --uf-trace-faint: #c8881e22;
+}
+
+/* Silkscreen / datasheet daylight: cream bg with PCB-green forest tones
+ * and amber accent (resistor-color-code adjacent so the kit identity
+ * survives the light flip).
+ */
+[data-theme="data-storage-light"] {
+  --uf-bg: #f4f1e8;
+  --uf-fg: #0f3d2e;
+  --uf-muted: #6b7a6f;
+  --uf-accent: #c47b1f;
+  --uf-card: #fdfbf3;
+  --uf-border: #a8b1a4;
+  --uf-code-bg: #f0f4ed;
+
+  --uf-display: "JetBrains Mono", ui-monospace, monospace;
+  --uf-trace: #7c8a36;
+  --uf-trace-faint: #7c8a3622;
+}
+
+/* Subtle phosphor scanline shimmer (dark only; light variant is a
+ * printed silkscreen, no scanlines).
+ */
+[data-theme="data-storage-dark"] .uf-scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(163, 255, 127, 0.03) 2px,
+    rgba(163, 255, 127, 0.03) 3px
+  );
+}
+
+/* CRT chrome for code blocks; only loaded on data-storage-dark via the
+ * codeFrameClass on the recipe. Heavier scanlines over the snippet
+ * itself + a soft radial vignette darkening the corners + a phosphor
+ * glow on the rendered code. Inspired by chromonym's LiveSnippet.
+ */
+.uf-code-crt {
+  position: relative;
+}
+.uf-code-crt::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.32),
+    rgba(0, 0, 0, 0.32) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+  z-index: 2;
+}
+.uf-code-crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
+  z-index: 3;
+}
+.uf-code-crt pre,
+.uf-code-crt pre code,
+.uf-code-crt pre span {
+  text-shadow: 0 0 4px var(--uf-fg);
+}
+
+/* Throughput-viz: sweep animation for the bandwidth progress bar.
+ * Inputs change the keyframe duration via inline animationDuration; the
+ * keyframe itself is static. Reduced-motion users get the filled state.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .uf-throughput-fill {
+    animation-name: uf-throughput-sweep;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    animation-iteration-count: 1;
+  }
+  @keyframes uf-throughput-sweep {
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uf-throughput-fill {
+    width: 100%;
+  }
+}
+
+/* Ram-stick: chip status LED "breathing" animation. Each chip's LED
+ * pulses while lit; opacity + drop-shadow filter shimmer.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .uf-led-active {
+    animation: uf-led-breathe 1.8s ease-in-out infinite;
+  }
+  @keyframes uf-led-breathe {
+    0%,
+    100% {
+      opacity: 0.7;
+      filter: drop-shadow(0 0 1px var(--uf-fg));
+    }
+    50% {
+      opacity: 1;
+      filter: drop-shadow(0 0 4px var(--uf-fg));
+    }
+  }
+}

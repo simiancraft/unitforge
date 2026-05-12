@@ -244,7 +244,7 @@ describe('forge: configuration validation', () => {
     // The overloaded forge() signature would correctly reject this at compile
     // time; @ts-expect-error documents the deliberate runtime misuse.
     expect(() =>
-      // @ts-expect-error: object-shape from requires `via:` in ForgeConfig
+      // @ts-expect-error: object-shape from requires `via:` in the config
       forge({ length: meter, width: meter }, squareMeter),
     ).toThrow(/no `via:`/);
   });

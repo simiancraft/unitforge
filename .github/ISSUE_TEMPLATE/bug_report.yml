@@ -36,8 +36,7 @@ body:
       render: ts
       placeholder: |
         import { forge } from 'unitforge';
-        import { meter } from 'unitforge/kits/si';
-        import { foot } from 'unitforge/kits/imperial';
+        import { meter, foot } from 'unitforge/kits/geometry';
         console.log(forge(meter, foot)(5));
     validations:
       required: true

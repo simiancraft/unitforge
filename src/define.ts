@@ -36,7 +36,7 @@ export function defineUnit<D extends Dimension, T = number>(spec: Unit<D, T>): U
  * Produces a `Conversion` value. Kit-local conversions live alongside their
  * units (e.g., `src/kits/geometry/conversions.ts`); cross-domain conversions
  * may live at a top-level location and be imported on demand at `forge` call
- * sites via `ForgeConfig.via`.
+ * sites via the `via:` field on forge's cross-dim config.
  *
  * Calls `safeCopy` on the spec, the nested `inputs` map, and the nested
  * `validate` map at the entry point. Cost is once per conversion at module
@@ -57,9 +57,13 @@ export function defineConversion<
   const safeSpec = safeCopy(spec);
   const safeInputs = safeCopy(safeSpec.inputs);
   const safeValidate = safeSpec.validate ? safeCopy(safeSpec.validate) : undefined;
+  // Strip `validate` out of the rest before re-attaching only when
+  // truthy; otherwise an explicit `validate: undefined` property leaks
+  // through and shows up in Object.keys / JSON output.
+  const { validate: _droppedValidate, ...rest } = safeSpec;
 
   return {
-    ...safeSpec,
+    ...rest,
     inputs: safeInputs,
     ...(safeValidate ? { validate: safeValidate } : {}),
   };

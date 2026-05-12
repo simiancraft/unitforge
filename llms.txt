@@ -4,7 +4,7 @@
 
 ## Status
 
-Published to npm. Public API is stable. The shipped surface is `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, plus the `Dimension`, `Unit`, `Conversion`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ForgeConfig`, `ValidatorMap`, and `ValidationFailure` types.
+Published to npm. Public API is stable. The shipped surface is `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, plus the `Dimension`, `Unit`, `Conversion`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, and `ValidationFailure` types.
 
 ## Thesis
 
@@ -40,10 +40,6 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 - Per-kit subpath (`unitforge/kits/<name>`) so importing from `geometry` never pulls a sibling kit.
 - Kit unit definitions inline `toBase`/`fromBase` closures rather than spreading `...linear(scale)` because a `CallExpression` inside the spec literal defeats per-export tree-shake even when the outer `defineUnit(...)` is PURE-marked.
 
-## ForgeConfig narrowing nuance
-
-`ForgeConfig<T>` is exported from the root barrel for userland wrappers (e.g. a helper function that takes a config and forwards it to `forge`). The `forge` overloads themselves do NOT take `ForgeConfig<T>` directly; each overload inlines its own narrow config shape so `via` can be tied to the call's inferred `Inputs`/`Output`. A wrapper that passes a `ForgeConfig`-typed value into a cross-dim `forge` call will fail to type-check because the loose `via?` cannot satisfy the narrow `via:` constraint. Resolution: narrow `via` in the wrapper's own generic signature, or write the inline config object literal at the `forge` call site.
-
 ## Key files
 
 - [README.md](./README.md): primary docs (audience: humans evaluating the library)
@@ -51,8 +47,3 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 - [CONTRIBUTING.md](./CONTRIBUTING.md): setup, commands, commit conventions
 - [SECURITY.md](./SECURITY.md): security policy and reporting
 - [NOTICE.md](./NOTICE.md): third-party attributions (currently empty; populated as kits cite external standards)
-- [PLANNING.md](./PLANNING.md): historical design intent (partially stale on API surface; README is canonical)
-
-## Reference
-
-Sibling project [chromonym](https://github.com/simiancraft/chromonym) is the architectural specimen for boilerplate, CI, release tooling, and documentation patterns.

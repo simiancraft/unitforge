@@ -2,7 +2,7 @@
 // tree-shaking under `sideEffects: false` works because:
 //   1. Each `defineUnit({...})` is annotated `/*#__PURE__*/`, which tells
 //      bundlers (esbuild, rollup, webpack) the call is side-effect-free.
-//   2. The spec object literal contains NO function calls — `toBase` and
+//   2. The spec object literal contains NO function calls; `toBase` and
 //      `fromBase` are inline arrow closures, not `...linear(scale)` spreads.
 //      A CallExpression inside the literal (even when PURE-marked itself)
 //      defeats per-export tree-shaking because the bundler treats the whole

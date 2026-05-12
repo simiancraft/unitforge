@@ -1,0 +1,171 @@
+/* Forge theme: hot-metal palette (dark variant) + tempered-steel daylight
+ * (light variant) + anvil-strike keyframes + forge-glow keyframe + hammer
+ * cursor. Loaded eagerly by the theme provider; activated via the
+ * [data-theme='forge-{dark,light}'] selectors.
+ */
+
+.uf-wordmark {
+  font-family: "Tektur", system-ui, sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 1;
+}
+.uf-wordmark-unit {
+  color: var(--uf-wordmark-unit-color, #c8c4be);
+}
+.uf-wordmark-forge {
+  color: var(--uf-accent);
+}
+
+/* Forge-dark: black bg, hot orange accent, parchment foreground. */
+[data-theme="forge-dark"] {
+  --uf-bg: #0d0d0d;
+  --uf-fg: #f4ede0;
+  --uf-muted: #9b8e7e;
+  --uf-accent: #f97316;
+  --uf-card: #161412;
+  --uf-border: #7a6948;
+  --uf-code-bg: #0a0908;
+  --uf-wordmark-unit-color: #c8c4be;
+}
+
+/* Forge-light: tempered-steel daylight, deeper orange so it still reads
+ * against a warm cream, foreground a smoky dark warm-gray.
+ */
+[data-theme="forge-light"] {
+  --uf-bg: #f5f0e8;
+  --uf-fg: #1f1611;
+  --uf-muted: #6b5d4f;
+  --uf-accent: #c2410c;
+  --uf-card: #fbf7f0;
+  --uf-border: #c9bba8;
+  --uf-code-bg: #fefcf7;
+  --uf-wordmark-unit-color: #6b5d4f;
+}
+
+/* Anvil-strike and forge-flash are the visible parts of a single "stoke"
+ * event in the forge kit (also stokes the ember pool). Both animations
+ * read intensity via CSS custom properties:
+ *
+ *   --uf-shake-amp    peak translateY of the strike (defaults to 9px)
+ *
+ * The forge kit calls a unified `stoke(intensity)` with 0.75 on hover and
+ * higher on mousedown; the variables are set inline before the class is
+ * (re-)applied so amplitude scales without authoring multiple keyframes.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes uf-anvil-strike {
+    0% {
+      transform: translateY(0);
+    }
+    18% {
+      transform: translateY(var(--uf-shake-amp, 9px));
+    }
+    40% {
+      transform: translateY(calc(var(--uf-shake-amp, 9px) * -0.67));
+    }
+    62% {
+      transform: translateY(calc(var(--uf-shake-amp, 9px) * 0.33));
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  .uf-anvil-strike {
+    animation: uf-anvil-strike 280ms ease-out;
+  }
+
+  /* Forge-glow flash: scales out of the bottom of the viewport on the
+   * first 20% of the timeline, then opacity decays to 0. The element
+   * using this needs `transform-origin: bottom`. Intensity scaling is
+   * applied at the call site via the CSS `scale` property, which
+   * composes with this keyframe's `transform`.
+   */
+  @keyframes uf-forge-flash {
+    0% {
+      transform: scaleY(0);
+      opacity: 1;
+    }
+    20% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scaleY(1);
+      opacity: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes uf-forge-flash {
+    0%,
+    100% {
+      transform: scaleY(1);
+      opacity: 0.25;
+    }
+  }
+}
+
+/* Forge-base glow: multi-stop gradient that reads as a flame standing
+ * out of the bottom of the viewport. Bottom is white-hot, hot-orange
+ * peak in the lower band, then a long burnt-orange tail that fades to
+ * transparent so the column feels wispy like a candle tip rather than a
+ * solid block.
+ *
+ * Three variants, round-robined per stoke for natural variation. -2 is
+ * the "median" strike (matches the previous single glow); -1 is shorter
+ * and more concentrated, -3 is taller and longer-tailed.
+ *
+ * Pairs with the uf-forge-flash keyframe + scaleY animation on the
+ * element using this class.
+ */
+.uf-forge-glow-1 {
+  height: 20.4vh;
+  background: linear-gradient(
+    to top,
+    rgba(255, 250, 220, 1) 0%,
+    rgba(255, 200, 100, 0.98) 6%,
+    rgba(249, 115, 22, 0.92) 16%,
+    rgba(170, 60, 10, 0.5) 38%,
+    rgba(120, 35, 5, 0.15) 72%,
+    transparent 100%
+  );
+}
+
+.uf-forge-glow-2 {
+  height: 33vh;
+  background: linear-gradient(
+    to top,
+    rgba(255, 250, 220, 1) 0%,
+    rgba(255, 200, 100, 0.98) 5%,
+    rgba(249, 115, 22, 0.9) 13%,
+    rgba(170, 60, 10, 0.55) 32%,
+    rgba(120, 35, 5, 0.18) 65%,
+    transparent 100%
+  );
+}
+
+.uf-forge-glow-3 {
+  height: 50.4vh;
+  background: linear-gradient(
+    to top,
+    rgba(255, 252, 235, 1) 0%,
+    rgba(255, 210, 120, 0.96) 4%,
+    rgba(249, 115, 22, 0.88) 11%,
+    rgba(170, 60, 10, 0.55) 28%,
+    rgba(120, 35, 5, 0.2) 58%,
+    transparent 100%
+  );
+}
+
+/* Anvil / hammer cursor on the home kit tiles; lucide Hammer SVG inlined
+ * as a data-URI with brand orange stroke.
+ */
+.uf-anvil-cursor {
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m15 12-8.5 8.5c-.83.83-2.17.83-3 0a2.12 2.12 0 0 1 0-3L12 9'/><path d='M17.64 15 22 10.64'/><path d='m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91'/></svg>")
+    4 4,
+    pointer;
+}

@@ -9,7 +9,6 @@ export { ValidationError, type ValidationFailure } from './lib/validation.js';
 export type {
   Conversion,
   Dimension,
-  ForgeConfig,
   ForgeInput,
   ForgeOutput,
   Unit,

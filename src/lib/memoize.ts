@@ -1,18 +1,19 @@
 /**
  * FIFO bounded-cache primitives. Used by `forge()` to memoize converter
- * outputs when `ForgeConfig.memoize` is set; not part of the public API.
+ * outputs when the call site passes `memoize:` on its config; not part of
+ * the public API.
  *
  * Eviction is FIFO (insertion-order); reads do NOT promote entries. The
  * implementation is a `Map` because `Map` is the only JS primitive that
  * gives both key→value lookup AND insertion-order iteration (`Set` lacks
- * the value half). See `ForgeConfig.memoize` JSDoc for the rationale.
+ * the value half).
  */
 
 /** NUL byte; used as the cache-key field separator (JSON-safe stringify output cannot contain it). */
 export const CACHE_KEY_SEP = '\x00';
 
 /**
- * Hard upper bound on `ForgeConfig.memoize` cache cap. This is the
+ * Hard upper bound on the `memoize:` cache cap. This is the
  * library's validation ceiling, NOT a recommended cap value; setting
  * `memoize: MEMO_CAP_MAX` is almost always wrong (you would dedicate
  * an unbounded amount of memory to the cache). Use `DEFAULT_MEMO_CAP`
@@ -30,7 +31,7 @@ export const MEMO_CAP_MAX = 1_048_576;
 export const DEFAULT_MEMO_CAP = 1024;
 
 /**
- * Validates `ForgeConfig.memoize` at forge-build time. Returns the cap as
+ * Validates the `memoize:` option at forge-build time. Returns the cap as
  * a number (`0` means cache disabled). Throws on out-of-range / non-integer.
  */
 export function validateMemoCap(memoize: unknown): number {

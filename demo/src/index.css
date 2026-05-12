@@ -1,14 +1,44 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+/*
+ * Tailwind v4 theme tokens. Each `--color-uf-*` maps to a `--uf-*` CSS var
+ * that the kit CSS files override per data-theme; this means utilities
+ * like `bg-uf-card`, `text-uf-fg`, `border-uf-border` resolve to the
+ * active kit's palette at runtime. The `@theme inline` form references
+ * the existing vars instead of computing static values, so the kit's
+ * data-theme cascade is the single source of truth for palette values.
+ */
+@theme inline {
+  --color-uf-bg: var(--uf-bg);
+  --color-uf-fg: var(--uf-fg);
+  --color-uf-muted: var(--uf-muted);
+  --color-uf-accent: var(--uf-accent);
+  --color-uf-card: var(--uf-card);
+  --color-uf-border: var(--uf-border);
+  --color-uf-code-bg: var(--uf-code-bg);
+  /* Kit-specific accent tokens: trace is data-storage's copper-pad gold;
+   * grid is geometry's blueprint line. Themes without these vars resolve
+   * the utility to undefined (silently no-op), which matches the
+   * inline-style behavior they replaced. */
+  --color-uf-trace: var(--uf-trace);
+  --color-uf-grid: var(--uf-grid);
+}
 
 :root {
-  --uf-bg: #0d1117;
-  --uf-fg: #e6edf3;
-  --uf-muted: #7d8590;
-  --uf-accent: #f97316;
-  --uf-card: #161b22;
-  --uf-border: #30363d;
-  --uf-mono: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-    monospace;
+  /* Brand baseline and font stacks (theme-independent). All themed
+   * tokens (--uf-bg, --uf-fg, --uf-accent, etc.) live in the kit CSS
+   * files keyed by [data-theme='<kit>-<variant>'] selectors. The
+   * ThemeProvider always sets a valid data-theme on <html>, so the kit
+   * blocks always match.
+   */
+  --uf-brand: #f97316;
+
+  --uf-display: "Georgia", "Times New Roman", serif;
+  --uf-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --uf-mono:
+    ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 html,
@@ -21,14 +51,109 @@ body {
   margin: 0;
   background: var(--uf-bg);
   color: var(--uf-fg);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--uf-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Visible focus ring across every interactive surface; themed via --uf-accent. */
+:where(a, button, select, input, [role="slider"], [tabindex]):focus-visible {
+  outline: 2px solid var(--uf-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link for keyboard users; visible only when focused. */
+.uf-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  padding: 6px 12px;
+  background: var(--uf-card);
+  color: var(--uf-fg);
+  font-family: var(--uf-mono);
+  font-size: 12px;
+  border: 1px solid var(--uf-accent);
+  border-radius: 4px;
+  z-index: 100;
+}
+.uf-skip-link:focus {
+  left: 8px;
+}
+
+/* Visually hide content but keep it readable for screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Thin, theme-aware scrollbars for code-block overflow. */
+.uf-code-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--uf-border) transparent;
+}
+.uf-code-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.uf-code-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.uf-code-scroll::-webkit-scrollbar-thumb {
+  background: var(--uf-border);
+  border-radius: 3px;
 }
 
 code,
 pre,
 .mono {
   font-family: var(--uf-mono);
+}
+
+.display {
+  font-family: var(--uf-display);
+}
+
+/* Demo section cards reference these so the per-kit theme propagates. */
+.uf-card {
+  background: var(--uf-card);
+  border: 1px solid var(--uf-border);
+}
+
+.uf-eyebrow {
+  font-family: var(--uf-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--uf-muted);
+}
+
+/* Floating-shape flare wrapper (kit cards on home preview their kit's vibe). */
+.uf-flare-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.uf-flare-card > .uf-flare-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  transition: opacity 300ms ease;
+}
+.uf-flare-card:hover > .uf-flare-bg,
+.uf-flare-card:focus-within > .uf-flare-bg {
+  opacity: 0.9;
+}
+.uf-flare-card > .uf-flare-content {
+  position: relative;
+  z-index: 1;
 }
