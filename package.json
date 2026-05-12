@@ -1,7 +1,7 @@
 {
   "name": "unitforge",
   "version": "1.0.0",
-  "description": "Forge anything measurable. Not just physics. Three primitives (defineUnit, defineConversion, forge) compose into typed conversions for any domain you import or invent; SI, inventory, game state, lab assays, finance.",
+  "description": "Forge anything measurable. Not just physics. Three primitives (defineUnit, defineConversion, forge) compose into typed conversions for any domain you import or invent.",
   "keywords": [
     "units",
     "unit",

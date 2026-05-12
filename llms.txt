@@ -47,8 +47,3 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 - [CONTRIBUTING.md](./CONTRIBUTING.md): setup, commands, commit conventions
 - [SECURITY.md](./SECURITY.md): security policy and reporting
 - [NOTICE.md](./NOTICE.md): third-party attributions (currently empty; populated as kits cite external standards)
-- [PLANNING.md](./PLANNING.md): historical design intent (partially stale on API surface; README is canonical)
-
-## Reference
-
-Sibling project [chromonym](https://github.com/simiancraft/chromonym) is the architectural specimen for boilerplate, CI, release tooling, and documentation patterns.
