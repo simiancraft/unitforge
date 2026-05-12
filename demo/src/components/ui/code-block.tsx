@@ -11,8 +11,8 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { Check, Copy } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
 import { cn } from '~/lib/cn.js';
-import { useTheme } from './theme/provider.js';
-import { useHighlighted } from './theme/use-highlighted.js';
+import { useTheme } from '../theme/provider.js';
+import { useHighlighted } from '../theme/use-highlighted.js';
 
 type Lang = 'ts' | 'tsx' | 'js';
 

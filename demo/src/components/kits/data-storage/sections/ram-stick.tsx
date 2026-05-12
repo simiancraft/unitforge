@@ -8,9 +8,9 @@ import { MemoryStick } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
-import { CodeBlock } from '~/components/CodeBlock.js';
-import { Result } from '~/components/Result.js';
-import { Slider } from '~/components/Slider.js';
+import { CodeBlock } from '~/components/ui/code-block.js';
+import { Result } from '~/components/ui/result.js';
+import { Slider } from '~/components/ui/slider.js';
 import { formatMagnitude } from '~/lib/format.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 

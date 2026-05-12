@@ -9,11 +9,11 @@
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { VERSION } from 'unitforge/version';
-import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { findKit, KITS } from './components/kits/registry.js';
 import { resolveInitialThemeId, ThemeProvider, useTheme } from './components/theme/provider.js';
 import { pairForKit, type ThemeId } from './components/theme/recipes.js';
 import { ThemeToggle } from './components/theme/toggle.js';
+import { ErrorBoundary } from './components/ui/error-boundary.js';
 
 const DEFAULT_KIT_ID = 'forge';
 

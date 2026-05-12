@@ -3,7 +3,7 @@
 // library is small; deep enough to send a reader into a kit or into the
 // "build your own kit" demo below.
 
-import { CodeBlock } from '~/components/CodeBlock.js';
+import { CodeBlock } from '~/components/ui/code-block.js';
 
 const FORGE_CODE = `import { forge } from 'unitforge';
 import { foot, squareFoot } from 'unitforge/kits/geometry';

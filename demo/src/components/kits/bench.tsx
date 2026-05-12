@@ -16,8 +16,8 @@ import type { ChangeEvent } from 'react';
 import type { Dimension, Unit } from 'unitforge';
 import { formatMagnitude } from '~/lib/format.js';
 import { round1 } from '~/lib/math.js';
-import { CodeLine } from '../CodeBlock.js';
-import { UnitPicker } from '../UnitPicker.js';
+import { CodeLine } from '../ui/code-block.js';
+import { UnitPicker } from '../ui/unit-picker.js';
 import { computeBenchValues } from './compute-bench-values.js';
 
 export interface BenchState {
@@ -63,8 +63,6 @@ export function Bench<D extends Dimension>({
     if (Number.isFinite(next)) onChange({ ...state, value: next });
   };
 
-  const pickerOpts = options.map((u) => ({ key: u.id, label: u.label }));
-
   return (
     <section className="uf-card relative rounded-lg p-4 shadow-md md:p-5" aria-label={label}>
       <div className="mb-3 flex items-center justify-between">
@@ -76,7 +74,7 @@ export function Bench<D extends Dimension>({
         <UnitPicker
           label="from"
           value={state.fromId}
-          options={pickerOpts}
+          units={options}
           onChange={(next) => onChange({ ...state, fromId: next })}
         />
 
@@ -89,7 +87,7 @@ export function Bench<D extends Dimension>({
         <UnitPicker
           label="to"
           value={state.toId}
-          options={pickerOpts}
+          units={options}
           onChange={(next) => onChange({ ...state, toId: next })}
         />
       </div>

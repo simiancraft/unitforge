@@ -11,13 +11,13 @@ import { Square } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { areaFromLengthAndWidth } from 'unitforge/kits/geometry';
-import { CodeBlock } from '~/components/CodeBlock.js';
-import { Result } from '~/components/Result.js';
-import { Slider } from '~/components/Slider.js';
-import { UnitPicker } from '~/components/UnitPicker.js';
+import { CodeBlock } from '~/components/ui/code-block.js';
+import { Result } from '~/components/ui/result.js';
+import { Slider } from '~/components/ui/slider.js';
+import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { clamp, round1 } from '~/lib/math.js';
-import { findById, pickerOptions } from '~/lib/units.js';
+import { findById } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import { AREA_UNITS, LENGTH_UNITS } from '../units.js';
 import { type UseSvgPointerDrag, useSvgPointerDrag } from '../use-svg-pointer-drag.js';
@@ -143,21 +143,16 @@ function RectangleWidget({
         <UnitPicker
           label="length (↔) unit"
           value={lengthId}
-          options={pickerOptions(LENGTH_UNITS)}
+          units={LENGTH_UNITS}
           onChange={onLengthIdChange}
         />
         <UnitPicker
           label="width (↕) unit"
           value={widthId}
-          options={pickerOptions(LENGTH_UNITS)}
+          units={LENGTH_UNITS}
           onChange={onWidthIdChange}
         />
-        <UnitPicker
-          label="area unit"
-          value={areaId}
-          options={pickerOptions(AREA_UNITS)}
-          onChange={onAreaIdChange}
-        />
+        <UnitPicker label="area unit" value={areaId} units={AREA_UNITS} onChange={onAreaIdChange} />
       </div>
 
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-stretch">

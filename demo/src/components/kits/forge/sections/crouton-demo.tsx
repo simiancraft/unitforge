@@ -14,9 +14,9 @@
 
 import { useState } from 'react';
 import { defineConversion, defineUnit, forge, type Unit } from 'unitforge';
-import { CodeBlock } from '~/components/CodeBlock.js';
-import { Result } from '~/components/Result.js';
-import { Slider } from '~/components/Slider.js';
+import { CodeBlock } from '~/components/ui/code-block.js';
+import { Result } from '~/components/ui/result.js';
+import { Slider } from '~/components/ui/slider.js';
 import { cn } from '~/lib/cn.js';
 import { formatMagnitude } from '~/lib/format.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';

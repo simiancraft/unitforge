@@ -12,14 +12,13 @@
 
 import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
-import { CodeLine } from '~/components/CodeBlock.js';
 import type { BenchState } from '~/components/kits/bench.js';
 import { computeBenchValues } from '~/components/kits/compute-bench-values.js';
-import { UnitPicker } from '~/components/UnitPicker.js';
+import { CodeLine } from '~/components/ui/code-block.js';
+import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { cn } from '~/lib/cn.js';
 import { toJsName } from '~/lib/format.js';
 import { round1 } from '~/lib/math.js';
-import { pickerOptions } from '~/lib/units.js';
 import { LENGTH_UNITS } from '../../geometry/units.js';
 
 // Slider bounds for the home-page forge bench, in the user-selected
@@ -59,7 +58,7 @@ forge(${fromName}, ${toName})(${value}); // ${result.toFixed(4)}`;
             label="from unit"
             labelHidden
             value={fromId}
-            options={pickerOptions(LENGTH_UNITS)}
+            units={LENGTH_UNITS}
             onChange={(next) => onChange({ ...state, fromId: next })}
           />
           <input
@@ -110,7 +109,7 @@ forge(${fromName}, ${toName})(${value}); // ${result.toFixed(4)}`;
             label="to unit"
             labelHidden
             value={toId}
-            options={pickerOptions(LENGTH_UNITS)}
+            units={LENGTH_UNITS}
             onChange={(next) => onChange({ ...state, toId: next })}
           />
         </div>

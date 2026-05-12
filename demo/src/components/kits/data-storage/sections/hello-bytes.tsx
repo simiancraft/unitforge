@@ -7,13 +7,13 @@ import { Cpu } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, gibibyte, megabit } from 'unitforge/kits/data-storage';
-import { CodeBlock } from '~/components/CodeBlock.js';
-import { Result } from '~/components/Result.js';
-import { Slider } from '~/components/Slider.js';
-import { UnitPicker } from '~/components/UnitPicker.js';
+import { CodeBlock } from '~/components/ui/code-block.js';
+import { Result } from '~/components/ui/result.js';
+import { Slider } from '~/components/ui/slider.js';
+import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { cn } from '~/lib/cn.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
-import { findById, pickerOptions } from '~/lib/units.js';
+import { findById } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import {
   DATA_ALL_UNITS,
@@ -140,7 +140,7 @@ function HelloBytesWidget({
         <UnitPicker
           label="input unit"
           value={unitId}
-          options={pickerOptions(DATA_ALL_UNITS)}
+          units={DATA_ALL_UNITS}
           onChange={onUnitIdChange}
         />
         <Slider

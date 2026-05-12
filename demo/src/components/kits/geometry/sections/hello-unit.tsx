@@ -5,12 +5,12 @@
 import { Ruler } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
-import { CodeBlock } from '~/components/CodeBlock.js';
-import { Result } from '~/components/Result.js';
-import { Slider } from '~/components/Slider.js';
-import { UnitPicker } from '~/components/UnitPicker.js';
+import { CodeBlock } from '~/components/ui/code-block.js';
+import { Result } from '~/components/ui/result.js';
+import { Slider } from '~/components/ui/slider.js';
+import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
-import { findById, pickerOptions } from '~/lib/units.js';
+import { findById } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import { LENGTH_UNITS } from '../units.js';
 
@@ -94,18 +94,8 @@ function HelloUnitWidget({
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
-        <UnitPicker
-          label="from"
-          value={fromId}
-          options={pickerOptions(LENGTH_UNITS)}
-          onChange={onFromIdChange}
-        />
-        <UnitPicker
-          label="to"
-          value={toId}
-          options={pickerOptions(LENGTH_UNITS)}
-          onChange={onToIdChange}
-        />
+        <UnitPicker label="from" value={fromId} units={LENGTH_UNITS} onChange={onFromIdChange} />
+        <UnitPicker label="to" value={toId} units={LENGTH_UNITS} onChange={onToIdChange} />
       </div>
       <Slider
         label={`value (${from.symbol})`}
