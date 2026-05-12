@@ -8,8 +8,6 @@
   </a>
 </p>
 
-# unitforge
-
 [![npm version](https://img.shields.io/npm/v/unitforge?color=cb3837&logo=npm)](https://www.npmjs.com/package/unitforge)
 [![Types: included](https://img.shields.io/npm/types/unitforge?color=3178c6&logo=typescript)](https://www.npmjs.com/package/unitforge)
 [![CI](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml/badge.svg)](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml)
@@ -44,6 +42,45 @@ import { gigabyte, gibibyte } from 'unitforge/kits/data-storage';
 
 forge(gigabyte, gibibyte)(500); // 465.66; the 500 GB drive Windows reports as 465 GB
 ```
+
+## What this isn't
+
+Three functions, deliberately. Not three hundred kits.
+
+- **Not a million-function API.** The whole library is `defineUnit`, `defineConversion`, `forge`. If you can read those three signatures you can read all of unitforge.
+- **Not a units database.** Kits ship a curated set; you add what you need. Same shape userland does, no plugin protocol, no registry.
+- **Not a physics engine.** No vectors, integrators, or dimensional algebra solver. unitforge converts values; it does not simulate.
+- **Not a currency-rate fetcher.** `usd → eur` is a value you define against a rate you provide, not a live feed.
+- **Not a CLI.** Library only.
+
+### vs. `convert-units`
+
+`convert-units` is the incumbent ([~185k weekly downloads](https://www.npmjs.com/package/convert-units)); same problem space, different philosophy. This table compares against the version `npm install convert-units` actually installs today (`2.3.4`, published 2018-01-12, CJS-only). Where the in-development `3.0.0-beta` changes a row, it's flagged.
+
+| | `convert-units` 2.3.4 | `convert-units` 3.0.0-beta | **unitforge** |
+| --- | --- | --- | --- |
+| Module format | CJS | ESM + CJS + UMD | **ESM only** |
+| Bundled TypeScript types | ❌ (via `@types/convert-units`) | ✅ | **✅** |
+| Custom measures / dimensions | ✅ `customMeasure` | ✅ `customMeasure` | **✅ `defineUnit`** |
+| Cross-dimensional conversions (wheat + ore → cities) | ❌ | ❌ | **✅ `defineConversion`** |
+| Dimension mismatch caught at | runtime | runtime | **compile time** (`NoInfer` on the `to` side) |
+| Tree-shaking model | barrel; pass measures to `configureMeasurements` | same | **per-export subpath** (`unitforge/kits/<name>`) |
+
+The differentiators that matter for the "not just physics" thesis are **cross-dimensional recipes** (the entire Crouton story is one of these) and **compile-time dimension safety**. Module format and bundled types are parity moves the 3.x beta is making; once 3.x ships as `latest`, those rows stop being differentiators.
+
+## Tree-shaking
+
+The library is per-export tree-shakable; your production bundle pays only for what you actually import. Measured with `esbuild --bundle --minify --tree-shaking=true`:
+
+| Import | min | gzip |
+| --- | --- | --- |
+| `import { meter } from 'unitforge/kits/geometry'` | 347 B | **278 B** |
+| `import { forge } + meter, centimeter` (within-dim) | 3.9 kB | **1.7 kB** |
+| `import { forge } + cross-dim conversion` (forge + 3 kit values) | 4.2 kB | **1.9 kB** |
+| `import * as g from 'unitforge/kits/geometry'` + everything from main barrel | 7.4 kB | **2.7 kB** |
+| `import { VERSION } from 'unitforge/version'` (opt-in, inlines `package.json`) | 2.2 kB | **1.0 kB** |
+
+**Tarball:** `npm pack` produces ≈ 52 kB packed / 230 kB unpacked (64 files; `dist/` plus `LICENSE`, `NOTICE.md`, `README.md`, `package.json`).
 
 ## Install
 
@@ -126,32 +163,9 @@ A conversion value: input shape (field name to dimension), output (single dimens
 
 Validators may return `true`/`undefined` to pass, a string to reject with that message, or throw (the original error is preserved on `failure.cause`). All validators run on every call; failures aggregate into a single `ValidationError`.
 
-## Tree-shaking
-
-The library is per-export tree-shakable; your production bundle pays only for what you actually import. Measured with `esbuild --bundle --minify --tree-shaking=true`:
-
-| Import | min | gzip |
-| --- | --- | --- |
-| `import { meter } from 'unitforge/kits/geometry'` | 347 B | **267 B** |
-| `import { forge } + meter, centimeter` (within-dim) | 3.9 kB | **1.7 kB** |
-| `import { forge } + cross-dim conversion` (forge + 3 kit values) | 4.2 kB | **1.9 kB** |
-| `import * as g from 'unitforge/kits/geometry'` + everything from main barrel | 7.4 kB | **2.7 kB** |
-| `import { VERSION } from 'unitforge/version'` (opt-in, inlines `package.json`) | 2.2 kB | **1.0 kB** |
-
-**Tarball:** `npm pack` produces ≈ 48 kB packed / 207 kB unpacked (56 files, all under `dist/`).
-
 ## Types
 
-Re-exported from the root barrel (`import type { ... } from 'unitforge'`):
-
-| Category | Types |
-| --- | --- |
-| Core values | `Unit<D, T>`, `Conversion<I, O, T>` |
-| Dimensions | `Dimension` (also from `unitforge/dimensions`) |
-| Forge surface | `ForgeInput<I, T>`, `ForgeOutput<O, T>`, `UnitMap<M, T>`, `ForgeConfig<T>` |
-| Validation | `ValidatorMap<I, T>`, `ValidationFailure` |
-
-`Dimension` uses the `(string & {})` brand so user-defined dimensions (`'gold' as const`) are accepted without collapsing the union, while built-ins still surface in autocomplete.
+Re-exported from the root barrel: `Unit`, `Conversion`, `Dimension`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, `ValidationFailure`. `Dimension` uses the `(string & {})` brand so user-defined dimensions (`'gold' as const`) are accepted without collapsing the union, while built-ins still surface in autocomplete. See [`llms.txt`](./llms.txt) for the full type surface.
 
 ## Development
 
