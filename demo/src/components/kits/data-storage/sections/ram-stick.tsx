@@ -10,6 +10,7 @@ import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
+import { formatMagnitude } from '~/lib/format.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 const CHIPS = 8;
@@ -183,7 +184,7 @@ export function RamStick() {
             suffix="GiB"
           />
           <Result label="same value" value={`${inGB.toFixed(3)} GB`} />
-          <Result label="raw bytes" value={`${inBytes.toExponential(3)} B`} />
+          <Result label="raw bytes" value={`${formatMagnitude(inBytes)} B`} />
         </div>
       }
       codeZone={<CodeBlock code={CODE} />}

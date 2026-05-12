@@ -10,6 +10,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
+import { formatMagnitude } from '~/lib/format.js';
 import { clamp, round1 } from '~/lib/math.js';
 import {
   AREA_UNITS,
@@ -222,8 +223,11 @@ export function CircleMachine() {
             />
           </div>
 
-          <Result label="area" value={`${area.toFixed(4)} ${areaOpt.key}`} variant="hero" />
-          <Result label="circumference" value={`${circumference.toFixed(4)} ${circOpt.key}`} />
+          <Result label="area" value={`${formatMagnitude(area)} ${areaOpt.key}`} variant="hero" />
+          <Result
+            label="circumference"
+            value={`${formatMagnitude(circumference)} ${circOpt.key}`}
+          />
         </div>
       }
       codeZone={<CodeBlock code={CODE} />}

@@ -12,6 +12,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
+import { formatMagnitude } from '~/lib/format.js';
 import {
   DATA_ALL_UNITS,
   DATA_BINARY_UNITS,
@@ -86,7 +87,9 @@ export function HelloBytes() {
       <span className="uf-eyebrow">{family}</span>
       {list.map((opt) => {
         const v = forge(byte, opt.unit)(inBytes);
-        return <Result key={opt.key} label={opt.label} value={`${formatNum(v)} ${opt.key}`} />;
+        return (
+          <Result key={opt.key} label={opt.label} value={`${formatMagnitude(v)} ${opt.key}`} />
+        );
       })}
     </div>
   );
@@ -138,14 +141,4 @@ export function HelloBytes() {
       codeZone={<CodeBlock code={CODE} />}
     />
   );
-}
-
-function formatNum(n: number): string {
-  if (n === 0) return '0';
-  const abs = Math.abs(n);
-  if (abs >= 1e15) return n.toExponential(3);
-  if (abs >= 1000) return n.toFixed(2);
-  if (abs >= 1) return n.toFixed(3);
-  if (abs >= 1e-3) return n.toFixed(5);
-  return n.toExponential(3);
 }
