@@ -15,7 +15,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
-import { formatMagnitude } from '~/lib/format.js';
+import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { clamp, round1 } from '~/lib/math.js';
 import {
   AREA_UNITS,
@@ -35,20 +35,35 @@ const MAX_VAL = 10;
 const MIN_VAL = 0.1;
 const SCALE = Math.min((VIEW_W - PAD * 2) / MAX_VAL, (VIEW_H - PAD * 2) / MAX_VAL);
 
-const CODE = `import { forge } from 'unitforge';
+function buildCode(
+  lengthLabel: string,
+  widthLabel: string,
+  areaLabel: string,
+  length: number,
+  width: number,
+  area: number,
+): string {
+  const lengthUnit = toJsName(lengthLabel);
+  const widthUnit = toJsName(widthLabel);
+  const areaUnit = toJsName(areaLabel);
+  const imports = [lengthUnit, widthUnit, areaUnit].filter(
+    (name, i, arr) => arr.indexOf(name) === i,
+  );
+  return `import { forge } from 'unitforge';
 import {
   areaFromLengthAndWidth,
-  foot, meter, hectare,
+  ${imports.join(', ')},
 } from 'unitforge/kits/geometry';
 
 const area = forge(
-  { length: foot, width: meter },
-  hectare,
+  { length: ${lengthUnit}, width: ${widthUnit} },
+  ${areaUnit},
   { via: areaFromLengthAndWidth },
 );
 
-area({ length: 100, width: 50 }); // 0.1524 ha
+area({ length: ${formatMagnitude(length)}, width: ${formatMagnitude(width)} }); // ${formatMagnitude(area)}
 `;
+}
 
 export function RectangleMachine() {
   const [length, setLength] = useState(3);
@@ -245,7 +260,11 @@ export function RectangleMachine() {
           <Result label="area" value={`${formatMagnitude(area)} ${areaOpt.key}`} variant="hero" />
         </div>
       }
-      codeZone={<CodeBlock code={CODE} />}
+      codeZone={
+        <CodeBlock
+          code={buildCode(lengthOpt.label, widthOpt.label, areaOpt.label, length, width, area)}
+        />
+      }
     />
   );
 }

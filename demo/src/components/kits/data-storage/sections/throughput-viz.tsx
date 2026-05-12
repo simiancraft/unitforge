@@ -11,22 +11,25 @@ import { byte, gigabit, gigabyte, megabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
+import { formatMagnitude } from '~/lib/format.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 const MAX_VIEW_SECONDS = 12;
 
-const CODE = `import { forge } from 'unitforge';
+function buildCode(gbits: number, mbps: number, targetGB: number, seconds: number): string {
+  return `import { forge } from 'unitforge';
 import {
   gigabit, megabyte, byte, gigabyte,
 } from 'unitforge/kits/data-storage';
 
-const mbps = forge(gigabit, megabyte)(1); // 125
+const mbps = forge(gigabit, megabyte)(${formatMagnitude(gbits)}); // ${formatMagnitude(mbps)}
 
-// Time to transfer a 100 GB file at 1 Gbit/s.
-const bytesPerSec = forge(gigabit, byte)(1);
-const target = forge(gigabyte, byte)(100);
-const seconds = target / bytesPerSec; // 800
+// Time to transfer a ${formatMagnitude(targetGB)} GB file at ${formatMagnitude(gbits)} Gbit/s.
+const bytesPerSec = forge(gigabit, byte)(${formatMagnitude(gbits)});
+const target = forge(gigabyte, byte)(${formatMagnitude(targetGB)});
+const seconds = target / bytesPerSec; // ${formatMagnitude(seconds)}
 `;
+}
 
 export function ThroughputViz() {
   const [gbits, setGbits] = useState(1);
@@ -111,7 +114,7 @@ export function ThroughputViz() {
           />
         </div>
       }
-      codeZone={<CodeBlock code={CODE} />}
+      codeZone={<CodeBlock code={buildCode(gbits, mbPerSec, targetGB, realSeconds)} />}
     />
   );
 }

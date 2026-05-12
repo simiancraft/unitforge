@@ -18,6 +18,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { cn } from '~/lib/cn.js';
+import { formatMagnitude } from '~/lib/format.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 const COUNT = 'count' as const;
@@ -57,7 +58,8 @@ const citiesFromResources = forge({ wheat: wheatUnit, ore: oreUnit }, cityUnit, 
   via: buildCities,
 });
 
-const CODE = `import { defineUnit, defineConversion, forge } from 'unitforge';
+function buildCode(wheat: number, ore: number, cities: number): string {
+  return `import { defineUnit, defineConversion, forge } from 'unitforge';
 
 // One dimension, many units. wheat and ore aren't directly
 // interconvertible, but they're both countable things.
@@ -76,7 +78,8 @@ const buildCities = defineConversion({
 
 const cities = forge({ wheat, ore }, city, { via: buildCities });
 
-cities({ wheat: 6, ore: 9 }); // 3`;
+cities({ wheat: ${formatMagnitude(wheat)}, ore: ${formatMagnitude(ore)} }); // ${formatMagnitude(cities)}`;
+}
 
 export function CroutonDemo() {
   const [wheat, setWheat] = useState(6);
@@ -121,7 +124,7 @@ export function CroutonDemo() {
           </div>
         </div>
       }
-      codeZone={<CodeBlock code={CODE} />}
+      codeZone={<CodeBlock code={buildCode(wheat, ore, cities)} />}
     />
   );
 }

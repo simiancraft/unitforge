@@ -10,7 +10,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
-import { formatMagnitude } from '~/lib/format.js';
+import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { clamp, round1 } from '~/lib/math.js';
 import {
   AREA_UNITS,
@@ -29,27 +29,42 @@ const MAX_R = 10;
 const MIN_R = 0.1;
 const SCALE = (VIEW / 2 - PAD) / MAX_R;
 
-const CODE = `import { forge } from 'unitforge';
+function buildCode(
+  radiusLabel: string,
+  areaLabel: string,
+  circLabel: string,
+  radius: number,
+  area: number,
+  circumference: number,
+): string {
+  const radiusUnit = toJsName(radiusLabel);
+  const areaUnit = toJsName(areaLabel);
+  const circUnit = toJsName(circLabel);
+  const imports = [radiusUnit, areaUnit, 'meter', circUnit].filter(
+    (name, i, arr) => arr.indexOf(name) === i,
+  );
+  return `import { forge } from 'unitforge';
 import {
   areaFromCircleRadius,
-  foot, meter, squareMeter,
+  ${imports.join(', ')},
 } from 'unitforge/kits/geometry';
 
 const circleArea = forge(
-  { radius: meter },
-  squareMeter,
+  { radius: ${radiusUnit} },
+  ${areaUnit},
   { via: areaFromCircleRadius },
 );
 
-circleArea({ radius: 2 }); // 12.566...  (π · 2²)
+circleArea({ radius: ${formatMagnitude(radius)} }); // ${formatMagnitude(area)}
 
 // Circumference is just 2π · r. Compute in canonical meters,
 // then re-forge into whatever length unit you want to show.
-const radiusInMeters = 2;
+const radiusInMeters = forge(${radiusUnit}, meter)(${formatMagnitude(radius)});
 const circumferenceInMeters = 2 * Math.PI * radiusInMeters;
-const circumferenceFt = forge(meter, foot)(circumferenceInMeters);
-// 41.23... ft
+const circumference = forge(meter, ${circUnit})(circumferenceInMeters);
+// ${formatMagnitude(circumference)}
 `;
+}
 
 export function CircleMachine() {
   const [radius, setRadius] = useState(3);
@@ -230,7 +245,18 @@ export function CircleMachine() {
           />
         </div>
       }
-      codeZone={<CodeBlock code={CODE} />}
+      codeZone={
+        <CodeBlock
+          code={buildCode(
+            radiusOpt.label,
+            areaOpt.label,
+            circOpt.label,
+            radius,
+            area,
+            circumference,
+          )}
+        />
+      }
     />
   );
 }

@@ -7,7 +7,7 @@ import { Cpu } from 'lucide-react';
 import { useState } from 'react';
 import type { Unit } from 'unitforge';
 import { forge } from 'unitforge';
-import { byte } from 'unitforge/kits/data-storage';
+import { byte, gibibyte, megabit } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
@@ -46,15 +46,26 @@ const SLIDER_RANGE: Record<DataKey, { min: number; max: number; step: number; in
   Gbit: { min: 0.1, max: 100, step: 0.1, init: 1 },
 };
 
-const CODE = `import { forge } from 'unitforge';
+function buildCode(
+  fromName: string,
+  value: number,
+  bytes: number,
+  inGiB: number,
+  inMbit: number,
+): string {
+  const imports = ['byte', 'gibibyte', 'megabit', fromName].filter(
+    (name, i, arr) => arr.indexOf(name) === i,
+  );
+  return `import { forge } from 'unitforge';
 import {
-  byte, gigabyte, gibibyte, megabit,
+  ${imports.join(', ')},
 } from 'unitforge/kits/data-storage';
 
-const bytes = forge(gigabyte, byte)(500); // 5e11
-const inGiB = forge(byte, gibibyte)(bytes); // 465.66
-const inMbit = forge(byte, megabit)(bytes); // 4e6
+const bytes = forge(${fromName}, byte)(${formatMagnitude(value)}); // ${formatMagnitude(bytes)}
+const inGiB = forge(byte, gibibyte)(bytes); // ${formatMagnitude(inGiB)}
+const inMbit = forge(byte, megabit)(bytes); // ${formatMagnitude(inMbit)}
 `;
+}
 
 interface BytesState {
   unitKey: DataKey;
@@ -78,6 +89,8 @@ export function HelloBytes() {
 
   const fromUnit = findByKey(DATA_ALL_UNITS, state.unitKey);
   const inBytes = forge(fromUnit.unit, byte)(state.value);
+  const inGiB = forge(byte, gibibyte)(inBytes);
+  const inMbit = forge(byte, megabit)(inBytes);
 
   const renderRows = (
     list: ReadonlyArray<{ key: string; label: string; unit: Unit<'data', number> }>,
@@ -138,7 +151,7 @@ export function HelloBytes() {
           </div>
         </div>
       }
-      codeZone={<CodeBlock code={CODE} />}
+      codeZone={<CodeBlock code={buildCode(fromUnit.label, state.value, inBytes, inGiB, inMbit)} />}
     />
   );
 }

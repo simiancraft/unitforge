@@ -5,6 +5,22 @@
 // very-small conversions (mm radius into m², mm radius into miles)
 // don't collapse to zero.
 
+/**
+ * Turn a human label ("square millimeter") into the JS export name
+ * the kits ship ("squareMillimeter"); the unit catalogs in units.ts
+ * mirror that camelCase convention.
+ */
+export function toJsName(label: string): string {
+  const parts = label.split(' ');
+  return (
+    parts[0] +
+    parts
+      .slice(1)
+      .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+      .join('')
+  );
+}
+
 export function formatMagnitude(n: number): string {
   if (!Number.isFinite(n)) return String(n);
   if (n === 0) return '0';

@@ -23,14 +23,16 @@ const RAMSTICK_MAX_GIB = 64;
 const CHIP_SLOTS = Array.from({ length: CHIPS }, (_, i) => ({ id: `chip-${i}` }));
 const PIN_SLOTS = Array.from({ length: PINS }, (_, i) => ({ id: `pin-${i}` }));
 
-const CODE = `import { forge } from 'unitforge';
+function buildCode(gib: number, decimalGB: number, bytes: number): string {
+  return `import { forge } from 'unitforge';
 import {
   byte, gigabyte, gibibyte,
 } from 'unitforge/kits/data-storage';
 
-const inDecimalGB = forge(gibibyte, gigabyte)(16); // 17.18
-const bytes = forge(gibibyte, byte)(16);
+const inDecimalGB = forge(gibibyte, gigabyte)(${formatMagnitude(gib)}); // ${formatMagnitude(decimalGB)}
+const bytes = forge(gibibyte, byte)(${formatMagnitude(gib)}); // ${formatMagnitude(bytes)}
 `;
+}
 
 export function RamStick() {
   const [gibValue, setGibValue] = useState(16);
@@ -187,7 +189,7 @@ export function RamStick() {
           <Result label="raw bytes" value={`${formatMagnitude(inBytes)} B`} />
         </div>
       }
-      codeZone={<CodeBlock code={CODE} />}
+      codeZone={<CodeBlock code={buildCode(gibValue, inGB, inBytes)} />}
     />
   );
 }

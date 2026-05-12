@@ -9,7 +9,7 @@
 
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Check, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 import { cn } from '~/lib/cn.js';
 import { useTheme } from './theme/provider.js';
 import { useHighlighted } from './theme/use-highlighted.js';
@@ -51,7 +51,12 @@ interface CodeBlockProps extends VariantProps<typeof codeFrame> {
 
 export function CodeBlock({ code, lang = 'ts', variant = 'block', className }: CodeBlockProps) {
   const { activeTheme } = useTheme();
-  const html = useHighlighted(code, lang, activeTheme.shikiTheme);
+  // Demos that template CODE from drag state push a fresh string on
+  // every pointer frame; deferring the value lets React skip running
+  // the (async) shiki pass on intermediate updates and keep painting
+  // the previous highlight until the latest one resolves.
+  const deferredCode = useDeferredValue(code);
+  const html = useHighlighted(deferredCode, lang, activeTheme.shikiTheme);
   const codeFrameClass = activeTheme.codeFrameClass;
 
   const inner = (

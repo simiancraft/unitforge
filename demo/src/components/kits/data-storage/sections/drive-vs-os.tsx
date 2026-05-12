@@ -11,6 +11,7 @@ import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
+import { formatMagnitude } from '~/lib/format.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 const VIEW_W = 520;
@@ -18,14 +19,15 @@ const BAR_H = 30;
 const PADDING = 16;
 const MAX_GB = 8000;
 
-const CODE = `import { forge } from 'unitforge';
+function buildCode(marketedGB: number, reportedGiB: number): string {
+  return `import { forge } from 'unitforge';
 import { gigabyte, gibibyte } from 'unitforge/kits/data-storage';
 
 const marketedToReported = forge(gigabyte, gibibyte);
 
-// A "1 TB" drive shows up as ~931 GiB.
-marketedToReported(1000); // 931.32...
+marketedToReported(${formatMagnitude(marketedGB)}); // ${formatMagnitude(reportedGiB)}
 `;
+}
 
 export function DriveVsOs() {
   const [marketedGB, setMarketedGB] = useState(1000);
@@ -222,7 +224,7 @@ export function DriveVsOs() {
           />
         </div>
       }
-      codeZone={<CodeBlock code={CODE} />}
+      codeZone={<CodeBlock code={buildCode(marketedGB, inGiB)} />}
     />
   );
 }

@@ -9,17 +9,19 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
+import { formatMagnitude } from '~/lib/format.js';
 import { findByKey, LENGTH_UNITS, type LengthKey, pickerOptions } from '~/lib/units.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
-const CODE = `import { forge } from 'unitforge';
-import { meter, foot } from 'unitforge/kits/geometry';
+function buildCode(fromName: string, toName: string, value: number, result: number): string {
+  return `import { forge } from 'unitforge';
+import { ${fromName}, ${toName} } from 'unitforge/kits/geometry';
 
-const metersToFeet = forge(meter, foot);
+const convert = forge(${fromName}, ${toName});
 
-metersToFeet(5);   // 16.4042
-metersToFeet(100); // 328.084
+convert(${formatMagnitude(value)}); // ${formatMagnitude(result)}
 `;
+}
 
 export function HelloUnit() {
   const [value, setValue] = useState(5);
@@ -79,7 +81,7 @@ export function HelloUnit() {
           />
         </div>
       }
-      codeZone={<CodeBlock code={CODE} />}
+      codeZone={<CodeBlock code={buildCode(from.label, to.label, value, result)} />}
       notesZone={
         <>
           <code className="mono">forge(meter, foot)</code> returns a cached converter; the call
