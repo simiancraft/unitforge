@@ -65,9 +65,9 @@ const ICON_SLOTS = Array.from({ length: MAX_FILE_ICONS }, (_, i) => ({ id: `icon
 // Crouton-style size buckets: as more icons appear, each one shrinks so
 // the row stays single-line at the visible cap.
 const ICON_SIZE_BUCKETS = [
-  { upTo: 12, size: 'text-lg' },
-  { upTo: 30, size: 'text-base' },
-  { upTo: Number.POSITIVE_INFINITY, size: 'text-xs' },
+  { upTo: 12, size: 'text-base' },
+  { upTo: 30, size: 'text-sm' },
+  { upTo: Number.POSITIVE_INFINITY, size: 'text-[10px]' },
 ] as const;
 
 export function DriveVsOs() {
