@@ -1,16 +1,13 @@
-// Circuit-board background for the data-storage theme. PCB trace paths with
-// via dots; when `pulse` is on, copper traces stroke-dash-animate so data
-// visibly "flows" along them. The pulse is the chromonym "set reacts to
-// state" pattern adapted for data-storage: any time the page bench moves,
-// the page flashes a couple of traces.
+// Circuit-board background for the data-storage theme. PCB trace paths
+// with via dots; copper traces stroke-dash-animate so data visibly
+// "flows" along three accent lanes. Animation is always on; quiet enough
+// to live as ambient page texture, animated enough to feel alive.
 
 interface DataStorageBackdropProps {
   inline?: boolean;
-  /** Active = traces pulse (stroke-dashoffset animation). */
-  pulse?: boolean;
 }
 
-export function DataStorageBackdrop({ inline, pulse = false }: DataStorageBackdropProps) {
+export function DataStorageBackdrop({ inline }: DataStorageBackdropProps) {
   const className = inline
     ? 'absolute inset-0 pointer-events-none'
     : 'fixed inset-0 pointer-events-none -z-10';
@@ -68,30 +65,28 @@ export function DataStorageBackdrop({ inline, pulse = false }: DataStorageBackdr
         </defs>
         <rect width="100%" height="100%" fill="url(#uf-pcb)" />
 
-        {pulse && (
-          <g>
-            <path
-              d="M 0 120 L 240 120 L 240 280 L 540 280"
-              fill="none"
-              strokeWidth="1.8"
-              className="uf-trace-pulse"
-            />
-            <path
-              d="M 800 400 L 600 400 L 600 200 L 320 200"
-              fill="none"
-              strokeWidth="1.8"
-              className="uf-trace-pulse"
-              style={{ animationDelay: '0.6s' } as React.CSSProperties}
-            />
-            <path
-              d="M 100 600 L 100 460 L 380 460 L 380 360"
-              fill="none"
-              strokeWidth="1.8"
-              className="uf-trace-pulse"
-              style={{ animationDelay: '1.2s' } as React.CSSProperties}
-            />
-          </g>
-        )}
+        <g>
+          <path
+            d="M 0 120 L 240 120 L 240 280 L 540 280"
+            fill="none"
+            strokeWidth="1.8"
+            className="uf-trace-pulse"
+          />
+          <path
+            d="M 800 400 L 600 400 L 600 200 L 320 200"
+            fill="none"
+            strokeWidth="1.8"
+            className="uf-trace-pulse"
+            style={{ animationDelay: '0.6s' } as React.CSSProperties}
+          />
+          <path
+            d="M 100 600 L 100 460 L 380 460 L 380 360"
+            fill="none"
+            strokeWidth="1.8"
+            className="uf-trace-pulse"
+            style={{ animationDelay: '1.2s' } as React.CSSProperties}
+          />
+        </g>
       </svg>
     </div>
   );

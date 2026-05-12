@@ -14,7 +14,6 @@ import { findByKey, LENGTH_UNITS, type LengthKey } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
-import { usePulse } from '../use-pulse.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { CircleMachine } from './sections/circle-machine.js';
 import { HelloUnit } from './sections/hello-unit.js';
@@ -50,13 +49,9 @@ export function GeometryScreen() {
   });
   const cellSize = CELL_PX_BY_UNIT[bench.fromKey];
 
-  // Brief "the paper rippled" flash whenever the bench changes; mirrors
-  // the data-storage trace pulse so geometry also breathes on interact.
-  const paperPulse = usePulse([bench.fromKey, bench.toKey, bench.value], 600);
-
   return (
     <KitLayout
-      backdropZone={<GeometryBackdrop cellSize={cellSize} pulse={paperPulse} />}
+      backdropZone={<GeometryBackdrop cellSize={cellSize} />}
       headerZone={
         <header className="flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 01</p>

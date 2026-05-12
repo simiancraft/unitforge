@@ -11,8 +11,6 @@ interface GeometryBackdropProps {
   inline?: boolean;
   /** Fine grid spacing in pixels. Driven by the page bench's unit choice. */
   cellSize?: number;
-  /** When true, the coarse grid flashes briefly. Reset by parent after ~600ms. */
-  pulse?: boolean;
   /**
    * CSS scale applied to the whole grid; transitions smoothly so hovers
    * on a kit card visibly "zoom in" on the paper without re-rendering
@@ -21,12 +19,7 @@ interface GeometryBackdropProps {
   scale?: number;
 }
 
-export function GeometryBackdrop({
-  inline,
-  cellSize = 12,
-  pulse,
-  scale = 1,
-}: GeometryBackdropProps) {
+export function GeometryBackdrop({ inline, cellSize = 12, scale = 1 }: GeometryBackdropProps) {
   const className = inline
     ? 'absolute inset-0 pointer-events-none overflow-hidden'
     : 'fixed inset-0 pointer-events-none -z-10 overflow-hidden';
@@ -39,8 +32,7 @@ export function GeometryBackdrop({
       className={className}
       style={{
         zIndex: inline ? 0 : -1,
-        opacity: pulse ? 1.15 : 0.95,
-        transition: 'opacity 600ms cubic-bezier(0.22,1,0.36,1)',
+        opacity: 0.95,
       }}
     >
       <svg

@@ -1,7 +1,7 @@
 // Data-storage kit chassis. CRT-phosphor dark + datasheet-silkscreen light.
-// Owns Bench state so the circuit backdrop's pulse animation toggles
-// whenever the user is actively moving the bench. Sections live in
-// ./sections/ as SectionLayout composers.
+// Owns Bench state; sections live in ./sections/ as SectionLayout
+// composers. The circuit backdrop's trace animation is always on
+// (ambient page texture); no pulse-on-interact hook.
 //
 // All theme orchestration (CSS variable cascade, shiki theme selection,
 // CRT chrome class) lives at the root ThemeProvider; the kit is a pure
@@ -14,7 +14,6 @@ import { DATA_ALL_UNITS, type DataKey, findByKey } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
-import { usePulse } from '../use-pulse.js';
 import { DataStorageBackdrop } from './parts/data-storage-backdrop.js';
 import { DriveVsOs } from './sections/drive-vs-os.js';
 import { HelloBytes } from './sections/hello-bytes.js';
@@ -35,21 +34,16 @@ export function DataStorageScreen() {
     value: 500,
   });
 
-  // Pulse the circuit traces briefly each time the bench moves; 1.6s
-  // lets the keyframe play out and then rest.
-  const pulse = usePulse([bench.fromKey, bench.toKey, bench.value], 1600);
-
   return (
     <KitLayout
-      backdropZone={<DataStorageBackdrop pulse={pulse} />}
+      backdropZone={<DataStorageBackdrop />}
       headerZone={
         <header className="relative uf-scanlines flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 02</p>
           <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">data-storage</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-uf-muted">
             Decimal bytes (kilobyte through petabyte), IEC binary bytes (kibibyte through pebibyte),
-            and bits. The board pulses as you scrub the bench; every conversion is a real forge call
-            against the built package.
+            and bits. Every conversion is a real forge call against the built package.
           </p>
         </header>
       }
@@ -85,5 +79,5 @@ export const meta: KitMeta = {
   blurb: 'bytes (decimal and IEC binary), bits; GB vs GiB, network throughput, RAM scaling.',
   defaultThemeId: 'data-storage-dark',
   icon: Database,
-  previewBg: ({ hovered }) => <DataStorageBackdrop inline pulse={hovered} />,
+  previewBg: () => <DataStorageBackdrop inline />,
 };
