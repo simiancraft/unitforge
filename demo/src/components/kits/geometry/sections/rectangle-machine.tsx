@@ -35,34 +35,182 @@ const MAX_VAL = 10;
 const MIN_VAL = 0.1;
 const SCALE = Math.min((VIEW_W - PAD * 2) / MAX_VAL, (VIEW_H - PAD * 2) / MAX_VAL);
 
-function buildCode(
-  lengthLabel: string,
-  widthLabel: string,
-  areaLabel: string,
-  length: number,
-  width: number,
-  area: number,
-): string {
-  const lengthUnit = toJsName(lengthLabel);
-  const widthUnit = toJsName(widthLabel);
-  const areaUnit = toJsName(areaLabel);
-  const imports = [lengthUnit, widthUnit, areaUnit].filter(
-    (name, i, arr) => arr.indexOf(name) === i,
+type LengthOption = (typeof LENGTH_UNITS)[number];
+type AreaOption = (typeof AREA_UNITS)[number];
+
+export function RectangleMachine() {
+  const [length, setLength] = useState(3);
+  const [width, setWidth] = useState(2);
+  const [lengthKey, setLengthKey] = useState<LengthKey>('m');
+  const [widthKey, setWidthKey] = useState<LengthKey>('m');
+  const [areaKey, setAreaKey] = useState<AreaKey>('m2');
+
+  const lengthOpt = findByKey(LENGTH_UNITS, lengthKey);
+  const widthOpt = findByKey(LENGTH_UNITS, widthKey);
+  const areaOpt = findByKey(AREA_UNITS, areaKey);
+
+  const area = forge({ length: lengthOpt.unit, width: widthOpt.unit }, areaOpt.unit, {
+    via: areaFromLengthAndWidth,
+  })({ length, width });
+
+  // getHandleCenter reads the latest length/width via the closure each
+  // call, so offset capture stays correct without RectangleVisual
+  // having to forward geometry back to the parent.
+  const { svgRef, handlers } = useSvgPointerDrag({
+    getHandleCenter: () => ({ x: PAD + length * SCALE, y: PAD + width * SCALE }),
+    onDrag: (p) => {
+      setLength(round1(clamp((p.x - PAD) / SCALE, MIN_VAL, MAX_VAL)));
+      setWidth(round1(clamp((p.y - PAD) / SCALE, MIN_VAL, MAX_VAL)));
+    },
+  });
+
+  return (
+    <SectionLayout
+      headerZone={
+        <SectionHeader
+          eyebrow="demo 02"
+          title="rectangle machine"
+          kicker="cross-dimensional"
+          iconZone={<Square size={28} strokeWidth={1.5} className="text-uf-accent" />}
+        />
+      }
+      introZone={
+        <>
+          Length × width = area. Drag the sliders to see the rectangle redraw; each axis has its own
+          unit picker so you can mix and match (5 ft × 200 cm is fine). The library normalizes to
+          base meters, runs <code className="mono">compute</code>, then re-emits in whatever area
+          unit you ask for.
+        </>
+      }
+      widgetZone={
+        <WidgetLayout
+          interactionZone={
+            <RectangleWidget
+              length={length}
+              width={width}
+              lengthKey={lengthKey}
+              widthKey={widthKey}
+              areaKey={areaKey}
+              lengthOpt={lengthOpt}
+              widthOpt={widthOpt}
+              areaOpt={areaOpt}
+              area={area}
+              svgRef={svgRef}
+              handlers={handlers}
+              onLengthChange={setLength}
+              onWidthChange={setWidth}
+              onLengthKeyChange={setLengthKey}
+              onWidthKeyChange={setWidthKey}
+              onAreaKeyChange={setAreaKey}
+            />
+          }
+          codeZone={
+            <CodeBlock
+              code={buildCode(lengthOpt.label, widthOpt.label, areaOpt.label, length, width, area)}
+            />
+          }
+        />
+      }
+    />
   );
-  return `import { forge } from 'unitforge';
-import {
-  areaFromLengthAndWidth,
-  ${imports.join(', ')},
-} from 'unitforge/kits/geometry';
+}
 
-const area = forge(
-  { length: ${lengthUnit}, width: ${widthUnit} },
-  ${areaUnit},
-  { via: areaFromLengthAndWidth },
-);
+interface RectangleWidgetProps {
+  length: number;
+  width: number;
+  lengthKey: LengthKey;
+  widthKey: LengthKey;
+  areaKey: AreaKey;
+  lengthOpt: LengthOption;
+  widthOpt: LengthOption;
+  areaOpt: AreaOption;
+  area: number;
+  svgRef: UseSvgPointerDrag['svgRef'];
+  handlers: UseSvgPointerDrag['handlers'];
+  onLengthChange: (next: number) => void;
+  onWidthChange: (next: number) => void;
+  onLengthKeyChange: (next: LengthKey) => void;
+  onWidthKeyChange: (next: LengthKey) => void;
+  onAreaKeyChange: (next: AreaKey) => void;
+}
 
-area({ length: ${formatMagnitude(length)}, width: ${formatMagnitude(width)} }); // ${formatMagnitude(area)}
-`;
+function RectangleWidget({
+  length,
+  width,
+  lengthKey,
+  widthKey,
+  areaKey,
+  lengthOpt,
+  widthOpt,
+  areaOpt,
+  area,
+  svgRef,
+  handlers,
+  onLengthChange,
+  onWidthChange,
+  onLengthKeyChange,
+  onWidthKeyChange,
+  onAreaKeyChange,
+}: RectangleWidgetProps) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <UnitPicker
+          label="length (↔) unit"
+          value={lengthKey}
+          options={pickerOptions(LENGTH_UNITS)}
+          onChange={onLengthKeyChange}
+        />
+        <UnitPicker
+          label="width (↕) unit"
+          value={widthKey}
+          options={pickerOptions(LENGTH_UNITS)}
+          onChange={onWidthKeyChange}
+        />
+        <UnitPicker
+          label="area unit"
+          value={areaKey}
+          options={pickerOptions(AREA_UNITS)}
+          onChange={onAreaKeyChange}
+        />
+      </div>
+
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-stretch">
+        <Slider
+          label={`width ↕ (${widthOpt.key})`}
+          value={width}
+          min={MIN_VAL}
+          max={MAX_VAL}
+          step={0.1}
+          onChange={onWidthChange}
+          orientation="vertical"
+          suffix={widthOpt.key}
+        />
+
+        <div className="flex-1 flex flex-col items-center gap-3">
+          <RectangleVisual
+            length={length}
+            width={width}
+            lengthKey={lengthOpt.key}
+            widthKey={widthOpt.key}
+            svgRef={svgRef}
+            handlers={handlers}
+          />
+          <Slider
+            label={`length ↔ (${lengthOpt.key})`}
+            value={length}
+            min={MIN_VAL}
+            max={MAX_VAL}
+            step={0.1}
+            onChange={onLengthChange}
+            suffix={lengthOpt.key}
+          />
+        </div>
+      </div>
+
+      <Result label="area" value={`${formatMagnitude(area)} ${areaOpt.key}`} variant="hero" />
+    </div>
+  );
 }
 
 // Isolated SVG visual so the corner-drag doesn't have to re-render the
@@ -191,122 +339,32 @@ function RectangleVisual({
   );
 }
 
-export function RectangleMachine() {
-  const [length, setLength] = useState(3);
-  const [width, setWidth] = useState(2);
-  const [lengthKey, setLengthKey] = useState<LengthKey>('m');
-  const [widthKey, setWidthKey] = useState<LengthKey>('m');
-  const [areaKey, setAreaKey] = useState<AreaKey>('m2');
-
-  const lengthOpt = findByKey(LENGTH_UNITS, lengthKey);
-  const widthOpt = findByKey(LENGTH_UNITS, widthKey);
-  const areaOpt = findByKey(AREA_UNITS, areaKey);
-
-  const area = forge({ length: lengthOpt.unit, width: widthOpt.unit }, areaOpt.unit, {
-    via: areaFromLengthAndWidth,
-  })({ length, width });
-
-  // getHandleCenter reads the latest length/width via the closure each
-  // call, so offset capture stays correct without RectangleVisual
-  // having to forward geometry back to the parent.
-  const { svgRef, handlers } = useSvgPointerDrag({
-    getHandleCenter: () => ({ x: PAD + length * SCALE, y: PAD + width * SCALE }),
-    onDrag: (p) => {
-      setLength(round1(clamp((p.x - PAD) / SCALE, MIN_VAL, MAX_VAL)));
-      setWidth(round1(clamp((p.y - PAD) / SCALE, MIN_VAL, MAX_VAL)));
-    },
-  });
-
-  return (
-    <SectionLayout
-      headerZone={
-        <SectionHeader
-          eyebrow="demo 02"
-          title="rectangle machine"
-          kicker="cross-dimensional"
-          iconZone={<Square size={28} strokeWidth={1.5} className="text-uf-accent" />}
-        />
-      }
-      introZone={
-        <>
-          Length × width = area. Drag the sliders to see the rectangle redraw; each axis has its own
-          unit picker so you can mix and match (5 ft × 200 cm is fine). The library normalizes to
-          base meters, runs <code className="mono">compute</code>, then re-emits in whatever area
-          unit you ask for.
-        </>
-      }
-      widgetZone={
-        <WidgetLayout
-          interactionZone={
-            <div className="flex flex-col gap-4">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <UnitPicker
-                  label="length (↔) unit"
-                  value={lengthKey}
-                  options={pickerOptions(LENGTH_UNITS)}
-                  onChange={setLengthKey}
-                />
-                <UnitPicker
-                  label="width (↕) unit"
-                  value={widthKey}
-                  options={pickerOptions(LENGTH_UNITS)}
-                  onChange={setWidthKey}
-                />
-                <UnitPicker
-                  label="area unit"
-                  value={areaKey}
-                  options={pickerOptions(AREA_UNITS)}
-                  onChange={setAreaKey}
-                />
-              </div>
-
-              <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-stretch">
-                <Slider
-                  label={`width ↕ (${widthOpt.key})`}
-                  value={width}
-                  min={MIN_VAL}
-                  max={MAX_VAL}
-                  step={0.1}
-                  onChange={setWidth}
-                  orientation="vertical"
-                  suffix={widthOpt.key}
-                />
-
-                <div className="flex-1 flex flex-col items-center gap-3">
-                  <RectangleVisual
-                    length={length}
-                    width={width}
-                    lengthKey={lengthOpt.key}
-                    widthKey={widthOpt.key}
-                    svgRef={svgRef}
-                    handlers={handlers}
-                  />
-                  <Slider
-                    label={`length ↔ (${lengthOpt.key})`}
-                    value={length}
-                    min={MIN_VAL}
-                    max={MAX_VAL}
-                    step={0.1}
-                    onChange={setLength}
-                    suffix={lengthOpt.key}
-                  />
-                </div>
-              </div>
-
-              <Result
-                label="area"
-                value={`${formatMagnitude(area)} ${areaOpt.key}`}
-                variant="hero"
-              />
-            </div>
-          }
-          codeZone={
-            <CodeBlock
-              code={buildCode(lengthOpt.label, widthOpt.label, areaOpt.label, length, width, area)}
-            />
-          }
-        />
-      }
-    />
+function buildCode(
+  lengthLabel: string,
+  widthLabel: string,
+  areaLabel: string,
+  length: number,
+  width: number,
+  area: number,
+): string {
+  const lengthUnit = toJsName(lengthLabel);
+  const widthUnit = toJsName(widthLabel);
+  const areaUnit = toJsName(areaLabel);
+  const imports = [lengthUnit, widthUnit, areaUnit].filter(
+    (name, i, arr) => arr.indexOf(name) === i,
   );
+  return `import { forge } from 'unitforge';
+import {
+  areaFromLengthAndWidth,
+  ${imports.join(', ')},
+} from 'unitforge/kits/geometry';
+
+const area = forge(
+  { length: ${lengthUnit}, width: ${widthUnit} },
+  ${areaUnit},
+  { via: areaFromLengthAndWidth },
+);
+
+area({ length: ${formatMagnitude(length)}, width: ${formatMagnitude(width)} }); // ${formatMagnitude(area)}
+`;
 }

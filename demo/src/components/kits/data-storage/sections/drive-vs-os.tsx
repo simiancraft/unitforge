@@ -19,6 +19,112 @@ const BAR_H = 30;
 const PADDING = 16;
 const MAX_GB = 8000;
 
+export function DriveVsOs() {
+  const [marketedGB, setMarketedGB] = useState(1000);
+
+  const bytes = forge(gigabyte, byte)(marketedGB);
+  const inGiB = forge(byte, gibibyte)(bytes);
+  const inTB = marketedGB / 1000;
+  const lossFraction = 1 - inGiB / marketedGB;
+  const fullW = VIEW_W - PADDING * 2;
+  const reportedW = fullW * (1 - lossFraction);
+  const gapStartX = PADDING + reportedW;
+  const gapW = fullW - reportedW;
+
+  return (
+    <SectionLayout
+      headerZone={
+        <SectionHeader
+          eyebrow="demo 02"
+          title="drive vs OS"
+          kicker="why 1 TB shows up as 931 GiB"
+          iconZone={<HardDrive size={28} strokeWidth={1.5} className="text-uf-accent" />}
+        />
+      }
+      introZone={
+        <>
+          Drive vendors market capacity in decimal gigabytes; operating systems traditionally report
+          in binary gibibytes. Slide the marketed capacity and watch the "missing" space appear; it
+          isn't missing, it's the unit conversion.
+        </>
+      }
+      widgetZone={
+        <WidgetLayout
+          interactionZone={
+            <DriveVsOsWidget
+              marketedGB={marketedGB}
+              inGiB={inGiB}
+              inTB={inTB}
+              lossFraction={lossFraction}
+              fullW={fullW}
+              reportedW={reportedW}
+              gapStartX={gapStartX}
+              gapW={gapW}
+              onMarketedGBChange={setMarketedGB}
+            />
+          }
+          codeZone={<CodeBlock code={buildCode(marketedGB, inGiB)} />}
+        />
+      }
+    />
+  );
+}
+
+interface DriveVsOsWidgetProps {
+  marketedGB: number;
+  inGiB: number;
+  inTB: number;
+  lossFraction: number;
+  fullW: number;
+  reportedW: number;
+  gapStartX: number;
+  gapW: number;
+  onMarketedGBChange: (next: number) => void;
+}
+
+function DriveVsOsWidget({
+  marketedGB,
+  inGiB,
+  inTB,
+  lossFraction,
+  fullW,
+  reportedW,
+  gapStartX,
+  gapW,
+  onMarketedGBChange,
+}: DriveVsOsWidgetProps) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Slider
+        label="marketed capacity (GB)"
+        value={marketedGB}
+        min={100}
+        max={MAX_GB}
+        step={10}
+        onChange={onMarketedGBChange}
+        suffix="GB"
+      />
+
+      <DriveLabel marketedGB={marketedGB} inTB={inTB} />
+
+      <PropertiesPanel
+        marketedGB={marketedGB}
+        inGiB={inGiB}
+        reportedW={reportedW}
+        gapStartX={gapStartX}
+        gapW={gapW}
+        fullW={fullW}
+      />
+
+      <Result
+        label="apparent gap"
+        value={`${(marketedGB - inGiB).toFixed(2)} (≈ ${(lossFraction * 100).toFixed(2)}%)`}
+        variant="hero"
+      />
+    </div>
+  );
+}
+
 // Drive-vendor "product label" sticker. Named Organ: sink, takes the
 // two derived values it shows. Renders the dominant TB/GB headline
 // number that the user reads at the bottom of a Newegg listing.
@@ -189,6 +295,14 @@ function PropertiesPanel({
   );
 }
 
+// Drive labels read in TB once capacity crosses 1 TB; smaller-than-10 TB
+// drives use one decimal (1.5 TB), bigger drives drop the decimal
+// (12 TB). Under 1 TB stays in whole-GB form.
+function formatMarketedCapacity(marketedGB: number, inTB: number): string {
+  if (inTB >= 1) return inTB.toFixed(inTB < 10 ? 1 : 0);
+  return marketedGB.toFixed(0);
+}
+
 function buildCode(marketedGB: number, reportedGiB: number): string {
   return `import { forge } from 'unitforge';
 import { gigabyte, gibibyte } from 'unitforge/kits/data-storage';
@@ -197,80 +311,4 @@ const marketedToReported = forge(gigabyte, gibibyte);
 
 marketedToReported(${formatMagnitude(marketedGB)}); // ${formatMagnitude(reportedGiB)}
 `;
-}
-
-export function DriveVsOs() {
-  const [marketedGB, setMarketedGB] = useState(1000);
-
-  const bytes = forge(gigabyte, byte)(marketedGB);
-  const inGiB = forge(byte, gibibyte)(bytes);
-  const inTB = marketedGB / 1000;
-  const lossFraction = 1 - inGiB / marketedGB;
-  const fullW = VIEW_W - PADDING * 2;
-  const reportedW = fullW * (1 - lossFraction);
-  const gapStartX = PADDING + reportedW;
-  const gapW = fullW - reportedW;
-
-  return (
-    <SectionLayout
-      headerZone={
-        <SectionHeader
-          eyebrow="demo 02"
-          title="drive vs OS"
-          kicker="why 1 TB shows up as 931 GiB"
-          iconZone={<HardDrive size={28} strokeWidth={1.5} className="text-uf-accent" />}
-        />
-      }
-      introZone={
-        <>
-          Drive vendors market capacity in decimal gigabytes; operating systems traditionally report
-          in binary gibibytes. Slide the marketed capacity and watch the "missing" space appear; it
-          isn't missing, it's the unit conversion.
-        </>
-      }
-      widgetZone={
-        <WidgetLayout
-          interactionZone={
-            <div className="flex flex-col gap-4">
-              <Slider
-                label="marketed capacity (GB)"
-                value={marketedGB}
-                min={100}
-                max={MAX_GB}
-                step={10}
-                onChange={setMarketedGB}
-                suffix="GB"
-              />
-
-              <DriveLabel marketedGB={marketedGB} inTB={inTB} />
-
-              <PropertiesPanel
-                marketedGB={marketedGB}
-                inGiB={inGiB}
-                reportedW={reportedW}
-                gapStartX={gapStartX}
-                gapW={gapW}
-                fullW={fullW}
-              />
-
-              <Result
-                label="apparent gap"
-                value={`${(marketedGB - inGiB).toFixed(2)} (≈ ${(lossFraction * 100).toFixed(2)}%)`}
-                variant="hero"
-              />
-            </div>
-          }
-          codeZone={<CodeBlock code={buildCode(marketedGB, inGiB)} />}
-        />
-      }
-    />
-  );
-}
-
-// Drive labels read in TB once capacity crosses 1 TB; smaller-than-10 TB
-// drives use one decimal (1.5 TB), bigger drives drop the decimal
-// (12 TB). Under 1 TB stays in whole-GB form.
-function formatMarketedCapacity(marketedGB: number, inTB: number): string {
-  if (inTB >= 1) return inTB.toFixed(inTB < 10 ? 1 : 0);
-  return marketedGB.toFixed(0);
 }

@@ -23,15 +23,95 @@ const RAMSTICK_MAX_GIB = 64;
 const CHIP_SLOTS = Array.from({ length: CHIPS }, (_, i) => ({ id: `chip-${i}` }));
 const PIN_SLOTS = Array.from({ length: PINS }, (_, i) => ({ id: `pin-${i}` }));
 
-function buildCode(gib: number, decimalGB: number, bytes: number): string {
-  return `import { forge } from 'unitforge';
-import {
-  byte, gigabyte, gibibyte,
-} from 'unitforge/kits/data-storage';
+const CHIP_W = (VIEW_W - 100) / CHIPS - 8;
+const CHIP_H = 52;
+const CHIP_Y = 40;
 
-const inDecimalGB = forge(gibibyte, gigabyte)(${formatMagnitude(gib)}); // ${formatMagnitude(decimalGB)}
-const bytes = forge(gibibyte, byte)(${formatMagnitude(gib)}); // ${formatMagnitude(bytes)}
-`;
+export function RamStick() {
+  const [gibValue, setGibValue] = useState(16);
+
+  const inBytes = forge(gibibyte, byte)(gibValue);
+  const inGB = forge(gibibyte, gigabyte)(gibValue);
+
+  const targetLit = Math.min(CHIPS, Math.max(0, Math.round((gibValue / RAMSTICK_MAX_GIB) * CHIPS)));
+
+  const [litCount, setLitCount] = useState(targetLit);
+  useEffect(() => {
+    if (litCount === targetLit) return;
+    const step = litCount < targetLit ? 1 : -1;
+    const t = window.setTimeout(() => setLitCount(litCount + step), STAGGER_MS);
+    return () => window.clearTimeout(t);
+  }, [litCount, targetLit]);
+
+  return (
+    <SectionLayout
+      headerZone={
+        <SectionHeader
+          eyebrow="demo 04 · flair"
+          title="RAM stick"
+          kicker="memory you can light up"
+          iconZone={<MemoryStick size={28} strokeWidth={1.5} className="text-uf-accent" />}
+        />
+      }
+      introZone={
+        <>
+          Modern memory is sold in GiB; consumer drives use decimal GB. Move the slider and the
+          chips boot in sequence with their status LEDs glowing. Same capacity, two unit families.
+        </>
+      }
+      widgetZone={
+        <WidgetLayout
+          interactionZone={
+            <RamStickWidget
+              gibValue={gibValue}
+              inBytes={inBytes}
+              inGB={inGB}
+              litCount={litCount}
+              targetLit={targetLit}
+              onGibValueChange={setGibValue}
+            />
+          }
+          codeZone={<CodeBlock code={buildCode(gibValue, inGB, inBytes)} />}
+        />
+      }
+    />
+  );
+}
+
+interface RamStickWidgetProps {
+  gibValue: number;
+  inBytes: number;
+  inGB: number;
+  litCount: number;
+  targetLit: number;
+  onGibValueChange: (next: number) => void;
+}
+
+function RamStickWidget({
+  gibValue,
+  inBytes,
+  inGB,
+  litCount,
+  targetLit,
+  onGibValueChange,
+}: RamStickWidgetProps) {
+  return (
+    <div className="flex flex-col gap-4">
+      <RamStickVisual litCount={litCount} targetLit={targetLit} />
+
+      <Slider
+        label="capacity (GiB)"
+        value={gibValue}
+        min={1}
+        max={RAMSTICK_MAX_GIB}
+        step={1}
+        onChange={onGibValueChange}
+        suffix="GiB"
+      />
+      <Result label="same value" value={`${inGB.toFixed(3)} GB`} />
+      <Result label="raw bytes" value={`${formatMagnitude(inBytes)} B`} />
+    </div>
+  );
 }
 
 // RAM stick visualizer. Named Organ: the DIMM with chips + status LEDs +
@@ -43,10 +123,6 @@ interface RamStickVisualProps {
   litCount: number;
   targetLit: number;
 }
-
-const CHIP_W = (VIEW_W - 100) / CHIPS - 8;
-const CHIP_H = 52;
-const CHIP_Y = 40;
 
 function RamStickVisual({ litCount, targetLit }: RamStickVisualProps) {
   return (
@@ -156,60 +232,13 @@ function RamStickVisual({ litCount, targetLit }: RamStickVisualProps) {
   );
 }
 
-export function RamStick() {
-  const [gibValue, setGibValue] = useState(16);
+function buildCode(gib: number, decimalGB: number, bytes: number): string {
+  return `import { forge } from 'unitforge';
+import {
+  byte, gigabyte, gibibyte,
+} from 'unitforge/kits/data-storage';
 
-  const inBytes = forge(gibibyte, byte)(gibValue);
-  const inGB = forge(gibibyte, gigabyte)(gibValue);
-
-  const targetLit = Math.min(CHIPS, Math.max(0, Math.round((gibValue / RAMSTICK_MAX_GIB) * CHIPS)));
-
-  const [litCount, setLitCount] = useState(targetLit);
-  useEffect(() => {
-    if (litCount === targetLit) return;
-    const step = litCount < targetLit ? 1 : -1;
-    const t = window.setTimeout(() => setLitCount(litCount + step), STAGGER_MS);
-    return () => window.clearTimeout(t);
-  }, [litCount, targetLit]);
-
-  return (
-    <SectionLayout
-      headerZone={
-        <SectionHeader
-          eyebrow="demo 04 · flair"
-          title="RAM stick"
-          kicker="memory you can light up"
-          iconZone={<MemoryStick size={28} strokeWidth={1.5} className="text-uf-accent" />}
-        />
-      }
-      introZone={
-        <>
-          Modern memory is sold in GiB; consumer drives use decimal GB. Move the slider and the
-          chips boot in sequence with their status LEDs glowing. Same capacity, two unit families.
-        </>
-      }
-      widgetZone={
-        <WidgetLayout
-          interactionZone={
-            <div className="flex flex-col gap-4">
-              <RamStickVisual litCount={litCount} targetLit={targetLit} />
-
-              <Slider
-                label="capacity (GiB)"
-                value={gibValue}
-                min={1}
-                max={RAMSTICK_MAX_GIB}
-                step={1}
-                onChange={setGibValue}
-                suffix="GiB"
-              />
-              <Result label="same value" value={`${inGB.toFixed(3)} GB`} />
-              <Result label="raw bytes" value={`${formatMagnitude(inBytes)} B`} />
-            </div>
-          }
-          codeZone={<CodeBlock code={buildCode(gibValue, inGB, inBytes)} />}
-        />
-      }
-    />
-  );
+const inDecimalGB = forge(gibibyte, gigabyte)(${formatMagnitude(gib)}); // ${formatMagnitude(decimalGB)}
+const bytes = forge(gibibyte, byte)(${formatMagnitude(gib)}); // ${formatMagnitude(bytes)}
+`;
 }

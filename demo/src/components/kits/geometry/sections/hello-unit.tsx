@@ -13,16 +13,6 @@ import { formatMagnitude } from '~/lib/format.js';
 import { findByKey, LENGTH_UNITS, type LengthKey, pickerOptions } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
-function buildCode(fromName: string, toName: string, value: number, result: number): string {
-  return `import { forge } from 'unitforge';
-import { ${fromName}, ${toName} } from 'unitforge/kits/geometry';
-
-const convert = forge(${fromName}, ${toName});
-
-convert(${formatMagnitude(value)}); // ${formatMagnitude(result)}
-`;
-}
-
 export function HelloUnit() {
   const [value, setValue] = useState(5);
   const [fromKey, setFromKey] = useState<LengthKey>('m');
@@ -52,36 +42,17 @@ export function HelloUnit() {
       widgetZone={
         <WidgetLayout
           interactionZone={
-            <div className="flex flex-col gap-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <UnitPicker
-                  label="from"
-                  value={fromKey}
-                  options={pickerOptions(LENGTH_UNITS)}
-                  onChange={setFromKey}
-                />
-                <UnitPicker
-                  label="to"
-                  value={toKey}
-                  options={pickerOptions(LENGTH_UNITS)}
-                  onChange={setToKey}
-                />
-              </div>
-              <Slider
-                label={`value (${from.key})`}
-                value={value}
-                min={0.1}
-                max={10}
-                step={0.1}
-                onChange={setValue}
-                suffix={from.key}
-              />
-              <Result
-                label={`${value.toFixed(2)} ${from.key} =`}
-                value={`${result.toFixed(4)} ${to.key}`}
-                variant="hero"
-              />
-            </div>
+            <HelloUnitWidget
+              value={value}
+              fromKey={fromKey}
+              toKey={toKey}
+              from={from}
+              to={to}
+              result={result}
+              onValueChange={setValue}
+              onFromKeyChange={setFromKey}
+              onToKeyChange={setToKey}
+            />
           }
           codeZone={<CodeBlock code={buildCode(from.label, to.label, value, result)} />}
         />
@@ -94,4 +65,73 @@ export function HelloUnit() {
       }
     />
   );
+}
+
+type LengthOption = (typeof LENGTH_UNITS)[number];
+
+interface HelloUnitWidgetProps {
+  value: number;
+  fromKey: LengthKey;
+  toKey: LengthKey;
+  from: LengthOption;
+  to: LengthOption;
+  result: number;
+  onValueChange: (next: number) => void;
+  onFromKeyChange: (next: LengthKey) => void;
+  onToKeyChange: (next: LengthKey) => void;
+}
+
+function HelloUnitWidget({
+  value,
+  fromKey,
+  toKey,
+  from,
+  to,
+  result,
+  onValueChange,
+  onFromKeyChange,
+  onToKeyChange,
+}: HelloUnitWidgetProps) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <UnitPicker
+          label="from"
+          value={fromKey}
+          options={pickerOptions(LENGTH_UNITS)}
+          onChange={onFromKeyChange}
+        />
+        <UnitPicker
+          label="to"
+          value={toKey}
+          options={pickerOptions(LENGTH_UNITS)}
+          onChange={onToKeyChange}
+        />
+      </div>
+      <Slider
+        label={`value (${from.key})`}
+        value={value}
+        min={0.1}
+        max={10}
+        step={0.1}
+        onChange={onValueChange}
+        suffix={from.key}
+      />
+      <Result
+        label={`${value.toFixed(2)} ${from.key} =`}
+        value={`${result.toFixed(4)} ${to.key}`}
+        variant="hero"
+      />
+    </div>
+  );
+}
+
+function buildCode(fromName: string, toName: string, value: number, result: number): string {
+  return `import { forge } from 'unitforge';
+import { ${fromName}, ${toName} } from 'unitforge/kits/geometry';
+
+const convert = forge(${fromName}, ${toName});
+
+convert(${formatMagnitude(value)}); // ${formatMagnitude(result)}
+`;
 }

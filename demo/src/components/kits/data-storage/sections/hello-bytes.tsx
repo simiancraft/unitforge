@@ -47,25 +47,115 @@ const SLIDER_RANGE: Record<DataKey, { min: number; max: number; step: number; in
   Gbit: { min: 0.1, max: 100, step: 0.1, init: 1 },
 };
 
-function buildCode(
-  fromName: string,
-  value: number,
-  bytes: number,
-  inGiB: number,
-  inMbit: number,
-): string {
-  const imports = ['byte', 'gibibyte', 'megabit', fromName].filter(
-    (name, i, arr) => arr.indexOf(name) === i,
-  );
-  return `import { forge } from 'unitforge';
-import {
-  ${imports.join(', ')},
-} from 'unitforge/kits/data-storage';
+interface BytesState {
+  unitKey: DataKey;
+  value: number;
+}
 
-const bytes = forge(${fromName}, byte)(${formatMagnitude(value)}); // ${formatMagnitude(bytes)}
-const inGiB = forge(byte, gibibyte)(bytes); // ${formatMagnitude(inGiB)}
-const inMbit = forge(byte, megabit)(bytes); // ${formatMagnitude(inMbit)}
-`;
+type DataUnitOption = { key: string; label: string; unit: Unit<'data', number> };
+type SliderBounds = { min: number; max: number; step: number };
+
+export function HelloBytes() {
+  // value + unitKey held atomically: switching units resets value to that
+  // unit's pedagogical default in the same render, so the slider never
+  // briefly shows a clamped position that disagrees with the underlying
+  // state.
+  const [state, setState] = useState<BytesState>({ unitKey: 'GB', value: 500 });
+  const range = SLIDER_RANGE[state.unitKey];
+
+  const handleUnitKeyChange = (next: DataKey) => {
+    setState({ unitKey: next, value: SLIDER_RANGE[next].init });
+  };
+  const handleValueChange = (next: number) => {
+    setState((s) => ({ ...s, value: next }));
+  };
+
+  const fromUnit = findByKey(DATA_ALL_UNITS, state.unitKey);
+  const inBytes = forge(fromUnit.unit, byte)(state.value);
+  const inGiB = forge(byte, gibibyte)(inBytes);
+  const inMbit = forge(byte, megabit)(inBytes);
+
+  return (
+    <SectionLayout
+      headerZone={
+        <SectionHeader
+          eyebrow="demo 01"
+          title="hello, bytes"
+          kicker="one value, every unit"
+          iconZone={<Cpu size={28} strokeWidth={1.5} className="text-uf-accent" />}
+        />
+      }
+      introZone={
+        <>
+          Pick a number and a unit; every other byte and bit unit renders side by side. Decimal and
+          binary columns sit next to each other so the gap between (say) GB and GiB is visible at a
+          glance.
+        </>
+      }
+      widgetZone={
+        <WidgetLayout
+          interactionZone={
+            <HelloBytesWidget
+              unitKey={state.unitKey}
+              value={state.value}
+              fromUnit={fromUnit}
+              range={range}
+              inBytes={inBytes}
+              onUnitKeyChange={handleUnitKeyChange}
+              onValueChange={handleValueChange}
+            />
+          }
+          codeZone={
+            <CodeBlock code={buildCode(fromUnit.label, state.value, inBytes, inGiB, inMbit)} />
+          }
+        />
+      }
+    />
+  );
+}
+
+interface HelloBytesWidgetProps {
+  unitKey: DataKey;
+  value: number;
+  fromUnit: DataUnitOption;
+  range: SliderBounds;
+  inBytes: number;
+  onUnitKeyChange: (next: DataKey) => void;
+  onValueChange: (next: number) => void;
+}
+
+function HelloBytesWidget({
+  unitKey,
+  value,
+  fromUnit,
+  range,
+  inBytes,
+  onUnitKeyChange,
+  onValueChange,
+}: HelloBytesWidgetProps) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <UnitPicker
+          label="input unit"
+          value={unitKey}
+          options={pickerOptions(DATA_ALL_UNITS)}
+          onChange={onUnitKeyChange}
+        />
+        <Slider
+          label={`value (${fromUnit.key})`}
+          value={value}
+          min={range.min}
+          max={range.max}
+          step={range.step}
+          onChange={onValueChange}
+          suffix={fromUnit.key}
+        />
+      </div>
+
+      <ReadoutMatrix inBytes={inBytes} />
+    </div>
+  );
 }
 
 // Three-column readout matrix; a "billboard" that maps one canonical
@@ -76,7 +166,7 @@ const inMbit = forge(byte, megabit)(bytes); // ${formatMagnitude(inMbit)}
 // inside without re-walking the SectionLayout chrome.
 interface ReadoutColumn {
   family: string;
-  units: ReadonlyArray<{ key: string; label: string; unit: Unit<'data', number> }>;
+  units: ReadonlyArray<DataUnitOption>;
 }
 
 const READOUT_COLUMNS: readonly ReadoutColumn[] = [
@@ -118,78 +208,23 @@ function ReadoutMatrix({ inBytes }: { inBytes: number }) {
   );
 }
 
-interface BytesState {
-  unitKey: DataKey;
-  value: number;
-}
-
-export function HelloBytes() {
-  // value + unitKey held atomically: switching units resets value to that
-  // unit's pedagogical default in the same render, so the slider never
-  // briefly shows a clamped position that disagrees with the underlying
-  // state.
-  const [state, setState] = useState<BytesState>({ unitKey: 'GB', value: 500 });
-  const range = SLIDER_RANGE[state.unitKey];
-
-  const setUnitKey = (next: DataKey) => {
-    setState({ unitKey: next, value: SLIDER_RANGE[next].init });
-  };
-  const setValue = (next: number) => {
-    setState((s) => ({ ...s, value: next }));
-  };
-
-  const fromUnit = findByKey(DATA_ALL_UNITS, state.unitKey);
-  const inBytes = forge(fromUnit.unit, byte)(state.value);
-  const inGiB = forge(byte, gibibyte)(inBytes);
-  const inMbit = forge(byte, megabit)(inBytes);
-
-  return (
-    <SectionLayout
-      headerZone={
-        <SectionHeader
-          eyebrow="demo 01"
-          title="hello, bytes"
-          kicker="one value, every unit"
-          iconZone={<Cpu size={28} strokeWidth={1.5} className="text-uf-accent" />}
-        />
-      }
-      introZone={
-        <>
-          Pick a number and a unit; every other byte and bit unit renders side by side. Decimal and
-          binary columns sit next to each other so the gap between (say) GB and GiB is visible at a
-          glance.
-        </>
-      }
-      widgetZone={
-        <WidgetLayout
-          interactionZone={
-            <div className="flex flex-col gap-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <UnitPicker
-                  label="input unit"
-                  value={state.unitKey}
-                  options={pickerOptions(DATA_ALL_UNITS)}
-                  onChange={setUnitKey}
-                />
-                <Slider
-                  label={`value (${fromUnit.key})`}
-                  value={state.value}
-                  min={range.min}
-                  max={range.max}
-                  step={range.step}
-                  onChange={setValue}
-                  suffix={fromUnit.key}
-                />
-              </div>
-
-              <ReadoutMatrix inBytes={inBytes} />
-            </div>
-          }
-          codeZone={
-            <CodeBlock code={buildCode(fromUnit.label, state.value, inBytes, inGiB, inMbit)} />
-          }
-        />
-      }
-    />
+function buildCode(
+  fromName: string,
+  value: number,
+  bytes: number,
+  inGiB: number,
+  inMbit: number,
+): string {
+  const imports = ['byte', 'gibibyte', 'megabit', fromName].filter(
+    (name, i, arr) => arr.indexOf(name) === i,
   );
+  return `import { forge } from 'unitforge';
+import {
+  ${imports.join(', ')},
+} from 'unitforge/kits/data-storage';
+
+const bytes = forge(${fromName}, byte)(${formatMagnitude(value)}); // ${formatMagnitude(bytes)}
+const inGiB = forge(byte, gibibyte)(bytes); // ${formatMagnitude(inGiB)}
+const inMbit = forge(byte, megabit)(bytes); // ${formatMagnitude(inMbit)}
+`;
 }
