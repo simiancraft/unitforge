@@ -67,6 +67,41 @@ const inMbit = forge(byte, megabit)(bytes); // ${formatMagnitude(inMbit)}
 `;
 }
 
+// Three-column readout matrix; a "billboard" that maps one canonical
+// byte count to every unit-family at once. Named Organ extraction: sink
+// (no state of its own), bounded prop surface (just inBytes), runs on
+// the slider-driven cadence while pickers above it tick on rare unit
+// changes. Pulling it out lets the compiler memoize each Result row
+// inside without re-walking the SectionLayout chrome.
+interface ReadoutColumn {
+  family: string;
+  units: ReadonlyArray<{ key: string; label: string; unit: Unit<'data', number> }>;
+}
+
+const READOUT_COLUMNS: readonly ReadoutColumn[] = [
+  { family: 'decimal (SI)', units: DATA_DECIMAL_UNITS },
+  { family: 'binary (IEC)', units: DATA_BINARY_UNITS },
+  { family: 'bits', units: DATA_BIT_UNITS },
+];
+
+function ReadoutMatrix({ inBytes }: { inBytes: number }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {READOUT_COLUMNS.map((col) => (
+        <div key={col.family} className="flex flex-col gap-1">
+          <span className="uf-eyebrow">{col.family}</span>
+          {col.units.map((opt) => {
+            const v = forge(byte, opt.unit)(inBytes);
+            return (
+              <Result key={opt.key} label={opt.label} value={`${formatMagnitude(v)} ${opt.key}`} />
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 interface BytesState {
   unitKey: DataKey;
   value: number;
@@ -91,21 +126,6 @@ export function HelloBytes() {
   const inBytes = forge(fromUnit.unit, byte)(state.value);
   const inGiB = forge(byte, gibibyte)(inBytes);
   const inMbit = forge(byte, megabit)(inBytes);
-
-  const renderRows = (
-    list: ReadonlyArray<{ key: string; label: string; unit: Unit<'data', number> }>,
-    family: string,
-  ): React.ReactNode => (
-    <div className="flex flex-col gap-1">
-      <span className="uf-eyebrow">{family}</span>
-      {list.map((opt) => {
-        const v = forge(byte, opt.unit)(inBytes);
-        return (
-          <Result key={opt.key} label={opt.label} value={`${formatMagnitude(v)} ${opt.key}`} />
-        );
-      })}
-    </div>
-  );
 
   return (
     <SectionLayout
@@ -144,11 +164,7 @@ export function HelloBytes() {
             />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {renderRows(DATA_DECIMAL_UNITS, 'decimal (SI)')}
-            {renderRows(DATA_BINARY_UNITS, 'binary (IEC)')}
-            {renderRows(DATA_BIT_UNITS, 'bits')}
-          </div>
+          <ReadoutMatrix inBytes={inBytes} />
         </div>
       }
       codeZone={<CodeBlock code={buildCode(fromUnit.label, state.value, inBytes, inGiB, inMbit)} />}

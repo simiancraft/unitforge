@@ -34,6 +34,128 @@ const bytes = forge(gibibyte, byte)(${formatMagnitude(gib)}); // ${formatMagnitu
 `;
 }
 
+// RAM stick visualizer. Named Organ: the DIMM with chips + status LEDs +
+// SPD chip + edge connector is one cohesive named artifact. Sink: takes
+// the two values it draws (litCount, targetLit) and renders. Lives in
+// its own component so the LED-stagger effect's renders don't drag the
+// SectionLayout chrome / pickers / readouts through every frame.
+interface RamStickVisualProps {
+  litCount: number;
+  targetLit: number;
+}
+
+const CHIP_W = (VIEW_W - 100) / CHIPS - 8;
+const CHIP_H = 52;
+const CHIP_Y = 40;
+
+function RamStickVisual({ litCount, targetLit }: RamStickVisualProps) {
+  return (
+    <svg
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      xmlns="http://www.w3.org/2000/svg"
+      className="block w-full"
+      aria-hidden="true"
+    >
+      <rect
+        x={4}
+        y={20}
+        width={VIEW_W - 8}
+        height={96}
+        rx={5}
+        fill="var(--uf-card)"
+        stroke="var(--uf-trace)"
+        strokeOpacity="0.6"
+      />
+
+      <rect
+        x={20}
+        y={CHIP_Y + 14}
+        width={18}
+        height={22}
+        rx={2}
+        fill="var(--uf-bg)"
+        stroke="var(--uf-trace)"
+        strokeOpacity="0.7"
+      />
+      <text
+        x={29}
+        y={CHIP_Y + 28}
+        textAnchor="middle"
+        className="mono"
+        fontSize="6"
+        fill="var(--uf-muted)"
+      >
+        SPD
+      </text>
+
+      {CHIP_SLOTS.map((chip, i) => {
+        const isLit = i < litCount;
+        return (
+          <g key={chip.id}>
+            <rect
+              x={48 + i * (CHIP_W + 8)}
+              y={CHIP_Y}
+              width={CHIP_W}
+              height={CHIP_H}
+              rx={2.5}
+              fill={isLit ? 'var(--uf-accent)' : 'var(--uf-bg)'}
+              fillOpacity={isLit ? 0.82 : 0.55}
+              stroke="var(--uf-trace)"
+              strokeOpacity="0.7"
+              style={{
+                transition: 'fill 220ms ease, fill-opacity 220ms ease',
+              }}
+            />
+            <line
+              x1={48 + i * (CHIP_W + 8) + 3}
+              y1={CHIP_Y + CHIP_H - 3}
+              x2={48 + i * (CHIP_W + 8) + CHIP_W - 3}
+              y2={CHIP_Y + CHIP_H - 3}
+              stroke="var(--uf-trace)"
+              strokeOpacity="0.55"
+              strokeWidth="0.6"
+            />
+            <circle
+              cx={48 + i * (CHIP_W + 8) + CHIP_W - 6}
+              cy={CHIP_Y + 6}
+              r={2.2}
+              fill={isLit ? 'var(--uf-fg)' : 'var(--uf-muted)'}
+              opacity={isLit ? 1 : 0.35}
+              className={isLit ? 'uf-led-active' : undefined}
+            />
+          </g>
+        );
+      })}
+
+      {PIN_SLOTS.map((pin, i) => (
+        <rect
+          key={pin.id}
+          x={28 + i * ((VIEW_W - 76) / PINS)}
+          y={108}
+          width={(VIEW_W - 76) / PINS - 1.8}
+          height={6}
+          fill="var(--uf-trace)"
+          opacity="0.9"
+        />
+      ))}
+      <rect x={VIEW_W / 2 - 6} y={108} width={12} height={10} fill="var(--uf-card)" />
+
+      <text
+        x={VIEW_W - 8}
+        y={14}
+        textAnchor="end"
+        className="mono"
+        fontSize="8"
+        fill={litCount === targetLit ? 'var(--uf-accent)' : 'var(--uf-muted)'}
+      >
+        {litCount === targetLit
+          ? `POST · ${litCount * (RAMSTICK_MAX_GIB / CHIPS)} GiB OK`
+          : 'POST · …'}
+      </text>
+    </svg>
+  );
+}
+
 export function RamStick() {
   const [gibValue, setGibValue] = useState(16);
 
@@ -49,10 +171,6 @@ export function RamStick() {
     const t = window.setTimeout(() => setLitCount(litCount + step), STAGGER_MS);
     return () => window.clearTimeout(t);
   }, [litCount, targetLit]);
-
-  const chipW = (VIEW_W - 100) / CHIPS - 8;
-  const chipH = 52;
-  const chipY = 40;
 
   return (
     <SectionLayout
@@ -72,109 +190,7 @@ export function RamStick() {
       }
       widgetZone={
         <div className="flex flex-col gap-4">
-          <svg
-            viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-            xmlns="http://www.w3.org/2000/svg"
-            className="block w-full"
-            aria-hidden="true"
-          >
-            <rect
-              x={4}
-              y={20}
-              width={VIEW_W - 8}
-              height={96}
-              rx={5}
-              fill="var(--uf-card)"
-              stroke="var(--uf-trace)"
-              strokeOpacity="0.6"
-            />
-
-            <rect
-              x={20}
-              y={chipY + 14}
-              width={18}
-              height={22}
-              rx={2}
-              fill="var(--uf-bg)"
-              stroke="var(--uf-trace)"
-              strokeOpacity="0.7"
-            />
-            <text
-              x={29}
-              y={chipY + 28}
-              textAnchor="middle"
-              className="mono"
-              fontSize="6"
-              fill="var(--uf-muted)"
-            >
-              SPD
-            </text>
-
-            {CHIP_SLOTS.map((chip, i) => {
-              const isLit = i < litCount;
-              return (
-                <g key={chip.id}>
-                  <rect
-                    x={48 + i * (chipW + 8)}
-                    y={chipY}
-                    width={chipW}
-                    height={chipH}
-                    rx={2.5}
-                    fill={isLit ? 'var(--uf-accent)' : 'var(--uf-bg)'}
-                    fillOpacity={isLit ? 0.82 : 0.55}
-                    stroke="var(--uf-trace)"
-                    strokeOpacity="0.7"
-                    style={{
-                      transition: 'fill 220ms ease, fill-opacity 220ms ease',
-                    }}
-                  />
-                  <line
-                    x1={48 + i * (chipW + 8) + 3}
-                    y1={chipY + chipH - 3}
-                    x2={48 + i * (chipW + 8) + chipW - 3}
-                    y2={chipY + chipH - 3}
-                    stroke="var(--uf-trace)"
-                    strokeOpacity="0.55"
-                    strokeWidth="0.6"
-                  />
-                  <circle
-                    cx={48 + i * (chipW + 8) + chipW - 6}
-                    cy={chipY + 6}
-                    r={2.2}
-                    fill={isLit ? 'var(--uf-fg)' : 'var(--uf-muted)'}
-                    opacity={isLit ? 1 : 0.35}
-                    className={isLit ? 'uf-led-active' : undefined}
-                  />
-                </g>
-              );
-            })}
-
-            {PIN_SLOTS.map((pin, i) => (
-              <rect
-                key={pin.id}
-                x={28 + i * ((VIEW_W - 76) / PINS)}
-                y={108}
-                width={(VIEW_W - 76) / PINS - 1.8}
-                height={6}
-                fill="var(--uf-trace)"
-                opacity="0.9"
-              />
-            ))}
-            <rect x={VIEW_W / 2 - 6} y={108} width={12} height={10} fill="var(--uf-card)" />
-
-            <text
-              x={VIEW_W - 8}
-              y={14}
-              textAnchor="end"
-              className="mono"
-              fontSize="8"
-              fill={litCount === targetLit ? 'var(--uf-accent)' : 'var(--uf-muted)'}
-            >
-              {litCount === targetLit
-                ? `POST · ${litCount * (RAMSTICK_MAX_GIB / CHIPS)} GiB OK`
-                : 'POST · …'}
-            </text>
-          </svg>
+          <RamStickVisual litCount={litCount} targetLit={targetLit} />
 
           <Slider
             label="capacity (GiB)"

@@ -31,6 +31,47 @@ const seconds = target / bytesPerSec; // ${formatMagnitude(seconds)}
 `;
 }
 
+// Throughput progress bar. Named Organ: the gradient fill sweep is a
+// self-contained visualizer. Sink (no state), bounded props, ticks on
+// every slider change while the rest of the SectionLayout chrome
+// doesn't need to.
+interface ThroughputBarProps {
+  targetGB: number;
+  mbPerSec: number;
+  sweepSeconds: number;
+  realSeconds: number;
+  tick: string;
+}
+
+function ThroughputBar({
+  targetGB,
+  mbPerSec,
+  sweepSeconds,
+  realSeconds,
+  tick,
+}: ThroughputBarProps) {
+  return (
+    <div
+      className="relative h-9 overflow-hidden rounded border border-uf-border bg-uf-bg"
+      role="img"
+      aria-label={`bar sweep over ${formatDuration(realSeconds)} at ${mbPerSec.toFixed(1)} megabytes per second`}
+    >
+      <div
+        key={tick}
+        className="uf-throughput-fill absolute inset-y-0 left-0"
+        style={{
+          background: 'linear-gradient(90deg, var(--uf-accent) 0%, var(--uf-fg) 100%)',
+          opacity: 0.85,
+          animationDuration: `${sweepSeconds}s`,
+        }}
+      />
+      <span className="mono absolute inset-0 flex items-center justify-center text-xs text-uf-bg mix-blend-difference">
+        {targetGB.toFixed(0)} GB · @ {mbPerSec.toFixed(1)} MB/s
+      </span>
+    </div>
+  );
+}
+
 export function ThroughputViz() {
   const [gbits, setGbits] = useState(1);
   const [targetGB, setTargetGB] = useState(100);
@@ -86,26 +127,15 @@ export function ThroughputViz() {
           />
 
           {/* Sweep is animated by CSS; current fill % isn't React-tracked,
-              so role="progressbar" would lie via aria-valuenow. Use img +
-              aria-label to describe the animation honestly. */}
-          <div
-            className="relative h-9 overflow-hidden rounded border border-uf-border bg-uf-bg"
-            role="img"
-            aria-label={`bar sweep over ${formatDuration(realSeconds)} at ${mbPerSec.toFixed(1)} megabytes per second`}
-          >
-            <div
-              key={tick}
-              className="uf-throughput-fill absolute inset-y-0 left-0"
-              style={{
-                background: 'linear-gradient(90deg, var(--uf-accent) 0%, var(--uf-fg) 100%)',
-                opacity: 0.85,
-                animationDuration: `${sweepSeconds}s`,
-              }}
-            />
-            <span className="mono absolute inset-0 flex items-center justify-center text-xs text-uf-bg mix-blend-difference">
-              {targetGB.toFixed(0)} GB · @ {mbPerSec.toFixed(1)} MB/s
-            </span>
-          </div>
+              so role="progressbar" would lie via aria-valuenow. ThroughputBar
+              uses role="img" + aria-label to describe the animation honestly. */}
+          <ThroughputBar
+            targetGB={targetGB}
+            mbPerSec={mbPerSec}
+            sweepSeconds={sweepSeconds}
+            realSeconds={realSeconds}
+            tick={tick}
+          />
 
           <Result label="bandwidth" value={`${mbPerSec.toFixed(1)} MB/s`} variant="hero" />
           <Result
