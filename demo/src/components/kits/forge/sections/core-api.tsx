@@ -66,9 +66,9 @@ export function CoreApi() {
         </h2>
       </header>
       <p className="max-w-2xl text-sm leading-relaxed text-uf-muted">
-        That's the whole surface. The Settlers-of-Crouton demo above stitched
-        all three together. Kits are values built from the same primitives; you can use
-        the kits, build your own, or both.
+        That's the whole surface. The Settlers-of-Crouton demo above stitched all three together.
+        Kits are values built from the same primitives; you can use the kits, build your own, or
+        both.
       </p>
       <div className="grid gap-4 md:grid-cols-3">
         {CARDS.map((c) => (

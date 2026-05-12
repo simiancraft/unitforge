@@ -3,25 +3,25 @@
 // readout is the SAME quantity expressed in a different unit. Decimal and
 // binary are clearly different; the user sees the gap.
 
-import { useState } from 'react';
 import { Cpu } from 'lucide-react';
+import { useState } from 'react';
 import type { Unit } from 'unitforge';
-import { byte } from 'unitforge/kits/data-storage';
 import { forge } from 'unitforge';
+import { byte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import {
+  DATA_ALL_UNITS,
   DATA_BINARY_UNITS,
   DATA_BIT_UNITS,
   DATA_DECIMAL_UNITS,
+  type DataKey,
   findByKey,
   pickerOptions,
-  DATA_ALL_UNITS,
-  type DataKey,
 } from '~/lib/units.js';
+import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 // Per-unit slider bounds so the range stays pedagogical at every scale:
 // 1-1e6 bytes is interesting; 1-2000 GB is the canonical drive-size range.
@@ -86,13 +86,7 @@ export function HelloBytes() {
       <span className="uf-eyebrow">{family}</span>
       {list.map((opt) => {
         const v = forge(byte, opt.unit)(inBytes);
-        return (
-          <Result
-            key={opt.key}
-            label={opt.label}
-            value={`${formatNum(v)} ${opt.key}`}
-          />
-        );
+        return <Result key={opt.key} label={opt.label} value={`${formatNum(v)} ${opt.key}`} />;
       })}
     </div>
   );
@@ -109,9 +103,9 @@ export function HelloBytes() {
       }
       introZone={
         <>
-          Pick a number and a unit; every other byte and bit unit renders
-          side by side. Decimal and binary columns sit next to each other
-          so the gap between (say) GB and GiB is visible at a glance.
+          Pick a number and a unit; every other byte and bit unit renders side by side. Decimal and
+          binary columns sit next to each other so the gap between (say) GB and GiB is visible at a
+          glance.
         </>
       }
       widgetZone={

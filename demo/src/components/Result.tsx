@@ -27,7 +27,10 @@ interface ResultProps extends VariantProps<typeof resultValue> {
 export function Result({ label, value, variant, className }: ResultProps) {
   return (
     <div
-      className={cn('flex items-baseline justify-between border-t border-uf-border pt-2', className)}
+      className={cn(
+        'flex items-baseline justify-between border-t border-uf-border pt-2',
+        className,
+      )}
     >
       <span className="uf-eyebrow">{label}</span>
       <span className={resultValue({ variant })}>{value}</span>

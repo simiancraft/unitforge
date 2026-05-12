@@ -63,6 +63,7 @@ export function EmberStream({
   const durationRange = durationMax - durationMin;
 
   const embers = Array.from({ length: count }, (_, i) => ({
+    id: `ember-${rand(i, 0).toString(36)}`,
     left: rand(i, 1) * 100,
     size: (SIZE_MIN + rand(i, 2) * SIZE_RANGE) * sizeMul,
     delay: rand(i, 3) * maxDelaySec,
@@ -101,9 +102,9 @@ export function EmberStream({
           transition: 'opacity 700ms cubic-bezier(0.22,1,0.36,1)',
         }}
       >
-        {embers.map((e, i) => (
+        {embers.map((e) => (
           <span
-            key={i}
+            key={e.id}
             className="absolute rounded-full"
             style={
               {

@@ -15,6 +15,8 @@ interface SectionLayoutProps {
   widgetZone: ReactNode;
   codeZone: ReactNode;
   notesZone?: ReactNode;
+  // Anchor id for deep-linking from outside the demo (e.g. README cross-links).
+  id?: string;
 }
 
 export function SectionLayout({
@@ -23,9 +25,10 @@ export function SectionLayout({
   widgetZone,
   codeZone,
   notesZone,
+  id,
 }: SectionLayoutProps) {
   return (
-    <section className="flex flex-col gap-5">
+    <section id={id} className="flex flex-col gap-5">
       {headerZone}
       <p className="max-w-2xl text-sm leading-relaxed text-uf-muted">{introZone}</p>
       <div className="grid gap-5 md:grid-cols-[1.1fr_1fr]">

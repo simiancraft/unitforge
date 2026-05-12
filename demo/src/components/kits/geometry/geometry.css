@@ -5,7 +5,7 @@
  * [data-theme='geometry-{light,dark}'] selectors.
  */
 
-[data-theme='geometry-light'] {
+[data-theme="geometry-light"] {
   /* Contrast-tuned per WCAG AA: muted #4d566b (6.4:1), accent #b73a3b
    * (5:1), grid #3e7fa6 (3.8:1).
    */
@@ -20,7 +20,7 @@
    * light vitesse-light shiki theme. */
   --uf-code-bg: #ede4cf;
 
-  --uf-display: 'Caveat', 'Georgia', cursive;
+  --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #3e7fa6;
   --uf-grid-faint: #3e7fa666;
 }
@@ -28,7 +28,7 @@
 /* Blueprint-night: deep navy bg, pale ink, electric-cyan accent, lighter
  * grid lines so the engineering-paper grid still reads.
  */
-[data-theme='geometry-dark'] {
+[data-theme="geometry-dark"] {
   --uf-bg: #0c1b2d;
   --uf-fg: #eef0f5;
   --uf-muted: #8a9aae;
@@ -37,7 +37,7 @@
   --uf-border: #3a5274;
   --uf-code-bg: #08131f;
 
-  --uf-display: 'Caveat', 'Georgia', cursive;
+  --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #76b8e3;
   --uf-grid-faint: #76b8e333;
 }
@@ -45,7 +45,7 @@
 /* Subtle paper-grain dot texture on `.uf-paper` surfaces (both variants;
  * the dot color follows --uf-grid-faint which differs by variant).
  */
-[data-theme^='geometry-'] .uf-paper {
+[data-theme^="geometry-"] .uf-paper {
   background-image: radial-gradient(circle at 1px 1px, var(--uf-grid-faint) 1px, transparent 0);
   background-size: 12px 12px;
 }

@@ -5,25 +5,29 @@
  */
 
 @font-face {
-  font-family: 'Aldrich';
-  src: url('/fonts/Aldrich-Regular.ttf') format('truetype');
+  font-family: "Aldrich";
+  src: url("/fonts/Aldrich-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 .uf-wordmark {
-  font-family: 'Tektur', system-ui, sans-serif;
+  font-family: "Tektur", system-ui, sans-serif;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: -0.005em;
   line-height: 1;
 }
-.uf-wordmark-unit { color: var(--uf-wordmark-unit-color, #c8c4be); }
-.uf-wordmark-forge { color: var(--uf-accent); }
+.uf-wordmark-unit {
+  color: var(--uf-wordmark-unit-color, #c8c4be);
+}
+.uf-wordmark-forge {
+  color: var(--uf-accent);
+}
 
 /* Forge-dark: black bg, hot orange accent, parchment foreground. */
-[data-theme='forge-dark'] {
+[data-theme="forge-dark"] {
   --uf-bg: #0d0d0d;
   --uf-fg: #f4ede0;
   --uf-muted: #9b8e7e;
@@ -37,7 +41,7 @@
 /* Forge-light: tempered-steel daylight, deeper orange so it still reads
  * against a warm cream, foreground a smoky dark warm-gray.
  */
-[data-theme='forge-light'] {
+[data-theme="forge-light"] {
   --uf-bg: #f5f0e8;
   --uf-fg: #1f1611;
   --uf-muted: #6b5d4f;
@@ -60,11 +64,21 @@
  */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes uf-anvil-strike {
-    0%   { transform: translateY(0); }
-    18%  { transform: translateY(var(--uf-shake-amp, 9px)); }
-    40%  { transform: translateY(calc(var(--uf-shake-amp, 9px) * -0.67)); }
-    62%  { transform: translateY(calc(var(--uf-shake-amp, 9px) * 0.33)); }
-    100% { transform: translateY(0); }
+    0% {
+      transform: translateY(0);
+    }
+    18% {
+      transform: translateY(var(--uf-shake-amp, 9px));
+    }
+    40% {
+      transform: translateY(calc(var(--uf-shake-amp, 9px) * -0.67));
+    }
+    62% {
+      transform: translateY(calc(var(--uf-shake-amp, 9px) * 0.33));
+    }
+    100% {
+      transform: translateY(0);
+    }
   }
   .uf-anvil-strike {
     animation: uf-anvil-strike 280ms ease-out;
@@ -77,15 +91,28 @@
    * composes with this keyframe's `transform`.
    */
   @keyframes uf-forge-flash {
-    0%   { transform: scaleY(0); opacity: 1; }
-    20%  { transform: scaleY(1); opacity: 1; }
-    100% { transform: scaleY(1); opacity: 0; }
+    0% {
+      transform: scaleY(0);
+      opacity: 1;
+    }
+    20% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scaleY(1);
+      opacity: 0;
+    }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes uf-forge-flash {
-    0%, 100% { transform: scaleY(1); opacity: 0.25; }
+    0%,
+    100% {
+      transform: scaleY(1);
+      opacity: 0.25;
+    }
   }
 }
 
@@ -145,5 +172,8 @@
  * as a data-URI with brand orange stroke.
  */
 .uf-anvil-cursor {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m15 12-8.5 8.5c-.83.83-2.17.83-3 0a2.12 2.12 0 0 1 0-3L12 9'/><path d='M17.64 15 22 10.64'/><path d='m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91'/></svg>") 4 4, pointer;
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m15 12-8.5 8.5c-.83.83-2.17.83-3 0a2.12 2.12 0 0 1 0-3L12 9'/><path d='M17.64 15 22 10.64'/><path d='m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91'/></svg>")
+    4 4,
+    pointer;
 }

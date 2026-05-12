@@ -3,10 +3,10 @@
 // capacity and you watch the DIMM "post". The same forged value renders
 // in the decimal-GB family alongside.
 
-import { useEffect, useState } from 'react';
 import { MemoryStick } from 'lucide-react';
-import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
+import { useEffect, useState } from 'react';
 import { forge } from 'unitforge';
+import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
@@ -16,6 +16,10 @@ const CHIPS = 8;
 const VIEW_W = 460;
 const VIEW_H = 140;
 const STAGGER_MS = 65;
+const PINS = 26;
+
+const CHIP_SLOTS = Array.from({ length: CHIPS }, (_, i) => ({ id: `chip-${i}` }));
+const PIN_SLOTS = Array.from({ length: PINS }, (_, i) => ({ id: `pin-${i}` }));
 
 const CODE = `import { forge } from 'unitforge';
 import {
@@ -59,9 +63,8 @@ export function RamStick() {
       }
       introZone={
         <>
-          Modern memory is sold in GiB; consumer drives use decimal GB.
-          Move the slider and the chips boot in sequence with their
-          status LEDs glowing. Same capacity, two unit families.
+          Modern memory is sold in GiB; consumer drives use decimal GB. Move the slider and the
+          chips boot in sequence with their status LEDs glowing. Same capacity, two unit families.
         </>
       }
       widgetZone={
@@ -70,6 +73,7 @@ export function RamStick() {
             viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
             xmlns="http://www.w3.org/2000/svg"
             className="block w-full"
+            aria-hidden="true"
           >
             <rect
               x={4}
@@ -103,10 +107,10 @@ export function RamStick() {
               SPD
             </text>
 
-            {Array.from({ length: CHIPS }).map((_, i) => {
+            {CHIP_SLOTS.map((chip, i) => {
               const isLit = i < litCount;
               return (
-                <g key={i}>
+                <g key={chip.id}>
                   <rect
                     x={48 + i * (chipW + 8)}
                     y={chipY}
@@ -118,8 +122,7 @@ export function RamStick() {
                     stroke="var(--uf-trace)"
                     strokeOpacity="0.7"
                     style={{
-                      transition:
-                        'fill 220ms ease, fill-opacity 220ms ease',
+                      transition: 'fill 220ms ease, fill-opacity 220ms ease',
                     }}
                   />
                   <line
@@ -143,12 +146,12 @@ export function RamStick() {
               );
             })}
 
-            {Array.from({ length: 26 }).map((_, i) => (
+            {PIN_SLOTS.map((pin, i) => (
               <rect
-                key={i}
-                x={28 + i * ((VIEW_W - 76) / 26)}
+                key={pin.id}
+                x={28 + i * ((VIEW_W - 76) / PINS)}
                 y={108}
-                width={(VIEW_W - 76) / 26 - 1.8}
+                width={(VIEW_W - 76) / PINS - 1.8}
                 height={6}
                 fill="var(--uf-trace)"
                 opacity="0.9"

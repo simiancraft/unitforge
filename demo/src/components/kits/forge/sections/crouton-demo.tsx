@@ -17,8 +17,8 @@ import { defineConversion, defineUnit, forge } from 'unitforge';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
 import { cn } from '~/lib/cn.js';
+import { SectionHeader, SectionLayout } from '../../section-layout.js';
 
 const COUNT = 'count' as const;
 
@@ -53,11 +53,9 @@ const buildCities = defineConversion({
   compute: ({ wheat, ore }) => Math.floor(Math.min(wheat / 2, ore / 3)),
 });
 
-const citiesFromResources = forge(
-  { wheat: wheatUnit, ore: oreUnit },
-  cityUnit,
-  { via: buildCities },
-);
+const citiesFromResources = forge({ wheat: wheatUnit, ore: oreUnit }, cityUnit, {
+  via: buildCities,
+});
 
 const CODE = `import { defineUnit, defineConversion, forge } from 'unitforge';
 
@@ -87,15 +85,16 @@ export function CroutonDemo() {
 
   return (
     <SectionLayout
+      id="crouton"
       headerZone={<SectionHeader eyebrow="build your own kit" title="forge a city" />}
       introZone={
         <>
-          Custom dimensions are first-class. Invent one called{' '}
-          <code className="mono">COUNT</code>; build three units inside it with{' '}
-          <code className="mono">defineUnit</code>; declare the city recipe (2 wheat
-          + 3 ore = 1 city) with <code className="mono">defineConversion</code>;
-          and <code className="mono">forge()</code> the converter. Same shape the
-          library uses for its own kits.
+          Custom dimensions are first-class. Invent one called <code className="mono">COUNT</code>
+          {'; '}build three units inside it with <code className="mono">defineUnit</code>; declare
+          the city recipe (2 wheat + 3 ore = 1 city) with{' '}
+          <code className="mono">defineConversion</code>
+          {'; '}and <code className="mono">forge()</code> the converter. Same shape the library uses
+          for its own kits.
         </>
       }
       widgetZone={
@@ -144,14 +143,7 @@ function ResourceSlider({
         {glyph}
       </span>
       <div className="flex-1">
-        <Slider
-          label={label}
-          value={value}
-          min={0}
-          max={30}
-          step={1}
-          onChange={onChange}
-        />
+        <Slider label={label} value={value} min={0} max={30} step={1} onChange={onChange} />
       </div>
     </div>
   );
@@ -165,6 +157,11 @@ const PILE_SIZE_BUCKETS = [
   { upTo: 20, size: 'text-lg md:text-xl' },
   { upTo: Number.POSITIVE_INFINITY, size: 'text-base md:text-lg' },
 ] as const;
+
+// Stable key tokens, one per max-count slot; sliced by render `count` so
+// the glyph spans keep identity across re-renders without index-as-key.
+const GLYPH_SLOT_MAX = 30;
+const GLYPH_SLOTS = Array.from({ length: GLYPH_SLOT_MAX }, (_, i) => ({ id: `slot-${i}` }));
 
 interface GlyphProps {
   glyph: string;
@@ -182,8 +179,8 @@ function PileGlyph({ glyph, count, label }: GlyphProps) {
         sizeClass,
       )}
     >
-      {Array.from({ length: count }, (_, i) => (
-        <span key={`${label}-${i}`} aria-hidden>
+      {GLYPH_SLOTS.slice(0, count).map((slot) => (
+        <span key={slot.id} aria-hidden>
           {glyph}
         </span>
       ))}
@@ -198,8 +195,8 @@ function PileGlyph({ glyph, count, label }: GlyphProps) {
 function HeroGlyph({ glyph, count, label }: GlyphProps) {
   return (
     <span className="inline-flex flex-wrap items-center justify-center gap-0.5 text-4xl leading-none text-uf-accent md:text-5xl">
-      {Array.from({ length: count }, (_, i) => (
-        <span key={`${label}-${i}`} aria-hidden>
+      {GLYPH_SLOTS.slice(0, count).map((slot) => (
+        <span key={slot.id} aria-hidden>
           {glyph}
         </span>
       ))}

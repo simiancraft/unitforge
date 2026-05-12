@@ -21,7 +21,12 @@ interface GeometryBackdropProps {
   scale?: number;
 }
 
-export function GeometryBackdrop({ inline, cellSize = 12, pulse, scale = 1 }: GeometryBackdropProps) {
+export function GeometryBackdrop({
+  inline,
+  cellSize = 12,
+  pulse,
+  scale = 1,
+}: GeometryBackdropProps) {
   const className = inline
     ? 'absolute inset-0 pointer-events-none overflow-hidden'
     : 'fixed inset-0 pointer-events-none -z-10 overflow-hidden';
@@ -47,6 +52,7 @@ export function GeometryBackdrop({ inline, cellSize = 12, pulse, scale = 1 }: Ge
           transformOrigin: 'center',
           transition: 'transform 400ms cubic-bezier(0.22,1,0.36,1)',
         }}
+        aria-hidden="true"
       >
         <defs>
           <pattern
@@ -62,12 +68,7 @@ export function GeometryBackdrop({ inline, cellSize = 12, pulse, scale = 1 }: Ge
               strokeWidth="0.8"
             />
           </pattern>
-          <pattern
-            id="uf-grid-coarse"
-            width={coarse}
-            height={coarse}
-            patternUnits="userSpaceOnUse"
-          >
+          <pattern id="uf-grid-coarse" width={coarse} height={coarse} patternUnits="userSpaceOnUse">
             <path
               d={`M ${coarse} 0 L 0 0 0 ${coarse}`}
               fill="none"

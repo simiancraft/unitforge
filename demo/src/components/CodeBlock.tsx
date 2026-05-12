@@ -7,12 +7,12 @@
 //     eyebrow corner badge
 //   - 'inline': compact bench code line, no badge, tighter padding
 
-import { useState } from 'react';
-import { Check, Copy } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Check, Copy } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '~/lib/cn.js';
 import { useTheme } from './theme/provider.js';
 import { useHighlighted } from './theme/use-highlighted.js';
-import { cn } from '~/lib/cn.js';
 
 type Lang = 'ts' | 'tsx' | 'js';
 
@@ -29,15 +29,18 @@ const codeFrame = cva(
   },
 );
 
-const codeInner = cva('uf-code-scroll [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!whitespace-pre', {
-  variants: {
-    variant: {
-      block: 'px-4 py-4',
-      inline: 'px-3 py-2 pr-12',
+const codeInner = cva(
+  'uf-code-scroll [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!whitespace-pre',
+  {
+    variants: {
+      variant: {
+        block: 'px-4 py-4',
+        inline: 'px-3 py-2 pr-12',
+      },
     },
+    defaultVariants: { variant: 'block' },
   },
-  defaultVariants: { variant: 'block' },
-});
+);
 
 interface CodeBlockProps extends VariantProps<typeof codeFrame> {
   code: string;
@@ -51,29 +54,36 @@ export function CodeBlock({ code, lang = 'ts', variant = 'block', className }: C
   const html = useHighlighted(code, lang, activeTheme.shikiTheme);
   const codeFrameClass = activeTheme.codeFrameClass;
 
-  return (
-    <div
-      role={variant === 'block' ? 'region' : undefined}
-      aria-label={variant === 'block' ? 'code sample' : undefined}
-      className={cn(codeFrame({ variant }), codeFrameClass, className)}
-    >
-      {variant === 'block' ? (
-        <span className="uf-eyebrow absolute right-2 top-2 z-10 text-uf-muted">unitforge</span>
-      ) : null}
+  const inner = (
+    <>
       <div className="absolute bottom-0.5 right-0.5 z-10">
         <CopyButton code={code} />
       </div>
       {html ? (
         <div
           className={codeInner({ variant })}
-          // shiki output is generated from string literals we author; not user-controlled.
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki output is generated from string literals we author; not user-controlled.
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : (
         <pre className={cn(codeInner({ variant }), 'mono m-0 text-uf-fg')}>{code}</pre>
       )}
-    </div>
+    </>
   );
+
+  if (variant === 'block') {
+    return (
+      <section
+        aria-label="code sample"
+        className={cn(codeFrame({ variant }), codeFrameClass, className)}
+      >
+        <span className="uf-eyebrow absolute right-2 top-2 z-10 text-uf-muted">unitforge</span>
+        {inner}
+      </section>
+    );
+  }
+
+  return <div className={cn(codeFrame({ variant }), codeFrameClass, className)}>{inner}</div>;
 }
 
 /** Back-compat alias; `CodeLine` is `CodeBlock variant="inline"`. */

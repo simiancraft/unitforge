@@ -2,20 +2,15 @@
 // unit picker, one output unit picker. Walks the user from "I have a number"
 // to "I have that number expressed in any other length unit" in one motion.
 
-import { useState } from 'react';
 import { Ruler } from 'lucide-react';
+import { useState } from 'react';
 import { forge } from 'unitforge';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
+import { findByKey, LENGTH_UNITS, type LengthKey, pickerOptions } from '~/lib/units.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
-import {
-  findByKey,
-  LENGTH_UNITS,
-  pickerOptions,
-  type LengthKey,
-} from '~/lib/units.js';
 
 const CODE = `import { forge } from 'unitforge';
 import { meter, foot } from 'unitforge/kits/geometry';
@@ -47,9 +42,9 @@ export function HelloUnit() {
       }
       introZone={
         <>
-          The smallest forge call: pick a value, pick its unit, pick a
-          target unit, and read out the conversion. Within-dimension
-          overload: scalar in, scalar out, no <code className="mono">via</code>.
+          The smallest forge call: pick a value, pick its unit, pick a target unit, and read out the
+          conversion. Within-dimension overload: scalar in, scalar out, no{' '}
+          <code className="mono">via</code>.
         </>
       }
       widgetZone={
@@ -87,9 +82,8 @@ export function HelloUnit() {
       codeZone={<CodeBlock code={CODE} />}
       notesZone={
         <>
-          <code className="mono">forge(meter, foot)</code> returns a cached
-          converter; the call signature is the same for any pair of LENGTH
-          units shipped by the kit.
+          <code className="mono">forge(meter, foot)</code> returns a cached converter; the call
+          signature is the same for any pair of LENGTH units shipped by the kit.
         </>
       }
     />

@@ -7,25 +7,25 @@
 // Hand-scrawled dimension labels (Caveat font) sit just outside the
 // rectangle on each axis.
 
-import { useState } from 'react';
 import { Square } from 'lucide-react';
+import { useState } from 'react';
 import { forge } from 'unitforge';
 import { areaFromLengthAndWidth } from 'unitforge/kits/geometry';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
-import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 import { clamp, round1 } from '~/lib/math.js';
 import {
   AREA_UNITS,
+  type AreaKey,
   findByKey,
   LENGTH_UNITS,
-  pickerOptions,
-  type AreaKey,
   type LengthKey,
+  pickerOptions,
 } from '~/lib/units.js';
+import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 
 const VIEW_W = 340;
 const VIEW_H = 260;
@@ -63,11 +63,9 @@ export function RectangleMachine() {
   const rectW = length * SCALE;
   const rectH = width * SCALE;
 
-  const area = forge(
-    { length: lengthOpt.unit, width: widthOpt.unit },
-    areaOpt.unit,
-    { via: areaFromLengthAndWidth },
-  )({ length, width });
+  const area = forge({ length: lengthOpt.unit, width: widthOpt.unit }, areaOpt.unit, {
+    via: areaFromLengthAndWidth,
+  })({ length, width });
 
   const { svgRef, handlers } = useSvgPointerDrag({
     getHandleCenter: () => ({ x: PAD + rectW, y: PAD + rectH }),
@@ -89,11 +87,10 @@ export function RectangleMachine() {
       }
       introZone={
         <>
-          Length × width = area. Drag the sliders to see the rectangle
-          redraw; each axis has its own unit picker so you can mix and
-          match (5 ft × 200 cm is fine). The library normalizes to base
-          meters, runs <code className="mono">compute</code>, then
-          re-emits in whatever area unit you ask for.
+          Length × width = area. Drag the sliders to see the rectangle redraw; each axis has its own
+          unit picker so you can mix and match (5 ft × 200 cm is fine). The library normalizes to
+          base meters, runs <code className="mono">compute</code>, then re-emits in whatever area
+          unit you ask for.
         </>
       }
       widgetZone={
@@ -138,6 +135,7 @@ export function RectangleMachine() {
                 xmlns="http://www.w3.org/2000/svg"
                 className="block h-auto w-full max-w-full touch-none"
                 style={{ maxWidth: `${VIEW_W}px` }}
+                aria-hidden="true"
               >
                 <defs>
                   <filter id="uf-rect-shadow" x="-20%" y="-20%" width="140%" height="140%">

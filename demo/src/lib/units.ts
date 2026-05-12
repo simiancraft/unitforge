@@ -6,6 +6,23 @@
 
 import type { Dimension, ForgeInput } from 'unitforge';
 import {
+  bit,
+  byte,
+  gibibyte,
+  gigabit,
+  gigabyte,
+  kibibyte,
+  kilobit,
+  kilobyte,
+  mebibyte,
+  megabit,
+  megabyte,
+  pebibyte,
+  petabyte,
+  tebibyte,
+  terabyte,
+} from 'unitforge/kits/data-storage';
+import {
   acre,
   centimeter,
   cubicCentimeter,
@@ -28,23 +45,6 @@ import {
   squareMillimeter,
   yard,
 } from 'unitforge/kits/geometry';
-import {
-  bit,
-  byte,
-  gibibyte,
-  gigabit,
-  gigabyte,
-  kibibyte,
-  kilobit,
-  kilobyte,
-  mebibyte,
-  megabit,
-  megabyte,
-  pebibyte,
-  petabyte,
-  tebibyte,
-  terabyte,
-} from 'unitforge/kits/data-storage';
 
 /**
  * One row in a kit's unit catalog. `unit` is typed as `ForgeInput<D,
@@ -130,10 +130,10 @@ export type DataKey = (typeof DATA_ALL_UNITS)[number]['key'];
  * tuple element so `findByKey(LENGTH_UNITS, 'm').key` hovers as the
  * literal `'m'`, not the full key union.
  */
-export function findByKey<
-  L extends ReadonlyArray<{ key: string }>,
-  K extends L[number]['key'],
->(list: L, key: K): Extract<L[number], { key: K }> {
+export function findByKey<L extends ReadonlyArray<{ key: string }>, K extends L[number]['key']>(
+  list: L,
+  key: K,
+): Extract<L[number], { key: K }> {
   const found = list.find((o) => o.key === key);
   if (!found) throw new Error(`Unknown unit key: ${String(key)}`);
   return found as Extract<L[number], { key: K }>;

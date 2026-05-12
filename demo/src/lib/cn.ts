@@ -3,7 +3,7 @@
 // Use cn() for every dynamic className in the demo so style overrides
 // compose deterministically.
 
-import { clsx, type ClassValue } from 'clsx';
+import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]): string {

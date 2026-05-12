@@ -8,19 +8,34 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+interface PulseState {
+  /** True while the pulse window is open. */
+  active: boolean;
+  /** The watchKey that opened the current window; used to detect change. */
+  sourceKey: string;
+}
+
 export function usePulse(watch: ReadonlyArray<unknown>, durationMs: number): boolean {
-  const [pulse, setPulse] = useState(false);
+  // Join into a single string so the dep list below is a static array literal;
+  // pulse callers only pass primitives in practice (numbers, strings).
+  const watchKey = watch.join('|');
+  const [state, setState] = useState<PulseState>({ active: false, sourceKey: '' });
   const timerRef = useRef<number | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the dep array IS the watch tuple by design; hook clients control the trigger.
   useEffect(() => {
-    setPulse(true);
+    // Stamp watchKey into state so the effect's dep is honestly read here;
+    // the timer-reset behavior is what makes the pulse extend across rapid
+    // changes (slider drags) rather than stopping at the first durationMs.
+    setState({ active: true, sourceKey: watchKey });
     if (timerRef.current !== null) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => setPulse(false), durationMs);
+    timerRef.current = window.setTimeout(
+      () => setState((s) => ({ ...s, active: false })),
+      durationMs,
+    );
     return () => {
       if (timerRef.current !== null) window.clearTimeout(timerRef.current);
     };
-  }, watch);
+  }, [watchKey, durationMs]);
 
-  return pulse;
+  return state.active;
 }

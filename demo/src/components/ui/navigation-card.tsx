@@ -8,9 +8,9 @@
 // flag prop back down. Keyboard Enter / Space activate the same paths
 // as mouse Enter / mouseDown.
 
-import { useState, type KeyboardEvent, type MouseEvent } from 'react';
-import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import type { ComponentType } from 'react';
+import { type KeyboardEvent, type MouseEvent, useState } from 'react';
 
 interface NavigationCardProps {
   href: string;

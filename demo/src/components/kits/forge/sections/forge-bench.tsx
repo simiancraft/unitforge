@@ -10,23 +10,23 @@
 // Shares the option-lookup + forge invocation engine with <Bench> via
 // computeBenchValues; the visual layouts stay distinct on purpose.
 
-import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { LENGTH_UNITS, pickerOptions, type LengthKey } from '~/lib/units.js';
-import { round1 } from '~/lib/math.js';
+import { useState } from 'react';
 import { CodeLine } from '~/components/CodeBlock.js';
-import { UnitPicker } from '~/components/UnitPicker.js';
 import type { BenchState } from '~/components/kits/bench.js';
 import { computeBenchValues } from '~/components/kits/compute-bench-values.js';
+import { UnitPicker } from '~/components/UnitPicker.js';
 import { cn } from '~/lib/cn.js';
+import { round1 } from '~/lib/math.js';
+import { LENGTH_UNITS, type LengthKey, pickerOptions } from '~/lib/units.js';
 
 const MIN = 0.1;
 const MAX = 100;
 const STEP = 0.1;
 
 interface ForgeBenchProps {
-  state: BenchState<'length', LengthKey>;
-  onChange: (next: BenchState<'length', LengthKey>) => void;
+  state: BenchState<LengthKey>;
+  onChange: (next: BenchState<LengthKey>) => void;
 }
 
 export function ForgeBench({ state, onChange }: ForgeBenchProps) {

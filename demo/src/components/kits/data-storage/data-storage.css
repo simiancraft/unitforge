@@ -6,7 +6,7 @@
  * [data-theme='data-storage-{dark,light}'] selectors.
  */
 
-[data-theme='data-storage-dark'] {
+[data-theme="data-storage-dark"] {
   /* Contrast-tuned: muted #6e9c7e (6.0:1), border #a06a2e (4.1:1) so
    * card edges read.
    */
@@ -18,7 +18,7 @@
   --uf-border: #a06a2e;
   --uf-code-bg: #050a08;
 
-  --uf-display: 'JetBrains Mono', ui-monospace, monospace;
+  --uf-display: "JetBrains Mono", ui-monospace, monospace;
   --uf-trace: #c8881e;
   --uf-trace-faint: #c8881e22;
 }
@@ -27,7 +27,7 @@
  * and amber accent (resistor-color-code adjacent so the kit identity
  * survives the light flip).
  */
-[data-theme='data-storage-light'] {
+[data-theme="data-storage-light"] {
   --uf-bg: #f4f1e8;
   --uf-fg: #0f3d2e;
   --uf-muted: #6b7a6f;
@@ -36,7 +36,7 @@
   --uf-border: #a8b1a4;
   --uf-code-bg: #f0f4ed;
 
-  --uf-display: 'JetBrains Mono', ui-monospace, monospace;
+  --uf-display: "JetBrains Mono", ui-monospace, monospace;
   --uf-trace: #7c8a36;
   --uf-trace-faint: #7c8a3622;
 }
@@ -44,8 +44,8 @@
 /* Subtle phosphor scanline shimmer (dark only; light variant is a
  * printed silkscreen, no scanlines).
  */
-[data-theme='data-storage-dark'] .uf-scanlines::before {
-  content: '';
+[data-theme="data-storage-dark"] .uf-scanlines::before {
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -67,7 +67,7 @@
   position: relative;
 }
 .uf-code-crt::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -83,15 +83,11 @@
   z-index: 2;
 }
 .uf-code-crt::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 55%,
-    rgba(0, 0, 0, 0.6) 100%
-  );
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
   z-index: 3;
 }
 .uf-code-crt pre,
@@ -112,12 +108,18 @@
     animation-iteration-count: 1;
   }
   @keyframes uf-throughput-sweep {
-    from { width: 0%; }
-    to   { width: 100%; }
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .uf-throughput-fill { width: 100%; }
+  .uf-throughput-fill {
+    width: 100%;
+  }
 }
 
 /* Ram-stick: chip status LED "breathing" animation. Each chip's LED
@@ -128,7 +130,14 @@
     animation: uf-led-breathe 1.8s ease-in-out infinite;
   }
   @keyframes uf-led-breathe {
-    0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 1px var(--uf-fg)); }
-    50%      { opacity: 1;   filter: drop-shadow(0 0 4px var(--uf-fg)); }
+    0%,
+    100% {
+      opacity: 0.7;
+      filter: drop-shadow(0 0 1px var(--uf-fg));
+    }
+    50% {
+      opacity: 1;
+      filter: drop-shadow(0 0 4px var(--uf-fg));
+    }
   }
 }

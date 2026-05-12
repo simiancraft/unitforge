@@ -7,8 +7,8 @@
 // .uf-flare-card:hover, so this section doesn't track it.
 
 import type { MouseEvent } from 'react';
-import { KITS, type KitEntry, type KitMeta } from '../../registry.js';
 import { NavigationCard } from '~/components/ui/navigation-card.js';
+import { KITS, type KitEntry, type KitMeta } from '../../registry.js';
 
 interface KitsGridProps {
   /** Id of the currently active kit; excluded from the grid. */

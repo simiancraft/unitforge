@@ -2,25 +2,25 @@
 // dashed radius line gets a Caveat-font "r = X" label. Area and
 // circumference are both computed through forge.
 
-import { useState } from 'react';
 import { Compass } from 'lucide-react';
+import { useState } from 'react';
 import { forge } from 'unitforge';
 import { areaFromCircleRadius, meter } from 'unitforge/kits/geometry';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
-import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 import { clamp, round1 } from '~/lib/math.js';
 import {
   AREA_UNITS,
+  type AreaKey,
   findByKey,
   LENGTH_UNITS,
-  pickerOptions,
-  type AreaKey,
   type LengthKey,
+  pickerOptions,
 } from '~/lib/units.js';
+import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 
 const VIEW = 280;
 const PAD = 24;
@@ -57,11 +57,9 @@ export function CircleMachine() {
   const cx = VIEW / 2;
   const cy = VIEW / 2;
 
-  const area = forge(
-    { radius: radiusOpt.unit },
-    areaOpt.unit,
-    { via: areaFromCircleRadius },
-  )({ radius });
+  const area = forge({ radius: radiusOpt.unit }, areaOpt.unit, { via: areaFromCircleRadius })({
+    radius,
+  });
 
   const radiusInMeters = forge(radiusOpt.unit, meter)(radius);
   const circumferenceInMeters = 2 * Math.PI * radiusInMeters;
@@ -89,11 +87,9 @@ export function CircleMachine() {
       }
       introZone={
         <>
-          A single radius slider drives both area (π · r²) and
-          circumference (2π · r). One-input cross-dim forge for area;
-          circumference is computed inline and re-emitted via{' '}
-          <code className="mono">forge(meter, ...)</code> into your
-          chosen length unit.
+          A single radius slider drives both area (π · r²) and circumference (2π · r). One-input
+          cross-dim forge for area; circumference is computed inline and re-emitted via{' '}
+          <code className="mono">forge(meter, ...)</code> into your chosen length unit.
         </>
       }
       widgetZone={
@@ -126,6 +122,7 @@ export function CircleMachine() {
               xmlns="http://www.w3.org/2000/svg"
               className="block h-auto w-full max-w-full touch-none"
               style={{ maxWidth: `${VIEW}px` }}
+              aria-hidden="true"
             >
               <defs>
                 <filter id="uf-circle-shadow" x="-30%" y="-30%" width="160%" height="160%">
@@ -139,8 +136,24 @@ export function CircleMachine() {
                 </filter>
               </defs>
 
-              <line x1={cx - 6} y1={cy} x2={cx + 6} y2={cy} stroke="var(--uf-fg)" strokeWidth="1" opacity="0.5" />
-              <line x1={cx} y1={cy - 6} x2={cx} y2={cy + 6} stroke="var(--uf-fg)" strokeWidth="1" opacity="0.5" />
+              <line
+                x1={cx - 6}
+                y1={cy}
+                x2={cx + 6}
+                y2={cy}
+                stroke="var(--uf-fg)"
+                strokeWidth="1"
+                opacity="0.5"
+              />
+              <line
+                x1={cx}
+                y1={cy - 6}
+                x2={cx}
+                y2={cy + 6}
+                stroke="var(--uf-fg)"
+                strokeWidth="1"
+                opacity="0.5"
+              />
 
               <circle
                 cx={cx}
@@ -189,13 +202,7 @@ export function CircleMachine() {
                 aria-hidden
                 {...handlers}
               />
-              <circle
-                cx={cx + svgR}
-                cy={cy}
-                r={4}
-                fill="var(--uf-accent)"
-                pointerEvents="none"
-              />
+              <circle cx={cx + svgR} cy={cy} r={4} fill="var(--uf-accent)" pointerEvents="none" />
             </svg>
             <Slider
               label={`radius (${radiusOpt.key})`}

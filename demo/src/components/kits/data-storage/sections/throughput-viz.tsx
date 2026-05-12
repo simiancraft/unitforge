@@ -4,11 +4,11 @@
 // computed rate. The fill animation is keyed to the inputs so each slider
 // change restarts the sweep — the time-to-fill becomes physically visible.
 
-import { useEffect, useRef, useState } from 'react';
 import { Gauge } from 'lucide-react';
+import { useState } from 'react';
+import { forge } from 'unitforge';
 import { byte, gigabit, gigabyte, megabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
-import { forge } from 'unitforge';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
@@ -38,15 +38,9 @@ export function ThroughputViz() {
   const realSeconds = targetBytes / bytesPerSec;
   const sweepSeconds = Math.min(MAX_VIEW_SECONDS, Math.max(0.4, realSeconds));
 
-  const [tick, setTick] = useState(0);
-  const firstRender = useRef(true);
-  useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-    setTick((t) => t + 1);
-  }, [gbits, targetGB]);
+  // Derived key remounts the fill element whenever the inputs change so
+  // the CSS keyframe sweep restarts in lockstep with the slider.
+  const tick = `${gbits}-${targetGB}`;
 
   const isRealtime = realSeconds <= MAX_VIEW_SECONDS;
 
@@ -62,9 +56,8 @@ export function ThroughputViz() {
       }
       introZone={
         <>
-          Network specs are in bits; storage rates in bytes. Same DATA
-          dimension, factor of 8 apart. Adjust the link rate; the file
-          fills against the clock, and the sweep duration is the
+          Network specs are in bits; storage rates in bytes. Same DATA dimension, factor of 8 apart.
+          Adjust the link rate; the file fills against the clock, and the sweep duration is the
           forge-computed transfer time at that rate.
         </>
       }
@@ -101,15 +94,12 @@ export function ThroughputViz() {
               key={tick}
               className="uf-throughput-fill absolute inset-y-0 left-0"
               style={{
-                background:
-                  'linear-gradient(90deg, var(--uf-accent) 0%, var(--uf-fg) 100%)',
+                background: 'linear-gradient(90deg, var(--uf-accent) 0%, var(--uf-fg) 100%)',
                 opacity: 0.85,
                 animationDuration: `${sweepSeconds}s`,
               }}
             />
-            <span
-              className="mono absolute inset-0 flex items-center justify-center text-xs text-uf-bg mix-blend-difference"
-            >
+            <span className="mono absolute inset-0 flex items-center justify-center text-xs text-uf-bg mix-blend-difference">
               {targetGB.toFixed(0)} GB · @ {mbPerSec.toFixed(1)} MB/s
             </span>
           </div>

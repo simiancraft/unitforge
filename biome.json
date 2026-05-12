@@ -6,7 +6,16 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["src/**", "test/**", "scripts/**", "*.ts", "*.json"]
+    "includes": [
+      "src/**",
+      "test/**",
+      "scripts/**",
+      "demo/src/**",
+      "demo/*.ts",
+      "demo/*.json",
+      "*.ts",
+      "*.json"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -26,6 +35,11 @@
       "semicolons": "always",
       "trailingCommas": "all",
       "arrowParentheses": "always"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "assist": {

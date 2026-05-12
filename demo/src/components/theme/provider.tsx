@@ -19,14 +19,8 @@
 // the bundle; the [data-theme='<id>'] cascade resolves regardless of
 // which theme is active. Adding a kit needs no edits here.
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import {
-  findTheme,
-  THEMES,
-  type KitId,
-  type ThemeId,
-  type ThemeRecipe,
-} from './recipes.js';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
+import { findTheme, type KitId, THEMES, type ThemeId, type ThemeRecipe } from './recipes.js';
 // Pull the kit registry as a side effect so every kit's index.tsx (and
 // therefore its CSS) is in the module graph by the time the provider
 // mounts. The registry itself isn't consumed here.
@@ -101,11 +95,7 @@ export function ThemeProvider({ initialThemeId, children }: ThemeProviderProps) 
     setActiveId(next);
   };
 
-  return (
-    <Ctx.Provider value={{ activeTheme, setTheme, setThemeForKit }}>
-      {children}
-    </Ctx.Provider>
-  );
+  return <Ctx.Provider value={{ activeTheme, setTheme, setThemeForKit }}>{children}</Ctx.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {

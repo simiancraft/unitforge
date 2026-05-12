@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /*
  * Tailwind v4 theme tokens. Each `--color-uf-*` maps to a `--uf-*` CSS var
@@ -33,11 +33,12 @@
    */
   --uf-brand: #f97316;
 
-  --uf-display: 'Georgia', 'Times New Roman', serif;
-  --uf-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
-  --uf-mono: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-    monospace;
+  --uf-display: "Georgia", "Times New Roman", serif;
+  --uf-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --uf-mono:
+    ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 html,
@@ -56,7 +57,7 @@ body {
 }
 
 /* Visible focus ring across every interactive surface; themed via --uf-accent. */
-:where(a, button, select, input, [role='slider'], [tabindex]):focus-visible {
+:where(a, button, select, input, [role="slider"], [tabindex]):focus-visible {
   outline: 2px solid var(--uf-accent);
   outline-offset: 2px;
   border-radius: 2px;

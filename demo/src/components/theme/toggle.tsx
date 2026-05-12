@@ -8,8 +8,8 @@
 // (App.tsx today; a per-route shell file tomorrow) passes the pair that
 // belongs to the visible kit.
 
-import { useEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
+import { useEffect } from 'react';
 import { useTheme } from './provider.js';
 import type { ThemeId } from './recipes.js';
 

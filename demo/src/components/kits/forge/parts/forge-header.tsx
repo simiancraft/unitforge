@@ -22,7 +22,9 @@ export function ForgeHeader() {
         <span className="uf-wordmark-forge">FORGE</span>
       </h1>
       <p className="display text-3xl font-bold leading-tight tracking-tight md:text-5xl">
-        forge anything measurable
+        forge anything measurable.
+        <br />
+        not just physics.
       </p>
     </header>
   );

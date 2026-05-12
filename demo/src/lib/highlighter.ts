@@ -6,10 +6,7 @@
 // from a recipe in components/theme/recipes.ts.
 
 interface Highlighter {
-  codeToHtml: (
-    code: string,
-    opts: { lang: string; theme: string },
-  ) => string;
+  codeToHtml: (code: string, opts: { lang: string; theme: string }) => string;
   loadTheme: (mod: unknown) => Promise<void>;
   getLoadedThemes: () => string[];
 }

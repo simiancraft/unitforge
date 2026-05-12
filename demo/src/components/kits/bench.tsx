@@ -11,34 +11,33 @@
 // don't read from the bench; this lets each page have one canonical
 // instrument plus several escalating explorations.
 
-import type { Dimension, ForgeInput } from 'unitforge';
-import { type ChangeEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
+import type { ChangeEvent } from 'react';
+import type { Dimension, ForgeInput } from 'unitforge';
+import { round1 } from '~/lib/math.js';
 import { CodeLine } from '../CodeBlock.js';
 import { UnitPicker } from '../UnitPicker.js';
 import { computeBenchValues } from './compute-bench-values.js';
-import { round1 } from '~/lib/math.js';
 
-export interface BenchState<D extends Dimension = Dimension, K extends string = string> {
+export interface BenchState<K extends string = string> {
   fromKey: K;
   toKey: K;
   value: number;
-  // K (the unit-key union) is the structural discriminator between
-  // BenchState<'length', LengthKey> and BenchState<'data', DataKey>; D
-  // remains a generic parameter so the consumer-facing options array
-  // can ship `Unit<D, number>` typed correctly.
 }
 
 interface BenchProps<D extends Dimension, K extends string> {
-  state: BenchState<D, K>;
-  onChange: (next: BenchState<D, K>) => void;
-  options: ReadonlyArray<{ key: K; label: string; unit: ForgeInput<D, number> }>;
+  state: BenchState<K>;
+  onChange: (next: BenchState<K>) => void;
+  options: readonly [
+    { key: K; label: string; unit: ForgeInput<D, number> },
+    ...{ key: K; label: string; unit: ForgeInput<D, number> }[],
+  ];
   /** Slider bounds (in fromKey units). */
   min: number;
   max: number;
   step: number;
   /** Short code-block snippet shown under the controls; receives the live values. */
-  codeFor: (s: BenchState<D, K>, result: number) => string;
+  codeFor: (s: BenchState<K>, result: number) => string;
   label?: string;
 }
 
@@ -67,11 +66,7 @@ export function Bench<D extends Dimension, K extends string>({
   };
 
   return (
-    <div
-      className="uf-card relative rounded-lg p-4 shadow-md md:p-5"
-      role="region"
-      aria-label={label}
-    >
+    <section className="uf-card relative rounded-lg p-4 shadow-md md:p-5" aria-label={label}>
       <div className="mb-3 flex items-center justify-between">
         <span className="uf-eyebrow text-uf-accent">{label}</span>
         <span className="uf-eyebrow">live</span>
@@ -126,7 +121,7 @@ export function Bench<D extends Dimension, K extends string>({
       <div className="mt-3">
         <CodeLine code={codeFor(state, result)} />
       </div>
-    </div>
+    </section>
   );
 }
 

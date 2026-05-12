@@ -13,7 +13,7 @@
 // pages can also call with their own intensity. All three visible parts
 // (shake, flash, particles) move together.
 
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 
 export interface StokeSlot {
   key: number;

@@ -4,11 +4,11 @@
 // chrome dialog vibe). The striped gap between the marketed-bar and the
 // reported-bar gets a labelled callout so the pedagogy is obvious.
 
-import { useState } from 'react';
 import { HardDrive } from 'lucide-react';
+import { useState } from 'react';
+import { forge } from 'unitforge';
 import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
-import { forge } from 'unitforge';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
@@ -51,9 +51,8 @@ export function DriveVsOs() {
       }
       introZone={
         <>
-          Drive vendors market capacity in decimal gigabytes; operating
-          systems traditionally report in binary gibibytes. Slide the
-          marketed capacity and watch the "missing" space appear; it
+          Drive vendors market capacity in decimal gigabytes; operating systems traditionally report
+          in binary gibibytes. Slide the marketed capacity and watch the "missing" space appear; it
           isn't missing, it's the unit conversion.
         </>
       }
@@ -122,6 +121,7 @@ export function DriveVsOs() {
                 viewBox={`0 0 ${VIEW_W} ${BAR_H * 2 + 70}`}
                 xmlns="http://www.w3.org/2000/svg"
                 className="block w-full"
+                aria-hidden="true"
               >
                 <defs>
                   <pattern
@@ -146,7 +146,14 @@ export function DriveVsOs() {
                   fill="var(--uf-bg)"
                   stroke="var(--uf-border)"
                 />
-                <rect x={PADDING} y={18} width={fullW} height={BAR_H} fill="var(--uf-accent)" opacity="0.78" />
+                <rect
+                  x={PADDING}
+                  y={18}
+                  width={fullW}
+                  height={BAR_H}
+                  fill="var(--uf-accent)"
+                  opacity="0.78"
+                />
 
                 <text
                   x={PADDING}
@@ -180,7 +187,10 @@ export function DriveVsOs() {
                   width={gapW}
                   height={BAR_H}
                   fill="url(#uf-stripes)"
-                  style={{ transition: 'x 220ms cubic-bezier(0.22,1,0.36,1), width 220ms cubic-bezier(0.22,1,0.36,1)' }}
+                  style={{
+                    transition:
+                      'x 220ms cubic-bezier(0.22,1,0.36,1), width 220ms cubic-bezier(0.22,1,0.36,1)',
+                  }}
                 />
 
                 <line

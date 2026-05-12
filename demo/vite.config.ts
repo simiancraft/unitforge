@@ -17,11 +17,7 @@ import { defineConfig } from 'vite';
 // a React-18 compatible runtime (this demo is on React 18.3).
 
 export default defineConfig({
-  plugins: [
-    react(),
-    babel({ presets: [reactCompilerPreset({ target: '18' })] }),
-    tailwindcss(),
-  ],
+  plugins: [react(), babel({ presets: [reactCompilerPreset({ target: '18' })] }), tailwindcss()],
   resolve: {
     alias: {
       // Cross-folder imports use `~/foo` instead of `../../../foo`.

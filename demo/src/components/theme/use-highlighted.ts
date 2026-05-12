@@ -13,9 +13,7 @@ import { cachedHighlight, highlight } from '~/lib/highlighter.js';
 type Lang = 'ts' | 'tsx' | 'js';
 
 export function useHighlighted(code: string, lang: Lang, theme: string): string | null {
-  const [html, setHtml] = useState<string | null>(
-    cachedHighlight(code, lang, theme) ?? null,
-  );
+  const [html, setHtml] = useState<string | null>(cachedHighlight(code, lang, theme) ?? null);
 
   useEffect(() => {
     setHtml(cachedHighlight(code, lang, theme) ?? null);

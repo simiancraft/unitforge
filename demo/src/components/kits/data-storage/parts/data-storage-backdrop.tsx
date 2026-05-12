@@ -37,6 +37,7 @@ export function DataStorageBackdrop({ inline, pulse = false }: DataStorageBackdr
         viewBox="0 0 800 600"
         preserveAspectRatio="xMidYMid slice"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
       >
         <defs>
           <pattern id="uf-pcb" width="100" height="100" patternUnits="userSpaceOnUse">
