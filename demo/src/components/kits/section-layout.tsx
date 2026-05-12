@@ -21,7 +21,7 @@ interface SectionLayoutProps {
   headerZone: ReactNode;
   /**
    * Short paragraph describing what the section teaches. Plain
-   * children — text, inline `<code>`, fragments. Rendered as a
+   * children: text, inline `<code>`, fragments. Rendered as a
    * single `<p>` with muted text-sm styling, so do not nest a
    * block element here. Two to four sentences is the sweet spot;
    * longer copy belongs in `notesZone` below the widget.
@@ -71,14 +71,13 @@ interface WidgetLayoutProps {
   /**
    * The live interaction surface. Conventionally a vertical flex
    * column containing, top-to-bottom: input controls (UnitPicker,
-   * Slider), a "visualizer" subcomponent if the section has one
-   * (CircleVisual, RamStickVisual, ThroughputBar, etc. — extracted
-   * per the Named Organ criterion so the compiler can memo it on
-   * primitive props), then readout rows (`<Result>`). Some sections
-   * (RAM stick) place the visualizer above its slider for layout
-   * reasons; that's the exception, not the rule. Wrapped in a
-   * `uf-card` by this layout — sections should not add their own
-   * card wrap.
+   * Slider), then any "visualizer" subcomponent the section has
+   * (extracted per the Named Organ criterion so the compiler can
+   * memo it on primitive props), then readout rows (`<Result>`).
+   * Inputs-at-top is the convention; sections whose visualizer is
+   * the primary affordance (RAM stick, both shape machines) place
+   * it above its slider, which is fine. Wrapped in a `uf-card` by
+   * this layout; sections should not add their own card wrap.
    */
   interactionZone: ReactNode;
   /**
