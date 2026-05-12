@@ -9,6 +9,7 @@
 
 import { Box } from 'lucide-react';
 import { useState } from 'react';
+import { formatMagnitude } from '~/lib/format.js';
 import { findByKey, LENGTH_UNITS, type LengthKey } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
@@ -76,7 +77,7 @@ export function GeometryScreen() {
           max={GEOMETRY_BENCH_MAX}
           step={GEOMETRY_BENCH_STEP}
           codeFor={(s, r) =>
-            `forge(${findByKey(LENGTH_UNITS, s.fromKey).label}, ${findByKey(LENGTH_UNITS, s.toKey).label})(${s.value}); // ${r.toFixed(4)}`
+            `forge(${findByKey(LENGTH_UNITS, s.fromKey).label}, ${findByKey(LENGTH_UNITS, s.toKey).label})(${formatMagnitude(s.value)}); // ${formatMagnitude(r)}`
           }
           label="forge bench · length"
         />

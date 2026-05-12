@@ -14,6 +14,7 @@
 import { ArrowRight } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import type { Dimension, ForgeInput } from 'unitforge';
+import { formatMagnitude } from '~/lib/format.js';
 import { round1 } from '~/lib/math.js';
 import { CodeLine } from '../CodeBlock.js';
 import { UnitPicker } from '../UnitPicker.js';
@@ -104,17 +105,17 @@ export function Bench<D extends Dimension, K extends string>({
           onChange={handleValue}
           className="flex-1 accent-uf-accent"
           aria-label={`value in ${fromOpt.label}`}
-          aria-valuetext={`${formatLive(state.value)} ${fromOpt.label}`}
+          aria-valuetext={`${formatMagnitude(state.value)} ${fromOpt.label}`}
         />
         <div className="mono whitespace-nowrap text-xl tabular-nums text-uf-accent md:text-2xl">
-          {formatLive(state.value)} {fromOpt.key}
+          {formatMagnitude(state.value)} {fromOpt.key}
         </div>
       </div>
 
       <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-uf-border pt-3">
         <span className="uf-eyebrow">result</span>
         <span className="mono text-2xl tabular-nums text-uf-fg md:text-3xl">
-          {formatLive(result)} <span className="text-uf-muted">{toOpt.key}</span>
+          {formatMagnitude(result)} <span className="text-uf-muted">{toOpt.key}</span>
         </span>
       </div>
 
@@ -123,13 +124,4 @@ export function Bench<D extends Dimension, K extends string>({
       </div>
     </section>
   );
-}
-
-function formatLive(n: number): string {
-  const abs = Math.abs(n);
-  if (abs === 0) return '0';
-  if (abs >= 1e15 || abs < 1e-4) return n.toExponential(3);
-  if (abs >= 1000) return n.toFixed(2);
-  if (abs >= 1) return n.toFixed(3);
-  return n.toFixed(5);
 }
