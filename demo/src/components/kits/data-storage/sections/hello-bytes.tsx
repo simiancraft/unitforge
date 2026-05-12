@@ -23,7 +23,7 @@ import {
   findByKey,
   pickerOptions,
 } from '~/lib/units.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
 // Per-unit slider bounds so the range stays pedagogical at every scale:
 // 1-1e6 bytes is interesting; 1-2000 GB is the canonical drive-size range.
@@ -161,29 +161,35 @@ export function HelloBytes() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <UnitPicker
-              label="input unit"
-              value={state.unitKey}
-              options={pickerOptions(DATA_ALL_UNITS)}
-              onChange={setUnitKey}
-            />
-            <Slider
-              label={`value (${fromUnit.key})`}
-              value={state.value}
-              min={range.min}
-              max={range.max}
-              step={range.step}
-              onChange={setValue}
-              suffix={fromUnit.key}
-            />
-          </div>
+        <WidgetLayout
+          interactionZone={
+            <div className="flex flex-col gap-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <UnitPicker
+                  label="input unit"
+                  value={state.unitKey}
+                  options={pickerOptions(DATA_ALL_UNITS)}
+                  onChange={setUnitKey}
+                />
+                <Slider
+                  label={`value (${fromUnit.key})`}
+                  value={state.value}
+                  min={range.min}
+                  max={range.max}
+                  step={range.step}
+                  onChange={setValue}
+                  suffix={fromUnit.key}
+                />
+              </div>
 
-          <ReadoutMatrix inBytes={inBytes} />
-        </div>
+              <ReadoutMatrix inBytes={inBytes} />
+            </div>
+          }
+          codeZone={
+            <CodeBlock code={buildCode(fromUnit.label, state.value, inBytes, inGiB, inMbit)} />
+          }
+        />
       }
-      codeZone={<CodeBlock code={buildCode(fromUnit.label, state.value, inBytes, inGiB, inMbit)} />}
     />
   );
 }

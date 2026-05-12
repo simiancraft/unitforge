@@ -11,7 +11,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { formatMagnitude } from '~/lib/format.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
 const CHIPS = 8;
 const VIEW_W = 460;
@@ -189,23 +189,27 @@ export function RamStick() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <RamStickVisual litCount={litCount} targetLit={targetLit} />
+        <WidgetLayout
+          interactionZone={
+            <div className="flex flex-col gap-4">
+              <RamStickVisual litCount={litCount} targetLit={targetLit} />
 
-          <Slider
-            label="capacity (GiB)"
-            value={gibValue}
-            min={1}
-            max={RAMSTICK_MAX_GIB}
-            step={1}
-            onChange={setGibValue}
-            suffix="GiB"
-          />
-          <Result label="same value" value={`${inGB.toFixed(3)} GB`} />
-          <Result label="raw bytes" value={`${formatMagnitude(inBytes)} B`} />
-        </div>
+              <Slider
+                label="capacity (GiB)"
+                value={gibValue}
+                min={1}
+                max={RAMSTICK_MAX_GIB}
+                step={1}
+                onChange={setGibValue}
+                suffix="GiB"
+              />
+              <Result label="same value" value={`${inGB.toFixed(3)} GB`} />
+              <Result label="raw bytes" value={`${formatMagnitude(inBytes)} B`} />
+            </div>
+          }
+          codeZone={<CodeBlock code={buildCode(gibValue, inGB, inBytes)} />}
+        />
       }
-      codeZone={<CodeBlock code={buildCode(gibValue, inGB, inBytes)} />}
     />
   );
 }

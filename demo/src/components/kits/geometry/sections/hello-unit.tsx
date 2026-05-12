@@ -11,7 +11,7 @@ import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
 import { formatMagnitude } from '~/lib/format.js';
 import { findByKey, LENGTH_UNITS, type LengthKey, pickerOptions } from '~/lib/units.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
 function buildCode(fromName: string, toName: string, value: number, result: number): string {
   return `import { forge } from 'unitforge';
@@ -50,38 +50,42 @@ export function HelloUnit() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <UnitPicker
-              label="from"
-              value={fromKey}
-              options={pickerOptions(LENGTH_UNITS)}
-              onChange={setFromKey}
-            />
-            <UnitPicker
-              label="to"
-              value={toKey}
-              options={pickerOptions(LENGTH_UNITS)}
-              onChange={setToKey}
-            />
-          </div>
-          <Slider
-            label={`value (${from.key})`}
-            value={value}
-            min={0.1}
-            max={10}
-            step={0.1}
-            onChange={setValue}
-            suffix={from.key}
-          />
-          <Result
-            label={`${value.toFixed(2)} ${from.key} =`}
-            value={`${result.toFixed(4)} ${to.key}`}
-            variant="hero"
-          />
-        </div>
+        <WidgetLayout
+          interactionZone={
+            <div className="flex flex-col gap-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <UnitPicker
+                  label="from"
+                  value={fromKey}
+                  options={pickerOptions(LENGTH_UNITS)}
+                  onChange={setFromKey}
+                />
+                <UnitPicker
+                  label="to"
+                  value={toKey}
+                  options={pickerOptions(LENGTH_UNITS)}
+                  onChange={setToKey}
+                />
+              </div>
+              <Slider
+                label={`value (${from.key})`}
+                value={value}
+                min={0.1}
+                max={10}
+                step={0.1}
+                onChange={setValue}
+                suffix={from.key}
+              />
+              <Result
+                label={`${value.toFixed(2)} ${from.key} =`}
+                value={`${result.toFixed(4)} ${to.key}`}
+                variant="hero"
+              />
+            </div>
+          }
+          codeZone={<CodeBlock code={buildCode(from.label, to.label, value, result)} />}
+        />
       }
-      codeZone={<CodeBlock code={buildCode(from.label, to.label, value, result)} />}
       notesZone={
         <>
           <code className="mono">forge(meter, foot)</code> returns a cached converter; the call

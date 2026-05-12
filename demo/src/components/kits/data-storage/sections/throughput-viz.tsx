@@ -12,7 +12,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { formatMagnitude } from '~/lib/format.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
 const MAX_VIEW_SECONDS = 12;
 
@@ -106,45 +106,49 @@ export function ThroughputViz() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <Slider
-            label="link rate (Gbit/s)"
-            value={gbits}
-            min={0.05}
-            max={100}
-            step={0.05}
-            onChange={setGbits}
-            suffix="Gbit/s"
-          />
-          <Slider
-            label="target file size (GB)"
-            value={targetGB}
-            min={1}
-            max={1000}
-            step={1}
-            onChange={setTargetGB}
-            suffix="GB"
-          />
+        <WidgetLayout
+          interactionZone={
+            <div className="flex flex-col gap-4">
+              <Slider
+                label="link rate (Gbit/s)"
+                value={gbits}
+                min={0.05}
+                max={100}
+                step={0.05}
+                onChange={setGbits}
+                suffix="Gbit/s"
+              />
+              <Slider
+                label="target file size (GB)"
+                value={targetGB}
+                min={1}
+                max={1000}
+                step={1}
+                onChange={setTargetGB}
+                suffix="GB"
+              />
 
-          {/* Sweep is animated by CSS; current fill % isn't React-tracked,
-              so role="progressbar" would lie via aria-valuenow. ThroughputBar
-              uses role="img" + aria-label to describe the animation honestly. */}
-          <ThroughputBar
-            targetGB={targetGB}
-            mbPerSec={mbPerSec}
-            sweepSeconds={sweepSeconds}
-            realSeconds={realSeconds}
-            tick={tick}
-          />
+              {/* Sweep is animated by CSS; current fill % isn't React-tracked,
+                  so role="progressbar" would lie via aria-valuenow. ThroughputBar
+                  uses role="img" + aria-label to describe the animation honestly. */}
+              <ThroughputBar
+                targetGB={targetGB}
+                mbPerSec={mbPerSec}
+                sweepSeconds={sweepSeconds}
+                realSeconds={realSeconds}
+                tick={tick}
+              />
 
-          <Result label="bandwidth" value={`${mbPerSec.toFixed(1)} MB/s`} variant="hero" />
-          <Result
-            label={isRealtime ? 'time to fill' : 'time to fill (sweep capped)'}
-            value={formatDuration(realSeconds)}
-          />
-        </div>
+              <Result label="bandwidth" value={`${mbPerSec.toFixed(1)} MB/s`} variant="hero" />
+              <Result
+                label={isRealtime ? 'time to fill' : 'time to fill (sweep capped)'}
+                value={formatDuration(realSeconds)}
+              />
+            </div>
+          }
+          codeZone={<CodeBlock code={buildCode(gbits, mbPerSec, targetGB, realSeconds)} />}
+        />
       }
-      codeZone={<CodeBlock code={buildCode(gbits, mbPerSec, targetGB, realSeconds)} />}
     />
   );
 }

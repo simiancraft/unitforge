@@ -12,7 +12,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { formatMagnitude } from '~/lib/format.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
 const VIEW_W = 520;
 const BAR_H = 30;
@@ -229,36 +229,40 @@ export function DriveVsOs() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <Slider
-            label="marketed capacity (GB)"
-            value={marketedGB}
-            min={100}
-            max={MAX_GB}
-            step={10}
-            onChange={setMarketedGB}
-            suffix="GB"
-          />
+        <WidgetLayout
+          interactionZone={
+            <div className="flex flex-col gap-4">
+              <Slider
+                label="marketed capacity (GB)"
+                value={marketedGB}
+                min={100}
+                max={MAX_GB}
+                step={10}
+                onChange={setMarketedGB}
+                suffix="GB"
+              />
 
-          <DriveLabel marketedGB={marketedGB} inTB={inTB} />
+              <DriveLabel marketedGB={marketedGB} inTB={inTB} />
 
-          <PropertiesPanel
-            marketedGB={marketedGB}
-            inGiB={inGiB}
-            reportedW={reportedW}
-            gapStartX={gapStartX}
-            gapW={gapW}
-            fullW={fullW}
-          />
+              <PropertiesPanel
+                marketedGB={marketedGB}
+                inGiB={inGiB}
+                reportedW={reportedW}
+                gapStartX={gapStartX}
+                gapW={gapW}
+                fullW={fullW}
+              />
 
-          <Result
-            label="apparent gap"
-            value={`${(marketedGB - inGiB).toFixed(2)} (≈ ${(lossFraction * 100).toFixed(2)}%)`}
-            variant="hero"
-          />
-        </div>
+              <Result
+                label="apparent gap"
+                value={`${(marketedGB - inGiB).toFixed(2)} (≈ ${(lossFraction * 100).toFixed(2)}%)`}
+                variant="hero"
+              />
+            </div>
+          }
+          codeZone={<CodeBlock code={buildCode(marketedGB, inGiB)} />}
+        />
       }
-      codeZone={<CodeBlock code={buildCode(marketedGB, inGiB)} />}
     />
   );
 }

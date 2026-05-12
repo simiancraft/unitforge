@@ -20,7 +20,7 @@ import {
   type LengthKey,
   pickerOptions,
 } from '~/lib/units.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import { type UseSvgPointerDrag, useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 
 const VIEW = 280;
@@ -224,63 +224,71 @@ export function CircleMachine() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <UnitPicker
-              label="radius unit"
-              value={radiusKey}
-              options={pickerOptions(LENGTH_UNITS)}
-              onChange={setRadiusKey}
-            />
-            <UnitPicker
-              label="area unit"
-              value={areaKey}
-              options={pickerOptions(AREA_UNITS)}
-              onChange={setAreaKey}
-            />
-            <UnitPicker
-              label="circ. unit"
-              value={circKey}
-              options={pickerOptions(LENGTH_UNITS)}
-              onChange={setCircKey}
-            />
-          </div>
+        <WidgetLayout
+          interactionZone={
+            <div className="flex flex-col gap-4">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <UnitPicker
+                  label="radius unit"
+                  value={radiusKey}
+                  options={pickerOptions(LENGTH_UNITS)}
+                  onChange={setRadiusKey}
+                />
+                <UnitPicker
+                  label="area unit"
+                  value={areaKey}
+                  options={pickerOptions(AREA_UNITS)}
+                  onChange={setAreaKey}
+                />
+                <UnitPicker
+                  label="circ. unit"
+                  value={circKey}
+                  options={pickerOptions(LENGTH_UNITS)}
+                  onChange={setCircKey}
+                />
+              </div>
 
-          <div className="flex flex-col items-center gap-3">
-            <CircleVisual
-              radius={radius}
-              radiusKey={radiusOpt.key}
-              svgRef={svgRef}
-              handlers={handlers}
-            />
-            <Slider
-              label={`radius (${radiusOpt.key})`}
-              value={radius}
-              min={MIN_R}
-              max={MAX_R}
-              step={0.1}
-              onChange={setRadius}
-              suffix={radiusOpt.key}
-            />
-          </div>
+              <div className="flex flex-col items-center gap-3">
+                <CircleVisual
+                  radius={radius}
+                  radiusKey={radiusOpt.key}
+                  svgRef={svgRef}
+                  handlers={handlers}
+                />
+                <Slider
+                  label={`radius (${radiusOpt.key})`}
+                  value={radius}
+                  min={MIN_R}
+                  max={MAX_R}
+                  step={0.1}
+                  onChange={setRadius}
+                  suffix={radiusOpt.key}
+                />
+              </div>
 
-          <Result label="area" value={`${formatMagnitude(area)} ${areaOpt.key}`} variant="hero" />
-          <Result
-            label="circumference"
-            value={`${formatMagnitude(circumference)} ${circOpt.key}`}
-          />
-        </div>
-      }
-      codeZone={
-        <CodeBlock
-          code={buildCode(
-            radiusOpt.label,
-            areaOpt.label,
-            circOpt.label,
-            radius,
-            area,
-            circumference,
-          )}
+              <Result
+                label="area"
+                value={`${formatMagnitude(area)} ${areaOpt.key}`}
+                variant="hero"
+              />
+              <Result
+                label="circumference"
+                value={`${formatMagnitude(circumference)} ${circOpt.key}`}
+              />
+            </div>
+          }
+          codeZone={
+            <CodeBlock
+              code={buildCode(
+                radiusOpt.label,
+                areaOpt.label,
+                circOpt.label,
+                radius,
+                area,
+                circumference,
+              )}
+            />
+          }
         />
       }
     />

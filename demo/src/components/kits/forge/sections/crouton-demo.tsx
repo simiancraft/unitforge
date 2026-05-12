@@ -19,7 +19,7 @@ import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { cn } from '~/lib/cn.js';
 import { formatMagnitude } from '~/lib/format.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
 const COUNT = 'count' as const;
 
@@ -101,30 +101,34 @@ export function CroutonDemo() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3">
-            <ResourceSlider glyph="🌾" label="wheat" value={wheat} onChange={setWheat} />
-            <ResourceSlider glyph="🪨" label="ore" value={ore} onChange={setOre} />
-          </div>
+        <WidgetLayout
+          interactionZone={
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
+                <ResourceSlider glyph="🌾" label="wheat" value={wheat} onChange={setWheat} />
+                <ResourceSlider glyph="🪨" label="ore" value={ore} onChange={setOre} />
+              </div>
 
-          <div className="grid items-center gap-4 grid-cols-[1fr_auto_1fr]">
-            <div className="flex justify-center">
-              <PileGlyph glyph="🌾" count={wheat} label="wheat" />
+              <div className="grid items-center gap-4 grid-cols-[1fr_auto_1fr]">
+                <div className="flex justify-center">
+                  <PileGlyph glyph="🌾" count={wheat} label="wheat" />
+                </div>
+                <span className="text-xl text-uf-muted">+</span>
+                <div className="flex justify-center">
+                  <PileGlyph glyph="🪨" count={ore} label="ore" />
+                </div>
+              </div>
+
+              <Result label="cities built" value={`${cities}`} variant="hero" />
+
+              <div className="flex items-center justify-center">
+                <HeroGlyph glyph="🏰" count={cities} label="cities" />
+              </div>
             </div>
-            <span className="text-xl text-uf-muted">+</span>
-            <div className="flex justify-center">
-              <PileGlyph glyph="🪨" count={ore} label="ore" />
-            </div>
-          </div>
-
-          <Result label="cities built" value={`${cities}`} variant="hero" />
-
-          <div className="flex items-center justify-center">
-            <HeroGlyph glyph="🏰" count={cities} label="cities" />
-          </div>
-        </div>
+          }
+          codeZone={<CodeBlock code={buildCode(wheat, ore, cities)} />}
+        />
       }
-      codeZone={<CodeBlock code={buildCode(wheat, ore, cities)} />}
     />
   );
 }

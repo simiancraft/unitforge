@@ -25,7 +25,7 @@ import {
   type LengthKey,
   pickerOptions,
 } from '~/lib/units.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import { type UseSvgPointerDrag, useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 
 const VIEW_W = 340;
@@ -236,67 +236,75 @@ export function RectangleMachine() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <UnitPicker
-              label="length (↔) unit"
-              value={lengthKey}
-              options={pickerOptions(LENGTH_UNITS)}
-              onChange={setLengthKey}
-            />
-            <UnitPicker
-              label="width (↕) unit"
-              value={widthKey}
-              options={pickerOptions(LENGTH_UNITS)}
-              onChange={setWidthKey}
-            />
-            <UnitPicker
-              label="area unit"
-              value={areaKey}
-              options={pickerOptions(AREA_UNITS)}
-              onChange={setAreaKey}
-            />
-          </div>
+        <WidgetLayout
+          interactionZone={
+            <div className="flex flex-col gap-4">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <UnitPicker
+                  label="length (↔) unit"
+                  value={lengthKey}
+                  options={pickerOptions(LENGTH_UNITS)}
+                  onChange={setLengthKey}
+                />
+                <UnitPicker
+                  label="width (↕) unit"
+                  value={widthKey}
+                  options={pickerOptions(LENGTH_UNITS)}
+                  onChange={setWidthKey}
+                />
+                <UnitPicker
+                  label="area unit"
+                  value={areaKey}
+                  options={pickerOptions(AREA_UNITS)}
+                  onChange={setAreaKey}
+                />
+              </div>
 
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-stretch">
-            <Slider
-              label={`width ↕ (${widthOpt.key})`}
-              value={width}
-              min={MIN_VAL}
-              max={MAX_VAL}
-              step={0.1}
-              onChange={setWidth}
-              orientation="vertical"
-              suffix={widthOpt.key}
-            />
+              <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-stretch">
+                <Slider
+                  label={`width ↕ (${widthOpt.key})`}
+                  value={width}
+                  min={MIN_VAL}
+                  max={MAX_VAL}
+                  step={0.1}
+                  onChange={setWidth}
+                  orientation="vertical"
+                  suffix={widthOpt.key}
+                />
 
-            <div className="flex-1 flex flex-col items-center gap-3">
-              <RectangleVisual
-                length={length}
-                width={width}
-                lengthKey={lengthOpt.key}
-                widthKey={widthOpt.key}
-                svgRef={svgRef}
-                handlers={handlers}
-              />
-              <Slider
-                label={`length ↔ (${lengthOpt.key})`}
-                value={length}
-                min={MIN_VAL}
-                max={MAX_VAL}
-                step={0.1}
-                onChange={setLength}
-                suffix={lengthOpt.key}
+                <div className="flex-1 flex flex-col items-center gap-3">
+                  <RectangleVisual
+                    length={length}
+                    width={width}
+                    lengthKey={lengthOpt.key}
+                    widthKey={widthOpt.key}
+                    svgRef={svgRef}
+                    handlers={handlers}
+                  />
+                  <Slider
+                    label={`length ↔ (${lengthOpt.key})`}
+                    value={length}
+                    min={MIN_VAL}
+                    max={MAX_VAL}
+                    step={0.1}
+                    onChange={setLength}
+                    suffix={lengthOpt.key}
+                  />
+                </div>
+              </div>
+
+              <Result
+                label="area"
+                value={`${formatMagnitude(area)} ${areaOpt.key}`}
+                variant="hero"
               />
             </div>
-          </div>
-
-          <Result label="area" value={`${formatMagnitude(area)} ${areaOpt.key}`} variant="hero" />
-        </div>
-      }
-      codeZone={
-        <CodeBlock
-          code={buildCode(lengthOpt.label, widthOpt.label, areaOpt.label, length, width, area)}
+          }
+          codeZone={
+            <CodeBlock
+              code={buildCode(lengthOpt.label, widthOpt.label, areaOpt.label, length, width, area)}
+            />
+          }
         />
       }
     />
