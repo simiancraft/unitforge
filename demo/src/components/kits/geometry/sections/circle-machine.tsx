@@ -31,7 +31,7 @@ const SCALE = (VIEW / 2 - PAD) / MAX_R;
 const CODE = `import { forge } from 'unitforge';
 import {
   areaFromCircleRadius,
-  meter, squareMeter,
+  foot, meter, squareMeter,
 } from 'unitforge/kits/geometry';
 
 const circleArea = forge(
@@ -41,6 +41,13 @@ const circleArea = forge(
 );
 
 circleArea({ radius: 2 }); // 12.566...  (π · 2²)
+
+// Circumference is just 2π · r. Compute in canonical meters,
+// then re-forge into whatever length unit you want to show.
+const radiusInMeters = 2;
+const circumferenceInMeters = 2 * Math.PI * radiusInMeters;
+const circumferenceFt = forge(meter, foot)(circumferenceInMeters);
+// 41.23... ft
 `;
 
 export function CircleMachine() {
