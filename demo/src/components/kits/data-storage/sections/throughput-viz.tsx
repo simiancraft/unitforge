@@ -27,8 +27,8 @@ const SWEEP_TIME = 'sweep-time' as const;
 
 const MIN_REAL = 0.5;
 const MAX_REAL = 100;
-const MIN_SWEEP = 1;
-const MAX_SWEEP = 30;
+const MIN_SWEEP = 0.5;
+const MAX_SWEEP = 45;
 
 const realSecond = defineUnit({
   name: 'realSecond',
