@@ -17,7 +17,7 @@ import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout
 const CHIPS = 8;
 const VIEW_W = 460;
 const VIEW_H = 140;
-const STAGGER_MS = 65;
+const STAGGER_MS = 130;
 const PINS = 26;
 const RAMSTICK_MAX_GIB = 64;
 
