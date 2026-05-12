@@ -1,4 +1,4 @@
-// Hello unit — the simplest possible forge demo. One slider, one input
+// Hello unit; the simplest possible forge demo. One slider, one input
 // unit picker, one output unit picker. Walks the user from "I have a number"
 // to "I have that number expressed in any other length unit" in one motion.
 

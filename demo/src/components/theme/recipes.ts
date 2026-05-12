@@ -1,4 +1,4 @@
-// Theme registry — the single source of truth for every visual recipe.
+// Theme registry; the single source of truth for every visual recipe.
 // Each recipe coordinates the resources a theme needs (CSS variable
 // cascade via data-theme, shiki theme for code blocks, optional code-
 // frame chrome class). The ThemeProvider activates a recipe by id; every

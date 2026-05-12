@@ -1,4 +1,4 @@
-// useHighlighted — the React-state adapter around lib/highlighter's shiki
+// useHighlighted; the React-state adapter around lib/highlighter's shiki
 // engine. Cached-sync + async-update + cancel pattern in one place.
 //
 // Lives in the theme module because syntax-highlighting is one of the

@@ -65,7 +65,7 @@ export const DATA = 'data' as const;
  *
  * To add a built-in dimension: declare its named constant above (one line),
  * then add it to this tuple (one line). Same file; failure mode of
- * forgetting the tuple is "no autocomplete for the new dimension" — visible
+ * forgetting the tuple is "no autocomplete for the new dimension"; visible
  * the first time anyone tries to use it.
  */
 export const DIMENSIONS = [LENGTH, AREA, VOLUME, DATA] as const;

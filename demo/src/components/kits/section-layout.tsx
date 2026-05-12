@@ -1,4 +1,4 @@
-// SectionLayout — the zone container every kit's sections compose into.
+// SectionLayout; the zone container every kit's sections compose into.
 // Zones (in render order): header, intro, widget, code, notes. Pure
 // presentational; the section file (kits/<kit>/sections/<name>.tsx) decides
 // what fills each zone.

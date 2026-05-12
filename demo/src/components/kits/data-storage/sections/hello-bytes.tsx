@@ -1,4 +1,4 @@
-// "Hello bytes" — pick a value in any byte/bit unit; render the same value
+// "Hello bytes"; pick a value in any byte/bit unit; render the same value
 // across every other data-storage unit at once. The point: every row in the
 // readout is the SAME quantity expressed in a different unit. Decimal and
 // binary are clearly different; the user sees the gap.

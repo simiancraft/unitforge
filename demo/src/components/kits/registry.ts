@@ -1,4 +1,4 @@
-// Kit registry — the single place that knows every kit exists.
+// Kit registry; the single place that knows every kit exists.
 // App.tsx looks up { Screen, meta } by id to dispatch hash routes; the
 // forge kit's kits-grid section iterates KITS to render navigation cards.
 //

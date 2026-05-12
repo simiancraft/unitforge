@@ -35,7 +35,7 @@ export function computeBenchValues<D extends Dimension, K extends string>({
 }: ComputeBenchValuesArgs<D, K>): BenchValues<D, K> {
   // The options array is non-empty by contract (kit pages always pass a
   // catalog). If the key falls out of the catalog (hot reload, future
-  // deep-link state), fall back to options[0] — the NonEmpty<T> tuple type
+  // deep-link state), fall back to options[0]; the NonEmpty<T> tuple type
   // tells the compiler that options[0] is always defined.
   const fromOpt = options.find((o) => o.key === fromKey) ?? options[0];
   const toOpt = options.find((o) => o.key === toKey) ?? options[0];

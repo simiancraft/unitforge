@@ -1,4 +1,4 @@
-// Bench — the page's persistent "instrument". A compact unit-to-unit
+// Bench; the page's persistent "instrument". A compact unit-to-unit
 // converter pinned to the top of each kit page; updates as the user moves
 // its slider or rotates the unit pickers. The bench's state is owned by
 // the page (so the page's themed background can react to it), so the

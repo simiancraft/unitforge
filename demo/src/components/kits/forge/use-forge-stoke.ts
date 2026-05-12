@@ -1,4 +1,4 @@
-// useForgeStoke — single source of truth for the forge "stoke" event on
+// useForgeStoke; single source of truth for the forge "stoke" event on
 // the home page. Owns:
 //
 //   - flash state: a counter key (forces the gradient div to remount and
@@ -98,7 +98,7 @@ export function useForgeStoke({
   const stoke = (intensity: number, variantOverride?: number) => {
     // Flash: react state. The gradient div uses `key={flashKey}` to
     // force a remount, and reads intensity + variant as inline style
-    // values straight from state — committed together in the same
+    // values straight from state; committed together in the same
     // render so the new keyed element paints with all three correct.
     setFlashIntensity(intensity);
     setFlashKey((k) => k + 1);

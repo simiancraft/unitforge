@@ -2,7 +2,7 @@
 // target file size (GB); the widget renders the same rate in MB/s, the
 // computed time-to-fill, AND a literal progress bar that fills at the
 // computed rate. The fill animation is keyed to the inputs so each slider
-// change restarts the sweep — the time-to-fill becomes physically visible.
+// change restarts the sweep; the time-to-fill becomes physically visible.
 
 import { Gauge } from 'lucide-react';
 import { useState } from 'react';

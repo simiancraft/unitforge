@@ -49,8 +49,8 @@ function getInitialThemeId(): ThemeId {
 }
 
 export function App() {
-  // Lazy state initializer so getInitialThemeId — which reads
-  // window.location.hash and localStorage — runs only once on first
+  // Lazy state initializer so getInitialThemeId; which reads
+  // window.location.hash and localStorage; runs only once on first
   // mount, not on every <App/> render.
   const [initialThemeId] = useState(getInitialThemeId);
   return (

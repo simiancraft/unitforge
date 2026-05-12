@@ -1,4 +1,4 @@
-// ThemeProvider — root-level provider that owns the active theme and
+// ThemeProvider; root-level provider that owns the active theme and
 // orchestrates its side effects (data-theme cascade on <html>, persistence
 // in localStorage). Recipes carry the rest (shiki theme name, frame
 // chrome class, future: fonts/icons/music).

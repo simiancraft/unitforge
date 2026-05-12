@@ -1,10 +1,10 @@
-// KitLayout — the page chrome every kit composes into. Pure presentational
+// KitLayout; the page chrome every kit composes into. Pure presentational
 // zone-container: each kit's chassis (kits/<kit>/index.tsx) decides what
 // fills each zone, the layout just positions them.
 //
 // Render order (top to bottom): backdrop (fixed, behind content), header,
 // bench (optional sticky instrument), sections (vertical stack), footer
-// (optional kit-specific footnotes — not the global page footer).
+// (optional kit-specific footnotes; not the global page footer).
 //
 // Theme cascade lives one level up in App.tsx, set on <html> from the
 // route's registry entry, so the body background var resolves and paints

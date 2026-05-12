@@ -1,4 +1,4 @@
-// ForgeBackdrop — the home page's animated background. Portaled into
+// ForgeBackdrop; the home page's animated background. Portaled into
 // document.body so it isn't relative to <main>'s shake transform.
 //
 // Three layers:

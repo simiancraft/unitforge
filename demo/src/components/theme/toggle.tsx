@@ -1,4 +1,4 @@
-// ThemeToggle — fixed top-right sun/moon button that flips between two
+// ThemeToggle; fixed top-right sun/moon button that flips between two
 // theme variants for the currently active kit. Three props: lightThemeId,
 // darkThemeId, defaultThemeId. Click swaps; mount normalizes if the
 // active theme isn't one of the toggle's options (covers misconfiguration

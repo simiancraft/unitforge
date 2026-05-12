@@ -29,7 +29,7 @@ Each kit (`geometry`, `data-storage`, future kits) is a **domain**. The demo tre
 - Its own syntax-highlighting theme + optional code-block frame chrome, declared once at the top of `kits/<kit>/index.tsx` via `<KitThemeProvider>`.
 - Its own page entry point (`kits/<kit>/index.tsx`).
 
-The result: opening geometry feels like a different product than opening data-storage. Adding a new kit means dropping a new directory — no edits to `App.tsx`, no edits to shared `components/`, no edits to other kits.
+The result: opening geometry feels like a different product than opening data-storage. Adding a new kit means dropping a new directory; no edits to `App.tsx`, no edits to shared `components/`, no edits to other kits.
 
 ## Layout
 
@@ -37,10 +37,10 @@ The result: opening geometry feels like a different product than opening data-st
 demo/src/
 ├── App.tsx                              router shell; hash-based routing
 ├── main.tsx                             React entry
-├── index.css                            shared infra ONLY — :root tokens,
+├── index.css                            shared infra ONLY; :root tokens,
 │                                        body, focus-visible, scrollbars,
 │                                        .uf-card, .uf-eyebrow, .uf-flare-card
-├── forge.css                            root forge theme — anvil-strike,
+├── forge.css                            root forge theme; anvil-strike,
 │                                        forge-flash, hammer-cursor
 ├── pages/                               root page + home-specific subviews
 │   ├── Home.tsx
@@ -121,7 +121,7 @@ The forge / home page borrows the chromonym pattern of "set reacts to state":
 - An always-on **ambient ember stream** (`EmberStream count=32 boost=1`).
 - Two **stoke EmberStreams** on a round-robin: hovering a kit card re-mounts the more-stale slot with a fresh `key`, restarting its rise animation. The other layer fades out via opacity transition. Rapid back-and-forth hovers stack flurries instead of resetting one.
 - A **forge-base glow flash** pinned to the bottom 33vh (one of three height variants on round-robin) that scales out of the viewport on each stoke, then opacity-decays. Reads as a struck billet flaring.
-- An **anvil-strike** CSS keyframe applied to `<main>` on mousedown of a kit card — tiny vertical translate, ~280ms, percussion that carries into the route transition.
+- An **anvil-strike** CSS keyframe applied to `<main>` on mousedown of a kit card; tiny vertical translate, ~280ms, percussion that carries into the route transition.
 - A **lucide Hammer SVG inlined as a cursor data-URI** scoped to the kit tiles.
 
 Kit pages have their own analogues: geometry's grid retickets on bench-unit change and pulses on bench moves; data-storage's PCB copper traces stroke-dash-animate during stoke pulses; data-storage's code blocks get CRT scanlines + vignette + phosphor glow via the `uf-code-crt` frame class.
@@ -130,10 +130,10 @@ All motion-flair is gated behind `prefers-reduced-motion: no-preference`.
 
 ## Tunables you'll likely touch
 
-- `pages/Home.tsx` — `AMBIENT_*`, `STOKE_*`, `FORGE_GLOW_VARIANTS`, `STOKE_HOLD_MS`.
-- `components/EmberStream.tsx` — top-of-file consts: `SIZE_MIN`, `RISE_DURATION_MIN`, `DRIFT_MAX`, `SWAY_AMP_MAX`, etc.
-- `kits/<kit>/<kit>.css` — palette tokens, `.uf-code-crt` (and future per-kit code-frame classes).
-- `lib/highlighter.ts` — `THEME_LOADERS` to register more shiki themes.
+- `pages/Home.tsx`; `AMBIENT_*`, `STOKE_*`, `FORGE_GLOW_VARIANTS`, `STOKE_HOLD_MS`.
+- `components/EmberStream.tsx`; top-of-file consts: `SIZE_MIN`, `RISE_DURATION_MIN`, `DRIFT_MAX`, `SWAY_AMP_MAX`, etc.
+- `kits/<kit>/<kit>.css`; palette tokens, `.uf-code-crt` (and future per-kit code-frame classes).
+- `lib/highlighter.ts`; `THEME_LOADERS` to register more shiki themes.
 
 ## Deployed
 

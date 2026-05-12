@@ -1,4 +1,4 @@
-// KitsGrid — surfaces every kit other than the active one as a navigation
+// KitsGrid; surfaces every kit other than the active one as a navigation
 // card. Reads from the central registry; adding a kit picks it up here
 // automatically.
 //

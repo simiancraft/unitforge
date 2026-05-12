@@ -1,4 +1,4 @@
-// NavigationCard — generic link card with a hoverable backdrop preview.
+// NavigationCard; generic link card with a hoverable backdrop preview.
 // Used by the forge kit's kits-grid to navigate between kits; the
 // component itself doesn't know about kits, just renders the leaf chrome.
 //
