@@ -1,3 +1,12 @@
+# [1.1.0](https://github.com/simiancraft/unitforge/compare/v1.0.0...v1.1.0) (2026-05-12)
+
+
+### Features
+
+* **data-storage:** add data-storage kit with decimal, binary, and bit units ([f20aa95](https://github.com/simiancraft/unitforge/commit/f20aa95c546efdf2c6b341c3238a2e4f0dc86296))
+* **demo:** add hash-based routing with per-kit pages ([bd01a0e](https://github.com/simiancraft/unitforge/commit/bd01a0e0ab7fec21b191393847a6c25a9fcaacfe))
+* **demo:** replace placeholder with two-kit live forge demo ([ba70c36](https://github.com/simiancraft/unitforge/commit/ba70c36cd7ea26de08be660d94542e4ea110bf6e))
+
 # 1.0.0 (2026-05-11)
 
 
