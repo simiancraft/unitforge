@@ -39,16 +39,20 @@ interface ResultProps extends VariantProps<typeof resultValue>, VariantProps<typ
   label: string;
   value: string;
   className?: string;
+  /** Merged into the `<dd>` element; lets a caller override font-size or
+   *  color on the value text without touching the row's layout. Use for
+   *  per-row tweaks like shrinking very long digit strings. */
+  valueClassName?: string;
 }
 
-export function Result({ label, value, variant, layout, className }: ResultProps) {
+export function Result({ label, value, variant, layout, className, valueClassName }: ResultProps) {
   // <dl>/<dt>/<dd> encodes the label↔value relationship for screen readers;
   // visually identical to the prior <div><span>/<span> via the flex overrides
   // + m-0 resets on the browser-default description-list margins.
   return (
     <dl className={cn(resultRoot({ layout }), className)}>
       <dt className="uf-eyebrow">{label}</dt>
-      <dd className={cn('m-0', resultValue({ variant }))}>{value}</dd>
+      <dd className={cn('m-0', resultValue({ variant }), valueClassName)}>{value}</dd>
     </dl>
   );
 }

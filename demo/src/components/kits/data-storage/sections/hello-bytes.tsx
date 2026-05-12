@@ -12,6 +12,7 @@ import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
+import { cn } from '~/lib/cn.js';
 import { formatMagnitude } from '~/lib/format.js';
 import {
   DATA_ALL_UNITS,
@@ -84,6 +85,13 @@ const READOUT_COLUMNS: readonly ReadoutColumn[] = [
   { family: 'bits', units: DATA_BIT_UNITS },
 ];
 
+// Digit-count threshold above which a value gets shrunk one font step.
+// bit/byte rows in PiB-scale inputs reach 16+ digits; at the default
+// text-sm those overflow the column and crowd the label above. Counted
+// in digit chars (no commas, no decimal point, no unit suffix) so the
+// threshold is about the value itself, not the formatter's separators.
+const LONG_DIGIT_THRESHOLD = 11;
+
 function ReadoutMatrix({ inBytes }: { inBytes: number }) {
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -92,12 +100,15 @@ function ReadoutMatrix({ inBytes }: { inBytes: number }) {
           <span className="uf-eyebrow">{col.family}</span>
           {col.units.map((opt) => {
             const v = forge(byte, opt.unit)(inBytes);
+            const formatted = formatMagnitude(v);
+            const digitCount = formatted.match(/\d/g)?.length ?? 0;
             return (
               <Result
                 key={opt.key}
                 layout="stack"
                 label={opt.label}
-                value={`${formatMagnitude(v)} ${opt.key}`}
+                value={`${formatted} ${opt.key}`}
+                valueClassName={cn(digitCount > LONG_DIGIT_THRESHOLD && 'text-xs')}
               />
             );
           })}
