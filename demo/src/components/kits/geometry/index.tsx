@@ -10,7 +10,7 @@
 import { Box } from 'lucide-react';
 import { useState } from 'react';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
-import { findById, LENGTH_UNITS } from '~/lib/units.js';
+import { findById } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
@@ -18,6 +18,7 @@ import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { CircleMachine } from './sections/circle-machine.js';
 import { HelloUnit } from './sections/hello-unit.js';
 import { RectangleMachine } from './sections/rectangle-machine.js';
+import { LENGTH_UNITS } from './units.js';
 import './geometry.css';
 
 // Grid cell size in pixels, per length unit id. The grid background

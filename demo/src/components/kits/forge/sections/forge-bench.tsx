@@ -19,7 +19,8 @@ import { UnitPicker } from '~/components/UnitPicker.js';
 import { cn } from '~/lib/cn.js';
 import { toJsName } from '~/lib/format.js';
 import { round1 } from '~/lib/math.js';
-import { LENGTH_UNITS, pickerOptions } from '~/lib/units.js';
+import { pickerOptions } from '~/lib/units.js';
+import { LENGTH_UNITS } from '../../geometry/units.js';
 
 // Slider bounds for the home-page forge bench, in the user-selected
 // from-unit (length). Local to this surface; other benches pick their own.

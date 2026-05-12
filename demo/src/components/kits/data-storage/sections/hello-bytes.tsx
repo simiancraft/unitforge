@@ -13,16 +13,15 @@ import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
 import { cn } from '~/lib/cn.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
+import { findById, pickerOptions } from '~/lib/units.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import {
   DATA_ALL_UNITS,
   DATA_BINARY_UNITS,
   DATA_BIT_UNITS,
   DATA_DECIMAL_UNITS,
   type DataUnit,
-  findById,
-  pickerOptions,
-} from '~/lib/units.js';
-import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
+} from '../units.js';
 
 interface SliderBounds {
   min: number;

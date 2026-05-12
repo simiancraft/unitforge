@@ -10,7 +10,7 @@
 import { Database } from 'lucide-react';
 import { useState } from 'react';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
-import { DATA_ALL_UNITS, findById } from '~/lib/units.js';
+import { findById } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
@@ -19,6 +19,7 @@ import { DriveVsOs } from './sections/drive-vs-os.js';
 import { HelloBytes } from './sections/hello-bytes.js';
 import { RamStick } from './sections/ram-stick.js';
 import { ThroughputViz } from './sections/throughput-viz.js';
+import { DATA_ALL_UNITS } from './units.js';
 import './data-storage.css';
 
 // Slider bounds for the data-storage kit's bench, in the user-selected

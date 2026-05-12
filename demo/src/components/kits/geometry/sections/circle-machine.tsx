@@ -12,8 +12,9 @@ import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { clamp, round1 } from '~/lib/math.js';
-import { AREA_UNITS, findById, LENGTH_UNITS, pickerOptions } from '~/lib/units.js';
+import { findById, pickerOptions } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
+import { AREA_UNITS, LENGTH_UNITS } from '../units.js';
 import { type UseSvgPointerDrag, useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 
 const VIEW = 280;

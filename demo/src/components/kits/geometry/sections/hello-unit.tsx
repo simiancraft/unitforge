@@ -10,8 +10,9 @@ import { Result } from '~/components/Result.js';
 import { Slider } from '~/components/Slider.js';
 import { UnitPicker } from '~/components/UnitPicker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
-import { findById, LENGTH_UNITS, pickerOptions } from '~/lib/units.js';
+import { findById, pickerOptions } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
+import { LENGTH_UNITS } from '../units.js';
 
 export function HelloUnit() {
   // The chassis owns the forge call so buildCode can pick up `result`
