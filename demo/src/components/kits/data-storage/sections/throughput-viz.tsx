@@ -65,7 +65,7 @@ function ThroughputBar({
           animationDuration: `${sweepSeconds}s`,
         }}
       />
-      <span className="mono absolute inset-0 flex items-center justify-center text-xs text-gray-300 mix-blend-color-burn">
+      <span className="mono absolute inset-0 flex items-center justify-center text-xs text-neutral-500 mix-blend-color-burn">
         {targetGB.toFixed(0)} GB · @ {mbPerSec.toFixed(1)} MB/s
       </span>
     </div>
