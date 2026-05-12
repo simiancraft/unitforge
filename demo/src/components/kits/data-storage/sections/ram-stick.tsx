@@ -1,10 +1,11 @@
-// RAM-module visualizer. Memory chips boot in sequence with a stagger as
-// capacity scales; each chip's status LED breathes when active. Slide the
-// capacity and you watch the DIMM "post". The same forged value renders
-// in the decimal-GB family alongside.
+// RAM-module visualizer. Memory chips light in sequence as capacity scales;
+// each chip's status LED breathes when active. Slide the capacity and you
+// watch the DIMM "post". The staggered boot is pure CSS: each chip carries
+// a per-index `transition-delay`, so when the lit count jumps the browser
+// sequences the chips on its own. No effect, no state animation loop.
 
 import { MemoryStick } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
@@ -33,15 +34,7 @@ export function RamStick() {
   const inBytes = forge(gibibyte, byte)(gibValue);
   const inGB = forge(gibibyte, gigabyte)(gibValue);
 
-  const targetLit = Math.min(CHIPS, Math.max(0, Math.round((gibValue / RAMSTICK_MAX_GIB) * CHIPS)));
-
-  const [litCount, setLitCount] = useState(targetLit);
-  useEffect(() => {
-    if (litCount === targetLit) return;
-    const step = litCount < targetLit ? 1 : -1;
-    const t = window.setTimeout(() => setLitCount(litCount + step), STAGGER_MS);
-    return () => window.clearTimeout(t);
-  }, [litCount, targetLit]);
+  const litCount = Math.min(CHIPS, Math.max(0, Math.round((gibValue / RAMSTICK_MAX_GIB) * CHIPS)));
 
   return (
     <SectionLayout
@@ -67,7 +60,6 @@ export function RamStick() {
               inBytes={inBytes}
               inGB={inGB}
               litCount={litCount}
-              targetLit={targetLit}
               onGibValueChange={setGibValue}
             />
           }
@@ -83,7 +75,6 @@ interface RamStickWidgetProps {
   inBytes: number;
   inGB: number;
   litCount: number;
-  targetLit: number;
   onGibValueChange: (next: number) => void;
 }
 
@@ -92,12 +83,11 @@ function RamStickWidget({
   inBytes,
   inGB,
   litCount,
-  targetLit,
   onGibValueChange,
 }: RamStickWidgetProps) {
   return (
     <div className="flex flex-col gap-4">
-      <RamStickVisual litCount={litCount} targetLit={targetLit} />
+      <RamStickVisual litCount={litCount} />
 
       <Slider
         label="capacity (GiB)"
@@ -116,15 +106,15 @@ function RamStickWidget({
 
 // RAM stick visualizer. Named Organ: the DIMM with chips + status LEDs +
 // SPD chip + edge connector is one cohesive named artifact. Sink: takes
-// the two values it draws (litCount, targetLit) and renders. Lives in
-// its own component so the LED-stagger effect's renders don't drag the
-// SectionLayout chrome / pickers / readouts through every frame.
+// the lit-chip count and renders. Per-chip transitionDelay (i * STAGGER_MS)
+// sequences the boot animation without any React state — chip 0 lights at
+// 0 ms, chip 1 at 65 ms, ..., chip 7 at 455 ms. Going down works the same
+// way; chips fade out in their own ordered delays.
 interface RamStickVisualProps {
   litCount: number;
-  targetLit: number;
 }
 
-function RamStickVisual({ litCount, targetLit }: RamStickVisualProps) {
+function RamStickVisual({ litCount }: RamStickVisualProps) {
   return (
     <svg
       viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
@@ -166,6 +156,7 @@ function RamStickVisual({ litCount, targetLit }: RamStickVisualProps) {
 
       {CHIP_SLOTS.map((chip, i) => {
         const isLit = i < litCount;
+        const transitionDelay = `${i * STAGGER_MS}ms`;
         return (
           <g key={chip.id}>
             <rect
@@ -180,6 +171,7 @@ function RamStickVisual({ litCount, targetLit }: RamStickVisualProps) {
               strokeOpacity="0.7"
               style={{
                 transition: 'fill 220ms ease, fill-opacity 220ms ease',
+                transitionDelay,
               }}
             />
             <line
@@ -198,6 +190,10 @@ function RamStickVisual({ litCount, targetLit }: RamStickVisualProps) {
               fill={isLit ? 'var(--uf-fg)' : 'var(--uf-muted)'}
               opacity={isLit ? 1 : 0.35}
               className={isLit ? 'uf-led-active' : undefined}
+              style={{
+                transition: 'fill 220ms ease, opacity 220ms ease',
+                transitionDelay,
+              }}
             />
           </g>
         );
@@ -222,11 +218,9 @@ function RamStickVisual({ litCount, targetLit }: RamStickVisualProps) {
         textAnchor="end"
         className="mono"
         fontSize="8"
-        fill={litCount === targetLit ? 'var(--uf-accent)' : 'var(--uf-muted)'}
+        fill="var(--uf-accent)"
       >
-        {litCount === targetLit
-          ? `POST · ${litCount * (RAMSTICK_MAX_GIB / CHIPS)} GiB OK`
-          : 'POST · …'}
+        POST · {litCount * (RAMSTICK_MAX_GIB / CHIPS)} GiB OK
       </text>
     </svg>
   );
