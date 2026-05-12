@@ -29,6 +29,8 @@ export interface UseSvgPointerDragArgs {
   onDrag: (p: SvgPoint) => void;
 }
 
+export type UseSvgPointerDrag = ReturnType<typeof useSvgPointerDrag>;
+
 export function useSvgPointerDrag({ getHandleCenter, onDrag }: UseSvgPointerDragArgs) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dragRef = useRef<{ offsetX: number; offsetY: number } | null>(null);

@@ -21,7 +21,7 @@ import {
   pickerOptions,
 } from '~/lib/units.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
-import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
+import { type UseSvgPointerDrag, useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 
 const VIEW = 280;
 const PAD = 24;
@@ -66,6 +66,112 @@ const circumference = forge(meter, ${circUnit})(circumferenceInMeters);
 `;
 }
 
+// Isolated SVG visual so the radius drag doesn't have to re-render the
+// SectionLayout chrome, pickers, or sliders; the compiler can also
+// memoize this on its own props once useSvgPointerDrag is clean.
+interface CircleVisualProps {
+  radius: number;
+  radiusKey: string;
+  svgRef: UseSvgPointerDrag['svgRef'];
+  handlers: UseSvgPointerDrag['handlers'];
+}
+
+function CircleVisual({ radius, radiusKey, svgRef, handlers }: CircleVisualProps) {
+  const svgR = radius * SCALE;
+  const cx = VIEW / 2;
+  const cy = VIEW / 2;
+  return (
+    <svg
+      ref={svgRef}
+      viewBox={`0 0 ${VIEW} ${VIEW}`}
+      xmlns="http://www.w3.org/2000/svg"
+      className="block h-auto w-full max-w-full touch-none"
+      style={{ maxWidth: `${VIEW}px`, overflow: 'visible' }}
+      aria-hidden="true"
+    >
+      <defs>
+        <filter id="uf-circle-shadow" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow
+            dx="5"
+            dy="7"
+            stdDeviation="5"
+            floodColor="var(--uf-fg)"
+            floodOpacity="0.22"
+          />
+        </filter>
+      </defs>
+
+      <line
+        x1={cx - 6}
+        y1={cy}
+        x2={cx + 6}
+        y2={cy}
+        stroke="var(--uf-fg)"
+        strokeWidth="1"
+        opacity="0.5"
+      />
+      <line
+        x1={cx}
+        y1={cy - 6}
+        x2={cx}
+        y2={cy + 6}
+        stroke="var(--uf-fg)"
+        strokeWidth="1"
+        opacity="0.5"
+      />
+
+      <circle
+        cx={cx}
+        cy={cy}
+        r={svgR}
+        fill="var(--uf-accent)"
+        fillOpacity="0.78"
+        stroke="var(--uf-fg)"
+        strokeWidth="1.5"
+        filter="url(#uf-circle-shadow)"
+        style={{ transition: 'r 120ms cubic-bezier(0.22,1,0.36,1)' }}
+      />
+
+      <line
+        x1={cx}
+        y1={cy}
+        x2={cx + svgR}
+        y2={cy}
+        stroke="var(--uf-fg)"
+        strokeWidth="1.5"
+        strokeDasharray="3 3"
+        opacity="0.85"
+      />
+      <text
+        x={cx + svgR + 14}
+        y={cy}
+        textAnchor="start"
+        dominantBaseline="middle"
+        style={{
+          fontFamily: 'var(--uf-display)',
+          fontSize: '18px',
+          fill: 'var(--uf-accent)',
+        }}
+      >
+        r = {radius.toFixed(2)} {radiusKey}
+      </text>
+
+      <circle
+        cx={cx + svgR}
+        cy={cy}
+        r={10}
+        fill="var(--uf-fg)"
+        stroke="var(--uf-accent)"
+        strokeWidth="2"
+        cursor="ew-resize"
+        aria-hidden
+        {...handlers}
+      />
+      <circle cx={cx + svgR} cy={cy} r={4} fill="var(--uf-accent)" pointerEvents="none" />
+    </svg>
+  );
+}
+
 export function CircleMachine() {
   const [radius, setRadius] = useState(3);
   const [radiusKey, setRadiusKey] = useState<LengthKey>('m');
@@ -76,10 +182,6 @@ export function CircleMachine() {
   const areaOpt = findByKey(AREA_UNITS, areaKey);
   const circOpt = findByKey(LENGTH_UNITS, circKey);
 
-  const svgR = radius * SCALE;
-  const cx = VIEW / 2;
-  const cy = VIEW / 2;
-
   const area = forge({ radius: radiusOpt.unit }, areaOpt.unit, { via: areaFromCircleRadius })({
     radius,
   });
@@ -88,8 +190,14 @@ export function CircleMachine() {
   const circumferenceInMeters = 2 * Math.PI * radiusInMeters;
   const circumference = forge(meter, circOpt.unit)(circumferenceInMeters);
 
+  // Handle is on the +x axis at the current radius; cx/cy are constants
+  // derived from VIEW. getHandleCenter reads the latest radius via the
+  // closure each call, so the offset capture stays correct without
+  // CircleVisual having to forward geometry back to the parent.
+  const cx = VIEW / 2;
+  const cy = VIEW / 2;
   const { svgRef, handlers } = useSvgPointerDrag({
-    getHandleCenter: () => ({ x: cx + svgR, y: cy }),
+    getHandleCenter: () => ({ x: cx + radius * SCALE, y: cy }),
     onDrag: (p) => {
       const dx = p.x - cx;
       const dy = p.y - cy;
@@ -139,94 +247,12 @@ export function CircleMachine() {
           </div>
 
           <div className="flex flex-col items-center gap-3">
-            <svg
-              ref={svgRef}
-              viewBox={`0 0 ${VIEW} ${VIEW}`}
-              xmlns="http://www.w3.org/2000/svg"
-              className="block h-auto w-full max-w-full touch-none"
-              style={{ maxWidth: `${VIEW}px`, overflow: 'visible' }}
-              aria-hidden="true"
-            >
-              <defs>
-                <filter id="uf-circle-shadow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feDropShadow
-                    dx="5"
-                    dy="7"
-                    stdDeviation="5"
-                    floodColor="var(--uf-fg)"
-                    floodOpacity="0.22"
-                  />
-                </filter>
-              </defs>
-
-              <line
-                x1={cx - 6}
-                y1={cy}
-                x2={cx + 6}
-                y2={cy}
-                stroke="var(--uf-fg)"
-                strokeWidth="1"
-                opacity="0.5"
-              />
-              <line
-                x1={cx}
-                y1={cy - 6}
-                x2={cx}
-                y2={cy + 6}
-                stroke="var(--uf-fg)"
-                strokeWidth="1"
-                opacity="0.5"
-              />
-
-              <circle
-                cx={cx}
-                cy={cy}
-                r={svgR}
-                fill="var(--uf-accent)"
-                fillOpacity="0.78"
-                stroke="var(--uf-fg)"
-                strokeWidth="1.5"
-                filter="url(#uf-circle-shadow)"
-                style={{ transition: 'r 120ms cubic-bezier(0.22,1,0.36,1)' }}
-              />
-
-              <line
-                x1={cx}
-                y1={cy}
-                x2={cx + svgR}
-                y2={cy}
-                stroke="var(--uf-fg)"
-                strokeWidth="1.5"
-                strokeDasharray="3 3"
-                opacity="0.85"
-              />
-              <text
-                x={cx + svgR + 14}
-                y={cy}
-                textAnchor="start"
-                dominantBaseline="middle"
-                style={{
-                  fontFamily: 'var(--uf-display)',
-                  fontSize: '18px',
-                  fill: 'var(--uf-accent)',
-                }}
-              >
-                r = {radius.toFixed(2)} {radiusOpt.key}
-              </text>
-
-              <circle
-                cx={cx + svgR}
-                cy={cy}
-                r={10}
-                fill="var(--uf-fg)"
-                stroke="var(--uf-accent)"
-                strokeWidth="2"
-                cursor="ew-resize"
-                aria-hidden
-                {...handlers}
-              />
-              <circle cx={cx + svgR} cy={cy} r={4} fill="var(--uf-accent)" pointerEvents="none" />
-            </svg>
+            <CircleVisual
+              radius={radius}
+              radiusKey={radiusOpt.key}
+              svgRef={svgRef}
+              handlers={handlers}
+            />
             <Slider
               label={`radius (${radiusOpt.key})`}
               value={radius}

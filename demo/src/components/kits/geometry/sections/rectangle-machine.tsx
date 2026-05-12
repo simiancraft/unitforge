@@ -26,7 +26,7 @@ import {
   pickerOptions,
 } from '~/lib/units.js';
 import { SectionHeader, SectionLayout } from '../../section-layout.js';
-import { useSvgPointerDrag } from '../use-svg-pointer-drag.js';
+import { type UseSvgPointerDrag, useSvgPointerDrag } from '../use-svg-pointer-drag.js';
 
 const VIEW_W = 340;
 const VIEW_H = 260;
@@ -65,6 +65,132 @@ area({ length: ${formatMagnitude(length)}, width: ${formatMagnitude(width)} }); 
 `;
 }
 
+// Isolated SVG visual so the corner-drag doesn't have to re-render the
+// SectionLayout chrome, pickers, or sliders; the compiler can also
+// memoize this on its own props once useSvgPointerDrag is clean.
+interface RectangleVisualProps {
+  length: number;
+  width: number;
+  lengthKey: string;
+  widthKey: string;
+  svgRef: UseSvgPointerDrag['svgRef'];
+  handlers: UseSvgPointerDrag['handlers'];
+}
+
+function RectangleVisual({
+  length,
+  width,
+  lengthKey,
+  widthKey,
+  svgRef,
+  handlers,
+}: RectangleVisualProps) {
+  const rectW = length * SCALE;
+  const rectH = width * SCALE;
+  return (
+    <svg
+      ref={svgRef}
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      xmlns="http://www.w3.org/2000/svg"
+      className="block h-auto w-full max-w-full touch-none"
+      style={{ maxWidth: `${VIEW_W}px` }}
+      aria-hidden="true"
+    >
+      <defs>
+        <filter id="uf-rect-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow
+            dx="6"
+            dy="8"
+            stdDeviation="6"
+            floodColor="var(--uf-fg)"
+            floodOpacity="0.2"
+          />
+        </filter>
+      </defs>
+
+      <line
+        x1={PAD - 6}
+        y1={PAD}
+        x2={PAD + 6}
+        y2={PAD}
+        stroke="var(--uf-fg)"
+        strokeWidth="1"
+        opacity="0.5"
+      />
+      <line
+        x1={PAD}
+        y1={PAD - 6}
+        x2={PAD}
+        y2={PAD + 6}
+        stroke="var(--uf-fg)"
+        strokeWidth="1"
+        opacity="0.5"
+      />
+
+      <rect
+        x={PAD}
+        y={PAD}
+        width={rectW}
+        height={rectH}
+        fill="var(--uf-accent)"
+        fillOpacity="0.78"
+        stroke="var(--uf-fg)"
+        strokeWidth="1.5"
+        filter="url(#uf-rect-shadow)"
+        style={{
+          transition:
+            'width 120ms cubic-bezier(0.22,1,0.36,1), height 120ms cubic-bezier(0.22,1,0.36,1)',
+        }}
+      />
+
+      <text
+        x={PAD + rectW / 2}
+        y={PAD - 8}
+        textAnchor="middle"
+        style={{
+          fontFamily: 'var(--uf-display)',
+          fontSize: '18px',
+          fill: 'var(--uf-accent)',
+        }}
+      >
+        {length.toFixed(2)} {lengthKey}
+      </text>
+      <text
+        x={PAD - 10}
+        y={PAD + rectH / 2}
+        textAnchor="end"
+        dominantBaseline="middle"
+        style={{
+          fontFamily: 'var(--uf-display)',
+          fontSize: '18px',
+          fill: 'var(--uf-accent)',
+        }}
+      >
+        {width.toFixed(2)} {widthKey}
+      </text>
+
+      <circle
+        cx={PAD + rectW}
+        cy={PAD + rectH}
+        r={10}
+        fill="var(--uf-fg)"
+        stroke="var(--uf-accent)"
+        strokeWidth="2"
+        cursor="nwse-resize"
+        aria-hidden
+        {...handlers}
+      />
+      <circle
+        cx={PAD + rectW}
+        cy={PAD + rectH}
+        r={4}
+        fill="var(--uf-accent)"
+        pointerEvents="none"
+      />
+    </svg>
+  );
+}
+
 export function RectangleMachine() {
   const [length, setLength] = useState(3);
   const [width, setWidth] = useState(2);
@@ -76,15 +202,15 @@ export function RectangleMachine() {
   const widthOpt = findByKey(LENGTH_UNITS, widthKey);
   const areaOpt = findByKey(AREA_UNITS, areaKey);
 
-  const rectW = length * SCALE;
-  const rectH = width * SCALE;
-
   const area = forge({ length: lengthOpt.unit, width: widthOpt.unit }, areaOpt.unit, {
     via: areaFromLengthAndWidth,
   })({ length, width });
 
+  // getHandleCenter reads the latest length/width via the closure each
+  // call, so offset capture stays correct without RectangleVisual
+  // having to forward geometry back to the parent.
   const { svgRef, handlers } = useSvgPointerDrag({
-    getHandleCenter: () => ({ x: PAD + rectW, y: PAD + rectH }),
+    getHandleCenter: () => ({ x: PAD + length * SCALE, y: PAD + width * SCALE }),
     onDrag: (p) => {
       setLength(round1(clamp((p.x - PAD) / SCALE, MIN_VAL, MAX_VAL)));
       setWidth(round1(clamp((p.y - PAD) / SCALE, MIN_VAL, MAX_VAL)));
@@ -145,106 +271,14 @@ export function RectangleMachine() {
             />
 
             <div className="flex-1 flex flex-col items-center gap-3">
-              <svg
-                ref={svgRef}
-                viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-                xmlns="http://www.w3.org/2000/svg"
-                className="block h-auto w-full max-w-full touch-none"
-                style={{ maxWidth: `${VIEW_W}px` }}
-                aria-hidden="true"
-              >
-                <defs>
-                  <filter id="uf-rect-shadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow
-                      dx="6"
-                      dy="8"
-                      stdDeviation="6"
-                      floodColor="var(--uf-fg)"
-                      floodOpacity="0.2"
-                    />
-                  </filter>
-                </defs>
-
-                <line
-                  x1={PAD - 6}
-                  y1={PAD}
-                  x2={PAD + 6}
-                  y2={PAD}
-                  stroke="var(--uf-fg)"
-                  strokeWidth="1"
-                  opacity="0.5"
-                />
-                <line
-                  x1={PAD}
-                  y1={PAD - 6}
-                  x2={PAD}
-                  y2={PAD + 6}
-                  stroke="var(--uf-fg)"
-                  strokeWidth="1"
-                  opacity="0.5"
-                />
-
-                <rect
-                  x={PAD}
-                  y={PAD}
-                  width={rectW}
-                  height={rectH}
-                  fill="var(--uf-accent)"
-                  fillOpacity="0.78"
-                  stroke="var(--uf-fg)"
-                  strokeWidth="1.5"
-                  filter="url(#uf-rect-shadow)"
-                  style={{
-                    transition:
-                      'width 120ms cubic-bezier(0.22,1,0.36,1), height 120ms cubic-bezier(0.22,1,0.36,1)',
-                  }}
-                />
-
-                <text
-                  x={PAD + rectW / 2}
-                  y={PAD - 8}
-                  textAnchor="middle"
-                  style={{
-                    fontFamily: 'var(--uf-display)',
-                    fontSize: '18px',
-                    fill: 'var(--uf-accent)',
-                  }}
-                >
-                  {length.toFixed(2)} {lengthOpt.key}
-                </text>
-                <text
-                  x={PAD - 10}
-                  y={PAD + rectH / 2}
-                  textAnchor="end"
-                  dominantBaseline="middle"
-                  style={{
-                    fontFamily: 'var(--uf-display)',
-                    fontSize: '18px',
-                    fill: 'var(--uf-accent)',
-                  }}
-                >
-                  {width.toFixed(2)} {widthOpt.key}
-                </text>
-
-                <circle
-                  cx={PAD + rectW}
-                  cy={PAD + rectH}
-                  r={10}
-                  fill="var(--uf-fg)"
-                  stroke="var(--uf-accent)"
-                  strokeWidth="2"
-                  cursor="nwse-resize"
-                  aria-hidden
-                  {...handlers}
-                />
-                <circle
-                  cx={PAD + rectW}
-                  cy={PAD + rectH}
-                  r={4}
-                  fill="var(--uf-accent)"
-                  pointerEvents="none"
-                />
-              </svg>
+              <RectangleVisual
+                length={length}
+                width={width}
+                lengthKey={lengthOpt.key}
+                widthKey={widthOpt.key}
+                svgRef={svgRef}
+                handlers={handlers}
+              />
               <Slider
                 label={`length ↔ (${lengthOpt.key})`}
                 value={length}
