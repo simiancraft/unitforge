@@ -16,9 +16,9 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/simiancraft/unitforge/badge)](https://securityscorecards.dev/viewer/?uri=github.com/simiancraft/unitforge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-# Forge anything measurable. Not just physics.
+# unitforge
 
-Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
+**Forge anything measurable. Not just physics.** Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
 
 ## Kits
 

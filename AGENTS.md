@@ -4,7 +4,7 @@ A units-of-measure library for arbitrary domains. Three free functions; three ad
 
 ## Status
 
-Pre-1.0. The design is captured in [PLANNING.md](./PLANNING.md); treat it as the source of truth until the README and code converge.
+Published to npm. Public API is stable. [README.md](./README.md) is canonical for the public surface; [llms.txt](./llms.txt) condenses it for agent consumers.
 
 ## Conventions
 

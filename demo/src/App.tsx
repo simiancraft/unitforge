@@ -17,23 +17,42 @@ import { ThemeToggle } from './components/theme/toggle.js';
 
 const DEFAULT_KIT_ID = 'forge';
 
-function parseHash(): string {
-  const raw = window.location.hash.replace(/^#\/?/, '');
-  return raw === '' ? DEFAULT_KIT_ID : raw;
+interface HashLocation {
+  route: string;
+  /** In-page anchor for `#<name>` hashes (no leading slash). */
+  anchor: string | null;
 }
 
-function useHashRoute(): string {
-  const [route, setRoute] = useState<string>(parseHash());
+function parseLocation(): HashLocation {
+  const hash = window.location.hash;
+  // Route navigation: `#/`, `#/geometry`, etc.
+  if (hash === '' || hash === '#' || hash.startsWith('#/')) {
+    const raw = hash.replace(/^#\/?/, '');
+    return { route: raw === '' ? DEFAULT_KIT_ID : raw, anchor: null };
+  }
+  // In-page anchor: `#crouton`, etc. Lands on the default kit (home);
+  // section-scrolling is handled below.
+  return { route: DEFAULT_KIT_ID, anchor: hash.slice(1) };
+}
+
+function useHashLocation(): HashLocation {
+  const [loc, setLoc] = useState<HashLocation>(parseLocation());
   useEffect(() => {
     const handler = () => {
-      setRoute(parseHash());
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+      const next = parseLocation();
+      setLoc(next);
+      // Route-change scroll-to-top is preserved; anchor scrolling is
+      // owned by the [anchor]-keyed effect in RouteShell so it fires
+      // after the destination route's DOM has committed.
+      if (!next.anchor) {
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+      }
     };
     window.addEventListener('hashchange', handler);
     return () => window.removeEventListener('hashchange', handler);
   }, []);
-  return route;
+  return loc;
 }
 
 /**
@@ -44,7 +63,7 @@ function useHashRoute(): string {
 function getInitialThemeId(): ThemeId {
   // KITS is a non-empty tuple, so KITS[0] is always defined; no fallback
   // branch needed.
-  const kit = findKit(parseHash()) ?? KITS[0];
+  const kit = findKit(parseLocation().route) ?? KITS[0];
   return resolveInitialThemeId(kit.meta.id, kit.meta.defaultThemeId);
 }
 
@@ -61,7 +80,7 @@ export function App() {
 }
 
 function RouteShell() {
-  const route = useHashRoute();
+  const { route, anchor } = useHashLocation();
   const { setThemeForKit } = useTheme();
   const active = findKit(route) ?? findKit(DEFAULT_KIT_ID);
   const Screen = active?.Screen;
@@ -72,6 +91,19 @@ function RouteShell() {
   useEffect(() => {
     if (active) setThemeForKit(active.meta.id, active.meta.defaultThemeId);
   }, [active, setThemeForKit]);
+
+  // Anchor scroll. Fires after the destination route's DOM commits so
+  // `getElementById` finds the section even on a fresh load of `#crouton`.
+  // Routes have already had scroll-to-top applied by the hashchange handler.
+  useEffect(() => {
+    if (!anchor) return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const id = requestAnimationFrame(() => {
+      const el = document.getElementById(anchor);
+      if (el) el.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [anchor]);
 
   const isHome = route === DEFAULT_KIT_ID;
 

@@ -5,8 +5,7 @@
  * Discipline: every dimension shipped by unitforge lives here, regardless of
  * which kit consumes it. Kits do NOT declare dimensions inline; a kit that
  * needs a new one adds it to this file in the same change. The string value
- * of a dimension is part of the public API and never changes after release
- * (see Discipline rule #3 in PLANNING.md).
+ * of a dimension is part of the public API and never changes after release.
  *
  * Custom (consumer-defined) dimensions ship as `as const` string constants in
  * userland; the `Dimension` type union below preserves built-in autocomplete
