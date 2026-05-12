@@ -18,23 +18,35 @@ const resultValue = cva('mono tabular-nums leading-tight', {
   },
 });
 
-interface ResultProps extends VariantProps<typeof resultValue> {
+const resultRoot = cva('m-0 border-t border-uf-border pt-2', {
+  variants: {
+    layout: {
+      // Row: label left, value right; default for hero readouts and
+      // most one-off conversions where the value fits on its baseline.
+      row: 'flex items-baseline justify-between',
+      // Stack: label on top, value below. Use for billboards where
+      // values get long and wrapping the unit suffix to a new line
+      // reads worse than letting the whole number own its own line.
+      stack: 'flex flex-col gap-0.5',
+    },
+  },
+  defaultVariants: {
+    layout: 'row',
+  },
+});
+
+interface ResultProps extends VariantProps<typeof resultValue>, VariantProps<typeof resultRoot> {
   label: string;
   value: string;
   className?: string;
 }
 
-export function Result({ label, value, variant, className }: ResultProps) {
+export function Result({ label, value, variant, layout, className }: ResultProps) {
   // <dl>/<dt>/<dd> encodes the label↔value relationship for screen readers;
   // visually identical to the prior <div><span>/<span> via the flex overrides
   // + m-0 resets on the browser-default description-list margins.
   return (
-    <dl
-      className={cn(
-        'm-0 flex items-baseline justify-between border-t border-uf-border pt-2',
-        className,
-      )}
-    >
+    <dl className={cn(resultRoot({ layout }), className)}>
       <dt className="uf-eyebrow">{label}</dt>
       <dd className={cn('m-0', resultValue({ variant }))}>{value}</dd>
     </dl>

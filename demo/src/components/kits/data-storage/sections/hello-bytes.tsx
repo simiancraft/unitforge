@@ -93,7 +93,12 @@ function ReadoutMatrix({ inBytes }: { inBytes: number }) {
           {col.units.map((opt) => {
             const v = forge(byte, opt.unit)(inBytes);
             return (
-              <Result key={opt.key} label={opt.label} value={`${formatMagnitude(v)} ${opt.key}`} />
+              <Result
+                key={opt.key}
+                layout="stack"
+                label={opt.label}
+                value={`${formatMagnitude(v)} ${opt.key}`}
+              />
             );
           })}
         </div>
