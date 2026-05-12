@@ -7,8 +7,9 @@
 // code-frame chrome) lives at the root ThemeProvider; the kit is a pure
 // renderer.
 
-import { useState } from 'react';
 import { Box } from 'lucide-react';
+import { useState } from 'react';
+import { findByKey, LENGTH_UNITS, type LengthKey } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
@@ -17,7 +18,6 @@ import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { CircleMachine } from './sections/circle-machine.js';
 import { HelloUnit } from './sections/hello-unit.js';
 import { RectangleMachine } from './sections/rectangle-machine.js';
-import { findByKey, LENGTH_UNITS, type LengthKey } from '~/lib/units.js';
 import './geometry.css';
 
 // Grid cell size in pixels, per "from" unit. The grid background reads
@@ -35,8 +35,8 @@ const CELL_PX_BY_UNIT: Record<LengthKey, number> = {
   mi: 28,
 };
 
-export function Page() {
-  const [bench, setBench] = useState<BenchState<'length', LengthKey>>({
+export function GeometryScreen() {
+  const [bench, setBench] = useState<BenchState<LengthKey>>({
     fromKey: 'm',
     toKey: 'ft',
     value: 5,
@@ -55,10 +55,9 @@ export function Page() {
           <p className="uf-eyebrow">kit · 01</p>
           <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">geometry</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-uf-muted">
-            Length, area, and volume; metric and imperial; cross-dimensional
-            conversions for rectangles, circles, and spheres. Pick any unit for
-            any input. Watch the engineering paper retick as you change units
-            on the bench below.
+            Length, area, and volume; metric and imperial; cross-dimensional conversions for
+            rectangles, circles, and spheres. Pick any unit for any input. Watch the engineering
+            paper retick as you change units on the bench below.
           </p>
         </header>
       }
@@ -90,8 +89,7 @@ export function Page() {
 export const meta: KitMeta = {
   id: 'geometry',
   label: 'geometry',
-  blurb:
-    'length, area, volume; metric and imperial; rectangle, circle, sphere derivations.',
+  blurb: 'length, area, volume; metric and imperial; rectangle, circle, sphere derivations.',
   defaultThemeId: 'geometry-light',
   icon: Box,
   previewBg: ({ hovered }) => <GeometryBackdrop inline scale={hovered ? 1.5 : 1} />,

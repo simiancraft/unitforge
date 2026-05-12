@@ -1,21 +1,17 @@
 // Router shell. Reads window.location.hash, looks up the active kit from
-// the registry, and renders that kit's Page wrapped in the root
+// the registry, and renders that kit's Screen wrapped in the root
 // ThemeProvider. The provider owns the data-theme cascade on <html> and
 // per-kit theme persistence in localStorage.
 //
 // Adding a new kit: register it in components/kits/registry.ts. App.tsx
 // requires no edits.
 
-import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { VERSION } from 'unitforge/version';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { findKit, KITS } from './components/kits/registry.js';
-import {
-  ThemeProvider,
-  resolveInitialThemeId,
-  useTheme,
-} from './components/theme/provider.js';
+import { resolveInitialThemeId, ThemeProvider, useTheme } from './components/theme/provider.js';
 import { pairForKit, type ThemeId } from './components/theme/recipes.js';
 import { ThemeToggle } from './components/theme/toggle.js';
 
@@ -68,7 +64,7 @@ function RouteShell() {
   const route = useHashRoute();
   const { setThemeForKit } = useTheme();
   const active = findKit(route) ?? findKit(DEFAULT_KIT_ID);
-  const Page = active?.Page;
+  const Screen = active?.Screen;
 
   // On hash change, honor the destination kit's stored theme or fall
   // back to its default. The initial mount is handled by ThemeProvider's
@@ -95,7 +91,7 @@ function RouteShell() {
       ) : null}
       <main id="main" className="relative mx-auto max-w-6xl px-6 py-10 md:py-14">
         {isHome ? null : <BreadcrumbBar kitLabel={active?.meta.label ?? route} />}
-        <ErrorBoundary>{Page ? <Page /> : null}</ErrorBoundary>
+        <ErrorBoundary>{Screen ? <Screen /> : null}</ErrorBoundary>
         <Footer />
       </main>
     </div>
@@ -104,10 +100,7 @@ function RouteShell() {
 
 function BreadcrumbBar({ kitLabel }: { kitLabel: string }) {
   return (
-    <nav
-      aria-label="breadcrumb"
-      className="mb-8 flex items-center justify-between text-uf-muted"
-    >
+    <nav aria-label="breadcrumb" className="mb-8 flex items-center justify-between text-uf-muted">
       <a
         href="#/"
         className="mono inline-flex items-center gap-2 text-xs uppercase tracking-wider text-uf-fg"
@@ -126,10 +119,7 @@ function Footer() {
   return (
     <footer className="mt-16 flex flex-col items-center gap-1 text-center text-xs text-uf-muted">
       <span className="mono">v{VERSION}</span>
-      <a
-        href="https://github.com/simiancraft/unitforge"
-        className="underline text-uf-fg"
-      >
+      <a href="https://github.com/simiancraft/unitforge" className="underline text-uf-fg">
         github.com/simiancraft/unitforge
       </a>
     </footer>

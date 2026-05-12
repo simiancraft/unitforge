@@ -1,6 +1,6 @@
 // Kit registry — the single place that knows every kit exists.
-// App.tsx looks up { Page, meta } by id to dispatch hash routes; the forge
-// kit's kits-grid section iterates KITS to render navigation cards.
+// App.tsx looks up { Screen, meta } by id to dispatch hash routes; the
+// forge kit's kits-grid section iterates KITS to render navigation cards.
 //
 // A kit's meta declares its `defaultThemeId`; the theme registry
 // (components/theme/recipes.ts) owns everything visual. The two
@@ -8,17 +8,14 @@
 // reference kits beyond their kit field.
 //
 // Adding a kit: drop a folder at components/kits/<kit>/ exporting
-// { Page, meta }, then import + append it below.
+// { <Kit>Screen, meta }, then import + append it below.
 
-import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import type { ComponentType } from 'react';
 import type { KitId, ThemeId } from '../theme/recipes.js';
-import { Page as ForgePage, meta as forgeMeta } from './forge/index.js';
-import { Page as GeometryPage, meta as geometryMeta } from './geometry/index.js';
-import {
-  Page as DataStoragePage,
-  meta as dataStorageMeta,
-} from './data-storage/index.js';
+import { DataStorageScreen, meta as dataStorageMeta } from './data-storage/index.js';
+import { ForgeScreen, meta as forgeMeta } from './forge/index.js';
+import { GeometryScreen, meta as geometryMeta } from './geometry/index.js';
 
 export interface KitMeta {
   id: KitId;
@@ -39,7 +36,7 @@ export interface KitMeta {
 
 export interface KitEntry {
   meta: KitMeta;
-  Page: ComponentType;
+  Screen: ComponentType;
 }
 
 // Order matters: forge is element [0] because it's the home/default
@@ -50,9 +47,9 @@ export interface KitEntry {
 // Non-empty tuple type so KITS[0] is statically known to be defined; the
 // "empty registry" branch becomes unreachable at the type layer.
 export const KITS: readonly [KitEntry, ...KitEntry[]] = [
-  { meta: forgeMeta, Page: ForgePage },
-  { meta: geometryMeta, Page: GeometryPage },
-  { meta: dataStorageMeta, Page: DataStoragePage },
+  { meta: forgeMeta, Screen: ForgeScreen },
+  { meta: geometryMeta, Screen: GeometryScreen },
+  { meta: dataStorageMeta, Screen: DataStorageScreen },
 ];
 
 /** Look up a kit by its id; returns undefined if no match. */

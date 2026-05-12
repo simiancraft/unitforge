@@ -36,7 +36,7 @@ const STRIKE_VARIANT = 1;
 // user sees the impact before navigation.
 const NAV_DELAY_MS = Math.round(STOKE_HOLD_MS * (2 / 3));
 
-export function Page() {
+export function ForgeScreen() {
   const [bench, setBench] = useState<BenchState<LengthKey>>({
     fromKey: 'm',
     toKey: 'ft',
