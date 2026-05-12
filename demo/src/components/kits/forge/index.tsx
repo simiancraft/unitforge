@@ -64,11 +64,14 @@ export function ForgeScreen() {
     }, NAV_DELAY_MS);
   };
 
-  // `display: contents` removes the wrapper from the box tree so the
-  // ref lives only to receive the shake CSS class without inserting a
-  // layout box around KitLayout's zones.
+  // The wrapper is the shake target. It needs a principal box for the
+  // transform in `uf-anvil-strike` to apply — `display: contents` (used
+  // earlier) silently drops the transform per spec. Default `display:
+  // block` is fine; the forge backdrop is `createPortal`'d to body so it
+  // doesn't share this transform, and KitLayout's children lay out
+  // normally as block descendants of this wrapper.
   return (
-    <div ref={shakeRef} className="contents">
+    <div ref={shakeRef}>
       <KitLayout
         backdropZone={<ForgeBackdrop stoke={stoke} />}
         headerZone={<ForgeHeader />}

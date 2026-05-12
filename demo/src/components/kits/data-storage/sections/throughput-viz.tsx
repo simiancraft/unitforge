@@ -31,7 +31,9 @@ const MIN_SWEEP = 0.5;
 const MAX_SWEEP = 45;
 
 const realSecond = defineUnit({
-  name: 'realSecond',
+  id: 'real-second',
+  label: 'Real Second',
+  symbol: 's',
   dimension: REAL_TIME,
   toBase: (v) => v,
   fromBase: (b) => b,
@@ -39,7 +41,9 @@ const realSecond = defineUnit({
 });
 
 const sweepSecond = defineUnit({
-  name: 'sweepSecond',
+  id: 'sweep-second',
+  label: 'Sweep Second',
+  symbol: 's',
   dimension: SWEEP_TIME,
   toBase: (v) => v,
   fromBase: (b) => b,

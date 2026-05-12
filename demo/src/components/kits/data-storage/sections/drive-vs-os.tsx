@@ -26,21 +26,27 @@ const MAX_FILE_ICONS = 60;
 // bytes one unit is worth; the data kit's base is the byte, so a 4 GB
 // HD movie's toBase returns v * 4e9.
 const hdMovie = defineUnit({
-  name: 'hdMovie',
+  id: 'hd-movie',
+  label: 'HD Movie',
+  symbol: '🎬',
   dimension: 'data',
   toBase: (v) => v * 4e9,
   fromBase: (b) => b / 4e9,
 });
 
 const aaaGame = defineUnit({
-  name: 'aaaGame',
+  id: 'aaa-game',
+  label: 'AAA Game',
+  symbol: '🎮',
   dimension: 'data',
   toBase: (v) => v * 80e9,
   fromBase: (b) => b / 80e9,
 });
 
 const musicAlbum = defineUnit({
-  name: 'musicAlbum',
+  id: 'music-album',
+  label: 'Lossless Album',
+  symbol: '🎵',
   dimension: 'data',
   toBase: (v) => v * 5e8,
   fromBase: (b) => b / 5e8,
@@ -368,7 +374,7 @@ marketedToReported(${formatMagnitude(marketedGB)}); // ${formatMagnitude(reporte
 
 // Custom unit in the DATA dimension: one HD movie = 4 GB.
 const hdMovie = defineUnit({
-  name: 'hdMovie', dimension: 'data',
+  id: 'hd-movie', label: 'HD Movie', symbol: '🎬', dimension: 'data',
   toBase: (v) => v * 4e9, fromBase: (b) => b / 4e9,
 });
 

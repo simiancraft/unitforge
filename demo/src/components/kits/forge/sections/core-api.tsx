@@ -17,7 +17,9 @@ meterToFeet(1.5);  // 4.9212`;
 const DEFINE_UNIT_CODE = `import { defineUnit } from 'unitforge';
 
 const handspan = defineUnit({
-  name: 'handspan',
+  id: 'handspan',
+  label: 'Handspan',
+  symbol: 'hsp',
   dimension: 'length',
   toBase: (v) => v * 0.235,
   fromBase: (b) => b / 0.235,

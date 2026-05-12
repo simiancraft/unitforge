@@ -14,7 +14,7 @@
  * `fromBase` longhand using their precision library; they do not use `linear`.
  *
  * @example
- *   defineUnit({ name: 'foot', dimension: LENGTH, ...linear(0.3048) });
+ *   defineUnit({ id: 'foot', label: 'Foot', symbol: 'ft', dimension: LENGTH, ...linear(0.3048) });
  */
 export function linear(scale: number): {
   toBase: (v: number) => number;

@@ -18,7 +18,9 @@ import { AREA, LENGTH, VOLUME } from '../../dimensions.js';
 
 /** The base unit of LENGTH. */
 export const meter = /*#__PURE__*/ defineUnit({
-  name: 'meter',
+  id: 'meter',
+  label: 'Meter',
+  symbol: 'm',
   dimension: LENGTH,
   toBase: (v) => v,
   fromBase: (b) => b,
@@ -27,7 +29,9 @@ export const meter = /*#__PURE__*/ defineUnit({
 
 /** 1 mm = 0.001 m. */
 export const millimeter = /*#__PURE__*/ defineUnit({
-  name: 'millimeter',
+  id: 'millimeter',
+  label: 'Millimeter',
+  symbol: 'mm',
   dimension: LENGTH,
   toBase: (v) => v * 0.001,
   fromBase: (b) => b / 0.001,
@@ -35,7 +39,9 @@ export const millimeter = /*#__PURE__*/ defineUnit({
 
 /** 1 cm = 0.01 m. */
 export const centimeter = /*#__PURE__*/ defineUnit({
-  name: 'centimeter',
+  id: 'centimeter',
+  label: 'Centimeter',
+  symbol: 'cm',
   dimension: LENGTH,
   toBase: (v) => v * 0.01,
   fromBase: (b) => b / 0.01,
@@ -43,7 +49,9 @@ export const centimeter = /*#__PURE__*/ defineUnit({
 
 /** 1 km = 1000 m. */
 export const kilometer = /*#__PURE__*/ defineUnit({
-  name: 'kilometer',
+  id: 'kilometer',
+  label: 'Kilometer',
+  symbol: 'km',
   dimension: LENGTH,
   toBase: (v) => v * 1000,
   fromBase: (b) => b / 1000,
@@ -51,7 +59,9 @@ export const kilometer = /*#__PURE__*/ defineUnit({
 
 /** 1 in = 0.0254 m (international yard, 1959; exact). */
 export const inch = /*#__PURE__*/ defineUnit({
-  name: 'inch',
+  id: 'inch',
+  label: 'Inch',
+  symbol: 'in',
   dimension: LENGTH,
   toBase: (v) => v * 0.0254,
   fromBase: (b) => b / 0.0254,
@@ -59,7 +69,9 @@ export const inch = /*#__PURE__*/ defineUnit({
 
 /** 1 ft = 0.3048 m (= 12 in × 0.0254; exact). */
 export const foot = /*#__PURE__*/ defineUnit({
-  name: 'foot',
+  id: 'foot',
+  label: 'Foot',
+  symbol: 'ft',
   dimension: LENGTH,
   toBase: (v) => v * 0.3048,
   fromBase: (b) => b / 0.3048,
@@ -67,7 +79,9 @@ export const foot = /*#__PURE__*/ defineUnit({
 
 /** 1 yd = 0.9144 m (= 3 ft = 36 in; exact). */
 export const yard = /*#__PURE__*/ defineUnit({
-  name: 'yard',
+  id: 'yard',
+  label: 'Yard',
+  symbol: 'yd',
   dimension: LENGTH,
   toBase: (v) => v * 0.9144,
   fromBase: (b) => b / 0.9144,
@@ -75,7 +89,9 @@ export const yard = /*#__PURE__*/ defineUnit({
 
 /** 1 mi = 1609.344 m (= 5280 ft = 1760 yd; exact). */
 export const mile = /*#__PURE__*/ defineUnit({
-  name: 'mile',
+  id: 'mile',
+  label: 'Mile',
+  symbol: 'mi',
   dimension: LENGTH,
   toBase: (v) => v * 1609.344,
   fromBase: (b) => b / 1609.344,
@@ -83,7 +99,9 @@ export const mile = /*#__PURE__*/ defineUnit({
 
 /** The base unit of AREA. */
 export const squareMeter = /*#__PURE__*/ defineUnit({
-  name: 'square-meter',
+  id: 'square-meter',
+  label: 'Square Meter',
+  symbol: 'm²',
   dimension: AREA,
   toBase: (v) => v,
   fromBase: (b) => b,
@@ -92,7 +110,9 @@ export const squareMeter = /*#__PURE__*/ defineUnit({
 
 /** 1 mm² = 1e-6 m² (= (1e-3)²). */
 export const squareMillimeter = /*#__PURE__*/ defineUnit({
-  name: 'square-millimeter',
+  id: 'square-millimeter',
+  label: 'Square Millimeter',
+  symbol: 'mm²',
   dimension: AREA,
   toBase: (v) => v * 1e-6,
   fromBase: (b) => b / 1e-6,
@@ -100,7 +120,9 @@ export const squareMillimeter = /*#__PURE__*/ defineUnit({
 
 /** 1 cm² = 1e-4 m² (= (1e-2)²). */
 export const squareCentimeter = /*#__PURE__*/ defineUnit({
-  name: 'square-centimeter',
+  id: 'square-centimeter',
+  label: 'Square Centimeter',
+  symbol: 'cm²',
   dimension: AREA,
   toBase: (v) => v * 1e-4,
   fromBase: (b) => b / 1e-4,
@@ -108,7 +130,9 @@ export const squareCentimeter = /*#__PURE__*/ defineUnit({
 
 /** 1 km² = 1e6 m² (= (1e3)²). */
 export const squareKilometer = /*#__PURE__*/ defineUnit({
-  name: 'square-kilometer',
+  id: 'square-kilometer',
+  label: 'Square Kilometer',
+  symbol: 'km²',
   dimension: AREA,
   toBase: (v) => v * 1e6,
   fromBase: (b) => b / 1e6,
@@ -116,7 +140,9 @@ export const squareKilometer = /*#__PURE__*/ defineUnit({
 
 /** 1 in² = 0.00064516 m² (= 0.0254²; exact). */
 export const squareInch = /*#__PURE__*/ defineUnit({
-  name: 'square-inch',
+  id: 'square-inch',
+  label: 'Square Inch',
+  symbol: 'in²',
   dimension: AREA,
   toBase: (v) => v * 0.00064516,
   fromBase: (b) => b / 0.00064516,
@@ -124,7 +150,9 @@ export const squareInch = /*#__PURE__*/ defineUnit({
 
 /** 1 ft² = 0.09290304 m² (= 0.3048² = 144 in²; exact). */
 export const squareFoot = /*#__PURE__*/ defineUnit({
-  name: 'square-foot',
+  id: 'square-foot',
+  label: 'Square Foot',
+  symbol: 'ft²',
   dimension: AREA,
   toBase: (v) => v * 0.09290304,
   fromBase: (b) => b / 0.09290304,
@@ -132,7 +160,9 @@ export const squareFoot = /*#__PURE__*/ defineUnit({
 
 /** 1 acre = 4046.8564224 m² (= 4840 yd²; exact). */
 export const acre = /*#__PURE__*/ defineUnit({
-  name: 'acre',
+  id: 'acre',
+  label: 'Acre',
+  symbol: 'ac',
   dimension: AREA,
   toBase: (v) => v * 4046.8564224,
   fromBase: (b) => b / 4046.8564224,
@@ -140,7 +170,9 @@ export const acre = /*#__PURE__*/ defineUnit({
 
 /** 1 ha = 10 000 m² (= 100 m × 100 m; exact). */
 export const hectare = /*#__PURE__*/ defineUnit({
-  name: 'hectare',
+  id: 'hectare',
+  label: 'Hectare',
+  symbol: 'ha',
   dimension: AREA,
   toBase: (v) => v * 10_000,
   fromBase: (b) => b / 10_000,
@@ -150,7 +182,9 @@ export const hectare = /*#__PURE__*/ defineUnit({
 
 /** The base unit of VOLUME. */
 export const cubicMeter = /*#__PURE__*/ defineUnit({
-  name: 'cubic-meter',
+  id: 'cubic-meter',
+  label: 'Cubic Meter',
+  symbol: 'm³',
   dimension: VOLUME,
   toBase: (v) => v,
   fromBase: (b) => b,
@@ -159,7 +193,9 @@ export const cubicMeter = /*#__PURE__*/ defineUnit({
 
 /** 1 cm³ = 1e-6 m³ (= (1e-2)³). */
 export const cubicCentimeter = /*#__PURE__*/ defineUnit({
-  name: 'cubic-centimeter',
+  id: 'cubic-centimeter',
+  label: 'Cubic Centimeter',
+  symbol: 'cm³',
   dimension: VOLUME,
   toBase: (v) => v * 1e-6,
   fromBase: (b) => b / 1e-6,
@@ -167,7 +203,9 @@ export const cubicCentimeter = /*#__PURE__*/ defineUnit({
 
 /** 1 in³ = 0.000016387064 m³ (= 0.0254³; exact). */
 export const cubicInch = /*#__PURE__*/ defineUnit({
-  name: 'cubic-inch',
+  id: 'cubic-inch',
+  label: 'Cubic Inch',
+  symbol: 'in³',
   dimension: VOLUME,
   toBase: (v) => v * 0.000016387064,
   fromBase: (b) => b / 0.000016387064,
@@ -175,7 +213,9 @@ export const cubicInch = /*#__PURE__*/ defineUnit({
 
 /** 1 ft³ = 0.028316846592 m³ (= 0.3048³ = 1728 in³; exact). */
 export const cubicFoot = /*#__PURE__*/ defineUnit({
-  name: 'cubic-foot',
+  id: 'cubic-foot',
+  label: 'Cubic Foot',
+  symbol: 'ft³',
   dimension: VOLUME,
   toBase: (v) => v * 0.028316846592,
   fromBase: (b) => b / 0.028316846592,
@@ -183,7 +223,9 @@ export const cubicFoot = /*#__PURE__*/ defineUnit({
 
 /** 1 L = 0.001 m³ (= 1 dm³ = 1000 cm³; exact). */
 export const liter = /*#__PURE__*/ defineUnit({
-  name: 'liter',
+  id: 'liter',
+  label: 'Liter',
+  symbol: 'L',
   dimension: VOLUME,
   toBase: (v) => v * 0.001,
   fromBase: (b) => b / 0.001,
@@ -191,7 +233,9 @@ export const liter = /*#__PURE__*/ defineUnit({
 
 /** 1 mL = 1e-6 m³ (= 1 cm³; exact). */
 export const milliliter = /*#__PURE__*/ defineUnit({
-  name: 'milliliter',
+  id: 'milliliter',
+  label: 'Milliliter',
+  symbol: 'mL',
   dimension: VOLUME,
   toBase: (v) => v * 1e-6,
   fromBase: (b) => b / 1e-6,

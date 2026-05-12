@@ -21,7 +21,9 @@ import type { Conversion, Dimension, Unit } from './types.js';
  *
  * @example
  *   export const meter = defineUnit({
- *     name: 'meter',
+ *     id: 'meter',
+ *     label: 'Meter',
+ *     symbol: 'm',
  *     dimension: LENGTH,
  *     toBase: (v) => v,
  *     fromBase: (b) => b,

@@ -6,7 +6,7 @@
 //
 // One dimension, many units: wheat and ore aren't interconvertible
 // directly, but they're both *countables*. The conversion's input
-// keys ("wheat", "ore") plus each unit's own name carry identity;
+// keys ("wheat", "ore") plus each unit's own id carry identity;
 // the dimension just says "this is a discrete count of something".
 //
 // Resource glyphs are emoji (lucide lacks wheat/sheep/etc.), keeping
@@ -24,20 +24,26 @@ import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout
 const COUNT = 'count' as const;
 
 const wheatUnit = defineUnit({
-  name: 'wheat',
+  id: 'wheat',
+  label: 'Wheat',
+  symbol: '🌾',
   dimension: COUNT,
   toBase: (v) => v,
   fromBase: (b) => b,
   base: true,
 });
 const oreUnit = defineUnit({
-  name: 'ore',
+  id: 'ore',
+  label: 'Ore',
+  symbol: '🪨',
   dimension: COUNT,
   toBase: (v) => v,
   fromBase: (b) => b,
 });
 const cityUnit = defineUnit({
-  name: 'city',
+  id: 'city',
+  label: 'City',
+  symbol: '🏰',
   dimension: COUNT,
   toBase: (v) => v,
   fromBase: (b) => b,
@@ -226,9 +232,9 @@ function buildCode(wheat: number, ore: number, cities: number): string {
 // interconvertible, but they're both countable things.
 const COUNT = 'count' as const;
 
-const wheat = defineUnit({ name: 'wheat', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b, base: true });
-const ore   = defineUnit({ name: 'ore',   dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
-const city  = defineUnit({ name: 'city',  dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
+const wheat = defineUnit({ id: 'wheat', label: 'Wheat', symbol: '🌾', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b, base: true });
+const ore   = defineUnit({ id: 'ore',   label: 'Ore',   symbol: '🪨', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
+const city  = defineUnit({ id: 'city',  label: 'City',  symbol: '🏰', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
 
 // 2 wheat + 3 ore = 1 city.
 const buildCities = defineConversion({
