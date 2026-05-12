@@ -45,6 +45,17 @@ export const AREA = 'area' as const;
 export const VOLUME = 'volume' as const;
 
 /**
+ * Quantity of digital information. Canonical base unit: **byte**.
+ *
+ * Conventional units across kits: byte; SI/decimal multiples (kilobyte = 1000
+ * bytes, megabyte = 1000² bytes, ...); IEC/binary multiples (kibibyte = 1024
+ * bytes, mebibyte = 1024² bytes, ...); bit (= 1/8 byte) and its SI multiples
+ * for network throughput. Shipping the decimal/binary distinction is the
+ * point: kilobyte and kibibyte are different units, not synonyms.
+ */
+export const DATA = 'data' as const;
+
+/**
  * The single source of truth for the set of built-in dimensions. The
  * `Dimension` type derives from this tuple, so adding a dimension here is
  * what makes it appear in IDE autocomplete at `defineUnit({ dimension: | })`
@@ -57,7 +68,7 @@ export const VOLUME = 'volume' as const;
  * forgetting the tuple is "no autocomplete for the new dimension" — visible
  * the first time anyone tries to use it.
  */
-export const DIMENSIONS = [LENGTH, AREA, VOLUME] as const;
+export const DIMENSIONS = [LENGTH, AREA, VOLUME, DATA] as const;
 
 /**
  * Dimension identifier. Built-in literals (`LENGTH`, `AREA`, ...) preserve

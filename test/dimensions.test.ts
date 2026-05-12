@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { AREA, DIMENSIONS, LENGTH, VOLUME } from '../src/dimensions.js';
+import { AREA, DATA, DIMENSIONS, LENGTH, VOLUME } from '../src/dimensions.js';
 
 describe('dimensions', () => {
   it('LENGTH is the literal "length"', () => {
@@ -14,8 +14,12 @@ describe('dimensions', () => {
     expect(VOLUME).toBe('volume');
   });
 
+  it('DATA is the literal "data"', () => {
+    expect(DATA).toBe('data');
+  });
+
   it('DIMENSIONS tuple lists every built-in dimension', () => {
-    expect(DIMENSIONS).toEqual([LENGTH, AREA, VOLUME]);
+    expect(DIMENSIONS).toEqual([LENGTH, AREA, VOLUME, DATA]);
   });
 
   it('every entry in DIMENSIONS is a kebab-case identifier', () => {
