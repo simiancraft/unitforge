@@ -6,7 +6,7 @@
 
 import { Gauge } from 'lucide-react';
 import { useState } from 'react';
-import { forge } from 'unitforge';
+import { defineConversion, defineUnit, forge } from 'unitforge';
 import { byte, gigabit, gigabyte, megabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/CodeBlock.js';
 import { Result } from '~/components/Result.js';
@@ -14,7 +14,50 @@ import { Slider } from '~/components/Slider.js';
 import { formatMagnitude } from '~/lib/format.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
-const MAX_VIEW_SECONDS = 12;
+// View-time mapping: real transfer seconds → sweep-bar seconds. Both
+// are time, but they're different *kinds* of time pedagogically, so
+// we model them as two dimensions and forge a converter between them
+// with a clamped linear remap. Real-seconds in [MIN_REAL, MAX_REAL]
+// map onto sweep-seconds in [MIN_SWEEP, MAX_SWEEP]; outside that band
+// the sweep saturates at the endpoints. Dogfoods unitforge's
+// defineUnit + defineConversion + via pattern in the same section
+// that already shows the byte/bit forge calls.
+const REAL_TIME = 'real-time' as const;
+const SWEEP_TIME = 'sweep-time' as const;
+
+const MIN_REAL = 0.5;
+const MAX_REAL = 100;
+const MIN_SWEEP = 1;
+const MAX_SWEEP = 30;
+
+const realSecond = defineUnit({
+  name: 'realSecond',
+  dimension: REAL_TIME,
+  toBase: (v) => v,
+  fromBase: (b) => b,
+  base: true,
+});
+
+const sweepSecond = defineUnit({
+  name: 'sweepSecond',
+  dimension: SWEEP_TIME,
+  toBase: (v) => v,
+  fromBase: (b) => b,
+  base: true,
+});
+
+const realToSweep = defineConversion({
+  inputs: { real: REAL_TIME },
+  output: SWEEP_TIME,
+  compute: ({ real }) => {
+    if (real <= MIN_REAL) return MIN_SWEEP;
+    if (real >= MAX_REAL) return MAX_SWEEP;
+    const t = (real - MIN_REAL) / (MAX_REAL - MIN_REAL);
+    return MIN_SWEEP + t * (MAX_SWEEP - MIN_SWEEP);
+  },
+});
+
+const sweepFor = forge({ real: realSecond }, sweepSecond, { via: realToSweep });
 
 export function ThroughputViz() {
   const [gbits, setGbits] = useState(1);
@@ -24,13 +67,13 @@ export function ThroughputViz() {
   const bytesPerSec = forge(gigabit, byte)(gbits);
   const targetBytes = forge(gigabyte, byte)(targetGB);
   const realSeconds = targetBytes / bytesPerSec;
-  const sweepSeconds = Math.min(MAX_VIEW_SECONDS, Math.max(0.4, realSeconds));
+  const sweepSeconds = sweepFor({ real: realSeconds });
 
   // Derived key remounts the fill element whenever the inputs change so
   // the CSS keyframe sweep restarts in lockstep with the slider.
   const tick = `${gbits}-${targetGB}`;
 
-  const isRealtime = realSeconds <= MAX_VIEW_SECONDS;
+  const isCapped = realSeconds >= MAX_REAL;
 
   return (
     <SectionLayout
@@ -59,7 +102,7 @@ export function ThroughputViz() {
               sweepSeconds={sweepSeconds}
               realSeconds={realSeconds}
               tick={tick}
-              isRealtime={isRealtime}
+              isCapped={isCapped}
               onGbitsChange={setGbits}
               onTargetGBChange={setTargetGB}
             />
@@ -78,7 +121,7 @@ interface ThroughputWidgetProps {
   sweepSeconds: number;
   realSeconds: number;
   tick: string;
-  isRealtime: boolean;
+  isCapped: boolean;
   onGbitsChange: (next: number) => void;
   onTargetGBChange: (next: number) => void;
 }
@@ -90,7 +133,7 @@ function ThroughputWidget({
   sweepSeconds,
   realSeconds,
   tick,
-  isRealtime,
+  isCapped,
   onGbitsChange,
   onTargetGBChange,
 }: ThroughputWidgetProps) {
@@ -128,7 +171,7 @@ function ThroughputWidget({
 
       <Result label="bandwidth" value={`${mbPerSec.toFixed(1)} MB/s`} variant="hero" />
       <Result
-        label={isRealtime ? 'time to fill' : 'time to fill (sweep capped)'}
+        label={isCapped ? 'time to fill (sweep capped)' : 'time to fill'}
         value={formatDuration(realSeconds)}
       />
     </div>
