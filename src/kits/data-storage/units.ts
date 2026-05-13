@@ -190,6 +190,46 @@ export const pebibyte = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1_125_899_906_842_624,
 });
 
+/** 1 EiB = 1024⁶ = 2^60 bytes (binary; see kit header for IEC cite).
+ *
+ *  Float64 precision caveat: the scale factor itself is an exact power of
+ *  two and is representable in Float64, but `Number.MAX_SAFE_INTEGER` is
+ *  2^53 − 1, so byte counts at or above 2^60 cannot resolve individual
+ *  bytes; the bottom ~7 bits are below the Float64 ULP for values near
+ *  this magnitude. Caller-visible: `forge(exbibyte, byte)(1) + 1 ===
+ *  forge(exbibyte, byte)(1)` (the +1 vanishes). Limitation is Float64,
+ *  not the kit; same caveat applies to ZiB and YiB below. */
+export const exbibyte = /*#__PURE__*/ defineUnit({
+  id: 'exbibyte',
+  label: 'Exbibyte',
+  symbol: 'EiB',
+  dimension: DATA,
+  toBase: (v) => v * 2 ** 60,
+  fromBase: (b) => b / 2 ** 60,
+});
+
+/** 1 ZiB = 1024⁷ = 2^70 bytes (binary; see kit header for IEC cite).
+ *  Float64 precision caveat applies (see {@link exbibyte}). */
+export const zebibyte = /*#__PURE__*/ defineUnit({
+  id: 'zebibyte',
+  label: 'Zebibyte',
+  symbol: 'ZiB',
+  dimension: DATA,
+  toBase: (v) => v * 2 ** 70,
+  fromBase: (b) => b / 2 ** 70,
+});
+
+/** 1 YiB = 1024⁸ = 2^80 bytes (binary; see kit header for IEC cite).
+ *  Float64 precision caveat applies (see {@link exbibyte}). */
+export const yobibyte = /*#__PURE__*/ defineUnit({
+  id: 'yobibyte',
+  label: 'Yobibyte',
+  symbol: 'YiB',
+  dimension: DATA,
+  toBase: (v) => v * 2 ** 80,
+  fromBase: (b) => b / 2 ** 80,
+});
+
 // ─── BITS (1 bit = 1/8 byte; decimal multiples for throughput) ───────────
 
 /** 1 bit = 0.125 byte; 8 bits = 1 byte. */

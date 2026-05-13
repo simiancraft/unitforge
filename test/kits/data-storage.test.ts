@@ -5,6 +5,7 @@ import {
   bit,
   byte,
   exabyte,
+  exbibyte,
   gibibyte,
   gigabit,
   gigabyte,
@@ -18,7 +19,9 @@ import {
   petabyte,
   tebibyte,
   terabyte,
+  yobibyte,
   yottabyte,
+  zebibyte,
   zettabyte,
 } from '../../src/kits/data-storage/index.js';
 
@@ -247,6 +250,54 @@ describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
     });
     it('1024⁵ B = 1 PiB via fromBase', () => {
       expect(pebibyte.fromBase(1_125_899_906_842_624)).toBe(1);
+    });
+  });
+
+  describe('exbibyte', () => {
+    it('has the right shape', () => {
+      expect(exbibyte.id).toBe('exbibyte');
+      expect(exbibyte.label).toBe('Exbibyte');
+      expect(exbibyte.symbol).toBe('EiB');
+      expect(exbibyte.dimension).toBe(DATA);
+    });
+    it('1 EiB = 2^60 B via toBase', () => {
+      expect(exbibyte.toBase(1)).toBe(2 ** 60);
+    });
+    it('2^60 B = 1 EiB via fromBase', () => {
+      expect(exbibyte.fromBase(2 ** 60)).toBe(1);
+    });
+    it('round-trip 1 EiB → byte → EiB preserves identity (factor is exact power of 2)', () => {
+      expect(exbibyte.fromBase(exbibyte.toBase(1))).toBe(1);
+    });
+  });
+
+  describe('zebibyte', () => {
+    it('has the right shape', () => {
+      expect(zebibyte.id).toBe('zebibyte');
+      expect(zebibyte.label).toBe('Zebibyte');
+      expect(zebibyte.symbol).toBe('ZiB');
+      expect(zebibyte.dimension).toBe(DATA);
+    });
+    it('1 ZiB = 2^70 B via toBase', () => {
+      expect(zebibyte.toBase(1)).toBe(2 ** 70);
+    });
+    it('2^70 B = 1 ZiB via fromBase', () => {
+      expect(zebibyte.fromBase(2 ** 70)).toBe(1);
+    });
+  });
+
+  describe('yobibyte', () => {
+    it('has the right shape', () => {
+      expect(yobibyte.id).toBe('yobibyte');
+      expect(yobibyte.label).toBe('Yobibyte');
+      expect(yobibyte.symbol).toBe('YiB');
+      expect(yobibyte.dimension).toBe(DATA);
+    });
+    it('1 YiB = 2^80 B via toBase', () => {
+      expect(yobibyte.toBase(1)).toBe(2 ** 80);
+    });
+    it('2^80 B = 1 YiB via fromBase', () => {
+      expect(yobibyte.fromBase(2 ** 80)).toBe(1);
     });
   });
 });
