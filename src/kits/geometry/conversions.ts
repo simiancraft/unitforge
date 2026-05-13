@@ -447,3 +447,62 @@ export const chordLengthFromRadiusAndAngle = /*#__PURE__*/ defineConversion({
   },
   compute: ({ radius, angle }) => 2 * radius * Math.sin(angle / 2),
 });
+
+// ─── Diagonals and Pythagorean helpers ───────────────────────────────────
+// Within-dimension LENGTH derivations.
+
+/** √(L² + W²) (rectangle space diagonal in the plane). */
+export const diagonalOfRectangleFromLengthAndWidth = /*#__PURE__*/ defineConversion({
+  inputs: { length: LENGTH, width: LENGTH },
+  output: LENGTH,
+  validate: {
+    length: (v) => v >= 0 || 'length must be >= 0',
+    width: (v) => v >= 0 || 'width must be >= 0',
+  },
+  compute: ({ length, width }) => Math.sqrt(length * length + width * width),
+});
+
+/** s · √2 (square diagonal). */
+export const diagonalOfSquareFromSide = /*#__PURE__*/ defineConversion({
+  inputs: { side: LENGTH },
+  output: LENGTH,
+  validate: {
+    side: (v) => v >= 0 || 'side must be >= 0',
+  },
+  compute: ({ side }) => side * Math.SQRT2,
+});
+
+/**
+ * Pythagorean theorem: hypotenuse = √(a² + b²).
+ *
+ * Numerically identical to `diagonalOfRectangleFromLengthAndWidth`; ship
+ * as a distinct conversion for caller intent. A right-triangle caller
+ * should not have to import a rectangle conversion to compute a
+ * hypotenuse; the named alias makes call sites self-documenting.
+ */
+export const hypotenuseFromLegs = /*#__PURE__*/ defineConversion({
+  inputs: { a: LENGTH, b: LENGTH },
+  output: LENGTH,
+  validate: {
+    a: (v) => v >= 0 || 'a must be >= 0',
+    b: (v) => v >= 0 || 'b must be >= 0',
+  },
+  compute: ({ a, b }) => Math.sqrt(a * a + b * b),
+});
+
+/**
+ * Inverse Pythagorean: leg = √(c² − a²) where c is the hypotenuse and a
+ * is the other leg. The `_all` validator enforces hypotenuse ≥ leg;
+ * without it the radicand goes negative and the caller eats `NaN`.
+ */
+export const legFromHypotenuseAndLeg = /*#__PURE__*/ defineConversion({
+  inputs: { hypotenuse: LENGTH, leg: LENGTH },
+  output: LENGTH,
+  validate: {
+    hypotenuse: (v) => v >= 0 || 'hypotenuse must be >= 0',
+    leg: (v) => v >= 0 || 'leg must be >= 0',
+    _all: ({ hypotenuse, leg }: { hypotenuse: number; leg: number }) =>
+      hypotenuse >= leg || 'hypotenuse must be >= leg',
+  },
+  compute: ({ hypotenuse, leg }) => Math.sqrt(hypotenuse * hypotenuse - leg * leg),
+});

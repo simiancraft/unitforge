@@ -27,6 +27,10 @@ import {
   chordLengthFromRadiusAndAngle,
   circumferenceOfCircleFromDiameter,
   circumferenceOfCircleFromRadius,
+  diagonalOfRectangleFromLengthAndWidth,
+  diagonalOfSquareFromSide,
+  hypotenuseFromLegs,
+  legFromHypotenuseAndLeg,
   centimeter,
   centiliter,
   cubicCentimeter,
@@ -980,6 +984,45 @@ describe('geometry/conversions: perimeter / circumference / arc length', () => {
     expect(fn({ radius: 5, angle: Math.PI })).toBeCloseTo(10, 12);
     // θ = π/2 on r = 1: chord = 2 · 1 · sin(π/4) = √2
     expect(fn({ radius: 1, angle: Math.PI / 2 })).toBeCloseTo(Math.SQRT2, 12);
+  });
+});
+
+describe('geometry/conversions: diagonals and Pythagorean', () => {
+  it('diagonalOfRectangleFromLengthAndWidth: 3-4-5 triangle', () => {
+    const fn = forge({ length: meter, width: meter }, meter, {
+      via: diagonalOfRectangleFromLengthAndWidth,
+    });
+    expect(fn({ length: 3, width: 4 })).toBeCloseTo(5, 12);
+  });
+
+  it('diagonalOfSquareFromSide = s · √2', () => {
+    const fn = forge({ side: meter }, meter, { via: diagonalOfSquareFromSide });
+    expect(fn({ side: 1 })).toBeCloseTo(Math.SQRT2, 12);
+    expect(fn({ side: 5 })).toBeCloseTo(5 * Math.SQRT2, 12);
+  });
+
+  it('hypotenuseFromLegs agrees with rectangle diagonal', () => {
+    const hyp = forge({ a: meter, b: meter }, meter, { via: hypotenuseFromLegs });
+    const diag = forge({ length: meter, width: meter }, meter, {
+      via: diagonalOfRectangleFromLengthAndWidth,
+    });
+    expect(hyp({ a: 5, b: 12 })).toBeCloseTo(diag({ length: 5, width: 12 }), 12);
+    expect(hyp({ a: 5, b: 12 })).toBeCloseTo(13, 12);
+  });
+
+  it('legFromHypotenuseAndLeg recovers the other leg', () => {
+    const fn = forge({ hypotenuse: meter, leg: meter }, meter, {
+      via: legFromHypotenuseAndLeg,
+    });
+    // 5-12-13: hyp=13, leg=5 → other leg = 12
+    expect(fn({ hypotenuse: 13, leg: 5 })).toBeCloseTo(12, 12);
+  });
+
+  it('legFromHypotenuseAndLeg rejects hypotenuse < leg', () => {
+    const fn = forge({ hypotenuse: meter, leg: meter }, meter, {
+      via: legFromHypotenuseAndLeg,
+    });
+    expect(() => fn({ hypotenuse: 3, leg: 5 })).toThrow(ValidationError);
   });
 });
 
