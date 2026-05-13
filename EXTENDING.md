@@ -41,7 +41,23 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
    });
    ```
 
-   `id` is a stable kebab-case string; `label` is the display name; `symbol` is the conventional short form (`'m²'`, `'GiB'`). Exactly one unit per dimension may set `base: true`.
+   Identity triple:
+   - `id`: stable kebab-case string (`'square-meter'`, `'kibibyte'`). Safe for persistence, dictionary keys, deep links. Never rename after release.
+   - `label`: human display name in title case (`'Square Meter'`, `'Kibibyte'`).
+   - `symbol`: conventional short form (`'m²'`, `'KiB'`, `'GB'`, emoji are fine for invented dimensions).
+
+   `base: true` semantics: marks the dimension's canonical unit, the one whose `toBase` / `fromBase` are identity (`(v) => v`). Every other unit in the dimension converts to/from this one. **Exactly one** unit per dimension may set `base: true`; the library has no compile-time check for this, so a duplicate base produces silent runtime ambiguity. The test suite is the safety net.
+
+   JS-binding naming convention: kebab `id` → camelCase JS export (`'square-meter'` → `squareMeter`). The demo's code-snippet renderer (`toJsName`) relies on this conversion; staying in pattern keeps live `forge(...)` snippets readable.
+
+   **`linear(scale)` helper, when to use:** the `linear()` export builds `{ toBase: v => v * scale, fromBase: b => b / scale }` for the common multiplicative case. **Kit units MUST NOT use it** (the spread breaks tree-shake; rule above). It is for userland one-offs at call sites that already pulled `linear` for another reason, where the tree-shake regression doesn't apply:
+
+   ```ts
+   // userland: fine.
+   import { defineUnit, linear } from 'unitforge';
+   import { LENGTH } from 'unitforge/dimensions';
+   const handspan = defineUnit({ id: 'handspan', label: 'Handspan', symbol: 'hsp', dimension: LENGTH, ...linear(0.235) });
+   ```
 
 4. **Author conversions** (if your kit has any). `/*#__PURE__*/`-mark them too. `compute` runs in base units; the library handles input/output unit normalization.
 
@@ -49,9 +65,17 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
    export const areaFromLengthAndWidth = /*#__PURE__*/ defineConversion({
      inputs: { length: LENGTH, width: LENGTH },
      output: AREA,
+     validate: {
+       length: (v) => v >= 0 || 'length must be >= 0',
+       width: (v) => v >= 0 || 'width must be >= 0',
+     },
      compute: ({ length, width }) => length * width,
    });
    ```
+
+   The `validate` map is optional, per-input, and aggregating: each validator returns `true` (pass) or a `string` error message (fail). A call with multiple bad inputs yields one `ValidationError` carrying one `ValidationFailure` per rejected input. Validators run on the values *as the consumer supplied them*, not the base-normalized form, so `length must be >= 0` reads naturally regardless of input unit.
+
+   Cross-kit conversions: a conversion that crosses two kits' dimensions (rare) lives in the more derived kit, alongside that kit's units. There is no shared `conversions/` directory; co-location keeps subpath tree-shake correct.
 
 5. **Barrel.** `src/kits/<kit>/index.ts` is just:
    ```ts
@@ -61,7 +85,21 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
 
 6. **package.json: do nothing.** The `./kits/*` wildcard export already handles the new subpath. Verify with `bun run check:package` (publint + arethetypeswrong).
 
-7. **Tests.** Add `test/kits/<kit>/units.test.ts` and `test/kits/<kit>/conversions.test.ts`. Existing kits are the template. Include a tree-shake sanity test if your kit has more than ~5 units.
+7. **Tests.** Add `test/kits/<kit>.test.ts` (single file per kit; existing kits use this shape). The four invariants every unit must hold:
+
+   1. Identity triple matches the documented `id` / `label` / `symbol`.
+   2. `dimension` is the right `Dimension` constant.
+   3. `toBase(known value)` returns the right base-unit number (use a reference value with a known conversion).
+   4. `fromBase` round-trips: `unit.fromBase(unit.toBase(x))` === `x` for representative `x`.
+
+   `base: true` is asserted **only** on the canonical base unit, never on derived units; a duplicate `base: true` is the silent foot-gun the test suite exists to catch.
+
+   For conversions:
+   - `compute(...)` returns the right output for representative inputs.
+   - `validate` rejects each documented bad-input case with the right message.
+   - `forge({...}, output, { via: conversion })({...})` returns the same value the bare `compute` would, across more than one input unit (proves normalization works).
+
+   No separate tree-shake test is required; the `check:package` step (publint + arethetypeswrong) and the kit-shape tests are the gate.
 
 8. **Update llms.txt** to list the new kit under `## Kits`.
 
@@ -78,21 +116,88 @@ The demo registers a kit in **three places**. Forget one and the kit silently do
    - `parts/<kit>-backdrop.tsx`: ambient background component.
    - `sections/<section>.tsx` per section.
 
-2. **Screen component** (`index.tsx`). Owns `BenchState`. Composes `<KitLayout>` zones:
-   ```tsx
-   <KitLayout
-     backdropZone={<Backdrop />}
-     benchZone={<Bench state={bench} onChange={setBench} options={LENGTH_UNITS} ... />}
-     sectionsZone={<><Section1 /><Section2 /></>}
-   />
+2. **Screen component** (`index.tsx`). Owns `BenchState`. `KitMeta` shape exported from this file is what `registry.ts` consumes.
+
+   ```ts
+   interface KitMeta {
+     id: KitId;               // route segment; the kit's hash path is `#/<id>`
+     label: string;           // lowercase, short ('geometry', 'data-storage')
+     blurb: string;           // one-sentence pitch shown on the home grid card
+     defaultThemeId: ThemeId; // '<kit>-dark' or '<kit>-light'
+     icon: LucideIcon;        // navigation card glyph
+     previewBg?: ComponentType<{ hovered: boolean }>; // inline backdrop preview; omit if the kit shouldn't appear on the home grid (forge is the only such case today)
+   }
    ```
-   Exports `meta: KitMeta` describing the kit (id, label, blurb, default theme, icon, optional `previewBg`).
+
+   Worked Screen example (lifted from `geometry/index.tsx`):
+
+   ```tsx
+   const GEOMETRY_BENCH_MIN = 0.1;
+   const GEOMETRY_BENCH_MAX = 100;
+   const GEOMETRY_BENCH_STEP = 0.1;
+
+   export function GeometryScreen() {
+     const [bench, setBench] = useState<BenchState>({
+       fromId: 'meter',  // must match a `units.LENGTH_UNITS[*].id`
+       toId: 'foot',
+       value: 5,
+     });
+     return (
+       <KitLayout
+         backdropZone={<GeometryBackdrop />}
+         headerZone={<header>...</header>}
+         benchZone={
+           <Bench
+             state={bench}
+             onChange={setBench}
+             options={LENGTH_UNITS}
+             min={GEOMETRY_BENCH_MIN}
+             max={GEOMETRY_BENCH_MAX}
+             step={GEOMETRY_BENCH_STEP}
+             codeFor={(s, r) =>
+               `forge(${toJsName(findById(LENGTH_UNITS, s.fromId).id)}, ${toJsName(findById(LENGTH_UNITS, s.toId).id)})(${formatMagnitude(s.value)}); // ${formatMagnitude(r)}`
+             }
+             label="forge bench · length"
+           />
+         }
+         sectionsZone={<><HelloUnit /><RectangleMachine /><CircleMachine /></>}
+       />
+     );
+   }
+
+   export const meta: KitMeta = {
+     id: 'geometry',
+     label: 'geometry',
+     blurb: '...',
+     defaultThemeId: 'geometry-light',
+     icon: Box,
+     previewBg: ({ hovered }) => <GeometryBackdrop inline scale={hovered ? 1.5 : 1} />,
+   };
+   ```
+
+   `BenchState` is `{ fromId: string; toId: string; value: number }`. The seed `fromId` / `toId` MUST be `id`s present in the unit catalog you pass as `options`; the bench has no fallback if the seed doesn't match (it'll throw via `findById`). `codeFor` receives `(state, result)` and returns the live code-block string shown under the bench's slider.
 
 3. **Register in `registry.ts`.** Import `<Kit>Screen` and `meta`; append to the `KITS` tuple. Order matters: position [0] is the home/default route.
 
 4. **Register theme in `theme/recipes.ts`.** Extend `KitId` to include `'<kit>'`; add `'<kit>-dark'` and `'<kit>-light'` entries in `THEMES`. Both variants are mandatory; the completeness check enforces it.
 
 5. **Theme CSS.** In `<kit>.css`, add `[data-theme='<kit>-dark']` and `[data-theme='<kit>-light']` blocks defining the `--uf-*` variable cascade. Import the CSS at the top of the kit's `index.tsx`.
+
+   Cascade variables every theme must set (defaults inherit from `demo/src/index.css` if you omit one, but each kit should set its own for visual coherence):
+
+   | Variable | Purpose |
+   | --- | --- |
+   | `--uf-bg` | Page / canvas background |
+   | `--uf-fg` | Default text color |
+   | `--uf-muted` | Secondary text, subdued labels |
+   | `--uf-accent` | Hover, focus ring, link, key data emphasis |
+   | `--uf-border` | Card and control borders |
+   | `--uf-card` | Card / panel surface background |
+   | `--uf-code-bg` | Code block background |
+   | `--uf-trace` / `--uf-trace-faint` | Backdrop trace lines (decorative; kit-specific) |
+   | `--uf-grid` / `--uf-grid-faint` | Backdrop grid color (kit-specific; geometry uses this for its engineering paper) |
+
+   The non-kit-specific vars (`--uf-sans`, `--uf-mono`, `--uf-display`, `--uf-brand`) come from `demo/src/index.css` and do not need to be redeclared per kit unless you want to override them.
 
 6. **Backdrop preview** (optional). If the kit appears on the home grid, define a `previewBg` in `meta` returning a tiny version of the backdrop for the navigation card.
 
@@ -168,6 +273,8 @@ When in doubt: look at what files changed. If `src/` is touched and the scope is
 ## Gotchas (the load-bearing things that aren't obvious)
 
 - **Tree-shake regression**: any `CallExpression` inside a `defineUnit` spec literal defeats per-export tree-shaking. Use inline closures, not `...linear(...)`, for kit units.
+- **Duplicate `base: true`**: two units in the same dimension with `base: true` is silent runtime ambiguity. The library has no compile-time guard. The test suite is the only thing that catches this; assert `base: true` on the canonical unit and nowhere else.
+- **Reserved prototype-pollution keys**: `defineUnit` and `defineConversion` route inputs through `safeCopy`, which throws if the spec contains the keys `__proto__`, `constructor`, or `prototype`. Don't pick these as `id`s, even for invented dimensions. The exported `RESERVED_PROTO_KEYS` set is the canonical list.
 - **Kit registration is 3 files**: `kits/<kit>/`, `registry.ts`, `theme/recipes.ts`. The TypeScript `KitId` union catches some omissions but not all.
 - **`Select.ItemText` drops `className`**: if you ever extend `UnitPicker`, the way to hide the item text without losing Radix type-ahead is to wrap `<Select.ItemText>` in an `sr-only` span, not pass the className to it.
 - **`Unit<D, T>` structural typing**: the demo's `UnitPicker` only requires `{ id, label, symbol }`. Adding a property to `Unit` in the lib won't break anything in the demo; removing `id`, `label`, or `symbol` will. Treat those three as a stability contract.
