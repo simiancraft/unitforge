@@ -55,6 +55,18 @@ export const VOLUME = 'volume' as const;
 export const DATA = 'data' as const;
 
 /**
+ * Plane angle. Canonical SI base unit: **radian**.
+ *
+ * Conventional units: radian (base), degree, gradian, arcminute, arcsecond,
+ * turn. Required by sector area, arc length, circular segment area, chord
+ * length, and any cross-derivation that takes an angular input. The math is
+ * closed-form only in radians, so radian-as-base keeps each conversion's
+ * `compute` body honest; degree-input callers convert through the unit
+ * boundary like any other unit.
+ */
+export const ANGLE = 'angle' as const;
+
+/**
  * The single source of truth for the set of built-in dimensions. The
  * `Dimension` type derives from this tuple, so adding a dimension here is
  * what makes it appear in IDE autocomplete at `defineUnit({ dimension: | })`
@@ -67,7 +79,7 @@ export const DATA = 'data' as const;
  * forgetting the tuple is "no autocomplete for the new dimension"; visible
  * the first time anyone tries to use it.
  */
-export const DIMENSIONS = [LENGTH, AREA, VOLUME, DATA] as const;
+export const DIMENSIONS = [LENGTH, AREA, VOLUME, DATA, ANGLE] as const;
 
 /**
  * Dimension identifier. Built-in literals (`LENGTH`, `AREA`, ...) preserve
