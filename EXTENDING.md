@@ -9,6 +9,50 @@ Two surfaces evolve together but independently:
 
 A new kit usually means changes in both; a new section is demo-only.
 
+## Kit categories
+
+Three categories of kit exist; they have different authoring rules. Decide which a new kit belongs to before opening the directory.
+
+### Foundational kits
+
+Canonical units in a well-known dimension. The base layer; other kits compose from them. Today: `geometry` (LENGTH + AREA + VOLUME units + 2D shape derivations), `solid-geometry` (3D shape derivations; imports units from `geometry`), `data-storage` (DATA). Future scope: `mass`, `time`, `thermodynamics`, `electromagnetism`, `force-and-energy`, `velocity`, `currency`.
+
+Authoring rules:
+- **Canon-correct.** Every `toBase` factor matches an authoritative source (NIST, IEC 80000, ISO, BIPM, IEEE). Wrong values in a foundational kit propagate through every downstream consumer.
+- **Comprehensive within the dimension.** A foundational LENGTH kit ships every unit a working practitioner reasonably expects; a foundational MASS kit similarly. Coverage gaps in foundationals force composition kits to invent shadow units.
+- **JSDoc cites the standard.** e.g., `/** = 0.3048 m exactly per international yard and pound agreement of 1959. */`.
+- **Reviewer pairing**: a domain expert (geometer, pharmacist, data-hoarder, mrp-planner, astrometrist, antiquary, color-scientist) plus the architect for surface coherence.
+
+### Composition kits
+
+A curated barrel for a working domain. Re-exports a tightly-scoped subset of atomic units from one or more foundational kits, plus a small number of domain-specific units and conversions. The point is to give a working professional a coherent, scoped surface, not to be canonically complete in any single dimension.
+
+Examples (proposed; none shipped yet): `home-improvement` (contractor subset of geometry + mass + light electrical + light finance + domain units like `boardFoot`, `roofingSquare`, `drywallSheet`), `kitchen-baking` (subset of mass + volume + temperature + time + baker's-percentage math), `sewing` (yard + fat-quarter + seam-allowance), `real-estate` (square foot + lot acreage + price-per-sqft).
+
+Authoring rules:
+- **Re-export atomic units, do not redefine them.** A composition kit's barrel imports `foot` from `kits/geometry` and re-exports it. The `Unit` instance is the same JS object across both kits; `forge(home.foot, geom.foot)` is identity. Redefining `foot` in two places creates two distinct `Unit` instances that fail at runtime when consumers cross them.
+- **Add 3-10 domain-specific units and conversions.** More than that and you are probably splitting a foundational kit. Fewer than that and the kit is not earning its keep as a curation layer; just import the foundational directly.
+- **Pedagogy: demos teach the domain, not the dimension.** A `home-improvement` demo shows "how many drywall sheets does this wall need?", not "what is a square foot?".
+- **Reviewer pairing**: a working-profession expert (a contractor, a pharmacist for pharmacy, etc.) plus the architect for surface coherence. The foundational kits the composition borrows from were already canon-checked, so the canon lens is light.
+
+### In-universe kits
+
+Invented dimensions for fictional or in-universe domains. Mostly self-contained; their dimensions do not overlap with foundational kits.
+
+Examples: `battletech` (TONNAGE, DAMAGE, HEAT, MP, BV, C-BILLS), the bundled crouton teaching demo in the forge kit (COUNT with wheat/ore/city). Future possibilities: `dnd-currency` (copper / silver / gold / platinum, 1:10 scaling), `sci-fi-power-levels` (Kardashev scale), `magic-mana`.
+
+Authoring rules:
+- **Invent dimensions freely.** `defineUnit` and `defineConversion` treat user-defined dimensions as first-class; this is the proof-of-abstraction category.
+- **Prefix dimension names with the universe** to avoid collision (`battletech-heat`, not just `heat`).
+- **Cite the source material**: rulebook edition, record sheets, canon publication. For BattleTech specifically: edition (3025 / TR&O / TW / TM / ilClan) and tech base (Inner Sphere / Clan) matter; the grognard reviewer is relentless about this.
+- **Reviewer pairing**: the appropriate genre lens (battletech-grognard for BattleTech, antiquary for historical metrology, etc.). The architect is optional here because the kit is not composing from anything.
+
+### Cross-kit imports
+
+Cross-kit imports between foundational and composition kits are blessed and tree-shake-correct. Every export is `/*#__PURE__*/` and named, so a composition kit's barrel pays the byte cost only of the exports it actually re-exports. A consumer who imports `foot` from `kits/home-improvement` gets the same `Unit` instance, the same bytes, and the same conversion behavior as importing it from `kits/geometry` directly.
+
+This is the load-bearing architectural claim that makes the composition category viable: domain composition is a curation problem, not an engineering one.
+
 ## Adding a unit kit (lib side)
 
 Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and (optionally) cross-dimensional conversions.
