@@ -48,6 +48,23 @@ export const byte = /*#__PURE__*/ defineUnit({
   base: true,
 });
 
+/** 1 octet = 8 bits ≡ 1 byte. Identical to {@link byte} on every system
+ *  this library targets; shipped as a separate unit because RFC / IETF
+ *  network literature uses "octet" precisely to disambiguate from
+ *  historically variable byte sizes on older architectures (the PDP-10
+ *  used 9-bit and 36-bit bytes; the convention is no longer relevant on
+ *  modern hardware but the RFC vocabulary survived). The conversion is
+ *  intentionally not the identity closure so reference-equality checks
+ *  treat `byte` and `octet` as distinct units. */
+export const octet = /*#__PURE__*/ defineUnit({
+  id: 'octet',
+  label: 'Octet',
+  symbol: 'o',
+  dimension: DATA,
+  toBase: (v) => v * 1,
+  fromBase: (b) => b / 1,
+});
+
 /** 1 kB = 1000 bytes (decimal/SI; per BIPM SI Brochure Table 7 and the
  *  disk-industry convention codified by IDEMA / SFF). */
 export const kilobyte = /*#__PURE__*/ defineUnit({
@@ -232,7 +249,12 @@ export const yobibyte = /*#__PURE__*/ defineUnit({
 
 // ─── BITS (1 bit = 1/8 byte; decimal multiples for throughput) ───────────
 
-/** 1 bit = 0.125 byte; 8 bits = 1 byte. */
+/** 1 bit = 0.125 byte; 8 bits = 1 byte.
+ *
+ *  IEC 80000-13 specifies the symbol as lowercase `b`; this kit ships the
+ *  symbol as `bit` instead because lowercase `b` is the dominant source of
+ *  the "is it bits or bytes" confusion the kit exists to prevent, and the
+ *  spelled-out word is unambiguous in any caller-facing UI. */
 export const bit = /*#__PURE__*/ defineUnit({
   id: 'bit',
   label: 'Bit',

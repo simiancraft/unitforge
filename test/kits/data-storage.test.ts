@@ -15,6 +15,7 @@ import {
   mebibyte,
   megabit,
   megabyte,
+  octet,
   pebibyte,
   petabit,
   petabyte,
@@ -52,6 +53,35 @@ describe('data-storage/units: bytes (decimal)', () => {
       expect(byte.fromBase(0)).toBe(0);
       expect(byte.fromBase(1)).toBe(1);
       expect(byte.fromBase(123.456)).toBe(123.456);
+    });
+  });
+
+  describe('octet (RFC alias of byte)', () => {
+    it('has the right shape', () => {
+      expect(octet.id).toBe('octet');
+      expect(octet.label).toBe('Octet');
+      expect(octet.symbol).toBe('o');
+      expect(octet.dimension).toBe(DATA);
+      expect(octet.base).toBeUndefined();
+    });
+    it('1 octet = 1 byte via toBase', () => {
+      expect(octet.toBase(1)).toBe(1);
+      expect(octet.toBase(8)).toBe(8);
+    });
+    it('1 byte = 1 octet via fromBase', () => {
+      expect(octet.fromBase(1)).toBe(1);
+      expect(octet.fromBase(8)).toBe(8);
+    });
+    it('is a distinct Unit value from byte (not the same reference)', () => {
+      expect(octet).not.toBe(byte);
+    });
+    it('forge round-trips identically with byte', () => {
+      expect(forge(octet, byte)(123.456)).toBe(123.456);
+      expect(forge(byte, octet)(123.456)).toBe(123.456);
+    });
+    it('forge octet → bit gives 8 bits per octet', () => {
+      expect(forge(octet, bit)(1)).toBe(8);
+      expect(forge(bit, octet)(8)).toBe(1);
     });
   });
 
