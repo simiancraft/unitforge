@@ -29,7 +29,7 @@ export const LENGTH = 'length' as const;
  * Spatial extent in two dimensions. Canonical SI base unit: **square meter**.
  *
  * Typically produced cross-dimensionally from two `LENGTH` values via a
- * `defineConversion` (e.g., `areaFromLengthAndWidth`); see `kits/geometry`.
+ * `defineConversion` (e.g., `areaFromRectangleLengthAndWidth`); see `kits/geometry`.
  * Kits may also declare AREA units directly (acre, hectare).
  */
 export const AREA = 'area' as const;
@@ -38,7 +38,7 @@ export const AREA = 'area' as const;
  * Spatial extent in three dimensions. Canonical SI base unit: **cubic meter**.
  *
  * Typically produced cross-dimensionally from three `LENGTH` values (e.g.,
- * `volumeFromLengthAndWidthAndHeight`) or from a single radius (sphere,
+ * `volumeFromCuboidLengthAndWidthAndHeight`) or from a single radius (sphere,
  * cylinder); see `kits/geometry`. Liter (1 L = 0.001 m³) is also conventional.
  */
 export const VOLUME = 'volume' as const;
