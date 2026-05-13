@@ -32,6 +32,23 @@
 // The two patterns are deliberate. The prefix-noun in pattern 2 signals
 // that you're asking for a named measurement, not a cross-dimensional
 // transformation.
+//
+// Three-input collective-noun rule: when a shape has three or more
+// equally-named scalar inputs that resist a natural pair-up (e.g. the
+// cuboid's length / width / height), prefer a collective noun
+// (`Dimensions`, `Sides`, `Vertices`) over the chained `AAndBAndC`
+// form. Example: `volumeFromCuboidDimensions`, not
+// `volumeFromCuboidLengthAndWidthAndHeight`. Two-input names retain the
+// `AAndB` shape because the chain is short enough to read.
+//
+// Multi-output sub-pattern: a conversion's `output` may be an
+// `{ key: DIMENSION, ... }` object instead of a single dimension when
+// the result is a composite that would lose information if collapsed.
+// `midpointBetweenPoints` returns `{ x: LENGTH, y: LENGTH }`;
+// `cartesianFromPolar` / `polarFromCartesian` follow the same shape.
+// Single-scalar outputs remain the default; reach for the object form
+// only when the output is structurally a tuple (a point, a polar pair,
+// a complex number, etc.).
 
 import { defineConversion } from '../../define.js';
 import { ANGLE, AREA, LENGTH, VOLUME } from '../../dimensions.js';
@@ -290,7 +307,7 @@ export const areaFromRegularPolygonApothemAndPerimeter =
 // ─── VOLUME derivations ──────────────────────────────────────────────────
 
 /** Cross-dimensional: cuboid (rectangular-prism) volume = length × width × height (base units). */
-export const volumeFromCuboidLengthAndWidthAndHeight = /*#__PURE__*/ defineConversion({
+export const volumeFromCuboidDimensions = /*#__PURE__*/ defineConversion({
   inputs: { length: LENGTH, width: LENGTH, height: LENGTH },
   output: VOLUME,
   validate: {

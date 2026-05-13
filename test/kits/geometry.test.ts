@@ -88,7 +88,7 @@ import {
   statuteMile,
   turn,
   volumeFromCubeSide,
-  volumeFromCuboidLengthAndWidthAndHeight,
+  volumeFromCuboidDimensions,
   volumeFromCylinderRadiusAndHeight,
   volumeFromSphereRadius,
   yard,
@@ -1286,24 +1286,24 @@ describe('geometry/conversions: ellipse perimeter (Ramanujan II)', () => {
 });
 
 describe('geometry/conversions: VOLUME derivations', () => {
-  describe('volumeFromCuboidLengthAndWidthAndHeight', () => {
+  describe('volumeFromCuboidDimensions', () => {
     it('l × w × h = volume in base units', () => {
       const fn = forge({ length: meter, width: meter, height: meter }, cubicMeter, {
-        via: volumeFromCuboidLengthAndWidthAndHeight,
+        via: volumeFromCuboidDimensions,
       });
       expect(fn({ length: 2, width: 3, height: 4 })).toBeCloseTo(24, 12);
       expect(fn({ length: 0, width: 5, height: 5 })).toBe(0);
     });
     it('honors mixed input units (cm × m × m)', () => {
       const fn = forge({ length: centimeter, width: meter, height: meter }, cubicMeter, {
-        via: volumeFromCuboidLengthAndWidthAndHeight,
+        via: volumeFromCuboidDimensions,
       });
       // 200 cm = 2 m; 2 × 3 × 4 = 24 m³
       expect(fn({ length: 200, width: 3, height: 4 })).toBeCloseTo(24, 9);
     });
     it('rejects any negative dimension; aggregates failures', () => {
       const fn = forge({ length: meter, width: meter, height: meter }, cubicMeter, {
-        via: volumeFromCuboidLengthAndWidthAndHeight,
+        via: volumeFromCuboidDimensions,
       });
       let caught: ValidationError | null = null;
       try {

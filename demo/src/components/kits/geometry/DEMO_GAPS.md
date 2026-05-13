@@ -69,7 +69,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [ ] `areaFromRegularPolygonApothemAndPerimeter`
 
 ### Volume derivations
-- [ ] `volumeFromCuboidLengthAndWidthAndHeight`
+- [ ] `volumeFromCuboidDimensions`
 - [ ] `volumeFromCubeSide`
 - [ ] `volumeFromSphereRadius`
 - [ ] `volumeFromCylinderRadiusAndHeight`

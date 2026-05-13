@@ -38,7 +38,7 @@ export const AREA = 'area' as const;
  * Spatial extent in three dimensions. Canonical SI base unit: **cubic meter**.
  *
  * Typically produced cross-dimensionally from three `LENGTH` values (e.g.,
- * `volumeFromCuboidLengthAndWidthAndHeight`) or from a single radius (sphere,
+ * `volumeFromCuboidDimensions`) or from a single radius (sphere,
  * cylinder); see `kits/geometry`. Liter (1 L = 0.001 m³) is also conventional.
  */
 export const VOLUME = 'volume' as const;
