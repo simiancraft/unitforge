@@ -41,7 +41,7 @@ interface UnitPickerProps {
 
 function UnitRow({ unit }: { unit: Unit }) {
   return (
-    <span className="inline-flex items-center gap-3">
+    <span className="flex items-center gap-3">
       <span className="mono font-semibold">{unit.symbol}</span>
       <span className="text-uf-muted">{unit.label}</span>
     </span>
