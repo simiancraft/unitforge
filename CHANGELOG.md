@@ -1,3 +1,53 @@
+# [2.0.0](https://github.com/simiancraft/unitforge/compare/v1.1.1...v2.0.0) (2026-05-13)
+
+
+* feat(api)!: surface defineUnit shape change for v2.0.0 release ([1628843](https://github.com/simiancraft/unitforge/commit/1628843eca184564d9288ae5b9eeda2736bfd5e7))
+
+
+### Bug Fixes
+
+* **demo:** clear check pipeline (react-compiler + biome useLiteralKeys) ([70f6dca](https://github.com/simiancraft/unitforge/commit/70f6dcaa85def37577ea9f51dacc0a72f912c856))
+* **demo:** darken throughput-bar label to neutral-500 ([8e5eaca](https://github.com/simiancraft/unitforge/commit/8e5eaca4f1547962548b198c8eb618cf6e3d6b2d)), closes [#888](https://github.com/simiancraft/unitforge/issues/888) [#888888](https://github.com/simiancraft/unitforge/issues/888888) [#737373](https://github.com/simiancraft/unitforge/issues/737373) [#a3a3a3](https://github.com/simiancraft/unitforge/issues/a3a3a3)
+* **demo:** drop display:contents on forge shake-target wrapper ([23ffc2f](https://github.com/simiancraft/unitforge/commit/23ffc2feac2352fcbfb22fdeb9ac5134da27b1b6))
+* **demo:** drop ref-during-render in useSvgPointerDrag for compiler ([ae7b181](https://github.com/simiancraft/unitforge/commit/ae7b181a55a4dda2e3bc3cb15b8efd97d9c4fbe3))
+* **demo:** drop remaining toExponential sites in bench and kit indexes ([c8846c3](https://github.com/simiancraft/unitforge/commit/c8846c3a9d09c9ff1bf039d1075d80bce998d159))
+* **demo:** plain-decimal readouts, no scientific notation, no zero collapse ([6ba4430](https://github.com/simiancraft/unitforge/commit/6ba44303aeb11091d4aef8382c7a678d7dc8a469)), closes [#14](https://github.com/simiancraft/unitforge/issues/14) [#16](https://github.com/simiancraft/unitforge/issues/16)
+* **demo:** satisfy biome noSvgWithoutTitle on inline brand glyphs ([9ef0fb4](https://github.com/simiancraft/unitforge/commit/9ef0fb4e14cb00ef15a68ee911ef936da7534d81))
+* **demo:** sr-only Select.ItemText so unit rows aren't duplicated ([72d68d9](https://github.com/simiancraft/unitforge/commit/72d68d90c16bbaf27613dd539e9fda745045f9d3))
+* **demo:** swap throughput-bar label blend mode for legibility ([3b71b14](https://github.com/simiancraft/unitforge/commit/3b71b14d39c9ed97da87fe92afb40b2ecdfb855e))
+* **demo:** use flex on UnitRow for cleaner baseline alignment ([51747cd](https://github.com/simiancraft/unitforge/commit/51747cdbb1872ee3e2623486e817bd2355f81d54))
+* **demo:** use Radix Select's supported trigger-rendering path ([71268be](https://github.com/simiancraft/unitforge/commit/71268bec7a3195f7ed64c141db5dfc000e12db53))
+* **demo:** wrap Select.ItemText in sr-only span ([1c3b248](https://github.com/simiancraft/unitforge/commit/1c3b248dc21d6c5570804e0b35e71b1ac33bfdf9))
+
+
+### Features
+
+* **demo:** drive-vs-os adds side-by-side bars + file-count infographic ([3efd967](https://github.com/simiancraft/unitforge/commit/3efd967604ac14a8937a56c4703a7f56b5de785d))
+* **demo:** expand footer with author + social links ([6c23d40](https://github.com/simiancraft/unitforge/commit/6c23d40505fccddb19f4122dd426c3ddd32d73ea))
+* **demo:** forge the throughput sweep mapping (real-time → view-time) ([c2390ed](https://github.com/simiancraft/unitforge/commit/c2390ed9785cbc1311464197c43ef3a5b7556043))
+* **demo:** live-template every CODE sample from current widget state ([e934021](https://github.com/simiancraft/unitforge/commit/e934021d3c29e5e298e4697e94a79b0295ee6d1b))
+* **demo:** shrink very long digit strings in hello-bytes matrix ([858f421](https://github.com/simiancraft/unitforge/commit/858f4214e451d89f1eded8c2f26f2043a09487fc))
+* **demo:** stack labels above readouts in hello-bytes matrix ([e858a43](https://github.com/simiancraft/unitforge/commit/e858a4343979a46955a46e7f150e4d1778012d4c))
+* **demo:** swap UnitPicker to Radix Select with two-tone rows ([99285b2](https://github.com/simiancraft/unitforge/commit/99285b23f04b95582a118340e4ccae6594876526))
+
+
+### Performance Improvements
+
+* **demo:** coalesce SVG drag updates with rAF in use-svg-pointer-drag ([3a171f1](https://github.com/simiancraft/unitforge/commit/3a171f14824e559dc7265e65cfe023abd9363484)), closes [hi#poll-rate](https://github.com/hi/issues/poll-rate) [#17](https://github.com/simiancraft/unitforge/issues/17)
+* **demo:** replace RAM-stick LED stagger useEffect with CSS transition-delay ([3189cb7](https://github.com/simiancraft/unitforge/commit/3189cb755e8bb5bfe924d0feef595b4c50b28487))
+
+
+### BREAKING CHANGES
+
+* defineUnit spec replaces the single readonly `name`
+with three readonly strings: `id` (stable kebab-case identifier,
+`'square-meter'`), `label` (human display name, `'Square Meter'`),
+and `symbol` (conventional short form, `'m²'`). Consumers calling
+`defineUnit({ name: ... })` must migrate by splitting the field;
+consumers reading `unit.name` must choose `id`, `label`, or `symbol`
+based on use site (persistence, display, or short form). The Unit
+interface's `name` property is removed.
+
 ## [1.1.1](https://github.com/simiancraft/unitforge/compare/v1.1.0...v1.1.1) (2026-05-12)
 
 
