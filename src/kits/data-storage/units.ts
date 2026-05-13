@@ -271,3 +271,26 @@ export const gigabit = /*#__PURE__*/ defineUnit({
   toBase: (v) => v * 125_000_000,
   fromBase: (b) => b / 125_000_000,
 });
+
+/** 1 Tbit = 10¹² bits = 125 × 10⁹ bytes (decimal; per IEEE 802.3).
+ *  Operational scale: 400 GbE shipped years ago, 800 GbE switches are in
+ *  production, 1.6 TbE is in IEEE 802.3dj draft as of 2026. */
+export const terabit = /*#__PURE__*/ defineUnit({
+  id: 'terabit',
+  label: 'Terabit',
+  symbol: 'Tbit',
+  dimension: DATA,
+  toBase: (v) => v * 125_000_000_000,
+  fromBase: (b) => b / 125_000_000_000,
+});
+
+/** 1 Pbit = 10¹⁵ bits = 125 × 10¹² bytes (decimal; per IEEE 802.3).
+ *  Operational scale: aggregate backbone capacity is quoted in Pbit/s. */
+export const petabit = /*#__PURE__*/ defineUnit({
+  id: 'petabit',
+  label: 'Petabit',
+  symbol: 'Pbit',
+  dimension: DATA,
+  toBase: (v) => v * 125_000_000_000_000,
+  fromBase: (b) => b / 125_000_000_000_000,
+});

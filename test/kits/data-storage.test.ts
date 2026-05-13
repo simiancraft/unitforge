@@ -16,8 +16,10 @@ import {
   megabit,
   megabyte,
   pebibyte,
+  petabit,
   petabyte,
   tebibyte,
+  terabit,
   terabyte,
   yobibyte,
   yottabyte,
@@ -362,6 +364,36 @@ describe('data-storage/units: bits', () => {
     });
     it('125 000 000 B = 1 Gbit via fromBase', () => {
       expect(gigabit.fromBase(125_000_000)).toBe(1);
+    });
+  });
+
+  describe('terabit', () => {
+    it('has the right shape', () => {
+      expect(terabit.id).toBe('terabit');
+      expect(terabit.label).toBe('Terabit');
+      expect(terabit.symbol).toBe('Tbit');
+      expect(terabit.dimension).toBe(DATA);
+    });
+    it('1 Tbit = 125 × 10⁹ B via toBase', () => {
+      expect(terabit.toBase(1)).toBe(125_000_000_000);
+    });
+    it('125 × 10⁹ B = 1 Tbit via fromBase', () => {
+      expect(terabit.fromBase(125_000_000_000)).toBe(1);
+    });
+  });
+
+  describe('petabit', () => {
+    it('has the right shape', () => {
+      expect(petabit.id).toBe('petabit');
+      expect(petabit.label).toBe('Petabit');
+      expect(petabit.symbol).toBe('Pbit');
+      expect(petabit.dimension).toBe(DATA);
+    });
+    it('1 Pbit = 125 × 10¹² B via toBase', () => {
+      expect(petabit.toBase(1)).toBe(125_000_000_000_000);
+    });
+    it('125 × 10¹² B = 1 Pbit via fromBase', () => {
+      expect(petabit.fromBase(125_000_000_000_000)).toBe(1);
     });
   });
 });
