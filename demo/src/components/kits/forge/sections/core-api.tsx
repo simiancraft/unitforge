@@ -3,21 +3,31 @@
 // library is small; deep enough to send a reader into a kit or into the
 // "build your own kit" demo below.
 
-import { CodeBlock } from '~/components/CodeBlock.js';
+import { CodeBlock } from '~/components/ui/code-block.js';
 
 const FORGE_CODE = `import { forge } from 'unitforge';
-import { meter, foot } from 'unitforge/kits/geometry';
+import { foot, squareFoot } from 'unitforge/kits/geometry';
 
-const meterToFeet = forge(meter, foot);
+// Within-dimension: the handspan unit from card 1 → foot.
+const inFeet = forge(handspan, foot);
+inFeet(12);  // 9.252
 
-meterToFeet(5);    // 16.4042
-meterToFeet(100);  // 328.084
-meterToFeet(1.5);  // 4.9212`;
+// Cross-dimensional: two handspans piped through the
+// areaFromRectangle conversion from card 2; result lands
+// in square feet.
+const inSqFt = forge(
+  { length: handspan, width: handspan },
+  squareFoot,
+  { via: areaFromRectangle },
+);
+inSqFt({ length: 12, width: 8 });  // 57.067`;
 
 const DEFINE_UNIT_CODE = `import { defineUnit } from 'unitforge';
 
 const handspan = defineUnit({
-  name: 'handspan',
+  id: 'handspan',
+  label: 'Handspan',
+  symbol: 'hsp',
   dimension: 'length',
   toBase: (v) => v * 0.235,
   fromBase: (b) => b / 0.235,

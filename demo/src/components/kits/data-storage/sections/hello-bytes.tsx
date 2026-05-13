@@ -5,91 +5,78 @@
 
 import { Cpu } from 'lucide-react';
 import { useState } from 'react';
-import type { Unit } from 'unitforge';
 import { forge } from 'unitforge';
-import { byte } from 'unitforge/kits/data-storage';
-import { CodeBlock } from '~/components/CodeBlock.js';
-import { Result } from '~/components/Result.js';
-import { Slider } from '~/components/Slider.js';
-import { UnitPicker } from '~/components/UnitPicker.js';
+import { byte, gibibyte, megabit } from 'unitforge/kits/data-storage';
+import { CodeBlock } from '~/components/ui/code-block.js';
+import { Result } from '~/components/ui/result.js';
+import { Slider } from '~/components/ui/slider.js';
+import { UnitPicker } from '~/components/ui/unit-picker.js';
+import { cn } from '~/lib/cn.js';
+import { formatMagnitude, toJsName } from '~/lib/format.js';
+import { findById } from '~/lib/units.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import {
   DATA_ALL_UNITS,
   DATA_BINARY_UNITS,
   DATA_BIT_UNITS,
   DATA_DECIMAL_UNITS,
-  type DataKey,
-  findByKey,
-  pickerOptions,
-} from '~/lib/units.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
+  type DataUnit,
+} from '../units.js';
 
-// Per-unit slider bounds so the range stays pedagogical at every scale:
-// 1-1e6 bytes is interesting; 1-2000 GB is the canonical drive-size range.
-// Record<DataKey,...> means TS enforces a row for every unit; adding a
-// new data unit without a range here is a compile error.
-const SLIDER_RANGE: Record<DataKey, { min: number; max: number; step: number; init: number }> = {
-  B: { min: 1, max: 1_000_000, step: 1000, init: 500_000 },
-  kB: { min: 1, max: 10_000, step: 1, init: 500 },
-  MB: { min: 1, max: 10_000, step: 1, init: 500 },
-  GB: { min: 1, max: 2000, step: 1, init: 500 },
-  TB: { min: 0.1, max: 100, step: 0.1, init: 1 },
-  PB: { min: 0.01, max: 10, step: 0.01, init: 1 },
-  KiB: { min: 1, max: 10_000, step: 1, init: 500 },
-  MiB: { min: 1, max: 10_000, step: 1, init: 500 },
-  GiB: { min: 1, max: 2000, step: 1, init: 500 },
-  TiB: { min: 0.1, max: 100, step: 0.1, init: 1 },
-  PiB: { min: 0.01, max: 10, step: 0.01, init: 1 },
+interface SliderBounds {
+  min: number;
+  max: number;
+  step: number;
+  init: number;
+}
+
+// Per-unit slider bounds, keyed by the unit's stable id. 1-1e6 bytes is
+// interesting; 1-2000 GB is the canonical drive-size range. Missing ids
+// fall back to DEFAULT_BOUNDS at lookup time.
+const SLIDER_RANGE: Record<string, SliderBounds> = {
+  byte: { min: 1, max: 1_000_000, step: 1000, init: 500_000 },
+  kilobyte: { min: 1, max: 10_000, step: 1, init: 500 },
+  megabyte: { min: 1, max: 10_000, step: 1, init: 500 },
+  gigabyte: { min: 1, max: 2000, step: 1, init: 500 },
+  terabyte: { min: 0.1, max: 100, step: 0.1, init: 1 },
+  petabyte: { min: 0.01, max: 10, step: 0.01, init: 1 },
+  kibibyte: { min: 1, max: 10_000, step: 1, init: 500 },
+  mebibyte: { min: 1, max: 10_000, step: 1, init: 500 },
+  gibibyte: { min: 1, max: 2000, step: 1, init: 500 },
+  tebibyte: { min: 0.1, max: 100, step: 0.1, init: 1 },
+  pebibyte: { min: 0.01, max: 10, step: 0.01, init: 1 },
   bit: { min: 1, max: 1_000_000, step: 1000, init: 1000 },
-  kbit: { min: 1, max: 10_000, step: 1, init: 1000 },
-  Mbit: { min: 1, max: 10_000, step: 1, init: 100 },
-  Gbit: { min: 0.1, max: 100, step: 0.1, init: 1 },
+  kilobit: { min: 1, max: 10_000, step: 1, init: 1000 },
+  megabit: { min: 1, max: 10_000, step: 1, init: 100 },
+  gigabit: { min: 0.1, max: 100, step: 0.1, init: 1 },
 };
 
-const CODE = `import { forge } from 'unitforge';
-import {
-  byte, gigabyte, gibibyte, megabit,
-} from 'unitforge/kits/data-storage';
-
-const bytes = forge(gigabyte, byte)(500); // 5e11
-const inGiB = forge(byte, gibibyte)(bytes); // 465.66
-const inMbit = forge(byte, megabit)(bytes); // 4e6
-`;
+const DEFAULT_BOUNDS: SliderBounds = { min: 1, max: 1000, step: 1, init: 100 };
 
 interface BytesState {
-  unitKey: DataKey;
+  unitId: string;
   value: number;
 }
 
 export function HelloBytes() {
-  // value + unitKey held atomically: switching units resets value to that
+  // value + unitId held atomically: switching units resets value to that
   // unit's pedagogical default in the same render, so the slider never
   // briefly shows a clamped position that disagrees with the underlying
   // state.
-  const [state, setState] = useState<BytesState>({ unitKey: 'GB', value: 500 });
-  const range = SLIDER_RANGE[state.unitKey];
+  const [state, setState] = useState<BytesState>({ unitId: 'gigabyte', value: 500 });
+  const range = SLIDER_RANGE[state.unitId] ?? DEFAULT_BOUNDS;
 
-  const setUnitKey = (next: DataKey) => {
-    setState({ unitKey: next, value: SLIDER_RANGE[next].init });
+  const handleUnitIdChange = (next: string) => {
+    setState({ unitId: next, value: (SLIDER_RANGE[next] ?? DEFAULT_BOUNDS).init });
   };
-  const setValue = (next: number) => {
+  const handleValueChange = (next: number) => {
     setState((s) => ({ ...s, value: next }));
   };
 
-  const fromUnit = findByKey(DATA_ALL_UNITS, state.unitKey);
-  const inBytes = forge(fromUnit.unit, byte)(state.value);
-
-  const renderRows = (
-    list: ReadonlyArray<{ key: string; label: string; unit: Unit<'data', number> }>,
-    family: string,
-  ): React.ReactNode => (
-    <div className="flex flex-col gap-1">
-      <span className="uf-eyebrow">{family}</span>
-      {list.map((opt) => {
-        const v = forge(byte, opt.unit)(inBytes);
-        return <Result key={opt.key} label={opt.label} value={`${formatNum(v)} ${opt.key}`} />;
-      })}
-    </div>
-  );
+  const fromUnit = findById(DATA_ALL_UNITS, state.unitId);
+  const inBytes = forge(fromUnit, byte)(state.value);
+  const inGiB = forge(byte, gibibyte)(inBytes);
+  const inMbit = forge(byte, megabit)(inBytes);
 
   return (
     <SectionLayout
@@ -109,43 +96,135 @@ export function HelloBytes() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <UnitPicker
-              label="input unit"
-              value={state.unitKey}
-              options={pickerOptions(DATA_ALL_UNITS)}
-              onChange={setUnitKey}
-            />
-            <Slider
-              label={`value (${fromUnit.key})`}
+        <WidgetLayout
+          interactionZone={
+            <HelloBytesWidget
+              unitId={state.unitId}
               value={state.value}
-              min={range.min}
-              max={range.max}
-              step={range.step}
-              onChange={setValue}
-              suffix={fromUnit.key}
+              range={range}
+              inBytes={inBytes}
+              onUnitIdChange={handleUnitIdChange}
+              onValueChange={handleValueChange}
             />
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {renderRows(DATA_DECIMAL_UNITS, 'decimal (SI)')}
-            {renderRows(DATA_BINARY_UNITS, 'binary (IEC)')}
-            {renderRows(DATA_BIT_UNITS, 'bits')}
-          </div>
-        </div>
+          }
+          codeZone={
+            <CodeBlock code={buildCode(fromUnit.id, state.value, inBytes, inGiB, inMbit)} />
+          }
+        />
       }
-      codeZone={<CodeBlock code={CODE} />}
     />
   );
 }
 
-function formatNum(n: number): string {
-  if (n === 0) return '0';
-  const abs = Math.abs(n);
-  if (abs >= 1e15) return n.toExponential(3);
-  if (abs >= 1000) return n.toFixed(2);
-  if (abs >= 1) return n.toFixed(3);
-  if (abs >= 1e-3) return n.toFixed(5);
-  return n.toExponential(3);
+interface HelloBytesWidgetProps {
+  unitId: string;
+  value: number;
+  range: SliderBounds;
+  inBytes: number;
+  onUnitIdChange: (next: string) => void;
+  onValueChange: (next: number) => void;
+}
+
+function HelloBytesWidget({
+  unitId,
+  value,
+  range,
+  inBytes,
+  onUnitIdChange,
+  onValueChange,
+}: HelloBytesWidgetProps) {
+  const fromUnit = findById(DATA_ALL_UNITS, unitId);
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <UnitPicker
+          label="input unit"
+          value={unitId}
+          units={DATA_ALL_UNITS}
+          onChange={onUnitIdChange}
+        />
+        <Slider
+          label={`value (${fromUnit.symbol})`}
+          value={value}
+          min={range.min}
+          max={range.max}
+          step={range.step}
+          onChange={onValueChange}
+          suffix={fromUnit.symbol}
+        />
+      </div>
+
+      <ReadoutMatrix inBytes={inBytes} />
+    </div>
+  );
+}
+
+// Three-column readout matrix; a "billboard" that maps one canonical
+// byte count to every unit-family at once. Named Organ extraction: sink
+// (no state of its own), bounded prop surface (just inBytes), runs on
+// the slider-driven cadence while pickers above it tick on rare unit
+// changes. Pulling it out lets the compiler memoize each Result row
+// inside without re-walking the SectionLayout chrome.
+interface ReadoutColumn {
+  family: string;
+  units: ReadonlyArray<DataUnit>;
+}
+
+const READOUT_COLUMNS: readonly ReadoutColumn[] = [
+  { family: 'decimal (SI)', units: DATA_DECIMAL_UNITS },
+  { family: 'binary (IEC)', units: DATA_BINARY_UNITS },
+  { family: 'bits', units: DATA_BIT_UNITS },
+];
+
+// Digit-count threshold above which a value gets shrunk one font step.
+// bit/byte rows in PiB-scale inputs reach 16+ digits; at the default
+// text-sm those overflow the column and crowd the label above. Counted
+// in digit chars (no commas, no decimal point, no unit suffix) so the
+// threshold is about the value itself, not the formatter's separators.
+const LONG_DIGIT_THRESHOLD = 11;
+
+function ReadoutMatrix({ inBytes }: { inBytes: number }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {READOUT_COLUMNS.map((col) => (
+        <div key={col.family} className="flex flex-col gap-1">
+          <span className="uf-eyebrow">{col.family}</span>
+          {col.units.map((unit) => {
+            const v = forge(byte, unit)(inBytes);
+            const formatted = formatMagnitude(v);
+            const digitCount = formatted.match(/\d/g)?.length ?? 0;
+            return (
+              <Result
+                key={unit.id}
+                layout="stack"
+                label={unit.label}
+                value={`${formatted} ${unit.symbol}`}
+                valueClassName={cn(digitCount > LONG_DIGIT_THRESHOLD && 'text-xs')}
+              />
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function buildCode(
+  fromId: string,
+  value: number,
+  bytes: number,
+  inGiB: number,
+  inMbit: number,
+): string {
+  const fromName = toJsName(fromId);
+  const imports = Array.from(new Set(['byte', 'gibibyte', 'megabit', fromName]));
+  return `import { forge } from 'unitforge';
+import {
+  ${imports.join(', ')},
+} from 'unitforge/kits/data-storage';
+
+const bytes = forge(${fromName}, byte)(${formatMagnitude(value)}); // ${formatMagnitude(bytes)}
+const inGiB = forge(byte, gibibyte)(bytes); // ${formatMagnitude(inGiB)}
+const inMbit = forge(byte, megabit)(bytes); // ${formatMagnitude(inMbit)}
+`;
 }

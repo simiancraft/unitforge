@@ -107,9 +107,9 @@ Three functions; three steps. The library's own kits use the same shape userland
 import { defineUnit, defineConversion, forge } from 'unitforge';
 
 const COUNT = 'count' as const;
-const wheat = defineUnit({ name: 'wheat', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b, base: true });
-const ore   = defineUnit({ name: 'ore',   dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
-const city  = defineUnit({ name: 'city',  dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
+const wheat = defineUnit({ id: 'wheat', label: 'Wheat', symbol: '🌾', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b, base: true });
+const ore   = defineUnit({ id: 'ore',   label: 'Ore',   symbol: '🪨', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
+const city  = defineUnit({ id: 'city',  label: 'City',  symbol: '🏰', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
 
 const buildCities = defineConversion({
   inputs: { wheat: COUNT, ore: COUNT },
@@ -130,7 +130,7 @@ import { defineUnit, forge, linear } from 'unitforge';
 import { LENGTH } from 'unitforge/dimensions';
 import { foot } from 'unitforge/kits/geometry';
 
-const handspan = defineUnit({ name: 'handspan', dimension: LENGTH, ...linear(0.235) });
+const handspan = defineUnit({ id: 'handspan', label: 'Handspan', symbol: 'hsp', dimension: LENGTH, ...linear(0.235) });
 forge(handspan, foot)(4); // 3.084
 ```
 

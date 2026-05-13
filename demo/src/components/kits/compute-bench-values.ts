@@ -1,44 +1,39 @@
-// Shared engine for "bench" widgets: option lookup + forge() invocation
-// + the cast workaround. Both <Bench> (card chrome, geometry/data-storage)
-// and <ForgeBench> (slim home variant) consume this so the runtime logic
-// only lives in one place; the layouts stay distinct.
+// Shared engine for "bench" widgets: option lookup + forge() invocation.
+// Both <Bench> (card chrome, geometry/data-storage) and <ForgeBench>
+// (slim home variant) consume this so the runtime logic only lives in
+// one place; the layouts stay distinct.
 
-import type { Dimension, ForgeInput } from 'unitforge';
+import type { Dimension, ForgeInput, Unit } from 'unitforge';
 import { forge } from 'unitforge';
 
-interface BenchOption<D extends Dimension, K extends string> {
-  key: K;
-  label: string;
-  unit: ForgeInput<D, number>;
-}
-
-type NonEmpty<T> = readonly [T, ...T[]];
-
-interface ComputeBenchValuesArgs<D extends Dimension, K extends string> {
-  fromKey: K;
-  toKey: K;
+interface ComputeBenchValuesArgs<D extends Dimension> {
+  fromId: string;
+  toId: string;
   value: number;
-  options: NonEmpty<BenchOption<D, K>>;
+  options: ReadonlyArray<Unit<D, number>>;
 }
 
-interface BenchValues<D extends Dimension, K extends string> {
-  fromOpt: BenchOption<D, K>;
-  toOpt: BenchOption<D, K>;
+interface BenchValues<D extends Dimension> {
+  fromUnit: Unit<D, number>;
+  toUnit: Unit<D, number>;
   result: number;
 }
 
-export function computeBenchValues<D extends Dimension, K extends string>({
-  fromKey,
-  toKey,
+export function computeBenchValues<D extends Dimension>({
+  fromId,
+  toId,
   value,
   options,
-}: ComputeBenchValuesArgs<D, K>): BenchValues<D, K> {
-  // The options array is non-empty by contract (kit pages always pass a
-  // catalog). If the key falls out of the catalog (hot reload, future
-  // deep-link state), fall back to options[0]; the NonEmpty<T> tuple type
-  // tells the compiler that options[0] is always defined.
-  const fromOpt = options.find((o) => o.key === fromKey) ?? options[0];
-  const toOpt = options.find((o) => o.key === toKey) ?? options[0];
-  const result = forge(fromOpt.unit, toOpt.unit)(value);
-  return { fromOpt, toOpt, result };
+}: ComputeBenchValuesArgs<D>): BenchValues<D> {
+  // Kit pages always pass a non-empty catalog; the runtime guard exists
+  // for the contract, not for any production path.
+  const fallback = options[0];
+  if (!fallback) throw new Error('computeBenchValues: empty options array');
+  const fromUnit = options.find((o) => o.id === fromId) ?? fallback;
+  const toUnit = options.find((o) => o.id === toId) ?? fallback;
+  // forge's within-dim signature wants ForgeInput<D, T>; Unit<D, T> is
+  // structurally that, but TS under exactOptionalPropertyTypes can't see
+  // through the conditional in ForgeInput. Cast at the boundary.
+  const result = forge(fromUnit as ForgeInput<D, number>, toUnit as ForgeInput<D, number>)(value);
+  return { fromUnit, toUnit, result };
 }

@@ -26,7 +26,9 @@ describe('linear()', () => {
 
 describe('defineUnit', () => {
   it('preserves the spec it was given', () => {
-    expect(meter.name).toBe('meter');
+    expect(meter.id).toBe('meter');
+    expect(meter.label).toBe('Meter');
+    expect(meter.symbol).toBe('m');
     expect(meter.dimension).toBe(LENGTH);
     expect(meter.base).toBe(true);
     expect(meter.toBase(7)).toBe(7);
@@ -41,7 +43,9 @@ describe('defineUnit', () => {
   for (const key of RESERVED_PROTO_KEYS) {
     it(`rejects reserved key '${key}' at definition time`, () => {
       const evilSpec: Record<string, unknown> = {
-        name: 'evil',
+        id: 'evil',
+        label: 'Evil',
+        symbol: 'evil',
         dimension: LENGTH,
         ...linear(1),
       };
@@ -267,7 +271,9 @@ describe('forge: within-dim memoize-on (closes coverage on buildUnaryConverter c
     // `fromBase` runs too but that's centimeter, which is shared kit code;
     // verifying toBase-side is sufficient to prove cache hit.
     const trackedMeter = defineUnit({
-      name: 'tracked-meter',
+      id: 'tracked-meter',
+      label: 'Tracked Meter',
+      symbol: 'm',
       dimension: LENGTH,
       toBase: (v: number) => {
         toBaseCalls++;
@@ -286,7 +292,9 @@ describe('forge: within-dim memoize-on (closes coverage on buildUnaryConverter c
   it('cache key honors precision rounding (rounded inputs collide)', () => {
     let toBaseCalls = 0;
     const trackedMeter = defineUnit({
-      name: 'tracked-meter-2',
+      id: 'tracked-meter-2',
+      label: 'Tracked Meter 2',
+      symbol: 'm',
       dimension: LENGTH,
       toBase: (v: number) => {
         toBaseCalls++;
@@ -305,7 +313,9 @@ describe('forge: within-dim memoize-on (closes coverage on buildUnaryConverter c
   it('writeCache evicts the oldest entry when at cap (FIFO)', () => {
     let toBaseCalls = 0;
     const trackedMeter = defineUnit({
-      name: 'tracked-meter-3',
+      id: 'tracked-meter-3',
+      label: 'Tracked Meter 3',
+      symbol: 'm',
       dimension: LENGTH,
       toBase: (v: number) => {
         toBaseCalls++;

@@ -5,30 +5,27 @@
 import { Ruler } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
-import { CodeBlock } from '~/components/CodeBlock.js';
-import { Result } from '~/components/Result.js';
-import { Slider } from '~/components/Slider.js';
-import { UnitPicker } from '~/components/UnitPicker.js';
-import { findByKey, LENGTH_UNITS, type LengthKey, pickerOptions } from '~/lib/units.js';
-import { SectionHeader, SectionLayout } from '../../section-layout.js';
-
-const CODE = `import { forge } from 'unitforge';
-import { meter, foot } from 'unitforge/kits/geometry';
-
-const metersToFeet = forge(meter, foot);
-
-metersToFeet(5);   // 16.4042
-metersToFeet(100); // 328.084
-`;
+import { CodeBlock } from '~/components/ui/code-block.js';
+import { Result } from '~/components/ui/result.js';
+import { Slider } from '~/components/ui/slider.js';
+import { UnitPicker } from '~/components/ui/unit-picker.js';
+import { formatMagnitude, toJsName } from '~/lib/format.js';
+import { findById } from '~/lib/units.js';
+import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
+import { LENGTH_UNITS } from '../units.js';
 
 export function HelloUnit() {
+  // The chassis owns the forge call so buildCode can pick up `result`
+  // and the slider readout can show it without re-forging. The Widget
+  // re-derives `from`/`to` from the ids via findById; that lookup is
+  // cheap and avoids relaying the resolved units through props.
   const [value, setValue] = useState(5);
-  const [fromKey, setFromKey] = useState<LengthKey>('m');
-  const [toKey, setToKey] = useState<LengthKey>('ft');
+  const [fromId, setFromId] = useState('meter');
+  const [toId, setToId] = useState('foot');
 
-  const from = findByKey(LENGTH_UNITS, fromKey);
-  const to = findByKey(LENGTH_UNITS, toKey);
-  const result = forge(from.unit, to.unit)(value);
+  const from = findById(LENGTH_UNITS, fromId);
+  const to = findById(LENGTH_UNITS, toId);
+  const result = forge(from, to)(value);
 
   return (
     <SectionLayout
@@ -48,38 +45,21 @@ export function HelloUnit() {
         </>
       }
       widgetZone={
-        <div className="flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <UnitPicker
-              label="from"
-              value={fromKey}
-              options={pickerOptions(LENGTH_UNITS)}
-              onChange={setFromKey}
+        <WidgetLayout
+          interactionZone={
+            <HelloUnitWidget
+              value={value}
+              fromId={fromId}
+              toId={toId}
+              result={result}
+              onValueChange={setValue}
+              onFromIdChange={setFromId}
+              onToIdChange={setToId}
             />
-            <UnitPicker
-              label="to"
-              value={toKey}
-              options={pickerOptions(LENGTH_UNITS)}
-              onChange={setToKey}
-            />
-          </div>
-          <Slider
-            label={`value (${from.key})`}
-            value={value}
-            min={0.1}
-            max={10}
-            step={0.1}
-            onChange={setValue}
-            suffix={from.key}
-          />
-          <Result
-            label={`${value.toFixed(2)} ${from.key} =`}
-            value={`${result.toFixed(4)} ${to.key}`}
-            variant="hero"
-          />
-        </div>
+          }
+          codeZone={<CodeBlock code={buildCode(from.id, to.id, value, result)} />}
+        />
       }
-      codeZone={<CodeBlock code={CODE} />}
       notesZone={
         <>
           <code className="mono">forge(meter, foot)</code> returns a cached converter; the call
@@ -88,4 +68,61 @@ export function HelloUnit() {
       }
     />
   );
+}
+
+interface HelloUnitWidgetProps {
+  value: number;
+  fromId: string;
+  toId: string;
+  result: number;
+  onValueChange: (next: number) => void;
+  onFromIdChange: (next: string) => void;
+  onToIdChange: (next: string) => void;
+}
+
+function HelloUnitWidget({
+  value,
+  fromId,
+  toId,
+  result,
+  onValueChange,
+  onFromIdChange,
+  onToIdChange,
+}: HelloUnitWidgetProps) {
+  const from = findById(LENGTH_UNITS, fromId);
+  const to = findById(LENGTH_UNITS, toId);
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <UnitPicker label="from" value={fromId} units={LENGTH_UNITS} onChange={onFromIdChange} />
+        <UnitPicker label="to" value={toId} units={LENGTH_UNITS} onChange={onToIdChange} />
+      </div>
+      <Slider
+        label={`value (${from.symbol})`}
+        value={value}
+        min={0.1}
+        max={10}
+        step={0.1}
+        onChange={onValueChange}
+        suffix={from.symbol}
+      />
+      <Result
+        label={`${value.toFixed(2)} ${from.symbol} =`}
+        value={`${result.toFixed(4)} ${to.symbol}`}
+        variant="hero"
+      />
+    </div>
+  );
+}
+
+function buildCode(fromId: string, toId: string, value: number, result: number): string {
+  const fromName = toJsName(fromId);
+  const toName = toJsName(toId);
+  return `import { forge } from 'unitforge';
+import { ${fromName}, ${toName} } from 'unitforge/kits/geometry';
+
+const convert = forge(${fromName}, ${toName});
+
+convert(${formatMagnitude(value)}); // ${formatMagnitude(result)}
+`;
 }

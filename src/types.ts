@@ -12,11 +12,22 @@ export type { Dimension };
  * unit's terms to the dimension's canonical base unit; `fromBase` does the
  * inverse. Both are always functions, never auto-derived from each other.
  *
+ * Identity is split across three readonly strings: `id` is the stable
+ * kebab-case identifier (`'square-meter'`), `label` is the human display
+ * name (`'Square Meter'`), and `symbol` is the conventional short form
+ * (`'m²'`). Consumers drive select-box labels, templating output, and
+ * persisted references off these without re-deriving them.
+ *
  * `T` is the value type (defaults to native `number`). Future precision-typed
  * kits may specialize `T` to `Decimal`, `Fraction`, etc.
  */
 export interface Unit<D extends Dimension = Dimension, T = number> {
-  readonly name: string;
+  /** Stable kebab-case identifier (`'square-meter'`). Safe for persistence and dictionary keys. */
+  readonly id: string;
+  /** Human display name in title case (`'Square Meter'`). */
+  readonly label: string;
+  /** Conventional short form / unit symbol (`'m²'`, `'mi'`, `'KiB'`). */
+  readonly symbol: string;
   readonly dimension: D;
   /** This unit's value to base-unit value (must be a pure function of `value`). */
   readonly toBase: (value: T) => T;

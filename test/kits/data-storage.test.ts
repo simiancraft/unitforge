@@ -20,7 +20,7 @@ import {
 } from '../../src/kits/data-storage/index.js';
 
 // Per-unit tests assert the four invariants every Unit must hold:
-//   1. `name` matches the documented identity
+//   1. `id` / `label` / `symbol` match the documented identity triple
 //   2. `dimension` is correct
 //   3. `toBase` converts forward correctly (some known reference value)
 //   4. `fromBase` is the inverse (round-trip from base back to unit)
@@ -29,7 +29,9 @@ import {
 describe('data-storage/units: bytes (decimal)', () => {
   describe('byte (base)', () => {
     it('has the right shape', () => {
-      expect(byte.name).toBe('byte');
+      expect(byte.id).toBe('byte');
+      expect(byte.label).toBe('Byte');
+      expect(byte.symbol).toBe('B');
       expect(byte.dimension).toBe(DATA);
       expect(byte.base).toBe(true);
     });
@@ -47,7 +49,9 @@ describe('data-storage/units: bytes (decimal)', () => {
 
   describe('kilobyte', () => {
     it('has the right shape', () => {
-      expect(kilobyte.name).toBe('kilobyte');
+      expect(kilobyte.id).toBe('kilobyte');
+      expect(kilobyte.label).toBe('Kilobyte');
+      expect(kilobyte.symbol).toBe('kB');
       expect(kilobyte.dimension).toBe(DATA);
       expect(kilobyte.base).toBeUndefined();
     });
@@ -63,7 +67,9 @@ describe('data-storage/units: bytes (decimal)', () => {
 
   describe('megabyte', () => {
     it('has the right shape', () => {
-      expect(megabyte.name).toBe('megabyte');
+      expect(megabyte.id).toBe('megabyte');
+      expect(megabyte.label).toBe('Megabyte');
+      expect(megabyte.symbol).toBe('MB');
       expect(megabyte.dimension).toBe(DATA);
     });
     it('1 MB = 1e6 B via toBase', () => {
@@ -76,7 +82,9 @@ describe('data-storage/units: bytes (decimal)', () => {
 
   describe('gigabyte', () => {
     it('has the right shape', () => {
-      expect(gigabyte.name).toBe('gigabyte');
+      expect(gigabyte.id).toBe('gigabyte');
+      expect(gigabyte.label).toBe('Gigabyte');
+      expect(gigabyte.symbol).toBe('GB');
       expect(gigabyte.dimension).toBe(DATA);
     });
     it('1 GB = 1e9 B via toBase', () => {
@@ -89,7 +97,9 @@ describe('data-storage/units: bytes (decimal)', () => {
 
   describe('terabyte', () => {
     it('has the right shape', () => {
-      expect(terabyte.name).toBe('terabyte');
+      expect(terabyte.id).toBe('terabyte');
+      expect(terabyte.label).toBe('Terabyte');
+      expect(terabyte.symbol).toBe('TB');
       expect(terabyte.dimension).toBe(DATA);
     });
     it('1 TB = 1e12 B via toBase', () => {
@@ -102,7 +112,9 @@ describe('data-storage/units: bytes (decimal)', () => {
 
   describe('petabyte', () => {
     it('has the right shape', () => {
-      expect(petabyte.name).toBe('petabyte');
+      expect(petabyte.id).toBe('petabyte');
+      expect(petabyte.label).toBe('Petabyte');
+      expect(petabyte.symbol).toBe('PB');
       expect(petabyte.dimension).toBe(DATA);
     });
     it('1 PB = 1e15 B via toBase', () => {
@@ -117,7 +129,9 @@ describe('data-storage/units: bytes (decimal)', () => {
 describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
   describe('kibibyte', () => {
     it('has the right shape', () => {
-      expect(kibibyte.name).toBe('kibibyte');
+      expect(kibibyte.id).toBe('kibibyte');
+      expect(kibibyte.label).toBe('Kibibyte');
+      expect(kibibyte.symbol).toBe('KiB');
       expect(kibibyte.dimension).toBe(DATA);
     });
     it('1 KiB = 1024 B via toBase', () => {
@@ -130,7 +144,9 @@ describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
 
   describe('mebibyte', () => {
     it('has the right shape', () => {
-      expect(mebibyte.name).toBe('mebibyte');
+      expect(mebibyte.id).toBe('mebibyte');
+      expect(mebibyte.label).toBe('Mebibyte');
+      expect(mebibyte.symbol).toBe('MiB');
       expect(mebibyte.dimension).toBe(DATA);
     });
     it('1 MiB = 1024² B via toBase', () => {
@@ -143,7 +159,9 @@ describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
 
   describe('gibibyte', () => {
     it('has the right shape', () => {
-      expect(gibibyte.name).toBe('gibibyte');
+      expect(gibibyte.id).toBe('gibibyte');
+      expect(gibibyte.label).toBe('Gibibyte');
+      expect(gibibyte.symbol).toBe('GiB');
       expect(gibibyte.dimension).toBe(DATA);
     });
     it('1 GiB = 1024³ B via toBase', () => {
@@ -156,7 +174,9 @@ describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
 
   describe('tebibyte', () => {
     it('has the right shape', () => {
-      expect(tebibyte.name).toBe('tebibyte');
+      expect(tebibyte.id).toBe('tebibyte');
+      expect(tebibyte.label).toBe('Tebibyte');
+      expect(tebibyte.symbol).toBe('TiB');
       expect(tebibyte.dimension).toBe(DATA);
     });
     it('1 TiB = 1024⁴ B via toBase', () => {
@@ -169,7 +189,9 @@ describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
 
   describe('pebibyte', () => {
     it('has the right shape', () => {
-      expect(pebibyte.name).toBe('pebibyte');
+      expect(pebibyte.id).toBe('pebibyte');
+      expect(pebibyte.label).toBe('Pebibyte');
+      expect(pebibyte.symbol).toBe('PiB');
       expect(pebibyte.dimension).toBe(DATA);
     });
     it('1 PiB = 1024⁵ B via toBase', () => {
@@ -184,7 +206,9 @@ describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
 describe('data-storage/units: bits', () => {
   describe('bit', () => {
     it('has the right shape', () => {
-      expect(bit.name).toBe('bit');
+      expect(bit.id).toBe('bit');
+      expect(bit.label).toBe('Bit');
+      expect(bit.symbol).toBe('bit');
       expect(bit.dimension).toBe(DATA);
     });
     it('1 bit = 0.125 B via toBase (8 bits = 1 byte)', () => {
@@ -199,7 +223,9 @@ describe('data-storage/units: bits', () => {
 
   describe('kilobit', () => {
     it('has the right shape', () => {
-      expect(kilobit.name).toBe('kilobit');
+      expect(kilobit.id).toBe('kilobit');
+      expect(kilobit.label).toBe('Kilobit');
+      expect(kilobit.symbol).toBe('kbit');
       expect(kilobit.dimension).toBe(DATA);
     });
     it('1 kbit = 125 B via toBase (1000 bits / 8)', () => {
@@ -212,7 +238,9 @@ describe('data-storage/units: bits', () => {
 
   describe('megabit', () => {
     it('has the right shape', () => {
-      expect(megabit.name).toBe('megabit');
+      expect(megabit.id).toBe('megabit');
+      expect(megabit.label).toBe('Megabit');
+      expect(megabit.symbol).toBe('Mbit');
       expect(megabit.dimension).toBe(DATA);
     });
     it('1 Mbit = 125 000 B via toBase', () => {
@@ -225,7 +253,9 @@ describe('data-storage/units: bits', () => {
 
   describe('gigabit', () => {
     it('has the right shape', () => {
-      expect(gigabit.name).toBe('gigabit');
+      expect(gigabit.id).toBe('gigabit');
+      expect(gigabit.label).toBe('Gigabit');
+      expect(gigabit.symbol).toBe('Gbit');
       expect(gigabit.dimension).toBe(DATA);
     });
     it('1 Gbit = 125 000 000 B via toBase', () => {

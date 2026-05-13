@@ -10,7 +10,6 @@
 import { Hammer } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { navigate } from '~/lib/router.js';
-import type { LengthKey } from '~/lib/units.js';
 import type { BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
@@ -37,9 +36,9 @@ const STRIKE_VARIANT = 1;
 const NAV_DELAY_MS = STOKE_HOLD_MS;
 
 export function ForgeScreen() {
-  const [bench, setBench] = useState<BenchState<LengthKey>>({
-    fromKey: 'm',
-    toKey: 'ft',
+  const [bench, setBench] = useState<BenchState>({
+    fromId: 'meter',
+    toId: 'foot',
     value: 5,
   });
   const shakeRef = useRef<HTMLDivElement | null>(null);
@@ -64,11 +63,14 @@ export function ForgeScreen() {
     }, NAV_DELAY_MS);
   };
 
-  // `display: contents` removes the wrapper from the box tree so the
-  // ref lives only to receive the shake CSS class without inserting a
-  // layout box around KitLayout's zones.
+  // The wrapper is the shake target. It needs a principal box for the
+  // transform in `uf-anvil-strike` to apply — `display: contents` (used
+  // earlier) silently drops the transform per spec. Default `display:
+  // block` is fine; the forge backdrop is `createPortal`'d to body so it
+  // doesn't share this transform, and KitLayout's children lay out
+  // normally as block descendants of this wrapper.
   return (
-    <div ref={shakeRef} className="contents">
+    <div ref={shakeRef}>
       <KitLayout
         backdropZone={<ForgeBackdrop stoke={stoke} />}
         headerZone={<ForgeHeader />}

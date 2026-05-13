@@ -14,7 +14,7 @@
  *
  * @example
  *   import { LENGTH, AREA } from 'unitforge/dimensions';
- *   const meter = defineUnit({ name: 'meter', dimension: LENGTH, ...linear(1), base: true });
+ *   const meter = defineUnit({ id: 'meter', label: 'Meter', symbol: 'm', dimension: LENGTH, ...linear(1), base: true });
  */
 
 /**

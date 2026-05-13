@@ -27,7 +27,9 @@ import { DATA } from '../../dimensions.js';
 
 /** The base unit of DATA. */
 export const byte = /*#__PURE__*/ defineUnit({
-  name: 'byte',
+  id: 'byte',
+  label: 'Byte',
+  symbol: 'B',
   dimension: DATA,
   toBase: (v) => v,
   fromBase: (b) => b,
@@ -36,7 +38,9 @@ export const byte = /*#__PURE__*/ defineUnit({
 
 /** 1 kB = 1000 bytes (decimal/SI; per JEDEC and disk-vendor convention). */
 export const kilobyte = /*#__PURE__*/ defineUnit({
-  name: 'kilobyte',
+  id: 'kilobyte',
+  label: 'Kilobyte',
+  symbol: 'kB',
   dimension: DATA,
   toBase: (v) => v * 1000,
   fromBase: (b) => b / 1000,
@@ -44,7 +48,9 @@ export const kilobyte = /*#__PURE__*/ defineUnit({
 
 /** 1 MB = 1 000 000 bytes (decimal/SI). */
 export const megabyte = /*#__PURE__*/ defineUnit({
-  name: 'megabyte',
+  id: 'megabyte',
+  label: 'Megabyte',
+  symbol: 'MB',
   dimension: DATA,
   toBase: (v) => v * 1_000_000,
   fromBase: (b) => b / 1_000_000,
@@ -52,7 +58,9 @@ export const megabyte = /*#__PURE__*/ defineUnit({
 
 /** 1 GB = 10⁹ bytes (decimal/SI). */
 export const gigabyte = /*#__PURE__*/ defineUnit({
-  name: 'gigabyte',
+  id: 'gigabyte',
+  label: 'Gigabyte',
+  symbol: 'GB',
   dimension: DATA,
   toBase: (v) => v * 1_000_000_000,
   fromBase: (b) => b / 1_000_000_000,
@@ -60,7 +68,9 @@ export const gigabyte = /*#__PURE__*/ defineUnit({
 
 /** 1 TB = 10¹² bytes (decimal/SI). */
 export const terabyte = /*#__PURE__*/ defineUnit({
-  name: 'terabyte',
+  id: 'terabyte',
+  label: 'Terabyte',
+  symbol: 'TB',
   dimension: DATA,
   toBase: (v) => v * 1_000_000_000_000,
   fromBase: (b) => b / 1_000_000_000_000,
@@ -68,7 +78,9 @@ export const terabyte = /*#__PURE__*/ defineUnit({
 
 /** 1 PB = 10¹⁵ bytes (decimal/SI). */
 export const petabyte = /*#__PURE__*/ defineUnit({
-  name: 'petabyte',
+  id: 'petabyte',
+  label: 'Petabyte',
+  symbol: 'PB',
   dimension: DATA,
   toBase: (v) => v * 1_000_000_000_000_000,
   fromBase: (b) => b / 1_000_000_000_000_000,
@@ -78,7 +90,9 @@ export const petabyte = /*#__PURE__*/ defineUnit({
 
 /** 1 KiB = 1024 bytes (binary; IEC 80000-13). */
 export const kibibyte = /*#__PURE__*/ defineUnit({
-  name: 'kibibyte',
+  id: 'kibibyte',
+  label: 'Kibibyte',
+  symbol: 'KiB',
   dimension: DATA,
   toBase: (v) => v * 1024,
   fromBase: (b) => b / 1024,
@@ -86,7 +100,9 @@ export const kibibyte = /*#__PURE__*/ defineUnit({
 
 /** 1 MiB = 1024² = 1 048 576 bytes (binary; IEC 80000-13). */
 export const mebibyte = /*#__PURE__*/ defineUnit({
-  name: 'mebibyte',
+  id: 'mebibyte',
+  label: 'Mebibyte',
+  symbol: 'MiB',
   dimension: DATA,
   toBase: (v) => v * 1_048_576,
   fromBase: (b) => b / 1_048_576,
@@ -94,7 +110,9 @@ export const mebibyte = /*#__PURE__*/ defineUnit({
 
 /** 1 GiB = 1024³ = 1 073 741 824 bytes (binary; IEC 80000-13). */
 export const gibibyte = /*#__PURE__*/ defineUnit({
-  name: 'gibibyte',
+  id: 'gibibyte',
+  label: 'Gibibyte',
+  symbol: 'GiB',
   dimension: DATA,
   toBase: (v) => v * 1_073_741_824,
   fromBase: (b) => b / 1_073_741_824,
@@ -102,7 +120,9 @@ export const gibibyte = /*#__PURE__*/ defineUnit({
 
 /** 1 TiB = 1024⁴ = 1 099 511 627 776 bytes (binary; IEC 80000-13). */
 export const tebibyte = /*#__PURE__*/ defineUnit({
-  name: 'tebibyte',
+  id: 'tebibyte',
+  label: 'Tebibyte',
+  symbol: 'TiB',
   dimension: DATA,
   toBase: (v) => v * 1_099_511_627_776,
   fromBase: (b) => b / 1_099_511_627_776,
@@ -110,7 +130,9 @@ export const tebibyte = /*#__PURE__*/ defineUnit({
 
 /** 1 PiB = 1024⁵ = 1 125 899 906 842 624 bytes (binary; IEC 80000-13). */
 export const pebibyte = /*#__PURE__*/ defineUnit({
-  name: 'pebibyte',
+  id: 'pebibyte',
+  label: 'Pebibyte',
+  symbol: 'PiB',
   dimension: DATA,
   toBase: (v) => v * 1_125_899_906_842_624,
   fromBase: (b) => b / 1_125_899_906_842_624,
@@ -120,7 +142,9 @@ export const pebibyte = /*#__PURE__*/ defineUnit({
 
 /** 1 bit = 0.125 byte; 8 bits = 1 byte. */
 export const bit = /*#__PURE__*/ defineUnit({
-  name: 'bit',
+  id: 'bit',
+  label: 'Bit',
+  symbol: 'bit',
   dimension: DATA,
   toBase: (v) => v * 0.125,
   fromBase: (b) => b / 0.125,
@@ -128,7 +152,9 @@ export const bit = /*#__PURE__*/ defineUnit({
 
 /** 1 kbit = 1000 bits = 125 bytes (decimal; per IEEE 802 throughput convention). */
 export const kilobit = /*#__PURE__*/ defineUnit({
-  name: 'kilobit',
+  id: 'kilobit',
+  label: 'Kilobit',
+  symbol: 'kbit',
   dimension: DATA,
   toBase: (v) => v * 125,
   fromBase: (b) => b / 125,
@@ -136,7 +162,9 @@ export const kilobit = /*#__PURE__*/ defineUnit({
 
 /** 1 Mbit = 10⁶ bits = 125 000 bytes (decimal; per IEEE 802). */
 export const megabit = /*#__PURE__*/ defineUnit({
-  name: 'megabit',
+  id: 'megabit',
+  label: 'Megabit',
+  symbol: 'Mbit',
   dimension: DATA,
   toBase: (v) => v * 125_000,
   fromBase: (b) => b / 125_000,
@@ -144,7 +172,9 @@ export const megabit = /*#__PURE__*/ defineUnit({
 
 /** 1 Gbit = 10⁹ bits = 125 000 000 bytes (decimal; per IEEE 802). */
 export const gigabit = /*#__PURE__*/ defineUnit({
-  name: 'gigabit',
+  id: 'gigabit',
+  label: 'Gigabit',
+  symbol: 'Gbit',
   dimension: DATA,
   toBase: (v) => v * 125_000_000,
   fromBase: (b) => b / 125_000_000,

@@ -9,30 +9,31 @@
 
 import { Box } from 'lucide-react';
 import { useState } from 'react';
-import { findByKey, LENGTH_UNITS, type LengthKey } from '~/lib/units.js';
+import { formatMagnitude, toJsName } from '~/lib/format.js';
+import { findById } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
-import { usePulse } from '../use-pulse.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { CircleMachine } from './sections/circle-machine.js';
 import { HelloUnit } from './sections/hello-unit.js';
 import { RectangleMachine } from './sections/rectangle-machine.js';
+import { LENGTH_UNITS } from './units.js';
 import './geometry.css';
 
-// Grid cell size in pixels, per "from" unit. The grid background reads
-// this and reticks; the effect is "the paper resamples when you change
-// units". Keyed by LengthKey so adding a new length unit fails the build
-// until the table is updated.
-const CELL_PX_BY_UNIT: Record<LengthKey, number> = {
-  mm: 8,
-  cm: 12,
-  m: 18,
-  km: 26,
-  in: 14,
-  ft: 20,
-  yd: 24,
-  mi: 28,
+// Grid cell size in pixels, per length unit id. The grid background
+// reads this and reticks; the effect is "the paper resamples when you
+// change units". Keyed by the unit's stable id so a kit unit rename
+// fails fast.
+const CELL_PX_BY_UNIT: Record<string, number> = {
+  millimeter: 8,
+  centimeter: 12,
+  meter: 18,
+  kilometer: 26,
+  inch: 14,
+  foot: 20,
+  yard: 24,
+  mile: 28,
 };
 
 // Slider bounds for the geometry kit's bench, in the user-selected
@@ -42,20 +43,16 @@ const GEOMETRY_BENCH_MAX = 100;
 const GEOMETRY_BENCH_STEP = 0.1;
 
 export function GeometryScreen() {
-  const [bench, setBench] = useState<BenchState<LengthKey>>({
-    fromKey: 'm',
-    toKey: 'ft',
+  const [bench, setBench] = useState<BenchState>({
+    fromId: 'meter',
+    toId: 'foot',
     value: 5,
   });
-  const cellSize = CELL_PX_BY_UNIT[bench.fromKey];
-
-  // Brief "the paper rippled" flash whenever the bench changes; mirrors
-  // the data-storage trace pulse so geometry also breathes on interact.
-  const paperPulse = usePulse([bench.fromKey, bench.toKey, bench.value], 600);
+  const cellSize = CELL_PX_BY_UNIT[bench.fromId] ?? 18;
 
   return (
     <KitLayout
-      backdropZone={<GeometryBackdrop cellSize={cellSize} pulse={paperPulse} />}
+      backdropZone={<GeometryBackdrop cellSize={cellSize} />}
       headerZone={
         <header className="flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 01</p>
@@ -76,7 +73,7 @@ export function GeometryScreen() {
           max={GEOMETRY_BENCH_MAX}
           step={GEOMETRY_BENCH_STEP}
           codeFor={(s, r) =>
-            `forge(${findByKey(LENGTH_UNITS, s.fromKey).label}, ${findByKey(LENGTH_UNITS, s.toKey).label})(${s.value}); // ${r.toFixed(4)}`
+            `forge(${toJsName(findById(LENGTH_UNITS, s.fromId).id)}, ${toJsName(findById(LENGTH_UNITS, s.toId).id)})(${formatMagnitude(s.value)}); // ${formatMagnitude(r)}`
           }
           label="forge bench · length"
         />

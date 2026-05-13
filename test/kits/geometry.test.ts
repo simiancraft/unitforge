@@ -33,7 +33,7 @@ import {
 } from '../../src/kits/geometry/index.js';
 
 // Per-unit tests assert the four invariants every Unit must hold:
-//   1. `name` matches the documented identity
+//   1. `id` / `label` / `symbol` match the documented identity triple
 //   2. `dimension` is correct
 //   3. `toBase` converts forward correctly (some known reference value)
 //   4. `fromBase` is the inverse (round-trip from base back to unit)
@@ -42,7 +42,9 @@ import {
 describe('geometry/units: LENGTH', () => {
   describe('meter (base)', () => {
     it('has the right shape', () => {
-      expect(meter.name).toBe('meter');
+      expect(meter.id).toBe('meter');
+      expect(meter.label).toBe('Meter');
+      expect(meter.symbol).toBe('m');
       expect(meter.dimension).toBe(LENGTH);
       expect(meter.base).toBe(true);
     });
@@ -60,7 +62,9 @@ describe('geometry/units: LENGTH', () => {
 
   describe('millimeter', () => {
     it('has the right shape', () => {
-      expect(millimeter.name).toBe('millimeter');
+      expect(millimeter.id).toBe('millimeter');
+      expect(millimeter.label).toBe('Millimeter');
+      expect(millimeter.symbol).toBe('mm');
       expect(millimeter.dimension).toBe(LENGTH);
       expect(millimeter.base).toBeUndefined();
     });
@@ -76,7 +80,9 @@ describe('geometry/units: LENGTH', () => {
 
   describe('inch', () => {
     it('has the right shape', () => {
-      expect(inch.name).toBe('inch');
+      expect(inch.id).toBe('inch');
+      expect(inch.label).toBe('Inch');
+      expect(inch.symbol).toBe('in');
       expect(inch.dimension).toBe(LENGTH);
       expect(inch.base).toBeUndefined();
     });
@@ -92,7 +98,9 @@ describe('geometry/units: LENGTH', () => {
 
   describe('foot', () => {
     it('has the right shape', () => {
-      expect(foot.name).toBe('foot');
+      expect(foot.id).toBe('foot');
+      expect(foot.label).toBe('Foot');
+      expect(foot.symbol).toBe('ft');
       expect(foot.dimension).toBe(LENGTH);
       expect(foot.base).toBeUndefined();
     });
@@ -108,7 +116,9 @@ describe('geometry/units: LENGTH', () => {
 
   describe('yard', () => {
     it('has the right shape', () => {
-      expect(yard.name).toBe('yard');
+      expect(yard.id).toBe('yard');
+      expect(yard.label).toBe('Yard');
+      expect(yard.symbol).toBe('yd');
       expect(yard.dimension).toBe(LENGTH);
       expect(yard.base).toBeUndefined();
     });
@@ -124,7 +134,9 @@ describe('geometry/units: LENGTH', () => {
 
   describe('mile', () => {
     it('has the right shape', () => {
-      expect(mile.name).toBe('mile');
+      expect(mile.id).toBe('mile');
+      expect(mile.label).toBe('Mile');
+      expect(mile.symbol).toBe('mi');
       expect(mile.dimension).toBe(LENGTH);
       expect(mile.base).toBeUndefined();
     });
@@ -140,7 +152,9 @@ describe('geometry/units: LENGTH', () => {
 
   describe('kilometer', () => {
     it('has the right shape', () => {
-      expect(kilometer.name).toBe('kilometer');
+      expect(kilometer.id).toBe('kilometer');
+      expect(kilometer.label).toBe('Kilometer');
+      expect(kilometer.symbol).toBe('km');
       expect(kilometer.dimension).toBe(LENGTH);
       expect(kilometer.base).toBeUndefined();
     });
@@ -156,7 +170,9 @@ describe('geometry/units: LENGTH', () => {
 
   describe('centimeter', () => {
     it('has the right shape', () => {
-      expect(centimeter.name).toBe('centimeter');
+      expect(centimeter.id).toBe('centimeter');
+      expect(centimeter.label).toBe('Centimeter');
+      expect(centimeter.symbol).toBe('cm');
       expect(centimeter.dimension).toBe(LENGTH);
       expect(centimeter.base).toBeUndefined();
     });
@@ -174,7 +190,9 @@ describe('geometry/units: LENGTH', () => {
 describe('geometry/units: AREA', () => {
   describe('squareMillimeter', () => {
     it('has the right shape', () => {
-      expect(squareMillimeter.name).toBe('square-millimeter');
+      expect(squareMillimeter.id).toBe('square-millimeter');
+      expect(squareMillimeter.label).toBe('Square Millimeter');
+      expect(squareMillimeter.symbol).toBe('mm²');
       expect(squareMillimeter.dimension).toBe(AREA);
       expect(squareMillimeter.base).toBeUndefined();
     });
@@ -190,7 +208,9 @@ describe('geometry/units: AREA', () => {
 
   describe('squareCentimeter', () => {
     it('has the right shape', () => {
-      expect(squareCentimeter.name).toBe('square-centimeter');
+      expect(squareCentimeter.id).toBe('square-centimeter');
+      expect(squareCentimeter.label).toBe('Square Centimeter');
+      expect(squareCentimeter.symbol).toBe('cm²');
       expect(squareCentimeter.dimension).toBe(AREA);
       expect(squareCentimeter.base).toBeUndefined();
     });
@@ -206,7 +226,9 @@ describe('geometry/units: AREA', () => {
 
   describe('squareKilometer', () => {
     it('has the right shape', () => {
-      expect(squareKilometer.name).toBe('square-kilometer');
+      expect(squareKilometer.id).toBe('square-kilometer');
+      expect(squareKilometer.label).toBe('Square Kilometer');
+      expect(squareKilometer.symbol).toBe('km²');
       expect(squareKilometer.dimension).toBe(AREA);
       expect(squareKilometer.base).toBeUndefined();
     });
@@ -222,7 +244,9 @@ describe('geometry/units: AREA', () => {
 
   describe('squareInch', () => {
     it('has the right shape', () => {
-      expect(squareInch.name).toBe('square-inch');
+      expect(squareInch.id).toBe('square-inch');
+      expect(squareInch.label).toBe('Square Inch');
+      expect(squareInch.symbol).toBe('in²');
       expect(squareInch.dimension).toBe(AREA);
       expect(squareInch.base).toBeUndefined();
     });
@@ -237,7 +261,9 @@ describe('geometry/units: AREA', () => {
 
   describe('squareFoot', () => {
     it('has the right shape', () => {
-      expect(squareFoot.name).toBe('square-foot');
+      expect(squareFoot.id).toBe('square-foot');
+      expect(squareFoot.label).toBe('Square Foot');
+      expect(squareFoot.symbol).toBe('ft²');
       expect(squareFoot.dimension).toBe(AREA);
       expect(squareFoot.base).toBeUndefined();
     });
@@ -252,7 +278,9 @@ describe('geometry/units: AREA', () => {
 
   describe('acre', () => {
     it('has the right shape', () => {
-      expect(acre.name).toBe('acre');
+      expect(acre.id).toBe('acre');
+      expect(acre.label).toBe('Acre');
+      expect(acre.symbol).toBe('ac');
       expect(acre.dimension).toBe(AREA);
       expect(acre.base).toBeUndefined();
     });
@@ -266,7 +294,9 @@ describe('geometry/units: AREA', () => {
 
   describe('hectare', () => {
     it('has the right shape', () => {
-      expect(hectare.name).toBe('hectare');
+      expect(hectare.id).toBe('hectare');
+      expect(hectare.label).toBe('Hectare');
+      expect(hectare.symbol).toBe('ha');
       expect(hectare.dimension).toBe(AREA);
       expect(hectare.base).toBeUndefined();
     });
@@ -282,7 +312,9 @@ describe('geometry/units: AREA', () => {
 
   describe('squareMeter (base)', () => {
     it('has the right shape', () => {
-      expect(squareMeter.name).toBe('square-meter');
+      expect(squareMeter.id).toBe('square-meter');
+      expect(squareMeter.label).toBe('Square Meter');
+      expect(squareMeter.symbol).toBe('m²');
       expect(squareMeter.dimension).toBe(AREA);
       expect(squareMeter.base).toBe(true);
     });
@@ -300,7 +332,9 @@ describe('geometry/units: AREA', () => {
 describe('geometry/units: VOLUME', () => {
   describe('cubicMeter (base)', () => {
     it('has the right shape', () => {
-      expect(cubicMeter.name).toBe('cubic-meter');
+      expect(cubicMeter.id).toBe('cubic-meter');
+      expect(cubicMeter.label).toBe('Cubic Meter');
+      expect(cubicMeter.symbol).toBe('m³');
       expect(cubicMeter.dimension).toBe(VOLUME);
       expect(cubicMeter.base).toBe(true);
     });
@@ -316,7 +350,9 @@ describe('geometry/units: VOLUME', () => {
 
   describe('cubicCentimeter', () => {
     it('has the right shape', () => {
-      expect(cubicCentimeter.name).toBe('cubic-centimeter');
+      expect(cubicCentimeter.id).toBe('cubic-centimeter');
+      expect(cubicCentimeter.label).toBe('Cubic Centimeter');
+      expect(cubicCentimeter.symbol).toBe('cm³');
       expect(cubicCentimeter.dimension).toBe(VOLUME);
       expect(cubicCentimeter.base).toBeUndefined();
     });
@@ -332,7 +368,9 @@ describe('geometry/units: VOLUME', () => {
 
   describe('cubicInch', () => {
     it('has the right shape', () => {
-      expect(cubicInch.name).toBe('cubic-inch');
+      expect(cubicInch.id).toBe('cubic-inch');
+      expect(cubicInch.label).toBe('Cubic Inch');
+      expect(cubicInch.symbol).toBe('in³');
       expect(cubicInch.dimension).toBe(VOLUME);
       expect(cubicInch.base).toBeUndefined();
     });
@@ -347,7 +385,9 @@ describe('geometry/units: VOLUME', () => {
 
   describe('cubicFoot', () => {
     it('has the right shape', () => {
-      expect(cubicFoot.name).toBe('cubic-foot');
+      expect(cubicFoot.id).toBe('cubic-foot');
+      expect(cubicFoot.label).toBe('Cubic Foot');
+      expect(cubicFoot.symbol).toBe('ft³');
       expect(cubicFoot.dimension).toBe(VOLUME);
       expect(cubicFoot.base).toBeUndefined();
     });
@@ -362,7 +402,9 @@ describe('geometry/units: VOLUME', () => {
 
   describe('liter', () => {
     it('has the right shape', () => {
-      expect(liter.name).toBe('liter');
+      expect(liter.id).toBe('liter');
+      expect(liter.label).toBe('Liter');
+      expect(liter.symbol).toBe('L');
       expect(liter.dimension).toBe(VOLUME);
       expect(liter.base).toBeUndefined();
     });
@@ -378,7 +420,9 @@ describe('geometry/units: VOLUME', () => {
 
   describe('milliliter', () => {
     it('has the right shape', () => {
-      expect(milliliter.name).toBe('milliliter');
+      expect(milliliter.id).toBe('milliliter');
+      expect(milliliter.label).toBe('Milliliter');
+      expect(milliliter.symbol).toBe('mL');
       expect(milliliter.dimension).toBe(VOLUME);
       expect(milliliter.base).toBeUndefined();
     });

@@ -4,7 +4,7 @@
 // visually control (e.g. rectangle width).
 
 import type { ChangeEvent } from 'react';
-import { cn } from '../lib/cn.js';
+import { cn } from '~/lib/cn.js';
 
 interface SliderProps {
   label: string;

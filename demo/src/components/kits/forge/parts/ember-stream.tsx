@@ -90,8 +90,8 @@ function EmberLayer({ count, boost, durationMin, durationMax, maxDelaySec }: Emb
               background:
                 'radial-gradient(circle, rgba(255,220,150,1) 0%, rgba(249,115,22,0.85) 45%, transparent 80%)',
               boxShadow: `0 0 ${8 + boost * 6}px rgba(249,180,76,${0.7 + boost * 0.15})`,
-              ['--drift' as string]: `${e.drift}px`,
-              ['--sway-amp' as string]: `${e.swayAmp}px`,
+              '--drift': `${e.drift}px`,
+              '--sway-amp': `${e.swayAmp}px`,
               animation: `uf-ember-rise ${e.duration}s linear infinite, uf-ember-sway ${e.swayPeriod}s ease-in-out infinite`,
               animationDelay: `${e.delay}s, ${e.delay}s`,
             } as React.CSSProperties
