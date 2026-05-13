@@ -66,7 +66,8 @@ EXTENDING.md is canonical. Distilled rules below; check the doc for worked examp
 - `KitMeta` shape: `{ id, label, blurb, defaultThemeId, icon (LucideIcon), previewBg? }`. `id` is the route segment (`#/<id>`).
 - Theme CSS variables to set in each `[data-theme='<kit>-<variant>']` block: `--uf-bg`, `--uf-fg`, `--uf-muted`, `--uf-accent`, `--uf-border`, `--uf-card`, `--uf-code-bg`. Optionally kit-specific decorative vars (`--uf-trace`, `--uf-trace-faint`, `--uf-grid`, `--uf-grid-faint`).
 - Screen owns `BenchState = { fromId, toId, value }`. Seed `fromId` / `toId` MUST be `id`s present in the unit catalog passed to `Bench`'s `options`; `findById` throws on miss.
-- Sections compose `<SectionLayout headerZone introZone widgetZone={<WidgetLayout interactionZone codeZone />}>`. Named Organ extraction: a section file's widget body past ~50 lines (or carrying a self-contained visual artifact with bounded prop surface, cadence mismatch, sink-not-source) extracts as a sibling component in the same file.
+- Screen composes its page chrome via `<KitLayout>` (imported from `../layout.js`), passing `backdropZone`, `headerZone`, optional `benchZone`, `sectionsZone`, optional `footerZone`. `KitLayout` is purely positional; the Screen decides everything.
+- Sections compose `<SectionLayout headerZone introZone widgetZone={<WidgetLayout interactionZone codeZone />}>`. Section-authoring primitives in `demo/src/components/ui/`: `UnitPicker` (takes `units: ReadonlyArray<{id, label, symbol}>`), `Slider`, `Result` (variant `'standard' | 'hero'`), `CodeBlock`. Prefer these over hand-rolled markup. Named Organ extraction: a section file's widget body past ~50 lines (or carrying a self-contained visual artifact with bounded prop surface, cadence mismatch, sink-not-source) extracts as a sibling component in the same file; organs are sink-only and never take chassis flags (`selected`, `loading`, `disabled`).
 
 ## Release signals
 

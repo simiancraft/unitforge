@@ -83,7 +83,13 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
    export * from './units.js';
    ```
 
-6. **package.json: do nothing.** The `./kits/*` wildcard export already handles the new subpath. Verify with `bun run check:package` (publint + arethetypeswrong).
+   The filename `index.ts` is load-bearing: `package.json`'s `./kits/*` wildcard resolves to `dist/kits/<kit>/index.{js,d.ts}`. A kit barrel named `main.ts` or anything else silently 404s the subpath import.
+
+6. **package.json: do nothing.** The `./kits/*` wildcard export already handles the new subpath. Verify with `bun run check:package` (publint + arethetypeswrong). Note that `check:package` verifies export-map and types resolution; it does NOT measure tree-shake outcomes. A regression that reintroduces `...linear(scale)` in a kit unit passes `check:package`. The bundle-size badge in README is the human gate for that.
+
+   Two side constraints kit authors must not break:
+   - `"sideEffects": false` is a package-wide contract. A new kit cannot import CSS at module scope, run code at import time, or otherwise produce observable side effects on import; doing so breaks tree-shaking package-wide, not just for the offending kit.
+   - The `"files"` allowlist in `package.json` is `["dist", "README.md", "LICENSE", "NOTICE.md"]`. A kit's tests, fixtures, or auxiliary files under `src/kits/<kit>/` are excluded from the publish tarball automatically; deliberately, since only the built `dist/` ships. Put runtime resources inside the kit's source, not alongside it.
 
 7. **Tests.** Add `test/kits/<kit>.test.ts` (single file per kit; existing kits use this shape). The four invariants every unit must hold:
 
@@ -126,6 +132,18 @@ The demo registers a kit in **three places**. Forget one and the kit silently do
      defaultThemeId: ThemeId; // '<kit>-dark' or '<kit>-light'
      icon: LucideIcon;        // navigation card glyph
      previewBg?: ComponentType<{ hovered: boolean }>; // inline backdrop preview; omit if the kit shouldn't appear on the home grid (forge is the only such case today)
+   }
+   ```
+
+   The Screen composes the page chrome via `KitLayout` (imported from `../layout.js`). `KitLayout` is pure positional zone-container; it owns no state and decides nothing beyond render order. Its prop shape:
+
+   ```ts
+   interface KitLayoutProps {
+     backdropZone: ReactNode;        // fixed, painted behind content
+     headerZone: ReactNode;          // kit title + blurb at top of page
+     benchZone?: ReactNode;          // optional sticky bench instrument
+     sectionsZone: ReactNode;        // vertical stack of <Section>s
+     footerZone?: ReactNode;         // optional kit-specific footnotes; NOT the global page footer
    }
    ```
 
@@ -207,8 +225,11 @@ After these six steps the kit is reachable, themed, and previewed. Smoke-test by
 
 Goal: one more interactive panel in an existing kit screen.
 
-1. **Create the section file.** `demo/src/components/kits/<kit>/sections/<section>.tsx`. Compose `<SectionLayout>`:
+1. **Create the section file.** `demo/src/components/kits/<kit>/sections/<section>.tsx`. Compose `<SectionLayout>` (imported from `../../section-layout.js` from a section file's relative position):
    ```tsx
+   import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
+   import { CodeBlock } from '~/components/ui/code-block.js';
+
    <SectionLayout
      headerZone={<SectionHeader eyebrow="demo 04" title="..." iconZone={<X />} />}
      introZone={<>One paragraph framing what the demo proves.</>}
@@ -221,12 +242,24 @@ Goal: one more interactive panel in an existing kit screen.
    />
    ```
 
+   The section-authoring vocabulary lives in `demo/src/components/ui/`. Prefer these primitives over hand-rolled markup; they carry the demo's theming and accessibility contracts:
+
+   | Primitive | Use for |
+   | --- | --- |
+   | `UnitPicker` | Any unit selection in an `interactionZone`. Takes `{ value, onChange, units: ReadonlyArray<{ id, label, symbol }>, label }`; lib `Unit<D, T>` satisfies the prop shape. |
+   | `Slider` | Numeric input bound to a single value. `{ value, onChange, min, max, step?, label, orientation?, suffix? }`. Orientation defaults to horizontal; use `'vertical'` only when the axis is the thing the slider visually controls. |
+   | `Result` | The live "answer" the widget produces. `{ label, value, variant?: 'standard' \| 'hero' }`. Use `hero` for the headline number, `standard` for secondary readouts. Hand-rolled magnitude rendering inside the `interactionZone` is the smell `Result` exists to displace. |
+   | `CodeBlock` | The live code snippet in a `codeZone`. The `code` prop should be a pure function of widget state so the panel re-renders deterministically. |
+
 2. **Named Organ extraction.** If the widget body grows past ~50 lines or contains a self-contained visual artifact, extract it as a sibling component in the same file. The four criteria:
    - Named visual artifact (a "thing" you'd point at).
    - Bounded prop surface.
    - Cadence mismatch with the surrounding chrome (re-renders more or less often).
    - Sink, not source (takes derived values; owns no upstream state).
-   See `drive-vs-os.tsx` for canonical examples (`DriveLabel`, `PropertiesPanel`, `FileInfographic`).
+
+   Organs are sink-only. If a sub-organ feels like it needs a chassis-decided flag (`selected`, `loading`, `disabled`, `active`), the chassis swaps which organ renders rather than passing the flag. Flag-prop relay into sub-organs is the slop pattern the rule exists to prevent.
+
+   See `data-storage/sections/drive-vs-os.tsx` for canonical examples (`DriveLabel`, `PropertiesPanel`, `FilesInfographic`).
 
 3. **Live-template the code block.** The `codeZone`'s string should derive from the same state the widget uses, so the code reader sees the live values. Use `formatMagnitude` from `~/lib/format.js` for numbers and `toJsName` for kebab-id → camelCase identifiers in import statements.
 
@@ -274,11 +307,11 @@ When in doubt: look at what files changed. If `src/` is touched and the scope is
 
 - **Tree-shake regression**: any `CallExpression` inside a `defineUnit` spec literal defeats per-export tree-shaking. Use inline closures, not `...linear(...)`, for kit units.
 - **Duplicate `base: true`**: two units in the same dimension with `base: true` is silent runtime ambiguity. The library has no compile-time guard. The test suite is the only thing that catches this; assert `base: true` on the canonical unit and nowhere else.
-- **Reserved prototype-pollution keys**: `defineUnit` and `defineConversion` route inputs through `safeCopy`, which throws if the spec contains the keys `__proto__`, `constructor`, or `prototype`. Don't pick these as `id`s, even for invented dimensions. The exported `RESERVED_PROTO_KEYS` set is the canonical list.
+- **Reserved prototype-pollution keys**: `defineUnit` and `defineConversion` route inputs through `safeCopy`, which throws if the spec contains the keys `__proto__`, `constructor`, or `prototype`. Don't pick these as `id`s, even for invented dimensions. The `RESERVED_PROTO_KEYS` constant in `src/lib/safeCopy.ts` is the canonical list; it is internal, not re-exported on the public barrel.
 - **Kit registration is 3 files**: `kits/<kit>/`, `registry.ts`, `theme/recipes.ts`. The TypeScript `KitId` union catches some omissions but not all.
 - **`Select.ItemText` drops `className`**: if you ever extend `UnitPicker`, the way to hide the item text without losing Radix type-ahead is to wrap `<Select.ItemText>` in an `sr-only` span, not pass the className to it.
 - **`Unit<D, T>` structural typing**: the demo's `UnitPicker` only requires `{ id, label, symbol }`. Adding a property to `Unit` in the lib won't break anything in the demo; removing `id`, `label`, or `symbol` will. Treat those three as a stability contract.
-- **react-compiler bailouts** on Radix internals are expected and harmless; the bailout reporter will flag them but they live inside Radix, not in our component bodies.
+- **react-compiler bailouts** on Radix internals are expected and harmless; the bailout reporter will flag them but they live inside Radix, not the kit's component bodies.
 - **Per-kit `units.ts` in the demo is not the lib's `units.ts`**: the demo file is a re-export of the lib's named exports as ordered arrays for picker iteration. Keep them in sync manually; a deleted lib unit must be removed from the demo array.
 
 ## Reference reading
