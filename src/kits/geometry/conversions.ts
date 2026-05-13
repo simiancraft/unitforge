@@ -506,3 +506,53 @@ export const legFromHypotenuseAndLeg = /*#__PURE__*/ defineConversion({
   },
   compute: ({ hypotenuse, leg }) => Math.sqrt(hypotenuse * hypotenuse - leg * leg),
 });
+
+// ─── Coordinate geometry ─────────────────────────────────────────────────
+// 2D coordinate-system derivations. LENGTH inputs here are signed
+// coordinates, not magnitudes, so the conversions opt out of the kit's
+// standard negative-input rejection. JSDoc on each names the asymmetry
+// so a future reader doesn't try to "fix" the missing validators.
+
+/**
+ * Euclidean distance between two 2D points: √((x2−x1)² + (y2−y1)²).
+ *
+ * Coordinates may be negative; the validators only check that inputs
+ * are finite numbers, not signed magnitudes. This is the documented
+ * exception to the kit's "validators reject negatives" policy.
+ */
+export const distanceBetweenPoints = /*#__PURE__*/ defineConversion({
+  inputs: { x1: LENGTH, y1: LENGTH, x2: LENGTH, y2: LENGTH },
+  output: LENGTH,
+  validate: {
+    x1: (v) => Number.isFinite(v) || 'x1 must be finite',
+    y1: (v) => Number.isFinite(v) || 'y1 must be finite',
+    x2: (v) => Number.isFinite(v) || 'x2 must be finite',
+    y2: (v) => Number.isFinite(v) || 'y2 must be finite',
+  },
+  compute: ({ x1, y1, x2, y2 }) => {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return Math.sqrt(dx * dx + dy * dy);
+  },
+});
+
+/**
+ * Midpoint between two 2D points: ((x1+x2)/2, (y1+y2)/2).
+ *
+ * Object output: returns `{ x: LENGTH, y: LENGTH }`. Same coordinate
+ * signedness policy as `distanceBetweenPoints`.
+ */
+export const midpointBetweenPoints = /*#__PURE__*/ defineConversion({
+  inputs: { x1: LENGTH, y1: LENGTH, x2: LENGTH, y2: LENGTH },
+  output: { x: LENGTH, y: LENGTH },
+  validate: {
+    x1: (v) => Number.isFinite(v) || 'x1 must be finite',
+    y1: (v) => Number.isFinite(v) || 'y1 must be finite',
+    x2: (v) => Number.isFinite(v) || 'x2 must be finite',
+    y2: (v) => Number.isFinite(v) || 'y2 must be finite',
+  },
+  compute: ({ x1, y1, x2, y2 }) => ({
+    x: (x1 + x2) / 2,
+    y: (y1 + y2) / 2,
+  }),
+});

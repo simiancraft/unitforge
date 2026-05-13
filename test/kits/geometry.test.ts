@@ -26,11 +26,12 @@ import {
   astronomicalUnit,
   chordLengthFromRadiusAndAngle,
   circumferenceOfCircleFromDiameter,
-  circumferenceOfCircleFromRadius,
-  diagonalOfRectangleFromLengthAndWidth,
+  circumferenceOfCircleFromRadius,  diagonalOfRectangleFromLengthAndWidth,
   diagonalOfSquareFromSide,
+  distanceBetweenPoints,
   hypotenuseFromLegs,
   legFromHypotenuseAndLeg,
+  midpointBetweenPoints,
   centimeter,
   centiliter,
   cubicCentimeter,
@@ -1023,6 +1024,54 @@ describe('geometry/conversions: diagonals and Pythagorean', () => {
       via: legFromHypotenuseAndLeg,
     });
     expect(() => fn({ hypotenuse: 3, leg: 5 })).toThrow(ValidationError);
+  });
+});
+
+describe('geometry/conversions: coordinate geometry', () => {
+  it('distanceBetweenPoints: 3-4-5 right triangle', () => {
+    const fn = forge({ x1: meter, y1: meter, x2: meter, y2: meter }, meter, {
+      via: distanceBetweenPoints,
+    });
+    expect(fn({ x1: 0, y1: 0, x2: 3, y2: 4 })).toBeCloseTo(5, 12);
+  });
+
+  it('distanceBetweenPoints accepts negative coordinates', () => {
+    const fn = forge({ x1: meter, y1: meter, x2: meter, y2: meter }, meter, {
+      via: distanceBetweenPoints,
+    });
+    expect(fn({ x1: -1, y1: -1, x2: 2, y2: 3 })).toBeCloseTo(5, 12);
+  });
+
+  it('distanceBetweenPoints rejects NaN/Infinity', () => {
+    const fn = forge({ x1: meter, y1: meter, x2: meter, y2: meter }, meter, {
+      via: distanceBetweenPoints,
+    });
+    expect(() => fn({ x1: Number.NaN, y1: 0, x2: 0, y2: 0 })).toThrow(ValidationError);
+    expect(() => fn({ x1: 0, y1: Number.POSITIVE_INFINITY, x2: 0, y2: 0 })).toThrow(
+      ValidationError,
+    );
+  });
+
+  it('midpointBetweenPoints returns {x, y} object', () => {
+    const fn = forge(
+      { x1: meter, y1: meter, x2: meter, y2: meter },
+      { x: meter, y: meter },
+      { via: midpointBetweenPoints },
+    );
+    const result = fn({ x1: 0, y1: 0, x2: 4, y2: 6 });
+    expect(result.x).toBeCloseTo(2, 12);
+    expect(result.y).toBeCloseTo(3, 12);
+  });
+
+  it('midpointBetweenPoints accepts negative coordinates', () => {
+    const fn = forge(
+      { x1: meter, y1: meter, x2: meter, y2: meter },
+      { x: meter, y: meter },
+      { via: midpointBetweenPoints },
+    );
+    const result = fn({ x1: -2, y1: -4, x2: 4, y2: 8 });
+    expect(result.x).toBeCloseTo(1, 12);
+    expect(result.y).toBeCloseTo(2, 12);
   });
 });
 
