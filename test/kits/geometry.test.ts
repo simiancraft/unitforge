@@ -6,6 +6,7 @@ import {
   angstrom,
   arcminute,
   arcsecond,
+  are,
   areaFromCircleRadius,
   areaFromSquareSide,
   astronomicalUnit,
@@ -39,7 +40,9 @@ import {
   squareInch,
   squareKilometer,
   squareMeter,
+  squareMile,
   squareMillimeter,
+  squareYard,
   turn,
   volumeFromCubeSide,
   volumeFromCylinderRadiusAndHeight,
@@ -482,6 +485,51 @@ describe('geometry/units: AREA', () => {
     it('fromBase is identity', () => {
       expect(squareMeter.fromBase(0)).toBe(0);
       expect(squareMeter.fromBase(7)).toBe(7);
+    });
+  });
+
+  describe('are', () => {
+    it('has the right shape', () => {
+      expect(are.id).toBe('are');
+      expect(are.label).toBe('Are');
+      expect(are.symbol).toBe('a');
+      expect(are.dimension).toBe(AREA);
+    });
+    it('1 a = 100 m² (exact)', () => {
+      expect(are.toBase(1)).toBe(100);
+    });
+    it('100 a = 1 ha (exact)', () => {
+      expect(are.toBase(100)).toBeCloseTo(hectare.toBase(1), 12);
+    });
+  });
+
+  describe('squareYard', () => {
+    it('has the right shape', () => {
+      expect(squareYard.id).toBe('square-yard');
+      expect(squareYard.label).toBe('Square Yard');
+      expect(squareYard.symbol).toBe('yd²');
+      expect(squareYard.dimension).toBe(AREA);
+    });
+    it('1 yd² = 0.83612736 m² (exact)', () => {
+      expect(squareYard.toBase(1)).toBeCloseTo(0.83612736, 14);
+    });
+    it('9 ft² = 1 yd² (exact)', () => {
+      expect(squareFoot.toBase(9)).toBeCloseTo(squareYard.toBase(1), 14);
+    });
+  });
+
+  describe('squareMile', () => {
+    it('has the right shape', () => {
+      expect(squareMile.id).toBe('square-mile');
+      expect(squareMile.label).toBe('Square Mile');
+      expect(squareMile.symbol).toBe('mi²');
+      expect(squareMile.dimension).toBe(AREA);
+    });
+    it('1 mi² = 2589988.110336 m² (exact)', () => {
+      expect(squareMile.toBase(1)).toBeCloseTo(2_589_988.110336, 8);
+    });
+    it('640 acres = 1 square mile (exact, the section)', () => {
+      expect(acre.toBase(640)).toBeCloseTo(squareMile.toBase(1), 8);
     });
   });
 });

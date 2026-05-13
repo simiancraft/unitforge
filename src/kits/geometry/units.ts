@@ -309,6 +309,40 @@ export const hectare = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 10_000,
 });
 
+/** 1 a = 100 m² (= 10 m × 10 m; exact). BIPM SI Brochure 9th ed. Table 8. */
+export const are = /*#__PURE__*/ defineUnit({
+  id: 'are',
+  label: 'Are',
+  symbol: 'a',
+  dimension: AREA,
+  toBase: (v) => v * 100,
+  fromBase: (b) => b / 100,
+});
+
+/** 1 yd² = 0.83612736 m² (= 0.9144²; exact via the international yard 1959). */
+export const squareYard = /*#__PURE__*/ defineUnit({
+  id: 'square-yard',
+  label: 'Square Yard',
+  symbol: 'yd²',
+  dimension: AREA,
+  toBase: (v) => v * 0.83612736,
+  fromBase: (b) => b / 0.83612736,
+});
+
+/**
+ * 1 mi² = 2 589 988.110336 m² (= 1609.344²; exact via the statute mile).
+ * Land-area measure; do not confuse with the nautical-mile-derived
+ * `square sea mile` which this kit does NOT ship.
+ */
+export const squareMile = /*#__PURE__*/ defineUnit({
+  id: 'square-mile',
+  label: 'Square Mile',
+  symbol: 'mi²',
+  dimension: AREA,
+  toBase: (v) => v * 2_589_988.110336,
+  fromBase: (b) => b / 2_589_988.110336,
+});
+
 // ─── VOLUME ──────────────────────────────────────────────────────────────
 
 /** The base unit of VOLUME. */
