@@ -293,16 +293,15 @@ export const areaFromCircularSegmentRadiusAndAngle = /*#__PURE__*/ defineConvers
  * (`areaFromRegularPolygonSidesAndLength`) require a DIMENSIONLESS /
  * COUNT dimension which the kit does not yet ship.
  */
-export const areaFromRegularPolygonApothemAndPerimeter =
-  /*#__PURE__*/ defineConversion({
-    inputs: { apothem: LENGTH, perimeter: LENGTH },
-    output: AREA,
-    validate: {
-      apothem: (v) => v >= 0 || 'apothem must be >= 0',
-      perimeter: (v) => v >= 0 || 'perimeter must be >= 0',
-    },
-    compute: ({ apothem, perimeter }) => 0.5 * apothem * perimeter,
-  });
+export const areaFromRegularPolygonApothemAndPerimeter = /*#__PURE__*/ defineConversion({
+  inputs: { apothem: LENGTH, perimeter: LENGTH },
+  output: AREA,
+  validate: {
+    apothem: (v) => v >= 0 || 'apothem must be >= 0',
+    perimeter: (v) => v >= 0 || 'perimeter must be >= 0',
+  },
+  compute: ({ apothem, perimeter }) => 0.5 * apothem * perimeter,
+});
 
 // ─── VOLUME derivations ──────────────────────────────────────────────────
 
@@ -488,8 +487,7 @@ export const angleFromRadiusAndArcLength = /*#__PURE__*/ defineConversion({
   validate: {
     radius: (v) => v >= 0 || 'radius must be >= 0',
     arcLength: (v) => v >= 0 || 'arcLength must be >= 0',
-    _all: ({ radius }: { radius: number; arcLength: number }) =>
-      radius > 0 || 'radius must be > 0',
+    _all: ({ radius }: { radius: number; arcLength: number }) => radius > 0 || 'radius must be > 0',
   },
   compute: ({ radius, arcLength }) => arcLength / radius,
 });
@@ -575,8 +573,7 @@ export const legFromHypotenuseAndOtherLeg = /*#__PURE__*/ defineConversion({
     _all: ({ hypotenuse, otherLeg }: { hypotenuse: number; otherLeg: number }) =>
       hypotenuse >= otherLeg || 'hypotenuse must be >= otherLeg',
   },
-  compute: ({ hypotenuse, otherLeg }) =>
-    Math.sqrt(hypotenuse * hypotenuse - otherLeg * otherLeg),
+  compute: ({ hypotenuse, otherLeg }) => Math.sqrt(hypotenuse * hypotenuse - otherLeg * otherLeg),
 });
 
 /**
