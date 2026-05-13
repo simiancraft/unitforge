@@ -62,6 +62,7 @@ import {
   nanometer,
   nauticalMile,
   parsec,
+  perimeterOfEllipseSemiAxes,
   perimeterOfEquilateralTriangleFromSide,
   perimeterOfParallelogramFromBaseAndSide,
   perimeterOfRectangleFromLengthAndWidth,
@@ -1072,6 +1073,39 @@ describe('geometry/conversions: coordinate geometry', () => {
     const result = fn({ x1: -2, y1: -4, x2: 4, y2: 8 });
     expect(result.x).toBeCloseTo(1, 12);
     expect(result.y).toBeCloseTo(2, 12);
+  });
+});
+
+describe('geometry/conversions: ellipse perimeter (Ramanujan II)', () => {
+  it('agrees with circle circumference for a = b (degenerate case)', () => {
+    const ellipse = forge({ a: meter, b: meter }, meter, {
+      via: perimeterOfEllipseSemiAxes,
+    });
+    const circle = forge({ radius: meter }, meter, {
+      via: circumferenceOfCircleFromRadius,
+    });
+    // Within Ramanujan II's accuracy: a = b is the easiest case (zero
+    // eccentricity), should agree very tightly.
+    expect(ellipse({ a: 5, b: 5 })).toBeCloseTo(circle({ radius: 5 }), 6);
+  });
+
+  it('moderate eccentricity (3:2) lands within published error band', () => {
+    const fn = forge({ a: meter, b: meter }, meter, {
+      via: perimeterOfEllipseSemiAxes,
+    });
+    // Ellipse with a = 3, b = 2. Numerical reference value (integrated
+    // elliptic integral) ≈ 15.86543958. Ramanujan II should be within
+    // 4e-5 relative error (and is much better than that here).
+    const expected = 15.86543958891069;
+    const actual = fn({ a: 3, b: 2 });
+    expect(Math.abs(actual - expected) / expected).toBeLessThan(4e-5);
+  });
+
+  it('rejects negative inputs', () => {
+    const fn = forge({ a: meter, b: meter }, meter, {
+      via: perimeterOfEllipseSemiAxes,
+    });
+    expect(() => fn({ a: -1, b: 1 })).toThrow(ValidationError);
   });
 });
 
