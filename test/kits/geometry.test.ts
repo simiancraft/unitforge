@@ -3,7 +3,7 @@ import { ANGLE, AREA, LENGTH, VOLUME } from '../../src/dimensions.js';
 import { forge, ValidationError } from '../../src/index.js';
 import {
   acre,
-  angleFromArcLengthAndRadius,
+  angleFromRadiusAndArcLength,
   angstrom,
   arcLengthFromRadiusAndAngle,
   arcminute,
@@ -1016,29 +1016,29 @@ describe('geometry/conversions: perimeter / circumference / arc length', () => {
     expect(fn({ radius: 4, angle: 90 })).toBeCloseTo(2 * Math.PI, 9);
   });
 
-  it('angleFromArcLengthAndRadius = arcLength / radius (round-trips arc length)', () => {
-    const angOf = forge({ arcLength: meter, radius: meter }, radian, {
-      via: angleFromArcLengthAndRadius,
+  it('angleFromRadiusAndArcLength = arcLength / radius (round-trips arc length)', () => {
+    const angOf = forge({ radius: meter, arcLength: meter }, radian, {
+      via: angleFromRadiusAndArcLength,
     });
     // Full circle: arc 2π · r = 2π → θ = 2π
-    expect(angOf({ arcLength: 2 * Math.PI, radius: 1 })).toBeCloseTo(2 * Math.PI, 12);
+    expect(angOf({ radius: 1, arcLength: 2 * Math.PI })).toBeCloseTo(2 * Math.PI, 12);
     // Quarter circle r = 4: arc = 2π → θ = π/2
-    expect(angOf({ arcLength: 2 * Math.PI, radius: 4 })).toBeCloseTo(Math.PI / 2, 12);
+    expect(angOf({ radius: 4, arcLength: 2 * Math.PI })).toBeCloseTo(Math.PI / 2, 12);
   });
 
-  it('angleFromArcLengthAndRadius returns degrees when caller asks (forge boundary)', () => {
-    const angOf = forge({ arcLength: meter, radius: meter }, degree, {
-      via: angleFromArcLengthAndRadius,
+  it('angleFromRadiusAndArcLength returns degrees when caller asks (forge boundary)', () => {
+    const angOf = forge({ radius: meter, arcLength: meter }, degree, {
+      via: angleFromRadiusAndArcLength,
     });
     // r = 4, arc = 2π → θ = π/2 rad = 90°
-    expect(angOf({ arcLength: 2 * Math.PI, radius: 4 })).toBeCloseTo(90, 9);
+    expect(angOf({ radius: 4, arcLength: 2 * Math.PI })).toBeCloseTo(90, 9);
   });
 
-  it('angleFromArcLengthAndRadius rejects radius = 0', () => {
-    const angOf = forge({ arcLength: meter, radius: meter }, radian, {
-      via: angleFromArcLengthAndRadius,
+  it('angleFromRadiusAndArcLength rejects radius = 0', () => {
+    const angOf = forge({ radius: meter, arcLength: meter }, radian, {
+      via: angleFromRadiusAndArcLength,
     });
-    expect(() => angOf({ arcLength: 1, radius: 0 })).toThrow(ValidationError);
+    expect(() => angOf({ radius: 0, arcLength: 1 })).toThrow(ValidationError);
   });
 
   it('chordLengthFromRadiusAndAngle = 2·r·sin(θ/2); θ=π gives diameter', () => {

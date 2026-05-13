@@ -477,17 +477,21 @@ export const arcLengthFromRadiusAndAngle = /*#__PURE__*/ defineConversion({
  * units; output ANGLE in radians, callers may request degrees etc. via
  * forge). Returns ANGLE; first conversion in this kit with ANGLE
  * output. `_all` rejects radius = 0 because the ratio is undefined.
+ *
+ * Input order is `{ radius, arcLength }` to honour the kit's
+ * "radius leads" convention (every other radius-input conversion
+ * lists radius first).
  */
-export const angleFromArcLengthAndRadius = /*#__PURE__*/ defineConversion({
-  inputs: { arcLength: LENGTH, radius: LENGTH },
+export const angleFromRadiusAndArcLength = /*#__PURE__*/ defineConversion({
+  inputs: { radius: LENGTH, arcLength: LENGTH },
   output: ANGLE,
   validate: {
-    arcLength: (v) => v >= 0 || 'arcLength must be >= 0',
     radius: (v) => v >= 0 || 'radius must be >= 0',
-    _all: ({ radius }: { arcLength: number; radius: number }) =>
+    arcLength: (v) => v >= 0 || 'arcLength must be >= 0',
+    _all: ({ radius }: { radius: number; arcLength: number }) =>
       radius > 0 || 'radius must be > 0',
   },
-  compute: ({ arcLength, radius }) => arcLength / radius,
+  compute: ({ radius, arcLength }) => arcLength / radius,
 });
 
 /**
