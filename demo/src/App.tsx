@@ -31,7 +31,7 @@ function parseLocation(): HashLocation {
     const raw = hash.replace(/^#\/?/, '');
     return { route: raw === '' ? DEFAULT_KIT_ID : raw, anchor: null };
   }
-  // In-page anchor: `#crouton`, etc. Lands on the default kit (home);
+  // In-page anchor: `#arpy-gee-shop`, etc. Lands on the default kit (home);
   // section-scrolling is handled below.
   return { route: DEFAULT_KIT_ID, anchor: hash.slice(1) };
 }
@@ -94,7 +94,7 @@ function RouteShell() {
   }, [active, setThemeForKit]);
 
   // Anchor scroll. Fires after the destination route's DOM commits so
-  // `getElementById` finds the section even on a fresh load of `#crouton`.
+  // `getElementById` finds the section even on a fresh load of `#arpy-gee-shop`.
   // Routes have already had scroll-to-top applied by the hashchange handler.
   useEffect(() => {
     if (!anchor) return;

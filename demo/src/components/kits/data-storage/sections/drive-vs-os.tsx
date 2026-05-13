@@ -72,7 +72,7 @@ function formatPerFileSize(unit: Unit<'data', number>): string {
 // Stable key tokens for the icon rows (avoid index-as-key on map outputs).
 const ICON_SLOTS = Array.from({ length: MAX_FILE_ICONS }, (_, i) => ({ id: `icon-${i}` }));
 
-// Crouton-style size buckets: as more icons appear, each one shrinks so
+// Shrink-to-fit size buckets: as more icons appear, each one shrinks so
 // the row stays single-line at the visible cap.
 const ICON_SIZE_BUCKETS = [
   { upTo: 12, size: 'text-base' },

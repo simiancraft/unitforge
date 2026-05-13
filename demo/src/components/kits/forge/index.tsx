@@ -16,8 +16,8 @@ import type { KitMeta } from '../registry.js';
 import { ForgeBackdrop } from './parts/forge-backdrop.js';
 import { FORGE_GLOW_VARIANT_COUNT } from './parts/forge-glow.js';
 import { ForgeHeader } from './parts/forge-header.js';
+import { ArpyGeeShop } from './sections/arpy-gee-shop.js';
 import { CoreApi } from './sections/core-api.js';
-import { CroutonDemo } from './sections/crouton-demo.js';
 import { ForgeBench } from './sections/forge-bench.js';
 import { KitsGrid } from './sections/kits-grid.js';
 import { useForgeStoke } from './use-forge-stoke.js';
@@ -83,7 +83,7 @@ export function ForgeScreen() {
               onPress={onTilePress}
               onClick={onTileClick}
             />
-            <CroutonDemo />
+            <ArpyGeeShop />
             <CoreApi />
           </>
         }
