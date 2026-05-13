@@ -537,19 +537,25 @@ export const hypotenuseFromLegs = /*#__PURE__*/ defineConversion({
 
 /**
  * Inverse Pythagorean: leg = √(c² − a²) where c is the hypotenuse and a
- * is the other leg. The `_all` validator enforces hypotenuse ≥ leg;
- * without it the radicand goes negative and the caller eats `NaN`.
+ * is the known leg. The output is the OTHER leg of the right triangle.
+ * The `_all` validator enforces hypotenuse ≥ otherLeg; without it the
+ * radicand goes negative and the caller eats `NaN`. The input is named
+ * `otherLeg` to disambiguate "the leg you already have" from "the leg
+ * being returned"; the older `leg` parameter was symmetric with the
+ * output name and forced readers to consult the JSDoc to know which
+ * direction the conversion ran.
  */
-export const legFromHypotenuseAndLeg = /*#__PURE__*/ defineConversion({
-  inputs: { hypotenuse: LENGTH, leg: LENGTH },
+export const legFromHypotenuseAndOtherLeg = /*#__PURE__*/ defineConversion({
+  inputs: { hypotenuse: LENGTH, otherLeg: LENGTH },
   output: LENGTH,
   validate: {
     hypotenuse: (v) => v >= 0 || 'hypotenuse must be >= 0',
-    leg: (v) => v >= 0 || 'leg must be >= 0',
-    _all: ({ hypotenuse, leg }: { hypotenuse: number; leg: number }) =>
-      hypotenuse >= leg || 'hypotenuse must be >= leg',
+    otherLeg: (v) => v >= 0 || 'otherLeg must be >= 0',
+    _all: ({ hypotenuse, otherLeg }: { hypotenuse: number; otherLeg: number }) =>
+      hypotenuse >= otherLeg || 'hypotenuse must be >= otherLeg',
   },
-  compute: ({ hypotenuse, leg }) => Math.sqrt(hypotenuse * hypotenuse - leg * leg),
+  compute: ({ hypotenuse, otherLeg }) =>
+    Math.sqrt(hypotenuse * hypotenuse - otherLeg * otherLeg),
 });
 
 /**

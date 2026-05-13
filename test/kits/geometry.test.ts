@@ -55,7 +55,7 @@ import {
   inch,
   inradiusOfTriangleFromSides,
   kilometer,
-  legFromHypotenuseAndLeg,
+  legFromHypotenuseAndOtherLeg,
   lightYear,
   liter,
   meter,
@@ -1074,19 +1074,19 @@ describe('geometry/conversions: diagonals and Pythagorean', () => {
     expect(hyp({ a: 5, b: 12 })).toBeCloseTo(13, 12);
   });
 
-  it('legFromHypotenuseAndLeg recovers the other leg', () => {
-    const fn = forge({ hypotenuse: meter, leg: meter }, meter, {
-      via: legFromHypotenuseAndLeg,
+  it('legFromHypotenuseAndOtherLeg recovers the unknown leg', () => {
+    const fn = forge({ hypotenuse: meter, otherLeg: meter }, meter, {
+      via: legFromHypotenuseAndOtherLeg,
     });
-    // 5-12-13: hyp=13, leg=5 → other leg = 12
-    expect(fn({ hypotenuse: 13, leg: 5 })).toBeCloseTo(12, 12);
+    // 5-12-13: hyp=13, known leg=5 → other leg = 12
+    expect(fn({ hypotenuse: 13, otherLeg: 5 })).toBeCloseTo(12, 12);
   });
 
-  it('legFromHypotenuseAndLeg rejects hypotenuse < leg', () => {
-    const fn = forge({ hypotenuse: meter, leg: meter }, meter, {
-      via: legFromHypotenuseAndLeg,
+  it('legFromHypotenuseAndOtherLeg rejects hypotenuse < otherLeg', () => {
+    const fn = forge({ hypotenuse: meter, otherLeg: meter }, meter, {
+      via: legFromHypotenuseAndOtherLeg,
     });
-    expect(() => fn({ hypotenuse: 3, leg: 5 })).toThrow(ValidationError);
+    expect(() => fn({ hypotenuse: 3, otherLeg: 5 })).toThrow(ValidationError);
   });
 
   it('inradiusOfTriangleFromSides: 3-4-5 right triangle → r = 1', () => {
