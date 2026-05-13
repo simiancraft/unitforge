@@ -57,7 +57,12 @@ export const kilometer = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1000,
 });
 
-/** 1 in = 0.0254 m (international yard, 1959; exact). */
+/**
+ * 1 in = 0.0254 m (exact via the 1959 international yard and pound
+ * agreement). The kit does not ship a US survey inch; the US survey
+ * foot / inch series was deprecated by NIST on 2023-01-01
+ * (Federal Register Vol. 84, No. 184).
+ */
 export const inch = /*#__PURE__*/ defineUnit({
   id: 'inch',
   label: 'Inch',
@@ -67,7 +72,12 @@ export const inch = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 0.0254,
 });
 
-/** 1 ft = 0.3048 m (= 12 in × 0.0254; exact). */
+/**
+ * 1 ft = 0.3048 m (= 12 × 0.0254; exact via the 1959 international yard
+ * and pound agreement). The US survey foot (0.30480 060 96... m) is not
+ * shipped here; NIST deprecated it as of 2023-01-01 per Federal Register
+ * Vol. 84, No. 184.
+ */
 export const foot = /*#__PURE__*/ defineUnit({
   id: 'foot',
   label: 'Foot',
@@ -178,7 +188,10 @@ export const nauticalMile = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1852,
 });
 
-/** 1 fathom = 1.8288 m = 6 ft (exact). NIST SP 811 App. B. Maritime depths. */
+/**
+ * 1 fathom = 6 ft = 1.8288 m (exact via the 1959 international yard
+ * and pound agreement; NIST SP 811 App. B Table B.8). Maritime depths.
+ */
 export const fathom = /*#__PURE__*/ defineUnit({
   id: 'fathom',
   label: 'Fathom',

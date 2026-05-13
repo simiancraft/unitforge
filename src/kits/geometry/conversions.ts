@@ -254,6 +254,10 @@ export const areaFromSectorRadiusAndAngle = /*#__PURE__*/ defineConversion({
  * The minor segment cut off by a chord subtending angle θ at the center.
  * Same validator policy as `areaFromSectorRadiusAndAngle`: negative
  * inputs are rejected; out-of-physical-range positive inputs are not.
+ *
+ * The formula is geometrically meaningful for θ ∈ [0, 2π]. Outside that
+ * range the math still computes but the output describes a wound or
+ * multi-wrapped figure with no single-segment correspondence.
  */
 export const areaFromCircularSegmentRadiusAndAngle = /*#__PURE__*/ defineConversion({
   inputs: { radius: LENGTH, angle: ANGLE },
@@ -437,6 +441,11 @@ export const arcLengthFromRadiusAndAngle = /*#__PURE__*/ defineConversion({
  * Chord length = 2 · r · sin(θ/2) where θ is the central angle subtended
  * by the chord. Output is LENGTH; angle in base radians per the unit-
  * normalization boundary.
+ *
+ * Geometrically meaningful for θ ∈ [0, 2π]; outside that range `sin(θ/2)`
+ * oscillates and the output is not a physical chord length. Validator
+ * rejects negative angles; out-of-meaningful-range positive angles
+ * compute honestly without rejection.
  */
 export const chordLengthFromRadiusAndAngle = /*#__PURE__*/ defineConversion({
   inputs: { radius: LENGTH, angle: ANGLE },
@@ -571,7 +580,7 @@ export const midpointBetweenPoints = /*#__PURE__*/ defineConversion({
  * Source: Ramanujan, S. (1914), "Modular equations and approximations
  * to π", Quarterly Journal of Mathematics 45, formula II at p. 354.
  */
-export const perimeterOfEllipseSemiAxes = /*#__PURE__*/ defineConversion({
+export const perimeterOfEllipseFromSemiAxes = /*#__PURE__*/ defineConversion({
   inputs: { a: LENGTH, b: LENGTH },
   output: LENGTH,
   validate: {

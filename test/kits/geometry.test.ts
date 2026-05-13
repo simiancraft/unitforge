@@ -62,7 +62,7 @@ import {
   nanometer,
   nauticalMile,
   parsec,
-  perimeterOfEllipseSemiAxes,
+  perimeterOfEllipseFromSemiAxes,
   perimeterOfEquilateralTriangleFromSide,
   perimeterOfParallelogramFromBaseAndSide,
   perimeterOfRectangleFromLengthAndWidth,
@@ -1080,7 +1080,7 @@ describe('geometry/conversions: coordinate geometry', () => {
 describe('geometry/conversions: ellipse perimeter (Ramanujan II)', () => {
   it('agrees with circle circumference for a = b (degenerate case)', () => {
     const ellipse = forge({ a: meter, b: meter }, meter, {
-      via: perimeterOfEllipseSemiAxes,
+      via: perimeterOfEllipseFromSemiAxes,
     });
     const circle = forge({ radius: meter }, meter, {
       via: circumferenceOfCircleFromRadius,
@@ -1092,7 +1092,7 @@ describe('geometry/conversions: ellipse perimeter (Ramanujan II)', () => {
 
   it('moderate eccentricity (3:2) lands within published error band', () => {
     const fn = forge({ a: meter, b: meter }, meter, {
-      via: perimeterOfEllipseSemiAxes,
+      via: perimeterOfEllipseFromSemiAxes,
     });
     // Ellipse with a = 3, b = 2. Numerical reference value (integrated
     // elliptic integral) ≈ 15.86543958. Ramanujan II should be within
@@ -1104,7 +1104,7 @@ describe('geometry/conversions: ellipse perimeter (Ramanujan II)', () => {
 
   it('rejects negative inputs', () => {
     const fn = forge({ a: meter, b: meter }, meter, {
-      via: perimeterOfEllipseSemiAxes,
+      via: perimeterOfEllipseFromSemiAxes,
     });
     expect(() => fn({ a: -1, b: 1 })).toThrow(ValidationError);
   });
