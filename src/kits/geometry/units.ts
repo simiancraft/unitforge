@@ -87,10 +87,18 @@ export const yard = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 0.9144,
 });
 
-/** 1 mi = 1609.344 m (= 5280 ft = 1760 yd; exact). */
-export const mile = /*#__PURE__*/ defineUnit({
-  id: 'mile',
-  label: 'Mile',
+/**
+ * 1 mi = 1609.344 m (= 5280 ft = 1760 yd; exact via the international yard
+ * and pound agreement of 1959).
+ *
+ * The international (statute) mile. Disambiguated from `nauticalMile`
+ * (1852 m exactly per the IHO 1929 convention); confusing them is a
+ * 15.1% error. The kit does NOT ship the US survey mile (deprecated by
+ * NIST on 2023-01-01 per Federal Register Vol. 84, No. 184).
+ */
+export const statuteMile = /*#__PURE__*/ defineUnit({
+  id: 'statute-mile',
+  label: 'Statute Mile',
   symbol: 'mi',
   dimension: LENGTH,
   toBase: (v) => v * 1609.344,

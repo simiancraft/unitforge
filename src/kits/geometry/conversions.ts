@@ -1,15 +1,37 @@
-// Cross-dimensional conversions native to the geometry kit. Co-located with
-// the kit's units so `import * from 'unitforge/kits/geometry'` gives the
-// consumer everything geometry-shaped in one place.
+// Cross-dimensional and within-dimension derivations native to the geometry
+// kit. Co-located with the kit's units so `import * from
+// 'unitforge/kits/geometry'` gives the consumer everything geometry-shaped
+// in one place.
 //
 // Compute functions are written in BASE units (meter, square-meter,
-// cubic-meter); the library decorates them so the call site may use any
-// compatible unit (centimeter, foot, etc.).
+// cubic-meter, radian); the library decorates them so the call site may
+// use any compatible unit (centimeter, foot, degree, etc.).
 //
-// Validators reject negative values for any geometric dimension; pure shapes
-// have no negative-side semantics. Validators are aggregating: a call with
-// multiple negative inputs yields one ValidationError with one failure per
+// Validators reject negative values for length / area / volume inputs by
+// convention; pure shapes have no negative-side semantics. Coordinate-
+// geometry derivations are the documented exception, since their LENGTH
+// inputs are signed coordinates rather than magnitudes. Degenerate inputs
+// (zero radius, zero side) are legal and produce zero outputs; validators
+// reject negatives, not zeros. Validators are aggregating: a call with
+// multiple bad inputs yields one ValidationError with one failure per
 // rejected input.
+//
+// Naming sub-patterns used in this file (consistent across all
+// conversions; document new ones at the source if they appear):
+//
+//   - `<output>From<Shape><Inputs>`: a transformation that produces a
+//     value in a different dimension than its inputs. Example:
+//     `areaFromRectangleLengthAndWidth` is LENGTH² → AREA.
+//
+//   - `<noun>Of<Shape>From<Inputs>`: a measurement-on-a-shape derivation
+//     where output dimension matches one of the inputs. Example:
+//     `perimeterOfRectangleFromLengthAndWidth` is LENGTH² → LENGTH;
+//     `circumferenceOfCircleFromRadius` is LENGTH → LENGTH;
+//     `diagonalOfRectangleFromLengthAndWidth` is LENGTH² → LENGTH.
+//
+// The two patterns are deliberate. The prefix-noun in pattern 2 signals
+// that you're asking for a named measurement, not a cross-dimensional
+// transformation.
 
 import { defineConversion } from '../../define.js';
 import { AREA, LENGTH, VOLUME } from '../../dimensions.js';
@@ -17,7 +39,7 @@ import { AREA, LENGTH, VOLUME } from '../../dimensions.js';
 // ─── AREA derivations ────────────────────────────────────────────────────
 
 /** Cross-dimensional: rectangle area = length × width (base units). */
-export const areaFromLengthAndWidth = /*#__PURE__*/ defineConversion({
+export const areaFromRectangleLengthAndWidth = /*#__PURE__*/ defineConversion({
   inputs: { length: LENGTH, width: LENGTH },
   output: AREA,
   validate: {
@@ -49,8 +71,8 @@ export const areaFromCircleRadius = /*#__PURE__*/ defineConversion({
 
 // ─── VOLUME derivations ──────────────────────────────────────────────────
 
-/** Cross-dimensional: rectangular-box volume = length × width × height (base units). */
-export const volumeFromLengthAndWidthAndHeight = /*#__PURE__*/ defineConversion({
+/** Cross-dimensional: cuboid (rectangular-prism) volume = length × width × height (base units). */
+export const volumeFromCuboidLengthAndWidthAndHeight = /*#__PURE__*/ defineConversion({
   inputs: { length: LENGTH, width: LENGTH, height: LENGTH },
   output: VOLUME,
   validate: {

@@ -21,7 +21,7 @@
  * Spatial extent in one dimension. Canonical SI base unit: **meter**.
  *
  * Conventional units across kits: meter, centimeter, kilometer, inch, foot,
- * yard, mile, light-year, nautical mile.
+ * yard, statute mile, nautical mile, light-year, parsec.
  */
 export const LENGTH = 'length' as const;
 

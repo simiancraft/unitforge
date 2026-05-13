@@ -34,7 +34,7 @@ import {
   meter,
   micrometer,
   mil,
-  mile,
+  statuteMile,
   milliliter,
   millimeter,
   nanometer,
@@ -52,7 +52,7 @@ import {
   turn,
   volumeFromCubeSide,
   volumeFromCylinderRadiusAndHeight,
-  volumeFromLengthAndWidthAndHeight,
+  volumeFromCuboidLengthAndWidthAndHeight,
   volumeFromSphereRadius,
   yard,
 } from '../../src/kits/geometry/index.js';
@@ -157,21 +157,21 @@ describe('geometry/units: LENGTH', () => {
     });
   });
 
-  describe('mile', () => {
+  describe('statuteMile', () => {
     it('has the right shape', () => {
-      expect(mile.id).toBe('mile');
-      expect(mile.label).toBe('Mile');
-      expect(mile.symbol).toBe('mi');
-      expect(mile.dimension).toBe(LENGTH);
-      expect(mile.base).toBeUndefined();
+      expect(statuteMile.id).toBe('statute-mile');
+      expect(statuteMile.label).toBe('Statute Mile');
+      expect(statuteMile.symbol).toBe('mi');
+      expect(statuteMile.dimension).toBe(LENGTH);
+      expect(statuteMile.base).toBeUndefined();
     });
     it('1 mi = 1609.344 m via toBase (= 5280 ft; exact)', () => {
-      expect(mile.toBase(1)).toBeCloseTo(1609.344, 9);
-      expect(mile.toBase(0.5)).toBeCloseTo(804.672, 9);
+      expect(statuteMile.toBase(1)).toBeCloseTo(1609.344, 9);
+      expect(statuteMile.toBase(0.5)).toBeCloseTo(804.672, 9);
     });
     it('1609.344 m = 1 mi via fromBase', () => {
-      expect(mile.fromBase(1609.344)).toBeCloseTo(1, 12);
-      expect(mile.fromBase(1000)).toBeCloseTo(0.621371192237334, 9);
+      expect(statuteMile.fromBase(1609.344)).toBeCloseTo(1, 12);
+      expect(statuteMile.fromBase(1000)).toBeCloseTo(0.621371192237334, 9);
     });
   });
 
@@ -297,7 +297,7 @@ describe('geometry/units: LENGTH', () => {
       expect(nauticalMile.toBase(1)).toBe(1852);
     });
     it('is distinct from statute mile', () => {
-      expect(nauticalMile.toBase(1)).not.toBeCloseTo(mile.toBase(1), 0);
+      expect(nauticalMile.toBase(1)).not.toBeCloseTo(statuteMile.toBase(1), 0);
     });
   });
 
@@ -696,24 +696,24 @@ describe('geometry/conversions: AREA derivations', () => {
 });
 
 describe('geometry/conversions: VOLUME derivations', () => {
-  describe('volumeFromLengthAndWidthAndHeight', () => {
+  describe('volumeFromCuboidLengthAndWidthAndHeight', () => {
     it('l × w × h = volume in base units', () => {
       const fn = forge({ length: meter, width: meter, height: meter }, cubicMeter, {
-        via: volumeFromLengthAndWidthAndHeight,
+        via: volumeFromCuboidLengthAndWidthAndHeight,
       });
       expect(fn({ length: 2, width: 3, height: 4 })).toBeCloseTo(24, 12);
       expect(fn({ length: 0, width: 5, height: 5 })).toBe(0);
     });
     it('honors mixed input units (cm × m × m)', () => {
       const fn = forge({ length: centimeter, width: meter, height: meter }, cubicMeter, {
-        via: volumeFromLengthAndWidthAndHeight,
+        via: volumeFromCuboidLengthAndWidthAndHeight,
       });
       // 200 cm = 2 m; 2 × 3 × 4 = 24 m³
       expect(fn({ length: 200, width: 3, height: 4 })).toBeCloseTo(24, 9);
     });
     it('rejects any negative dimension; aggregates failures', () => {
       const fn = forge({ length: meter, width: meter, height: meter }, cubicMeter, {
-        via: volumeFromLengthAndWidthAndHeight,
+        via: volumeFromCuboidLengthAndWidthAndHeight,
       });
       let caught: ValidationError | null = null;
       try {
