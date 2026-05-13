@@ -30,7 +30,10 @@
 //
 // Bits are 1/8 byte and share the DATA dimension since network throughput
 // specs (gigabit Ethernet, per IEEE 802.3) describe the same quantity as
-// storage (gigabyte file) at a different scale.
+// storage (gigabyte file) at a different scale. Throughput proper
+// (bits-per-second, transfers-per-second) is rate-shaped and lives in a
+// future RATE dimension once one is added; this kit measures information
+// content, not flow.
 
 import { defineUnit } from '../../define.js';
 import { DATA } from '../../dimensions.js';
@@ -61,6 +64,10 @@ export const octet = /*#__PURE__*/ defineUnit({
   label: 'Octet',
   symbol: 'o',
   dimension: DATA,
+  // `* 1` (not `v`) keeps the closure body visibly distinct from byte's;
+  // semantics identical, but a future "simplify" pass collapsing this to
+  // `(v) => v` would erase the deliberate signal that octet and byte are
+  // separate units, not aliases of one identity closure.
   toBase: (v) => v * 1,
   fromBase: (b) => b / 1,
 });
@@ -295,8 +302,8 @@ export const gigabit = /*#__PURE__*/ defineUnit({
 });
 
 /** 1 Tbit = 10¹² bits = 125 × 10⁹ bytes (decimal; per IEEE 802.3).
- *  Operational scale: 400 GbE shipped years ago, 800 GbE switches are in
- *  production, 1.6 TbE is in IEEE 802.3dj draft as of 2026. */
+ *  Operational scale: 400 GbE and 800 GbE are deployed; 200 Gb/s-per-lane
+ *  signaling that enables 1.6 TbE is specified in IEEE 802.3dj. */
 export const terabit = /*#__PURE__*/ defineUnit({
   id: 'terabit',
   label: 'Terabit',

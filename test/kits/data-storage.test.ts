@@ -301,6 +301,13 @@ describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
     it('round-trip 1 EiB → byte → EiB preserves identity (factor is exact power of 2)', () => {
       expect(exbibyte.fromBase(exbibyte.toBase(1))).toBe(1);
     });
+    it('Float64 precision cliff: adding 1 byte to 1 EiB is below the ULP and vanishes', () => {
+      // Documents the JSDoc-promised behavior: at 2^60, byte-resolution
+      // arithmetic is below the Float64 ULP for this magnitude. A future
+      // refactor that quietly switches to BigInt would break this and
+      // surface the change.
+      expect(exbibyte.toBase(1) + 1).toBe(exbibyte.toBase(1));
+    });
   });
 
   describe('zebibyte', () => {
