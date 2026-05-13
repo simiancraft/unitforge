@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { AREA, LENGTH, VOLUME } from '../../src/dimensions.js';
+import { ANGLE, AREA, LENGTH, VOLUME } from '../../src/dimensions.js';
 import { forge, ValidationError } from '../../src/index.js';
 import {
   acre,
+  arcminute,
+  arcsecond,
   areaFromCircleRadius,
   areaFromSquareSide,
   centimeter,
@@ -10,7 +12,9 @@ import {
   cubicFoot,
   cubicInch,
   cubicMeter,
+  degree,
   foot,
+  gradian,
   hectare,
   inch,
   kilometer,
@@ -19,12 +23,14 @@ import {
   mile,
   milliliter,
   millimeter,
+  radian,
   squareCentimeter,
   squareFoot,
   squareInch,
   squareKilometer,
   squareMeter,
   squareMillimeter,
+  turn,
   volumeFromCubeSide,
   volumeFromCylinderRadiusAndHeight,
   volumeFromLengthAndWidthAndHeight,
@@ -580,6 +586,118 @@ describe('geometry/conversions: VOLUME derivations', () => {
       }
       if (!caught) throw new Error('expected ValidationError');
       expect(caught.failures).toHaveLength(2);
+    });
+  });
+});
+
+describe('geometry/units: ANGLE', () => {
+  describe('radian (base)', () => {
+    it('has the right shape', () => {
+      expect(radian.id).toBe('radian');
+      expect(radian.label).toBe('Radian');
+      expect(radian.symbol).toBe('rad');
+      expect(radian.dimension).toBe(ANGLE);
+      expect(radian.base).toBe(true);
+    });
+
+    it('toBase / fromBase are identity', () => {
+      expect(radian.toBase(1.5)).toBe(1.5);
+      expect(radian.fromBase(1.5)).toBe(1.5);
+    });
+  });
+
+  describe('degree', () => {
+    it('has the right shape', () => {
+      expect(degree.id).toBe('degree');
+      expect(degree.label).toBe('Degree');
+      expect(degree.symbol).toBe('°');
+      expect(degree.dimension).toBe(ANGLE);
+    });
+
+    it('180° = π rad', () => {
+      expect(degree.toBase(180)).toBeCloseTo(Math.PI, 12);
+    });
+
+    it('round-trips through base', () => {
+      expect(degree.fromBase(degree.toBase(45))).toBeCloseTo(45, 12);
+    });
+  });
+
+  describe('gradian', () => {
+    it('has the right shape', () => {
+      expect(gradian.id).toBe('gradian');
+      expect(gradian.label).toBe('Gradian');
+      expect(gradian.symbol).toBe('gon');
+      expect(gradian.dimension).toBe(ANGLE);
+    });
+
+    it('400 gon = 2π rad (one turn)', () => {
+      expect(gradian.toBase(400)).toBeCloseTo(2 * Math.PI, 12);
+    });
+
+    it('round-trips through base', () => {
+      expect(gradian.fromBase(gradian.toBase(100))).toBeCloseTo(100, 12);
+    });
+  });
+
+  describe('arcminute', () => {
+    it('has the right shape', () => {
+      expect(arcminute.id).toBe('arcminute');
+      expect(arcminute.label).toBe('Arcminute');
+      expect(arcminute.symbol).toBe("'");
+      expect(arcminute.dimension).toBe(ANGLE);
+    });
+
+    it('60 arcminutes = 1 degree', () => {
+      expect(arcminute.toBase(60)).toBeCloseTo(degree.toBase(1), 14);
+    });
+
+    it('round-trips through base', () => {
+      expect(arcminute.fromBase(arcminute.toBase(30))).toBeCloseTo(30, 12);
+    });
+  });
+
+  describe('arcsecond', () => {
+    it('has the right shape', () => {
+      expect(arcsecond.id).toBe('arcsecond');
+      expect(arcsecond.label).toBe('Arcsecond');
+      expect(arcsecond.symbol).toBe('"');
+      expect(arcsecond.dimension).toBe(ANGLE);
+    });
+
+    it('3600 arcseconds = 1 degree', () => {
+      expect(arcsecond.toBase(3600)).toBeCloseTo(degree.toBase(1), 14);
+    });
+
+    it('round-trips through base', () => {
+      expect(arcsecond.fromBase(arcsecond.toBase(7200))).toBeCloseTo(7200, 9);
+    });
+  });
+
+  describe('turn', () => {
+    it('has the right shape', () => {
+      expect(turn.id).toBe('turn');
+      expect(turn.label).toBe('Turn');
+      expect(turn.symbol).toBe('tr');
+      expect(turn.dimension).toBe(ANGLE);
+    });
+
+    it('1 turn = 2π rad', () => {
+      expect(turn.toBase(1)).toBeCloseTo(2 * Math.PI, 12);
+    });
+
+    it('round-trips through base', () => {
+      expect(turn.fromBase(turn.toBase(0.25))).toBeCloseTo(0.25, 12);
+    });
+  });
+
+  describe('within-dimension forge across ANGLE', () => {
+    it('forges 90° to π/2 rad', () => {
+      expect(forge(degree, radian)(90)).toBeCloseTo(Math.PI / 2, 12);
+    });
+
+    it('forges 1 turn to 360°', () => {
+      expect(forge(turn, degree)(1)).toBeCloseTo(360, 12);
     });
   });
 });

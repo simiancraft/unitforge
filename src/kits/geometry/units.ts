@@ -14,7 +14,7 @@
 // regress per-unit tree-shake.
 
 import { defineUnit } from '../../define.js';
-import { AREA, LENGTH, VOLUME } from '../../dimensions.js';
+import { ANGLE, AREA, LENGTH, VOLUME } from '../../dimensions.js';
 
 /** The base unit of LENGTH. */
 export const meter = /*#__PURE__*/ defineUnit({
@@ -239,4 +239,72 @@ export const milliliter = /*#__PURE__*/ defineUnit({
   dimension: VOLUME,
   toBase: (v) => v * 1e-6,
   fromBase: (b) => b / 1e-6,
+});
+
+// ─── ANGLE units ─────────────────────────────────────────────────────────
+// Base: radian (SI coherent derived unit per BIPM SI Brochure 9th ed.
+// Table 4). Radian-as-base means each conversion's `compute` body can
+// call Math.sin / cos / tan / atan2 directly with no per-callee unit
+// conversion. Non-SI units below convert through radians at the
+// `toBase` / `fromBase` boundary.
+
+/** The base unit of ANGLE. */
+export const radian = /*#__PURE__*/ defineUnit({
+  id: 'radian',
+  label: 'Radian',
+  symbol: 'rad',
+  dimension: ANGLE,
+  toBase: (v) => v,
+  fromBase: (b) => b,
+  base: true,
+});
+
+/** 1° = π/180 rad. BIPM SI Brochure 9th ed. Table 8 (non-SI accepted). */
+export const degree = /*#__PURE__*/ defineUnit({
+  id: 'degree',
+  label: 'Degree',
+  symbol: '°',
+  dimension: ANGLE,
+  toBase: (v) => v * (Math.PI / 180),
+  fromBase: (b) => b / (Math.PI / 180),
+});
+
+/** 1 gon = π/200 rad. ISO 80000-3:2019 §3-5; 1 turn = 400 gon. */
+export const gradian = /*#__PURE__*/ defineUnit({
+  id: 'gradian',
+  label: 'Gradian',
+  symbol: 'gon',
+  dimension: ANGLE,
+  toBase: (v) => v * (Math.PI / 200),
+  fromBase: (b) => b / (Math.PI / 200),
+});
+
+/** 1′ = 1/60° = π/10800 rad. BIPM SI Brochure 9th ed. Table 8. */
+export const arcminute = /*#__PURE__*/ defineUnit({
+  id: 'arcminute',
+  label: 'Arcminute',
+  symbol: "'",
+  dimension: ANGLE,
+  toBase: (v) => v * (Math.PI / 10800),
+  fromBase: (b) => b / (Math.PI / 10800),
+});
+
+/** 1″ = 1/3600° = π/648000 rad. BIPM SI Brochure 9th ed. Table 8. */
+export const arcsecond = /*#__PURE__*/ defineUnit({
+  id: 'arcsecond',
+  label: 'Arcsecond',
+  symbol: '"',
+  dimension: ANGLE,
+  toBase: (v) => v * (Math.PI / 648000),
+  fromBase: (b) => b / (Math.PI / 648000),
+});
+
+/** 1 turn = 2π rad. Standard rotation unit for game engines and CAD APIs. */
+export const turn = /*#__PURE__*/ defineUnit({
+  id: 'turn',
+  label: 'Turn',
+  symbol: 'tr',
+  dimension: ANGLE,
+  toBase: (v) => v * (2 * Math.PI),
+  fromBase: (b) => b / (2 * Math.PI),
 });
