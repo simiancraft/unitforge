@@ -57,7 +57,7 @@ export function SectionLayout({
       <p className="max-w-2xl text-sm leading-relaxed text-uf-muted">{introZone}</p>
       {widgetZone}
       {notesZone ? (
-        <p className="max-w-2xl text-xs leading-relaxed text-uf-muted">{notesZone}</p>
+        <p className="w-full text-xs leading-relaxed text-uf-muted text-right">{notesZone}</p>
       ) : null}
     </section>
   );
