@@ -18,6 +18,10 @@ Published to npm. Public API is stable. [README.md](./README.md) is canonical fo
 
 Conventional Commits, imperative tense, succinct. `feat:` → minor release; `fix:` → patch; `feat!:` or `BREAKING CHANGE:` footer → major. See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+## Extending
+
+Adding a kit, a section, or a dimension: read [EXTENDING.md](./EXTENDING.md) before authoring. Documents the lib-side ritual, the demo's three-file kit registration, and the `CallExpression`-in-spec-literal tree-shake foot-gun.
+
 ## Reference
 
 Sibling project [chromonym](https://github.com/simiancraft/chromonym) is the architectural specimen for boilerplate, CI, release, and documentation patterns.

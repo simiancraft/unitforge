@@ -183,6 +183,10 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table (te
 - Security: [private vulnerability reporting](https://github.com/simiancraft/unitforge/security/advisories/new); see [SECURITY.md](./SECURITY.md)
 - Code of conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
 
+## Extending
+
+Adding a kit, adding a section to an existing kit, or adding a dimension: see [EXTENDING.md](./EXTENDING.md). It documents the lib-side ritual, the demo-side three-file registration, and the tree-shake foot-gun on `defineUnit` spec literals.
+
 ## For agents
 
 Read [`llms.txt`](./llms.txt) first. It is the canonical orientation document for this package, written for LLM ingestion: architecture, API surface, subpath exports, tree-shake implementation, and key files. The README is for humans evaluating the library; `llms.txt` is the same scope in a denser, more parseable shape.
