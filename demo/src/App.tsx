@@ -170,7 +170,7 @@ function Footer() {
         Crafted with care by{' '}
         <a
           href="https://simiancraft.com"
-          className="inline-flex items-center gap-1.5 align-middle text-uf-fg hover:text-uf-accent"
+          className="inline-flex items-center gap-1.5 align-middle text-uf-muted transition-colors hover:text-uf-accent"
         >
           <SimianMark width={16} height={16} aria-hidden />
           <span className="underline">Simiancraft</span>
