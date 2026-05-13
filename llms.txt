@@ -42,10 +42,42 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 - Per-kit subpath (`unitforge/kits/<name>`) so importing from `geometry` never pulls a sibling kit.
 - Kit unit definitions inline `toBase`/`fromBase` closures rather than spreading `...linear(scale)` because a `CallExpression` inside the spec literal defeats per-export tree-shake even when the outer `defineUnit(...)` is PURE-marked.
 
+## Extending the library
+
+EXTENDING.md is canonical. Distilled rules below; check the doc for worked examples.
+
+**Lib-side (new kit at `src/kits/<kit>/`):**
+
+- Three files: `units.ts`, `conversions.ts` (if any cross-dim), `index.ts` barrel (`export * from './units.js'; export * from './conversions.js';`).
+- Every `defineUnit({...})` and `defineConversion({...})` MUST be `/*#__PURE__*/`-marked. Spec literal MUST NOT contain any `CallExpression`; specifically, do not spread `...linear(scale)` inside a kit's `defineUnit` spec. Use inline `toBase: (v) => v * k` / `fromBase: (b) => b / k` closures. The `linear()` helper is exported for userland one-offs only.
+- Unit identity is three readonly strings: `id` (stable kebab-case, e.g. `'square-meter'`), `label` (title-case display, e.g. `'Square Meter'`), `symbol` (conventional short form, e.g. `'m²'`). JS export binding convention: kebab `id` → camelCase identifier (`square-meter` → `squareMeter`). Never rename `id` after release; it is part of the public API.
+- `base: true` marks the canonical unit (`toBase`/`fromBase` are identity). Exactly one unit per dimension may set it; the library does not enforce uniqueness at compile time, so the test suite is the safety net.
+- New dimensions go in `src/dimensions.ts` as `export const X = 'x' as const;` and must be appended to the `DIMENSIONS` tuple in the same file. The string value is part of the public API.
+- Cross-kit conversions (rare): co-locate with the more derived kit's units, not a shared `conversions/` directory; preserves subpath tree-shake.
+- `defineUnit` / `defineConversion` route specs through `safeCopy`, which throws on the reserved keys `__proto__`, `constructor`, `prototype`. Do not pick these as `id`s.
+- `package.json`: the `./kits/*` wildcard export covers the new subpath automatically; no edit required.
+- Tests: per-kit at `test/kits/<kit>.test.ts`. Assert per unit: id/label/symbol/dimension match docs; `toBase(known)` value; `fromBase(toBase(x)) === x` round-trip; `base: true` only on the canonical unit. Per conversion: `compute` correctness, `validate` rejection messages, and a `forge(...)` end-to-end across more than one input unit (proves normalization).
+- Update llms.txt's `## Kits` list when adding a kit.
+
+**Demo-side (new interactive surface at `demo/src/components/kits/<kit>/`):**
+
+- Three-file registration: kit directory itself, append entry to `demo/src/components/kits/registry.ts` (`KITS` tuple), append `'<kit>-dark'` + `'<kit>-light'` recipes to `demo/src/components/theme/recipes.ts` (extend `KitId` union). Both theme variants are mandatory.
+- Kit directory contents: `index.tsx` (Screen + `meta: KitMeta` export), `units.ts` (re-export lib units as ordered arrays for picker iteration, e.g. `LENGTH_UNITS`), `<kit>.css` (data-theme blocks for dark + light), `parts/<kit>-backdrop.tsx`, `sections/<section>.tsx` per section.
+- `KitMeta` shape: `{ id, label, blurb, defaultThemeId, icon (LucideIcon), previewBg? }`. `id` is the route segment (`#/<id>`).
+- Theme CSS variables to set in each `[data-theme='<kit>-<variant>']` block: `--uf-bg`, `--uf-fg`, `--uf-muted`, `--uf-accent`, `--uf-border`, `--uf-card`, `--uf-code-bg`. Optionally kit-specific decorative vars (`--uf-trace`, `--uf-trace-faint`, `--uf-grid`, `--uf-grid-faint`).
+- Screen owns `BenchState = { fromId, toId, value }`. Seed `fromId` / `toId` MUST be `id`s present in the unit catalog passed to `Bench`'s `options`; `findById` throws on miss.
+- Screen composes its page chrome via `<KitLayout>` (imported from `../layout.js`), passing `backdropZone`, `headerZone`, optional `benchZone`, `sectionsZone`, optional `footerZone`. `KitLayout` is purely positional; the Screen decides everything.
+- Sections compose `<SectionLayout headerZone introZone widgetZone={<WidgetLayout interactionZone codeZone />}>`. Section-authoring primitives in `demo/src/components/ui/`: `UnitPicker` (takes `units: ReadonlyArray<{id, label, symbol}>`), `Slider`, `Result` (variant `'standard' | 'hero'`), `CodeBlock`. Prefer these over hand-rolled markup. Named Organ extraction: a section file's widget body past ~50 lines (or carrying a self-contained visual artifact with bounded prop surface, cadence mismatch, sink-not-source) extracts as a sibling component in the same file; organs are sink-only and never take chassis flags (`selected`, `loading`, `disabled`).
+
+## Release signals
+
+Semantic-release filters `(demo)`-scoped commits from release analysis (`.releaserc.json`). Commits touching `src/` MUST NOT use the `(demo)` scope; use `(api)`, `(lib)`, or no scope. Breaking lib-API changes need `feat(api)!:` on the subject or a `BREAKING CHANGE:` footer in the body; a prose-only marker commit documenting a bundled change does not trigger a release. PR titles do not drive semantic-release; individual commit subjects on main do. See [EXTENDING.md](./EXTENDING.md) for the full ruleset and the commit-subject reference table.
+
 ## Key files
 
 - [README.md](./README.md): primary docs (audience: humans evaluating the library)
 - [AGENTS.md](./AGENTS.md): agent and contributor orientation
+- [EXTENDING.md](./EXTENDING.md): how to add a kit, add a section to an existing kit, or add a dimension; lib-side and demo-side rituals plus the tree-shake foot-gun
 - [CONTRIBUTING.md](./CONTRIBUTING.md): setup, commands, commit conventions
 - [SECURITY.md](./SECURITY.md): security policy and reporting
 - [NOTICE.md](./NOTICE.md): third-party attributions (currently empty; populated as kits cite external standards)
