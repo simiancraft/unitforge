@@ -269,6 +269,24 @@ export const areaFromCircularSegmentRadiusAndAngle = /*#__PURE__*/ defineConvers
   compute: ({ radius, angle }) => 0.5 * radius * radius * (angle - Math.sin(angle)),
 });
 
+/**
+ * Cross-dimensional: regular-polygon area = ½ · apothem · perimeter
+ * (base units). Works for any n-sided regular polygon; the side count
+ * is implicit in the apothem-to-perimeter ratio. Side-input forms
+ * (`areaFromRegularPolygonSidesAndLength`) require a DIMENSIONLESS /
+ * COUNT dimension which the kit does not yet ship.
+ */
+export const areaFromRegularPolygonApothemAndPerimeter =
+  /*#__PURE__*/ defineConversion({
+    inputs: { apothem: LENGTH, perimeter: LENGTH },
+    output: AREA,
+    validate: {
+      apothem: (v) => v >= 0 || 'apothem must be >= 0',
+      perimeter: (v) => v >= 0 || 'perimeter must be >= 0',
+    },
+    compute: ({ apothem, perimeter }) => 0.5 * apothem * perimeter,
+  });
+
 // ─── VOLUME derivations ──────────────────────────────────────────────────
 
 /** Cross-dimensional: cuboid (rectangular-prism) volume = length × width × height (base units). */

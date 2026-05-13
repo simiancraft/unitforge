@@ -66,6 +66,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [ ] `areaFromAnnulusRadii`
 - [ ] `areaFromSectorRadiusAndAngle`
 - [ ] `areaFromCircularSegmentRadiusAndAngle`
+- [ ] `areaFromRegularPolygonApothemAndPerimeter`
 
 ### Volume derivations
 - [ ] `volumeFromCuboidLengthAndWidthAndHeight`

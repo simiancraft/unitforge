@@ -19,6 +19,7 @@ import {
   areaFromKiteDiagonals,
   areaFromParallelogramBaseAndHeight,
   areaFromRectangleLengthAndWidth,
+  areaFromRegularPolygonApothemAndPerimeter,
   areaFromRhombusDiagonals,
   areaFromSectorRadiusAndAngle,
   areaFromSquareSide,
@@ -897,6 +898,36 @@ describe('geometry/conversions: AREA derivations', () => {
       });
       // Segment at θ = π: ½ · 1² · (π − sin π) = π/2
       expect(fn({ radius: 1, angle: Math.PI })).toBeCloseTo(Math.PI / 2, 12);
+    });
+  });
+
+  describe('areaFromRegularPolygonApothemAndPerimeter', () => {
+    it('½ · a · P; square (a = s/2, P = 4s) recovers s²', () => {
+      const fn = forge({ apothem: meter, perimeter: meter }, squareMeter, {
+        via: areaFromRegularPolygonApothemAndPerimeter,
+      });
+      // Side s = 2: apothem 1, perimeter 8 → area 4 = s²
+      expect(fn({ apothem: 1, perimeter: 8 })).toBeCloseTo(4, 12);
+    });
+
+    it('regular hexagon agrees with side-formula 3√3/2 · s²', () => {
+      const fn = forge({ apothem: meter, perimeter: meter }, squareMeter, {
+        via: areaFromRegularPolygonApothemAndPerimeter,
+      });
+      // Hexagon side s = 1: apothem = s · √3/2, perimeter = 6s
+      const s = 1;
+      const apothem = (s * Math.sqrt(3)) / 2;
+      const perimeter = 6 * s;
+      const expected = ((3 * Math.sqrt(3)) / 2) * s * s;
+      expect(fn({ apothem, perimeter })).toBeCloseTo(expected, 12);
+    });
+
+    it('rejects negative apothem and negative perimeter', () => {
+      const fn = forge({ apothem: meter, perimeter: meter }, squareMeter, {
+        via: areaFromRegularPolygonApothemAndPerimeter,
+      });
+      expect(() => fn({ apothem: -1, perimeter: 4 })).toThrow(ValidationError);
+      expect(() => fn({ apothem: 1, perimeter: -4 })).toThrow(ValidationError);
     });
   });
 });
