@@ -22,7 +22,11 @@ import {
   areaFromTrapezoidBasesAndHeight,
   areaFromTriangleBaseAndHeight,
   areaFromTriangleSides,
+  arcLengthFromRadiusAndAngle,
   astronomicalUnit,
+  chordLengthFromRadiusAndAngle,
+  circumferenceOfCircleFromDiameter,
+  circumferenceOfCircleFromRadius,
   centimeter,
   centiliter,
   cubicCentimeter,
@@ -53,6 +57,13 @@ import {
   nanometer,
   nauticalMile,
   parsec,
+  perimeterOfEquilateralTriangleFromSide,
+  perimeterOfParallelogramFromBaseAndSide,
+  perimeterOfRectangleFromLengthAndWidth,
+  perimeterOfRhombusFromSide,
+  perimeterOfSquareFromSide,
+  perimeterOfTrapezoidFromSides,
+  perimeterOfTriangleFromSides,
   radian,
   squareCentimeter,
   squareFoot,
@@ -877,6 +888,98 @@ describe('geometry/conversions: AREA derivations', () => {
       // Segment at θ = π: ½ · 1² · (π − sin π) = π/2
       expect(fn({ radius: 1, angle: Math.PI })).toBeCloseTo(Math.PI / 2, 12);
     });
+  });
+});
+
+describe('geometry/conversions: perimeter / circumference / arc length', () => {
+  it('perimeterOfRectangleFromLengthAndWidth = 2(L+W)', () => {
+    const fn = forge({ length: meter, width: meter }, meter, {
+      via: perimeterOfRectangleFromLengthAndWidth,
+    });
+    expect(fn({ length: 5, width: 3 })).toBeCloseTo(16, 12);
+  });
+
+  it('perimeterOfSquareFromSide = 4s', () => {
+    const fn = forge({ side: meter }, meter, { via: perimeterOfSquareFromSide });
+    expect(fn({ side: 7 })).toBeCloseTo(28, 12);
+  });
+
+  it('perimeterOfTriangleFromSides = a+b+c; no triangle-inequality rejection', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: perimeterOfTriangleFromSides,
+    });
+    expect(fn({ a: 3, b: 4, c: 5 })).toBeCloseTo(12, 12);
+    // 1+1+5 is a degenerate triple; perimeter is still meaningful
+    expect(fn({ a: 1, b: 1, c: 5 })).toBeCloseTo(7, 12);
+  });
+
+  it('perimeterOfEquilateralTriangleFromSide = 3s', () => {
+    const fn = forge({ side: meter }, meter, {
+      via: perimeterOfEquilateralTriangleFromSide,
+    });
+    expect(fn({ side: 4 })).toBeCloseTo(12, 12);
+  });
+
+  it('perimeterOfRhombusFromSide = 4s', () => {
+    const fn = forge({ side: meter }, meter, { via: perimeterOfRhombusFromSide });
+    expect(fn({ side: 5 })).toBeCloseTo(20, 12);
+  });
+
+  it('perimeterOfParallelogramFromBaseAndSide = 2(b+s)', () => {
+    const fn = forge({ base: meter, side: meter }, meter, {
+      via: perimeterOfParallelogramFromBaseAndSide,
+    });
+    expect(fn({ base: 6, side: 4 })).toBeCloseTo(20, 12);
+  });
+
+  it('perimeterOfTrapezoidFromSides = a+b+c+d', () => {
+    const fn = forge({ a: meter, b: meter, c: meter, d: meter }, meter, {
+      via: perimeterOfTrapezoidFromSides,
+    });
+    expect(fn({ a: 3, b: 5, c: 4, d: 4 })).toBeCloseTo(16, 12);
+  });
+
+  it('circumferenceOfCircleFromRadius = 2πr', () => {
+    const fn = forge({ radius: meter }, meter, { via: circumferenceOfCircleFromRadius });
+    expect(fn({ radius: 1 })).toBeCloseTo(2 * Math.PI, 12);
+    expect(fn({ radius: 5 })).toBeCloseTo(10 * Math.PI, 12);
+  });
+
+  it('circumferenceOfCircleFromDiameter = πd; agrees with from-radius', () => {
+    const fromDia = forge({ diameter: meter }, meter, {
+      via: circumferenceOfCircleFromDiameter,
+    });
+    const fromRad = forge({ radius: meter }, meter, {
+      via: circumferenceOfCircleFromRadius,
+    });
+    expect(fromDia({ diameter: 2 })).toBeCloseTo(fromRad({ radius: 1 }), 12);
+  });
+
+  it('arcLengthFromRadiusAndAngle = r·θ', () => {
+    const fn = forge({ radius: meter, angle: radian }, meter, {
+      via: arcLengthFromRadiusAndAngle,
+    });
+    // Full circle: arc = 2π · r
+    expect(fn({ radius: 1, angle: 2 * Math.PI })).toBeCloseTo(2 * Math.PI, 12);
+    // Quarter circle, r = 4: arc = π/2 · 4 = 2π
+    expect(fn({ radius: 4, angle: Math.PI / 2 })).toBeCloseTo(2 * Math.PI, 12);
+  });
+
+  it('arcLengthFromRadiusAndAngle accepts degree input via forge', () => {
+    const fn = forge({ radius: meter, angle: degree }, meter, {
+      via: arcLengthFromRadiusAndAngle,
+    });
+    // 90° arc on r = 4 = π/2 · 4 = 2π
+    expect(fn({ radius: 4, angle: 90 })).toBeCloseTo(2 * Math.PI, 9);
+  });
+
+  it('chordLengthFromRadiusAndAngle = 2·r·sin(θ/2); θ=π gives diameter', () => {
+    const fn = forge({ radius: meter, angle: radian }, meter, {
+      via: chordLengthFromRadiusAndAngle,
+    });
+    expect(fn({ radius: 5, angle: Math.PI })).toBeCloseTo(10, 12);
+    // θ = π/2 on r = 1: chord = 2 · 1 · sin(π/4) = √2
+    expect(fn({ radius: 1, angle: Math.PI / 2 })).toBeCloseTo(Math.SQRT2, 12);
   });
 });
 

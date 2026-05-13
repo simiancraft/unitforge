@@ -309,3 +309,141 @@ export const volumeFromCylinderRadiusAndHeight = /*#__PURE__*/ defineConversion(
   },
   compute: ({ radius, height }) => Math.PI * radius * radius * height,
 });
+
+// ─── Perimeter / circumference / arc-length derivations ──────────────────
+// Within-dimension LENGTH derivations. Output is the same dimension as
+// inputs (LENGTH → LENGTH); the `<noun>Of<Shape>From<Inputs>` naming
+// pattern signals the measurement-on-a-shape shape rather than a
+// cross-dimensional transformation.
+
+/** 2 (L + W). */
+export const perimeterOfRectangleFromLengthAndWidth = /*#__PURE__*/ defineConversion({
+  inputs: { length: LENGTH, width: LENGTH },
+  output: LENGTH,
+  validate: {
+    length: (v) => v >= 0 || 'length must be >= 0',
+    width: (v) => v >= 0 || 'width must be >= 0',
+  },
+  compute: ({ length, width }) => 2 * (length + width),
+});
+
+/** 4 · s. */
+export const perimeterOfSquareFromSide = /*#__PURE__*/ defineConversion({
+  inputs: { side: LENGTH },
+  output: LENGTH,
+  validate: {
+    side: (v) => v >= 0 || 'side must be >= 0',
+  },
+  compute: ({ side }) => 4 * side,
+});
+
+/**
+ * a + b + c. No triangle-inequality check; perimeter is meaningful for any
+ * three nonneg lengths, including degenerate triples that cannot form a
+ * triangle. The Heron-style area conversion is where the inequality
+ * matters.
+ */
+export const perimeterOfTriangleFromSides = /*#__PURE__*/ defineConversion({
+  inputs: { a: LENGTH, b: LENGTH, c: LENGTH },
+  output: LENGTH,
+  validate: {
+    a: (v) => v >= 0 || 'a must be >= 0',
+    b: (v) => v >= 0 || 'b must be >= 0',
+    c: (v) => v >= 0 || 'c must be >= 0',
+  },
+  compute: ({ a, b, c }) => a + b + c,
+});
+
+/** 3 · s. */
+export const perimeterOfEquilateralTriangleFromSide = /*#__PURE__*/ defineConversion({
+  inputs: { side: LENGTH },
+  output: LENGTH,
+  validate: {
+    side: (v) => v >= 0 || 'side must be >= 0',
+  },
+  compute: ({ side }) => 3 * side,
+});
+
+/** 4 · s. (A rhombus's perimeter is 4× any side, since all sides are equal.) */
+export const perimeterOfRhombusFromSide = /*#__PURE__*/ defineConversion({
+  inputs: { side: LENGTH },
+  output: LENGTH,
+  validate: {
+    side: (v) => v >= 0 || 'side must be >= 0',
+  },
+  compute: ({ side }) => 4 * side,
+});
+
+/** 2 (b + s). */
+export const perimeterOfParallelogramFromBaseAndSide = /*#__PURE__*/ defineConversion({
+  inputs: { base: LENGTH, side: LENGTH },
+  output: LENGTH,
+  validate: {
+    base: (v) => v >= 0 || 'base must be >= 0',
+    side: (v) => v >= 0 || 'side must be >= 0',
+  },
+  compute: ({ base, side }) => 2 * (base + side),
+});
+
+/** a + b + c + d. */
+export const perimeterOfTrapezoidFromSides = /*#__PURE__*/ defineConversion({
+  inputs: { a: LENGTH, b: LENGTH, c: LENGTH, d: LENGTH },
+  output: LENGTH,
+  validate: {
+    a: (v) => v >= 0 || 'a must be >= 0',
+    b: (v) => v >= 0 || 'b must be >= 0',
+    c: (v) => v >= 0 || 'c must be >= 0',
+    d: (v) => v >= 0 || 'd must be >= 0',
+  },
+  compute: ({ a, b, c, d }) => a + b + c + d,
+});
+
+/** 2π · r. */
+export const circumferenceOfCircleFromRadius = /*#__PURE__*/ defineConversion({
+  inputs: { radius: LENGTH },
+  output: LENGTH,
+  validate: {
+    radius: (v) => v >= 0 || 'radius must be >= 0',
+  },
+  compute: ({ radius }) => 2 * Math.PI * radius,
+});
+
+/** π · d. */
+export const circumferenceOfCircleFromDiameter = /*#__PURE__*/ defineConversion({
+  inputs: { diameter: LENGTH },
+  output: LENGTH,
+  validate: {
+    diameter: (v) => v >= 0 || 'diameter must be >= 0',
+  },
+  compute: ({ diameter }) => Math.PI * diameter,
+});
+
+/**
+ * Arc length = r · θ (compute runs in base units; θ in radians).
+ * Same validator policy as `areaFromSectorRadiusAndAngle`: angle ≥ 0
+ * only; multi-turn angles compute honestly.
+ */
+export const arcLengthFromRadiusAndAngle = /*#__PURE__*/ defineConversion({
+  inputs: { radius: LENGTH, angle: ANGLE },
+  output: LENGTH,
+  validate: {
+    radius: (v) => v >= 0 || 'radius must be >= 0',
+    angle: (v) => v >= 0 || 'angle must be >= 0',
+  },
+  compute: ({ radius, angle }) => radius * angle,
+});
+
+/**
+ * Chord length = 2 · r · sin(θ/2) where θ is the central angle subtended
+ * by the chord. Output is LENGTH; angle in base radians per the unit-
+ * normalization boundary.
+ */
+export const chordLengthFromRadiusAndAngle = /*#__PURE__*/ defineConversion({
+  inputs: { radius: LENGTH, angle: ANGLE },
+  output: LENGTH,
+  validate: {
+    radius: (v) => v >= 0 || 'radius must be >= 0',
+    angle: (v) => v >= 0 || 'angle must be >= 0',
+  },
+  compute: ({ radius, angle }) => 2 * radius * Math.sin(angle / 2),
+});
