@@ -81,7 +81,7 @@ export function Bench<D extends Dimension>({
         <ArrowRight
           size={20}
           strokeWidth={1.8}
-          className="hidden text-uf-accent md:block md:justify-self-center"
+          className="mb-1 hidden text-uf-accent md:block md:justify-self-center"
         />
 
         <UnitPicker
