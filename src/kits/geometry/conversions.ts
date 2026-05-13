@@ -493,7 +493,7 @@ export const chordLengthFromRadiusAndAngle = /*#__PURE__*/ defineConversion({
   compute: ({ radius, angle }) => 2 * radius * Math.sin(angle / 2),
 });
 
-// ─── Diagonals and Pythagorean helpers ───────────────────────────────────
+// ─── Diagonals, Pythagorean, and triangle radii ──────────────────────────
 // Within-dimension LENGTH derivations.
 
 /** √(L² + W²) (rectangle space diagonal in the plane). */
@@ -550,6 +550,59 @@ export const legFromHypotenuseAndLeg = /*#__PURE__*/ defineConversion({
       hypotenuse >= leg || 'hypotenuse must be >= leg',
   },
   compute: ({ hypotenuse, leg }) => Math.sqrt(hypotenuse * hypotenuse - leg * leg),
+});
+
+/**
+ * Inradius (incircle radius) of a triangle from its three sides:
+ * r = Area / s, where Area is Heron's area and s = (a+b+c)/2 is the
+ * semi-perimeter. Shares the triangle-inequality validator with
+ * `areaFromTriangleSides`; degenerate triangles (zero area, sides
+ * positive) yield r = 0 honestly. A zero-side degeneracy (a = b = c = 0)
+ * produces NaN, consistent with the kit's compute-honestly policy on
+ * undefined ratios.
+ */
+export const inradiusOfTriangleFromSides = /*#__PURE__*/ defineConversion({
+  inputs: { a: LENGTH, b: LENGTH, c: LENGTH },
+  output: LENGTH,
+  validate: {
+    a: (v) => v >= 0 || 'a must be >= 0',
+    b: (v) => v >= 0 || 'b must be >= 0',
+    c: (v) => v >= 0 || 'c must be >= 0',
+    _all: ({ a, b, c }: { a: number; b: number; c: number }) =>
+      (a + b >= c && b + c >= a && a + c >= b) ||
+      'triangle inequality violated: sides do not form a triangle',
+  },
+  compute: ({ a, b, c }) => {
+    const s = (a + b + c) / 2;
+    const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+    return area / s;
+  },
+});
+
+/**
+ * Circumradius (circumcircle radius) of a triangle from its three
+ * sides: R = (a · b · c) / (4 · Area), where Area is Heron's area.
+ * Shares the triangle-inequality validator with `areaFromTriangleSides`.
+ * Degenerate (collinear) triangles produce Area = 0 and R = Infinity,
+ * consistent with the kit's compute-honestly policy on undefined
+ * ratios; the JSDoc names the edge case so call sites can guard.
+ */
+export const circumradiusOfTriangleFromSides = /*#__PURE__*/ defineConversion({
+  inputs: { a: LENGTH, b: LENGTH, c: LENGTH },
+  output: LENGTH,
+  validate: {
+    a: (v) => v >= 0 || 'a must be >= 0',
+    b: (v) => v >= 0 || 'b must be >= 0',
+    c: (v) => v >= 0 || 'c must be >= 0',
+    _all: ({ a, b, c }: { a: number; b: number; c: number }) =>
+      (a + b >= c && b + c >= a && a + c >= b) ||
+      'triangle inequality violated: sides do not form a triangle',
+  },
+  compute: ({ a, b, c }) => {
+    const s = (a + b + c) / 2;
+    const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+    return (a * b * c) / (4 * area);
+  },
 });
 
 // ─── Coordinate geometry ─────────────────────────────────────────────────

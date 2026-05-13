@@ -32,6 +32,7 @@ import {
   chordLengthFromRadiusAndAngle,
   circumferenceOfCircleFromDiameter,
   circumferenceOfCircleFromRadius,
+  circumradiusOfTriangleFromSides,
   cubicCentimeter,
   cubicDecimeter,
   cubicFoot,
@@ -52,6 +53,7 @@ import {
   hectare,
   hypotenuseFromLegs,
   inch,
+  inradiusOfTriangleFromSides,
   kilometer,
   legFromHypotenuseAndLeg,
   lightYear,
@@ -1085,6 +1087,50 @@ describe('geometry/conversions: diagonals and Pythagorean', () => {
       via: legFromHypotenuseAndLeg,
     });
     expect(() => fn({ hypotenuse: 3, leg: 5 })).toThrow(ValidationError);
+  });
+
+  it('inradiusOfTriangleFromSides: 3-4-5 right triangle → r = 1', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: inradiusOfTriangleFromSides,
+    });
+    expect(fn({ a: 3, b: 4, c: 5 })).toBeCloseTo(1, 12);
+  });
+
+  it('inradiusOfTriangleFromSides: equilateral side s → r = s · √3 / 6', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: inradiusOfTriangleFromSides,
+    });
+    const s = 6;
+    expect(fn({ a: s, b: s, c: s })).toBeCloseTo((s * Math.sqrt(3)) / 6, 12);
+  });
+
+  it('inradiusOfTriangleFromSides rejects triangle-inequality violation', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: inradiusOfTriangleFromSides,
+    });
+    expect(() => fn({ a: 1, b: 2, c: 5 })).toThrow(ValidationError);
+  });
+
+  it('circumradiusOfTriangleFromSides: 3-4-5 right triangle → R = hypotenuse/2 = 2.5', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: circumradiusOfTriangleFromSides,
+    });
+    expect(fn({ a: 3, b: 4, c: 5 })).toBeCloseTo(2.5, 12);
+  });
+
+  it('circumradiusOfTriangleFromSides: equilateral side s → R = s · √3 / 3', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: circumradiusOfTriangleFromSides,
+    });
+    const s = 6;
+    expect(fn({ a: s, b: s, c: s })).toBeCloseTo((s * Math.sqrt(3)) / 3, 12);
+  });
+
+  it('circumradiusOfTriangleFromSides rejects triangle-inequality violation', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: circumradiusOfTriangleFromSides,
+    });
+    expect(() => fn({ a: 1, b: 1, c: 3 })).toThrow(ValidationError);
   });
 });
 

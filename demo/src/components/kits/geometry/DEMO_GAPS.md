@@ -93,6 +93,10 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [ ] `diagonalOfRectangleFromLengthAndWidth`
 - [ ] `diagonalOfSquareFromSide`
 
+### Triangle radii
+- [ ] `inradiusOfTriangleFromSides`
+- [ ] `circumradiusOfTriangleFromSides`
+
 ### Coordinate geometry
 - [ ] `distanceBetweenPoints`
 - [ ] `midpointBetweenPoints`
