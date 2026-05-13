@@ -3,26 +3,36 @@ import { ANGLE, AREA, LENGTH, VOLUME } from '../../src/dimensions.js';
 import { forge, ValidationError } from '../../src/index.js';
 import {
   acre,
+  angstrom,
   arcminute,
   arcsecond,
   areaFromCircleRadius,
   areaFromSquareSide,
+  astronomicalUnit,
   centimeter,
   cubicCentimeter,
   cubicFoot,
   cubicInch,
   cubicMeter,
+  decimeter,
   degree,
+  fathom,
   foot,
   gradian,
   hectare,
   inch,
   kilometer,
+  lightYear,
   liter,
   meter,
+  micrometer,
+  mil,
   mile,
   milliliter,
   millimeter,
+  nanometer,
+  nauticalMile,
+  parsec,
   radian,
   squareCentimeter,
   squareFoot,
@@ -189,6 +199,147 @@ describe('geometry/units: LENGTH', () => {
     it('1 m = 100 cm via fromBase', () => {
       expect(centimeter.fromBase(1)).toBeCloseTo(100, 12);
       expect(centimeter.fromBase(0.01)).toBeCloseTo(1, 12);
+    });
+  });
+
+  describe('decimeter', () => {
+    it('has the right shape', () => {
+      expect(decimeter.id).toBe('decimeter');
+      expect(decimeter.label).toBe('Decimeter');
+      expect(decimeter.symbol).toBe('dm');
+      expect(decimeter.dimension).toBe(LENGTH);
+    });
+    it('1 dm = 0.1 m via toBase', () => {
+      expect(decimeter.toBase(1)).toBeCloseTo(0.1, 12);
+    });
+    it('round-trips through base', () => {
+      expect(decimeter.fromBase(decimeter.toBase(7.3))).toBeCloseTo(7.3, 12);
+    });
+  });
+
+  describe('micrometer', () => {
+    it('has the right shape', () => {
+      expect(micrometer.id).toBe('micrometer');
+      expect(micrometer.label).toBe('Micrometer');
+      expect(micrometer.symbol).toBe('µm');
+      expect(micrometer.dimension).toBe(LENGTH);
+    });
+    it('1 µm = 1e-6 m via toBase', () => {
+      expect(micrometer.toBase(1)).toBeCloseTo(1e-6, 18);
+    });
+    it('round-trips through base', () => {
+      expect(micrometer.fromBase(micrometer.toBase(42))).toBeCloseTo(42, 9);
+    });
+  });
+
+  describe('nanometer', () => {
+    it('has the right shape', () => {
+      expect(nanometer.id).toBe('nanometer');
+      expect(nanometer.label).toBe('Nanometer');
+      expect(nanometer.symbol).toBe('nm');
+      expect(nanometer.dimension).toBe(LENGTH);
+    });
+    it('1000 nm = 1 µm via the LENGTH base', () => {
+      expect(nanometer.toBase(1000)).toBeCloseTo(micrometer.toBase(1), 18);
+    });
+    it('round-trips through base', () => {
+      expect(nanometer.fromBase(nanometer.toBase(550))).toBeCloseTo(550, 6);
+    });
+  });
+
+  describe('angstrom', () => {
+    it('has the right shape', () => {
+      expect(angstrom.id).toBe('angstrom');
+      expect(angstrom.label).toBe('Ångström');
+      expect(angstrom.symbol).toBe('Å');
+      expect(angstrom.dimension).toBe(LENGTH);
+    });
+    it('1 Å = 1e-10 m via toBase', () => {
+      expect(angstrom.toBase(1)).toBeCloseTo(1e-10, 22);
+    });
+    it('10 Å = 1 nm via the LENGTH base', () => {
+      expect(angstrom.toBase(10)).toBeCloseTo(nanometer.toBase(1), 22);
+    });
+  });
+
+  describe('mil (thou)', () => {
+    it('has the right shape', () => {
+      expect(mil.id).toBe('mil');
+      expect(mil.label).toBe('Mil');
+      expect(mil.symbol).toBe('mil');
+      expect(mil.dimension).toBe(LENGTH);
+    });
+    it('1000 mil = 1 inch (exact)', () => {
+      expect(mil.toBase(1000)).toBeCloseTo(inch.toBase(1), 14);
+    });
+    it('1 mil = 25.4 µm', () => {
+      expect(mil.toBase(1)).toBeCloseTo(micrometer.toBase(25.4), 14);
+    });
+  });
+
+  describe('nauticalMile', () => {
+    it('has the right shape', () => {
+      expect(nauticalMile.id).toBe('nautical-mile');
+      expect(nauticalMile.label).toBe('Nautical Mile');
+      expect(nauticalMile.symbol).toBe('nmi');
+      expect(nauticalMile.dimension).toBe(LENGTH);
+    });
+    it('1 nmi = 1852 m (exact)', () => {
+      expect(nauticalMile.toBase(1)).toBe(1852);
+    });
+    it('is distinct from statute mile', () => {
+      expect(nauticalMile.toBase(1)).not.toBeCloseTo(mile.toBase(1), 0);
+    });
+  });
+
+  describe('fathom', () => {
+    it('has the right shape', () => {
+      expect(fathom.id).toBe('fathom');
+      expect(fathom.label).toBe('Fathom');
+      expect(fathom.symbol).toBe('ftm');
+      expect(fathom.dimension).toBe(LENGTH);
+    });
+    it('1 fathom = 6 feet (exact)', () => {
+      expect(fathom.toBase(1)).toBeCloseTo(foot.toBase(6), 14);
+    });
+  });
+
+  describe('astronomicalUnit', () => {
+    it('has the right shape', () => {
+      expect(astronomicalUnit.id).toBe('astronomical-unit');
+      expect(astronomicalUnit.label).toBe('Astronomical Unit');
+      expect(astronomicalUnit.symbol).toBe('au');
+      expect(astronomicalUnit.dimension).toBe(LENGTH);
+    });
+    it('1 au = 149597870700 m (IAU 2012, exact)', () => {
+      expect(astronomicalUnit.toBase(1)).toBe(149597870700);
+    });
+  });
+
+  describe('lightYear', () => {
+    it('has the right shape', () => {
+      expect(lightYear.id).toBe('light-year');
+      expect(lightYear.label).toBe('Light-Year');
+      expect(lightYear.symbol).toBe('ly');
+      expect(lightYear.dimension).toBe(LENGTH);
+    });
+    it('1 ly = 9460730472580800 m (Julian year × c, exact)', () => {
+      expect(lightYear.toBase(1)).toBe(9460730472580800);
+    });
+  });
+
+  describe('parsec', () => {
+    it('has the right shape', () => {
+      expect(parsec.id).toBe('parsec');
+      expect(parsec.label).toBe('Parsec');
+      expect(parsec.symbol).toBe('pc');
+      expect(parsec.dimension).toBe(LENGTH);
+    });
+    it('1 pc ≈ 3.0857e16 m (within Float64)', () => {
+      expect(parsec.toBase(1)).toBeCloseTo(3.0857e16, -12);
+    });
+    it('1 pc ≈ 3.26156 ly (within Float64)', () => {
+      expect(parsec.toBase(1) / lightYear.toBase(1)).toBeCloseTo(3.26156, 4);
     });
   });
 });
