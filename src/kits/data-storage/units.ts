@@ -99,6 +99,45 @@ export const petabyte = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1_000_000_000_000_000,
 });
 
+/** 1 EB = 10¹⁸ bytes (decimal/SI). Operating scale of AWS S3 and global
+ *  datasphere reports; first decimal byte tier that no longer round-trips
+ *  to an exact Float64 integer (10¹⁸ < 2^60 but `Number.MAX_SAFE_INTEGER`
+ *  is 2^53−1 ≈ 9.007 × 10¹⁵; any byte count ≥ 1 EB has fewer than
+ *  ~16 significant digits of precision). Caveat applies to ZB and YB
+ *  below as well. */
+export const exabyte = /*#__PURE__*/ defineUnit({
+  id: 'exabyte',
+  label: 'Exabyte',
+  symbol: 'EB',
+  dimension: DATA,
+  toBase: (v) => v * 1_000_000_000_000_000_000,
+  fromBase: (b) => b / 1_000_000_000_000_000_000,
+});
+
+/** 1 ZB = 10²¹ bytes (decimal/SI). Operating scale of IDC "global
+ *  datasphere" reports; values converted to or from byte exceed
+ *  `Number.MAX_SAFE_INTEGER` (see {@link exabyte}). */
+export const zettabyte = /*#__PURE__*/ defineUnit({
+  id: 'zettabyte',
+  label: 'Zettabyte',
+  symbol: 'ZB',
+  dimension: DATA,
+  toBase: (v) => v * 1e21,
+  fromBase: (b) => b / 1e21,
+});
+
+/** 1 YB = 10²⁴ bytes (decimal/SI). Beyond any single deployed system in
+ *  2026; shipped for ladder completeness. Values converted to or from
+ *  byte exceed `Number.MAX_SAFE_INTEGER` (see {@link exabyte}). */
+export const yottabyte = /*#__PURE__*/ defineUnit({
+  id: 'yottabyte',
+  label: 'Yottabyte',
+  symbol: 'YB',
+  dimension: DATA,
+  toBase: (v) => v * 1e24,
+  fromBase: (b) => b / 1e24,
+});
+
 // ─── BYTES (binary / IEC 80000-13 multiples) ─────────────────────────────
 
 /** 1 KiB = 1024 bytes (binary; see kit header for IEC 80000-13:2008 cite). */

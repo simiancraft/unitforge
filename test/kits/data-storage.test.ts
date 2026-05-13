@@ -4,6 +4,7 @@ import { forge } from '../../src/index.js';
 import {
   bit,
   byte,
+  exabyte,
   gibibyte,
   gigabit,
   gigabyte,
@@ -17,6 +18,8 @@ import {
   petabyte,
   tebibyte,
   terabyte,
+  yottabyte,
+  zettabyte,
 } from '../../src/kits/data-storage/index.js';
 
 // Per-unit tests assert the four invariants every Unit must hold:
@@ -122,6 +125,51 @@ describe('data-storage/units: bytes (decimal)', () => {
     });
     it('1e15 B = 1 PB via fromBase', () => {
       expect(petabyte.fromBase(1_000_000_000_000_000)).toBe(1);
+    });
+  });
+
+  describe('exabyte', () => {
+    it('has the right shape', () => {
+      expect(exabyte.id).toBe('exabyte');
+      expect(exabyte.label).toBe('Exabyte');
+      expect(exabyte.symbol).toBe('EB');
+      expect(exabyte.dimension).toBe(DATA);
+    });
+    it('1 EB = 1e18 B via toBase', () => {
+      expect(exabyte.toBase(1)).toBe(1e18);
+    });
+    it('1e18 B = 1 EB via fromBase', () => {
+      expect(exabyte.fromBase(1e18)).toBe(1);
+    });
+  });
+
+  describe('zettabyte', () => {
+    it('has the right shape', () => {
+      expect(zettabyte.id).toBe('zettabyte');
+      expect(zettabyte.label).toBe('Zettabyte');
+      expect(zettabyte.symbol).toBe('ZB');
+      expect(zettabyte.dimension).toBe(DATA);
+    });
+    it('1 ZB = 1e21 B via toBase', () => {
+      expect(zettabyte.toBase(1)).toBe(1e21);
+    });
+    it('1e21 B = 1 ZB via fromBase', () => {
+      expect(zettabyte.fromBase(1e21)).toBe(1);
+    });
+  });
+
+  describe('yottabyte', () => {
+    it('has the right shape', () => {
+      expect(yottabyte.id).toBe('yottabyte');
+      expect(yottabyte.label).toBe('Yottabyte');
+      expect(yottabyte.symbol).toBe('YB');
+      expect(yottabyte.dimension).toBe(DATA);
+    });
+    it('1 YB = 1e24 B via toBase', () => {
+      expect(yottabyte.toBase(1)).toBe(1e24);
+    });
+    it('1e24 B = 1 YB via fromBase', () => {
+      expect(yottabyte.fromBase(1e24)).toBe(1);
     });
   });
 });
