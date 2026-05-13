@@ -6,9 +6,10 @@
 // label muted. The trigger renders the same shape via an explicit
 // `Select.Value` child, looked up from the current value; this is
 // Radix's supported escape hatch when item rows carry decorative
-// markup. `Select.ItemText` is rendered sr-only inside each item so
-// Radix can still read its textContent for type-ahead without
-// duplicating the visible label.
+// markup. `Select.ItemText` is wrapped in an sr-only span so Radix
+// can still read its textContent for type-ahead without duplicating
+// the visible label. (Radix's ItemText drops `className` on the
+// floor, so the wrapper is required.)
 //
 // Required selection: Radix Select always has a value; both `value`
 // and `onChange` are required.
@@ -85,7 +86,9 @@ export function UnitPicker({
                   value={u.id}
                   className="relative flex cursor-pointer select-none items-center gap-3 rounded px-2 py-1.5 pr-8 outline-none data-[highlighted]:bg-uf-accent/10 data-[state=checked]:text-uf-accent"
                 >
-                  <Select.ItemText className="sr-only">{u.label}</Select.ItemText>
+                  <span className="sr-only">
+                    <Select.ItemText>{u.label}</Select.ItemText>
+                  </span>
                   <UnitRow unit={u} />
                   <Select.ItemIndicator className="absolute right-2 inline-flex items-center">
                     <Check size={14} aria-hidden />
