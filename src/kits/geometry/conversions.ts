@@ -585,6 +585,48 @@ export const midpointBetweenPoints = /*#__PURE__*/ defineConversion({
 });
 
 /**
+ * Polar → Cartesian: { radius, angle } → { x: r·cos θ, y: r·sin θ }.
+ *
+ * `radius` is a magnitude (rejects negatives); `angle` runs in base
+ * radians at compute time, callers may supply degrees / gradians /
+ * turns via forge. Output components are signed coordinates.
+ */
+export const cartesianFromPolar = /*#__PURE__*/ defineConversion({
+  inputs: { radius: LENGTH, angle: ANGLE },
+  output: { x: LENGTH, y: LENGTH },
+  validate: {
+    radius: (v) => v >= 0 || 'radius must be >= 0',
+    angle: (v) => Number.isFinite(v) || 'angle must be finite',
+  },
+  compute: ({ radius, angle }) => ({
+    x: radius * Math.cos(angle),
+    y: radius * Math.sin(angle),
+  }),
+});
+
+/**
+ * Cartesian → Polar: { x, y } → { radius: √(x²+y²), angle: atan2(y, x) }.
+ *
+ * `x` and `y` are signed coordinates (same finite-only policy as
+ * `distanceBetweenPoints` / `midpointBetweenPoints`). Uses `atan2` for
+ * branch safety: the four-quadrant arctangent gives an angle in
+ * (−π, π] without the ambiguity of `atan(y/x)`. Origin (0, 0) yields
+ * `radius = 0` and `angle = 0` by `atan2`'s convention.
+ */
+export const polarFromCartesian = /*#__PURE__*/ defineConversion({
+  inputs: { x: LENGTH, y: LENGTH },
+  output: { radius: LENGTH, angle: ANGLE },
+  validate: {
+    x: (v) => Number.isFinite(v) || 'x must be finite',
+    y: (v) => Number.isFinite(v) || 'y must be finite',
+  },
+  compute: ({ x, y }) => ({
+    radius: Math.sqrt(x * x + y * y),
+    angle: Math.atan2(y, x),
+  }),
+});
+
+/**
  * Ellipse perimeter (Ramanujan II approximation):
  * P ≈ π · [3(a + b) − √((3a + b)(a + 3b))]
  *

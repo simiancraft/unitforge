@@ -9,6 +9,7 @@ import {
   arcminute,
   arcsecond,
   are,
+  cartesianFromPolar,
   areaFromAnnulusRadii,
   areaFromCircleDiameter,
   areaFromCircleRadius,
@@ -71,6 +72,7 @@ import {
   perimeterOfSquareFromSide,
   perimeterOfTrapezoidFromSides,
   perimeterOfTriangleFromSides,
+  polarFromCartesian,
   radian,
   squareCentimeter,
   squareFoot,
@@ -1100,6 +1102,76 @@ describe('geometry/conversions: coordinate geometry', () => {
     const result = fn({ x1: -2, y1: -4, x2: 4, y2: 8 });
     expect(result.x).toBeCloseTo(1, 12);
     expect(result.y).toBeCloseTo(2, 12);
+  });
+
+  it('cartesianFromPolar: r=2, θ=π/2 → (0, 2)', () => {
+    const fn = forge(
+      { radius: meter, angle: radian },
+      { x: meter, y: meter },
+      { via: cartesianFromPolar },
+    );
+    const result = fn({ radius: 2, angle: Math.PI / 2 });
+    expect(result.x).toBeCloseTo(0, 12);
+    expect(result.y).toBeCloseTo(2, 12);
+  });
+
+  it('cartesianFromPolar accepts degree input via forge boundary', () => {
+    const fn = forge(
+      { radius: meter, angle: degree },
+      { x: meter, y: meter },
+      { via: cartesianFromPolar },
+    );
+    const result = fn({ radius: 1, angle: 180 });
+    expect(result.x).toBeCloseTo(-1, 12);
+    expect(result.y).toBeCloseTo(0, 9);
+  });
+
+  it('cartesianFromPolar rejects negative radius', () => {
+    const fn = forge(
+      { radius: meter, angle: radian },
+      { x: meter, y: meter },
+      { via: cartesianFromPolar },
+    );
+    expect(() => fn({ radius: -1, angle: 0 })).toThrow(ValidationError);
+  });
+
+  it('polarFromCartesian: (3, 4) → r=5, θ=atan2(4,3)', () => {
+    const fn = forge(
+      { x: meter, y: meter },
+      { radius: meter, angle: radian },
+      { via: polarFromCartesian },
+    );
+    const result = fn({ x: 3, y: 4 });
+    expect(result.radius).toBeCloseTo(5, 12);
+    expect(result.angle).toBeCloseTo(Math.atan2(4, 3), 12);
+  });
+
+  it('polarFromCartesian: origin maps to r=0, θ=0', () => {
+    const fn = forge(
+      { x: meter, y: meter },
+      { radius: meter, angle: radian },
+      { via: polarFromCartesian },
+    );
+    const result = fn({ x: 0, y: 0 });
+    expect(result.radius).toBeCloseTo(0, 12);
+    expect(result.angle).toBeCloseTo(0, 12);
+  });
+
+  it('polarFromCartesian/cartesianFromPolar round-trip', () => {
+    const toPolar = forge(
+      { x: meter, y: meter },
+      { radius: meter, angle: radian },
+      { via: polarFromCartesian },
+    );
+    const toCartesian = forge(
+      { radius: meter, angle: radian },
+      { x: meter, y: meter },
+      { via: cartesianFromPolar },
+    );
+    const polar = toPolar({ x: -3, y: 4 });
+    const back = toCartesian(polar);
+    expect(back.x).toBeCloseTo(-3, 12);
+    expect(back.y).toBeCloseTo(4, 12);
   });
 });
 

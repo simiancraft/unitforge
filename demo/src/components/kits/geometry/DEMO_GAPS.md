@@ -93,5 +93,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [ ] `diagonalOfSquareFromSide`
 
 ### Coordinate geometry
-- [ ] `distance`
-- [ ] `midpoint`
+- [ ] `distanceBetweenPoints`
+- [ ] `midpointBetweenPoints`
+- [ ] `cartesianFromPolar`
+- [ ] `polarFromCartesian`
