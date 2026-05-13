@@ -438,6 +438,24 @@ export const arcLengthFromRadiusAndAngle = /*#__PURE__*/ defineConversion({
 });
 
 /**
+ * Inverse arc length: θ = arcLength / radius (compute runs in base
+ * units; output ANGLE in radians, callers may request degrees etc. via
+ * forge). Returns ANGLE; first conversion in this kit with ANGLE
+ * output. `_all` rejects radius = 0 because the ratio is undefined.
+ */
+export const angleFromArcLengthAndRadius = /*#__PURE__*/ defineConversion({
+  inputs: { arcLength: LENGTH, radius: LENGTH },
+  output: ANGLE,
+  validate: {
+    arcLength: (v) => v >= 0 || 'arcLength must be >= 0',
+    radius: (v) => v >= 0 || 'radius must be >= 0',
+    _all: ({ radius }: { arcLength: number; radius: number }) =>
+      radius > 0 || 'radius must be > 0',
+  },
+  compute: ({ arcLength, radius }) => arcLength / radius,
+});
+
+/**
  * Chord length = 2 · r · sin(θ/2) where θ is the central angle subtended
  * by the chord. Output is LENGTH; angle in base radians per the unit-
  * normalization boundary.

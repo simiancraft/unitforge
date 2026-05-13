@@ -85,6 +85,9 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [ ] `arcLengthFromRadiusAndAngle`
 - [ ] `perimeterOfEllipseFromSemiAxes` (Ramanujan II)
 
+### Angle derivations (ANGLE-output)
+- [ ] `angleFromArcLengthAndRadius`
+
 ### Diagonals
 - [ ] `diagonalOfRectangleFromLengthAndWidth`
 - [ ] `diagonalOfSquareFromSide`
