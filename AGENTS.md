@@ -16,7 +16,7 @@ Published to npm. Public API is stable. [README.md](./README.md) is canonical fo
 
 ## Commits
 
-Conventional Commits, imperative tense, succinct. `feat:` → minor release; `fix:` → patch; `feat!:` or `BREAKING CHANGE:` footer → major. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+Conventional Commits, imperative tense, succinct. `feat:` → minor release; `fix:` → patch; `feat!:` or `BREAKING CHANGE:` footer → major. The `(demo)` scope is filtered from release analysis in `.releaserc.json`; commits touching `src/` MUST NOT use it (use `(api)`, `(lib)`, or no scope). See [EXTENDING.md](./EXTENDING.md) for the release-signal ruleset and [CONTRIBUTING.md](./CONTRIBUTING.md) for setup.
 
 ## Extending
 

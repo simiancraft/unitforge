@@ -141,6 +141,30 @@ These are non-negotiable house style; reviewers will flag violations:
 - **Conventional Commits.** `feat:` minor, `fix:` patch, `feat!:` or `BREAKING CHANGE:` footer for major. Imperative tense, no past-tense subject lines.
 - **No marketing language in commit bodies or PR descriptions.** Facts only. Benefits go in release notes, not the diff.
 
+## Release signals
+
+`.releaserc.json` includes the rule `{ scope: "demo", release: false }`: every `(demo)`-scoped commit is filtered from release analysis. The intent is to keep demo iteration from forcing patch bumps on the published lib. The cost is that any lib change accidentally carrying a `(demo)` scope is invisible to semantic-release and silently fails to publish.
+
+Rules that prevent silent release misses:
+
+- Any commit touching `src/define.ts`, `src/types.ts`, `src/dimensions.ts`, `src/forge.ts`, `src/lib/**`, or `src/kits/**` MUST NOT use the `(demo)` scope. Use `(api)`, `(lib)`, `(core)`, or no scope at all.
+- A breaking lib-API change needs the major signal at the commit level: `feat(api)!:` (or any `!` suffix) on the subject line, or a `BREAKING CHANGE:` footer in the body. Without one, semantic-release picks at most a minor or patch bump even if the diff actually breaks consumers.
+- If you deliberately bundle a lib change into a commit whose dominant intent is demo-shaped, the bundling-marker commit (the one explaining the bundle) is where the `BREAKING CHANGE:` footer goes. Prose-only documentation commits do not trigger releases. **A note that says "this commit bundles a lib change" without the footer is the failure mode that took v2.0.0 a separate release PR to recover.**
+- PR titles don't drive semantic-release directly; it analyzes individual commits on main. For the repo's default merge mode (merge commits, not squash), the branch's individual commit subjects are what semantic-release sees. The PR title and body are for reviewers; the commit subject is for the release pipeline.
+
+Quick reference for commit subjects:
+
+| Change | Subject |
+| --- | --- |
+| Demo-only refactor / fix / style | `refactor(demo): ...`, `fix(demo): ...`, `style(demo): ...` |
+| Lib new feature, non-breaking | `feat: ...` or `feat(api): ...` |
+| Lib bug fix | `fix: ...` or `fix(api): ...` |
+| Lib breaking API change | `feat(api)!: ...` plus `BREAKING CHANGE:` footer in the body |
+| Bundled lib + demo change | Unbundle if you can. If you can't, use the lib's scope and add `BREAKING CHANGE:` if applicable; do NOT scope the bundled commit `(demo)`. |
+| Docs touching `README.md`, `EXTENDING.md`, `AGENTS.md`, `llms.txt` | `docs: ...` (always filtered from release as a non-feature, non-fix change) |
+
+When in doubt: look at what files changed. If `src/` is touched and the scope is `(demo)`, that's a bug; rewrite the subject before pushing.
+
 ## Gotchas (the load-bearing things that aren't obvious)
 
 - **Tree-shake regression**: any `CallExpression` inside a `defineUnit` spec literal defeats per-export tree-shaking. Use inline closures, not `...linear(...)`, for kit units.

@@ -42,6 +42,10 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 - Per-kit subpath (`unitforge/kits/<name>`) so importing from `geometry` never pulls a sibling kit.
 - Kit unit definitions inline `toBase`/`fromBase` closures rather than spreading `...linear(scale)` because a `CallExpression` inside the spec literal defeats per-export tree-shake even when the outer `defineUnit(...)` is PURE-marked.
 
+## Release signals
+
+Semantic-release filters `(demo)`-scoped commits from release analysis (`.releaserc.json`). Commits touching `src/` MUST NOT use the `(demo)` scope; use `(api)`, `(lib)`, or no scope. Breaking lib-API changes need `feat(api)!:` on the subject or a `BREAKING CHANGE:` footer in the body; a prose-only marker commit documenting a bundled change does not trigger a release. PR titles do not drive semantic-release; individual commit subjects on main do. See [EXTENDING.md](./EXTENDING.md) for the full ruleset and the commit-subject reference table.
+
 ## Key files
 
 - [README.md](./README.md): primary docs (audience: humans evaluating the library)
