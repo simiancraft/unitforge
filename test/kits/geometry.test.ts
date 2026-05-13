@@ -11,10 +11,16 @@ import {
   areaFromSquareSide,
   astronomicalUnit,
   centimeter,
+  centiliter,
   cubicCentimeter,
+  cubicDecimeter,
   cubicFoot,
   cubicInch,
+  cubicKilometer,
   cubicMeter,
+  cubicMillimeter,
+  cubicYard,
+  deciliter,
   decimeter,
   degree,
   fathom,
@@ -785,6 +791,83 @@ describe('geometry/conversions: VOLUME derivations', () => {
       }
       if (!caught) throw new Error('expected ValidationError');
       expect(caught.failures).toHaveLength(2);
+    });
+  });
+});
+
+describe('geometry/units: VOLUME additions', () => {
+  describe('cubicMillimeter', () => {
+    it('has the right shape', () => {
+      expect(cubicMillimeter.id).toBe('cubic-millimeter');
+      expect(cubicMillimeter.label).toBe('Cubic Millimeter');
+      expect(cubicMillimeter.symbol).toBe('mm³');
+      expect(cubicMillimeter.dimension).toBe(VOLUME);
+    });
+    it('1 mm³ = 1e-9 m³', () => {
+      expect(cubicMillimeter.toBase(1)).toBeCloseTo(1e-9, 18);
+    });
+  });
+
+  describe('cubicDecimeter', () => {
+    it('has the right shape', () => {
+      expect(cubicDecimeter.id).toBe('cubic-decimeter');
+      expect(cubicDecimeter.label).toBe('Cubic Decimeter');
+      expect(cubicDecimeter.symbol).toBe('dm³');
+      expect(cubicDecimeter.dimension).toBe(VOLUME);
+    });
+    it('1 dm³ = 1 L (CGPM 1964 redefinition)', () => {
+      expect(cubicDecimeter.toBase(1)).toBeCloseTo(liter.toBase(1), 14);
+    });
+  });
+
+  describe('cubicKilometer', () => {
+    it('has the right shape', () => {
+      expect(cubicKilometer.id).toBe('cubic-kilometer');
+      expect(cubicKilometer.label).toBe('Cubic Kilometer');
+      expect(cubicKilometer.symbol).toBe('km³');
+      expect(cubicKilometer.dimension).toBe(VOLUME);
+    });
+    it('1 km³ = 1e9 m³', () => {
+      expect(cubicKilometer.toBase(1)).toBe(1e9);
+    });
+  });
+
+  describe('cubicYard', () => {
+    it('has the right shape', () => {
+      expect(cubicYard.id).toBe('cubic-yard');
+      expect(cubicYard.label).toBe('Cubic Yard');
+      expect(cubicYard.symbol).toBe('yd³');
+      expect(cubicYard.dimension).toBe(VOLUME);
+    });
+    it('1 yd³ = 0.764554857984 m³ (exact)', () => {
+      expect(cubicYard.toBase(1)).toBeCloseTo(0.764554857984, 14);
+    });
+    it('27 ft³ = 1 yd³ (exact)', () => {
+      expect(cubicFoot.toBase(27)).toBeCloseTo(cubicYard.toBase(1), 14);
+    });
+  });
+
+  describe('centiliter', () => {
+    it('has the right shape', () => {
+      expect(centiliter.id).toBe('centiliter');
+      expect(centiliter.label).toBe('Centiliter');
+      expect(centiliter.symbol).toBe('cL');
+      expect(centiliter.dimension).toBe(VOLUME);
+    });
+    it('10 mL = 1 cL', () => {
+      expect(milliliter.toBase(10)).toBeCloseTo(centiliter.toBase(1), 14);
+    });
+  });
+
+  describe('deciliter', () => {
+    it('has the right shape', () => {
+      expect(deciliter.id).toBe('deciliter');
+      expect(deciliter.label).toBe('Deciliter');
+      expect(deciliter.symbol).toBe('dL');
+      expect(deciliter.dimension).toBe(VOLUME);
+    });
+    it('100 mL = 1 dL', () => {
+      expect(milliliter.toBase(100)).toBeCloseTo(deciliter.toBase(1), 14);
     });
   });
 });

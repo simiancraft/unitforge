@@ -406,6 +406,66 @@ export const milliliter = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1e-6,
 });
 
+/** 1 mm³ = 1e-9 m³ (= (1e-3)³; exact). Engineering tolerances. */
+export const cubicMillimeter = /*#__PURE__*/ defineUnit({
+  id: 'cubic-millimeter',
+  label: 'Cubic Millimeter',
+  symbol: 'mm³',
+  dimension: VOLUME,
+  toBase: (v) => v * 1e-9,
+  fromBase: (b) => b / 1e-9,
+});
+
+/** 1 dm³ = 0.001 m³ (= 1 L exactly per 1964 CGPM redefinition). */
+export const cubicDecimeter = /*#__PURE__*/ defineUnit({
+  id: 'cubic-decimeter',
+  label: 'Cubic Decimeter',
+  symbol: 'dm³',
+  dimension: VOLUME,
+  toBase: (v) => v * 0.001,
+  fromBase: (b) => b / 0.001,
+});
+
+/** 1 km³ = 1e9 m³ (exact). Hydrology / climatology / atmospheric science. */
+export const cubicKilometer = /*#__PURE__*/ defineUnit({
+  id: 'cubic-kilometer',
+  label: 'Cubic Kilometer',
+  symbol: 'km³',
+  dimension: VOLUME,
+  toBase: (v) => v * 1e9,
+  fromBase: (b) => b / 1e9,
+});
+
+/** 1 yd³ = 0.764554857984 m³ (= 0.9144³ = 27 ft³; exact). Concrete / landscaping. */
+export const cubicYard = /*#__PURE__*/ defineUnit({
+  id: 'cubic-yard',
+  label: 'Cubic Yard',
+  symbol: 'yd³',
+  dimension: VOLUME,
+  toBase: (v) => v * 0.764554857984,
+  fromBase: (b) => b / 0.764554857984,
+});
+
+/** 1 cL = 1e-5 m³ (= 10 mL; exact). BIPM SI Brochure; European recipes. */
+export const centiliter = /*#__PURE__*/ defineUnit({
+  id: 'centiliter',
+  label: 'Centiliter',
+  symbol: 'cL',
+  dimension: VOLUME,
+  toBase: (v) => v * 1e-5,
+  fromBase: (b) => b / 1e-5,
+});
+
+/** 1 dL = 1e-4 m³ (= 100 mL; exact). BIPM SI Brochure; nutrition labeling. */
+export const deciliter = /*#__PURE__*/ defineUnit({
+  id: 'deciliter',
+  label: 'Deciliter',
+  symbol: 'dL',
+  dimension: VOLUME,
+  toBase: (v) => v * 1e-4,
+  fromBase: (b) => b / 1e-4,
+});
+
 // ─── ANGLE units ─────────────────────────────────────────────────────────
 // Base: radian (SI coherent derived unit per BIPM SI Brochure 9th ed.
 // Table 4). Radian-as-base means each conversion's `compute` body can
