@@ -7,8 +7,21 @@ import {
   arcminute,
   arcsecond,
   are,
+  areaFromAnnulusRadii,
+  areaFromCircleDiameter,
   areaFromCircleRadius,
+  areaFromCircularSegmentRadiusAndAngle,
+  areaFromEllipseSemiAxes,
+  areaFromEquilateralTriangleSide,
+  areaFromKiteDiagonals,
+  areaFromParallelogramBaseAndHeight,
+  areaFromRectangleLengthAndWidth,
+  areaFromRhombusDiagonals,
+  areaFromSectorRadiusAndAngle,
   areaFromSquareSide,
+  areaFromTrapezoidBasesAndHeight,
+  areaFromTriangleBaseAndHeight,
+  areaFromTriangleSides,
   astronomicalUnit,
   centimeter,
   centiliter,
@@ -691,6 +704,178 @@ describe('geometry/conversions: AREA derivations', () => {
     it('rejects negative radius', () => {
       const fn = forge({ radius: meter }, squareMeter, { via: areaFromCircleRadius });
       expect(() => fn({ radius: -1 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('areaFromCircleDiameter', () => {
+    it('π · (d/2)² = area; agrees with areaFromCircleRadius', () => {
+      const fromDia = forge({ diameter: meter }, squareMeter, {
+        via: areaFromCircleDiameter,
+      });
+      const fromRad = forge({ radius: meter }, squareMeter, { via: areaFromCircleRadius });
+      expect(fromDia({ diameter: 2 })).toBeCloseTo(fromRad({ radius: 1 }), 12);
+      expect(fromDia({ diameter: 0 })).toBe(0);
+    });
+    it('rejects negative diameter', () => {
+      const fn = forge({ diameter: meter }, squareMeter, { via: areaFromCircleDiameter });
+      expect(() => fn({ diameter: -1 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('areaFromTriangleBaseAndHeight', () => {
+    it('½ · b · h = area', () => {
+      const fn = forge({ base: meter, height: meter }, squareMeter, {
+        via: areaFromTriangleBaseAndHeight,
+      });
+      expect(fn({ base: 4, height: 6 })).toBeCloseTo(12, 12);
+      expect(fn({ base: 0, height: 6 })).toBe(0);
+    });
+    it('rejects negative inputs', () => {
+      const fn = forge({ base: meter, height: meter }, squareMeter, {
+        via: areaFromTriangleBaseAndHeight,
+      });
+      expect(() => fn({ base: -1, height: 1 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('areaFromTriangleSides (Heron)', () => {
+    it('3-4-5 right triangle area = 6', () => {
+      const fn = forge({ a: meter, b: meter, c: meter }, squareMeter, {
+        via: areaFromTriangleSides,
+      });
+      expect(fn({ a: 3, b: 4, c: 5 })).toBeCloseTo(6, 12);
+    });
+    it('equilateral triangle agrees with closed form', () => {
+      const fn = forge({ a: meter, b: meter, c: meter }, squareMeter, {
+        via: areaFromTriangleSides,
+      });
+      const s = 7;
+      expect(fn({ a: s, b: s, c: s })).toBeCloseTo((Math.sqrt(3) / 4) * s * s, 9);
+    });
+    it('rejects triangle-inequality violation', () => {
+      const fn = forge({ a: meter, b: meter, c: meter }, squareMeter, {
+        via: areaFromTriangleSides,
+      });
+      // 1, 1, 5 cannot form a triangle (1 + 1 < 5)
+      expect(() => fn({ a: 1, b: 1, c: 5 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('areaFromEquilateralTriangleSide', () => {
+    it('(√3/4) · s² = area', () => {
+      const fn = forge({ side: meter }, squareMeter, {
+        via: areaFromEquilateralTriangleSide,
+      });
+      expect(fn({ side: 2 })).toBeCloseTo(Math.sqrt(3), 12);
+    });
+  });
+
+  describe('areaFromTrapezoidBasesAndHeight', () => {
+    it('½ (a + b) · h = area', () => {
+      const fn = forge({ a: meter, b: meter, height: meter }, squareMeter, {
+        via: areaFromTrapezoidBasesAndHeight,
+      });
+      expect(fn({ a: 3, b: 5, height: 4 })).toBeCloseTo(16, 12);
+    });
+  });
+
+  describe('areaFromParallelogramBaseAndHeight', () => {
+    it('b · h = area; matches rectangle area for the same inputs', () => {
+      const para = forge({ base: meter, height: meter }, squareMeter, {
+        via: areaFromParallelogramBaseAndHeight,
+      });
+      const rect = forge({ length: meter, width: meter }, squareMeter, {
+        via: areaFromRectangleLengthAndWidth,
+      });
+      expect(para({ base: 5, height: 3 })).toBeCloseTo(rect({ length: 5, width: 3 }), 12);
+    });
+  });
+
+  describe('areaFromRhombusDiagonals', () => {
+    it('½ · d1 · d2 = area', () => {
+      const fn = forge({ d1: meter, d2: meter }, squareMeter, {
+        via: areaFromRhombusDiagonals,
+      });
+      expect(fn({ d1: 6, d2: 8 })).toBeCloseTo(24, 12);
+    });
+  });
+
+  describe('areaFromKiteDiagonals', () => {
+    it('½ · d1 · d2 = area; matches rhombus for the same inputs', () => {
+      const kite = forge({ d1: meter, d2: meter }, squareMeter, {
+        via: areaFromKiteDiagonals,
+      });
+      const rhomb = forge({ d1: meter, d2: meter }, squareMeter, {
+        via: areaFromRhombusDiagonals,
+      });
+      expect(kite({ d1: 6, d2: 8 })).toBeCloseTo(rhomb({ d1: 6, d2: 8 }), 12);
+    });
+  });
+
+  describe('areaFromEllipseSemiAxes', () => {
+    it('π · a · b = area; circle (a=b) matches areaFromCircleRadius', () => {
+      const ellipse = forge({ a: meter, b: meter }, squareMeter, {
+        via: areaFromEllipseSemiAxes,
+      });
+      const circle = forge({ radius: meter }, squareMeter, { via: areaFromCircleRadius });
+      expect(ellipse({ a: 3, b: 3 })).toBeCloseTo(circle({ radius: 3 }), 12);
+      expect(ellipse({ a: 3, b: 4 })).toBeCloseTo(12 * Math.PI, 12);
+    });
+  });
+
+  describe('areaFromAnnulusRadii', () => {
+    it('π (R² − r²) = area', () => {
+      const fn = forge({ outerRadius: meter, innerRadius: meter }, squareMeter, {
+        via: areaFromAnnulusRadii,
+      });
+      expect(fn({ outerRadius: 3, innerRadius: 2 })).toBeCloseTo(Math.PI * (9 - 4), 12);
+    });
+    it('rejects outer < inner', () => {
+      const fn = forge({ outerRadius: meter, innerRadius: meter }, squareMeter, {
+        via: areaFromAnnulusRadii,
+      });
+      expect(() => fn({ outerRadius: 2, innerRadius: 3 })).toThrow(ValidationError);
+    });
+    it('zero annulus (outer = inner) = 0', () => {
+      const fn = forge({ outerRadius: meter, innerRadius: meter }, squareMeter, {
+        via: areaFromAnnulusRadii,
+      });
+      expect(fn({ outerRadius: 5, innerRadius: 5 })).toBe(0);
+    });
+  });
+
+  describe('areaFromSectorRadiusAndAngle', () => {
+    it('½ · r² · θ = area; full circle (θ=2π) = π r²', () => {
+      const fn = forge({ radius: meter, angle: radian }, squareMeter, {
+        via: areaFromSectorRadiusAndAngle,
+      });
+      expect(fn({ radius: 2, angle: 2 * Math.PI })).toBeCloseTo(4 * Math.PI, 12);
+      expect(fn({ radius: 2, angle: Math.PI / 2 })).toBeCloseTo(Math.PI, 12);
+    });
+    it('accepts degrees via unit-aware forge', () => {
+      const fn = forge({ radius: meter, angle: degree }, squareMeter, {
+        via: areaFromSectorRadiusAndAngle,
+      });
+      // 90° = π/2 rad
+      expect(fn({ radius: 2, angle: 90 })).toBeCloseTo(Math.PI, 9);
+    });
+    it('rejects negative angle but accepts > 2π honestly (validator runs on raw input)', () => {
+      const fn = forge({ radius: meter, angle: radian }, squareMeter, {
+        via: areaFromSectorRadiusAndAngle,
+      });
+      expect(() => fn({ radius: 1, angle: -0.1 })).toThrow(ValidationError);
+      // multiple turns compute honestly; not the conversion's job to reject
+      expect(fn({ radius: 1, angle: 4 * Math.PI })).toBeCloseTo(2 * Math.PI, 12);
+    });
+  });
+
+  describe('areaFromCircularSegmentRadiusAndAngle', () => {
+    it('½ · r² · (θ − sin θ) = area; θ = π gives a half-disk', () => {
+      const fn = forge({ radius: meter, angle: radian }, squareMeter, {
+        via: areaFromCircularSegmentRadiusAndAngle,
+      });
+      // Segment at θ = π: ½ · 1² · (π − sin π) = π/2
+      expect(fn({ radius: 1, angle: Math.PI })).toBeCloseTo(Math.PI / 2, 12);
     });
   });
 });
