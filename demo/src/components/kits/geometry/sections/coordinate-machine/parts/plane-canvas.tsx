@@ -44,9 +44,9 @@ export function PlaneCanvas({ pointA, pointB, onPointAChange, onPointBChange }: 
     };
   }
 
-  function handlePointerDown(which: 'a' | 'b', e: React.PointerEvent<SVGSVGElement>) {
+  function handlePointerDown(which: 'a' | 'b', e: React.PointerEvent<SVGElement>) {
     e.stopPropagation();
-    (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
+    svgRef.current?.setPointerCapture(e.pointerId);
     setDragging(which);
   }
 
