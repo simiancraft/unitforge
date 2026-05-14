@@ -15,6 +15,7 @@ import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/se
 import { MenuPill } from './parts/menu-pill.js';
 import { useCircle } from './shapes/circle.js';
 import { useEllipse } from './shapes/ellipse.js';
+import { usePolygon } from './shapes/polygon.js';
 import { useQuadrilateral } from './shapes/quadrilateral.js';
 import { useRectangle } from './shapes/rectangle.js';
 import { useSquare } from './shapes/square.js';
@@ -27,8 +28,17 @@ export function TwoDShapeMachine() {
   const quadrilateral = useQuadrilateral();
   const circle = useCircle();
   const ellipse = useEllipse();
+  const polygon = usePolygon();
 
-  const shapes = { rectangle, square, triangle, quadrilateral, circle, ellipse } as const;
+  const shapes = {
+    rectangle,
+    square,
+    triangle,
+    quadrilateral,
+    circle,
+    ellipse,
+    polygon,
+  } as const;
   type ShapeKey = keyof typeof shapes;
   const order: readonly ShapeKey[] = [
     'rectangle',
@@ -37,6 +47,7 @@ export function TwoDShapeMachine() {
     'quadrilateral',
     'circle',
     'ellipse',
+    'polygon',
   ];
 
   const [activeKey, setActiveKey] = useState<ShapeKey>('rectangle');
