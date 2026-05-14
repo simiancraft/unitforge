@@ -20,7 +20,7 @@ Conventional Commits, imperative tense, succinct. `feat:` → minor release; `fi
 
 ## Extending
 
-Adding a kit, a section, or a dimension: read [EXTENDING.md](./EXTENDING.md) before authoring. Documents the lib-side ritual, the demo's three-file kit registration, and the `CallExpression`-in-spec-literal tree-shake foot-gun.
+Adding a kit, a section, or a dimension: read [EXTENDING.md](./EXTENDING.md) before authoring. Documents the lib-side ritual, the demo's three-file kit registration, and the `CallExpression`-in-spec-literal tree-shake foot-gun. Three kit categories (foundational, composition, in-universe) have different authoring rules; pick the right one before opening a directory.
 
 ## Reference
 

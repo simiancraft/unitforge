@@ -1,3 +1,67 @@
+# [3.0.0](https://github.com/simiancraft/unitforge/compare/v2.0.0...v3.0.0) (2026-05-14)
+
+
+* feat(api)!: rename mile, areaFromLengthAndWidth, volumeFromLengthAndWidthAndHeight ([6b214aa](https://github.com/simiancraft/unitforge/commit/6b214aa207fb918ea81ad18eaa05b6f9d6ac9aba))
+* feat(geometry)!: rename legFromHypotenuseAndLeg to legFromHypotenuseAndOtherLeg ([28045e5](https://github.com/simiancraft/unitforge/commit/28045e51481d8204a23a3a6237d23e40dd08af42))
+* feat(geometry)!: rename volumeFromCuboid... and codify naming rules ([d7d03bd](https://github.com/simiancraft/unitforge/commit/d7d03bd66dd6eb988405861d3234761e17d11f5e))
+
+
+### Features
+
+* **api:** add ANGLE dimension ([b6d40b4](https://github.com/simiancraft/unitforge/commit/b6d40b4238b0fcbec15881e035e46a4e6238072a))
+* **geometry:** add angleFromArcLengthAndRadius ([524913c](https://github.com/simiancraft/unitforge/commit/524913c39d0bfdd79bcd5b91fad1a634c13cb612))
+* **geometry:** add areaFromRegularPolygonApothemAndPerimeter ([18fba30](https://github.com/simiancraft/unitforge/commit/18fba3032becf10168c328b23d00105b98a01e92))
+* **geometry:** add cartesianFromPolar and polarFromCartesian ([bae88d5](https://github.com/simiancraft/unitforge/commit/bae88d5d30dfc0a1df2c45304c6b4185006535be))
+* **geometry:** add inradius and circumradius of triangle from sides ([69be3c4](https://github.com/simiancraft/unitforge/commit/69be3c4c36b44083bea1338d3ea948a8fd1786f5))
+* **geometry:** ship 10 LENGTH units across metric, engineering, marine, astronomy ([ddd9f21](https://github.com/simiancraft/unitforge/commit/ddd9f21345a06a51b3c24ce5ccd0c35baffe78b0))
+* **geometry:** ship 11 perimeter / circumference / arc length derivations ([8b7c232](https://github.com/simiancraft/unitforge/commit/8b7c232b00283ba7817786b520e8e61575da149f))
+* **geometry:** ship 13 AREA derivations across triangle, quadrilateral, conic, and round shapes ([8a23bf1](https://github.com/simiancraft/unitforge/commit/8a23bf19beebb6e0bf2df55cfed6c6565869e1ed))
+* **geometry:** ship 6 VOLUME units across metric scales and US customary ([bf290c1](https://github.com/simiancraft/unitforge/commit/bf290c19268592cbca099de71fcaa4defedf5e06))
+* **geometry:** ship ANGLE units (radian/degree/gradian/arcminute/arcsecond/turn) ([5ad9f27](https://github.com/simiancraft/unitforge/commit/5ad9f27409de78a7692bd9ea6c3c7731f74cb561))
+* **geometry:** ship are / squareYard / squareMile AREA units ([f288a9e](https://github.com/simiancraft/unitforge/commit/f288a9e271ac6287a3140cc2dfc944d1105ec451))
+* **geometry:** ship coordinate geometry; distance and midpoint between points ([e94f544](https://github.com/simiancraft/unitforge/commit/e94f5443a55207d1f9c3d5fdbe1fade0a3f57b65))
+* **geometry:** ship diagonal and Pythagorean derivations ([03d8f79](https://github.com/simiancraft/unitforge/commit/03d8f79e8cf91bc0f1fd9be402bf3f63e0d065f8))
+* **geometry:** ship Ramanujan II ellipse perimeter approximation ([a9f5b63](https://github.com/simiancraft/unitforge/commit/a9f5b63d6fa037294b2cd9da9d1ec02d509d749f))
+
+
+### BREAKING CHANGES
+
+* volumeFromCuboidLengthAndWidthAndHeight is now
+imported as volumeFromCuboidDimensions. Three-input chain
+(`AAndBAndC`) names do not scale; collective nouns do.
+
+Also codifies two sub-patterns in the source header so the next
+contributor does not invent a third:
+- three-input collective-noun rule (Dimensions / Sides / Vertices over
+  AAndBAndC)
+- multi-output object form precedent set by midpointBetweenPoints,
+  cartesianFromPolar, polarFromCartesian
+* the inverse-Pythagorean conversion is now imported as
+legFromHypotenuseAndOtherLeg and takes { hypotenuse, otherLeg } at the
+call site (was { hypotenuse, leg }). The old name forced readers to
+consult the JSDoc to know which leg the input represented vs. the
+output; calling the known input "otherLeg" disambiguates at the call
+site.
+
+Migration:
+  import { legFromHypotenuseAndLeg } -> { legFromHypotenuseAndOtherLeg }
+  fn({ hypotenuse, leg })            -> fn({ hypotenuse, otherLeg })
+* `mile` → `statuteMile` (id `'statute-mile'`).
+The unqualified `mile` was forward-incompatible with `nauticalMile`
+(also in this release, 1852 m exactly per IHO 1929). Statute and
+nautical miles differ by 15.1%; the unqualified name was the same
+hazard as a bare `gallon` would be.
+* `areaFromLengthAndWidth` → `areaFromRectangleLengthAndWidth`.
+Naming symmetry with the new area derivations
+(`areaFromTriangleBaseAndHeight`, `areaFromEllipseSemiAxes`, etc.).
+The old name read as if length-and-width were a generic input rather
+than a rectangle-specific one.
+* `volumeFromLengthAndWidthAndHeight` →
+`volumeFromCuboidLengthAndWidthAndHeight`. Same naming-symmetry
+argument; cuboid is the shape, length/width/height are its inputs.
+
+Migration is a single rename per binding at consumer call sites.
+
 # [2.0.0](https://github.com/simiancraft/unitforge/compare/v1.1.1...v2.0.0) (2026-05-13)
 
 

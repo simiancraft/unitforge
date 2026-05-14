@@ -18,7 +18,6 @@ import {
   kilometer,
   liter,
   meter,
-  mile,
   milliliter,
   millimeter,
   squareCentimeter,
@@ -26,6 +25,7 @@ import {
   squareInch,
   squareMeter,
   squareMillimeter,
+  statuteMile,
   yard,
 } from 'unitforge/kits/geometry';
 
@@ -37,7 +37,7 @@ export const LENGTH_UNITS = [
   inch,
   foot,
   yard,
-  mile,
+  statuteMile,
 ] as const;
 
 export const AREA_UNITS = [

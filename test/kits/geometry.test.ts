@@ -1,33 +1,95 @@
 import { describe, expect, it } from 'bun:test';
-import { AREA, LENGTH, VOLUME } from '../../src/dimensions.js';
+import { ANGLE, AREA, LENGTH, VOLUME } from '../../src/dimensions.js';
 import { forge, ValidationError } from '../../src/index.js';
 import {
   acre,
+  angleFromRadiusAndArcLength,
+  angstrom,
+  arcLengthFromRadiusAndAngle,
+  arcminute,
+  arcsecond,
+  are,
+  areaFromAnnulusRadii,
+  areaFromCircleDiameter,
   areaFromCircleRadius,
+  areaFromCircularSegmentRadiusAndAngle,
+  areaFromEllipseSemiAxes,
+  areaFromEquilateralTriangleSide,
+  areaFromKiteDiagonals,
+  areaFromParallelogramBaseAndHeight,
+  areaFromRectangleLengthAndWidth,
+  areaFromRegularPolygonApothemAndPerimeter,
+  areaFromRhombusDiagonals,
+  areaFromSectorRadiusAndAngle,
   areaFromSquareSide,
+  areaFromTrapezoidBasesAndHeight,
+  areaFromTriangleBaseAndHeight,
+  areaFromTriangleSides,
+  astronomicalUnit,
+  cartesianFromPolar,
+  centiliter,
   centimeter,
+  chordLengthFromRadiusAndAngle,
+  circumferenceOfCircleFromDiameter,
+  circumferenceOfCircleFromRadius,
+  circumradiusOfTriangleFromSides,
   cubicCentimeter,
+  cubicDecimeter,
   cubicFoot,
   cubicInch,
+  cubicKilometer,
   cubicMeter,
+  cubicMillimeter,
+  cubicYard,
+  deciliter,
+  decimeter,
+  degree,
+  diagonalOfRectangleFromLengthAndWidth,
+  diagonalOfSquareFromSide,
+  distanceBetweenPoints,
+  fathom,
   foot,
+  gradian,
   hectare,
+  hypotenuseFromLegs,
   inch,
+  inradiusOfTriangleFromSides,
   kilometer,
+  legFromHypotenuseAndOtherLeg,
+  lightYear,
   liter,
   meter,
-  mile,
+  micrometer,
+  midpointBetweenPoints,
+  mil,
   milliliter,
   millimeter,
+  nanometer,
+  nauticalMile,
+  parsec,
+  perimeterOfEllipseFromSemiAxes,
+  perimeterOfEquilateralTriangleFromSide,
+  perimeterOfParallelogramFromBaseAndSide,
+  perimeterOfRectangleFromLengthAndWidth,
+  perimeterOfRhombusFromSide,
+  perimeterOfSquareFromSide,
+  perimeterOfTrapezoidFromSides,
+  perimeterOfTriangleFromSides,
+  polarFromCartesian,
+  radian,
   squareCentimeter,
   squareFoot,
   squareInch,
   squareKilometer,
   squareMeter,
+  squareMile,
   squareMillimeter,
+  squareYard,
+  statuteMile,
+  turn,
   volumeFromCubeSide,
+  volumeFromCuboidDimensions,
   volumeFromCylinderRadiusAndHeight,
-  volumeFromLengthAndWidthAndHeight,
   volumeFromSphereRadius,
   yard,
 } from '../../src/kits/geometry/index.js';
@@ -132,21 +194,21 @@ describe('geometry/units: LENGTH', () => {
     });
   });
 
-  describe('mile', () => {
+  describe('statuteMile', () => {
     it('has the right shape', () => {
-      expect(mile.id).toBe('mile');
-      expect(mile.label).toBe('Mile');
-      expect(mile.symbol).toBe('mi');
-      expect(mile.dimension).toBe(LENGTH);
-      expect(mile.base).toBeUndefined();
+      expect(statuteMile.id).toBe('statute-mile');
+      expect(statuteMile.label).toBe('Statute Mile');
+      expect(statuteMile.symbol).toBe('mi');
+      expect(statuteMile.dimension).toBe(LENGTH);
+      expect(statuteMile.base).toBeUndefined();
     });
     it('1 mi = 1609.344 m via toBase (= 5280 ft; exact)', () => {
-      expect(mile.toBase(1)).toBeCloseTo(1609.344, 9);
-      expect(mile.toBase(0.5)).toBeCloseTo(804.672, 9);
+      expect(statuteMile.toBase(1)).toBeCloseTo(1609.344, 9);
+      expect(statuteMile.toBase(0.5)).toBeCloseTo(804.672, 9);
     });
     it('1609.344 m = 1 mi via fromBase', () => {
-      expect(mile.fromBase(1609.344)).toBeCloseTo(1, 12);
-      expect(mile.fromBase(1000)).toBeCloseTo(0.621371192237334, 9);
+      expect(statuteMile.fromBase(1609.344)).toBeCloseTo(1, 12);
+      expect(statuteMile.fromBase(1000)).toBeCloseTo(0.621371192237334, 9);
     });
   });
 
@@ -183,6 +245,147 @@ describe('geometry/units: LENGTH', () => {
     it('1 m = 100 cm via fromBase', () => {
       expect(centimeter.fromBase(1)).toBeCloseTo(100, 12);
       expect(centimeter.fromBase(0.01)).toBeCloseTo(1, 12);
+    });
+  });
+
+  describe('decimeter', () => {
+    it('has the right shape', () => {
+      expect(decimeter.id).toBe('decimeter');
+      expect(decimeter.label).toBe('Decimeter');
+      expect(decimeter.symbol).toBe('dm');
+      expect(decimeter.dimension).toBe(LENGTH);
+    });
+    it('1 dm = 0.1 m via toBase', () => {
+      expect(decimeter.toBase(1)).toBeCloseTo(0.1, 12);
+    });
+    it('round-trips through base', () => {
+      expect(decimeter.fromBase(decimeter.toBase(7.3))).toBeCloseTo(7.3, 12);
+    });
+  });
+
+  describe('micrometer', () => {
+    it('has the right shape', () => {
+      expect(micrometer.id).toBe('micrometer');
+      expect(micrometer.label).toBe('Micrometer');
+      expect(micrometer.symbol).toBe('µm');
+      expect(micrometer.dimension).toBe(LENGTH);
+    });
+    it('1 µm = 1e-6 m via toBase', () => {
+      expect(micrometer.toBase(1)).toBeCloseTo(1e-6, 18);
+    });
+    it('round-trips through base', () => {
+      expect(micrometer.fromBase(micrometer.toBase(42))).toBeCloseTo(42, 9);
+    });
+  });
+
+  describe('nanometer', () => {
+    it('has the right shape', () => {
+      expect(nanometer.id).toBe('nanometer');
+      expect(nanometer.label).toBe('Nanometer');
+      expect(nanometer.symbol).toBe('nm');
+      expect(nanometer.dimension).toBe(LENGTH);
+    });
+    it('1000 nm = 1 µm via the LENGTH base', () => {
+      expect(nanometer.toBase(1000)).toBeCloseTo(micrometer.toBase(1), 18);
+    });
+    it('round-trips through base', () => {
+      expect(nanometer.fromBase(nanometer.toBase(550))).toBeCloseTo(550, 6);
+    });
+  });
+
+  describe('angstrom', () => {
+    it('has the right shape', () => {
+      expect(angstrom.id).toBe('angstrom');
+      expect(angstrom.label).toBe('Ångström');
+      expect(angstrom.symbol).toBe('Å');
+      expect(angstrom.dimension).toBe(LENGTH);
+    });
+    it('1 Å = 1e-10 m via toBase', () => {
+      expect(angstrom.toBase(1)).toBeCloseTo(1e-10, 22);
+    });
+    it('10 Å = 1 nm via the LENGTH base', () => {
+      expect(angstrom.toBase(10)).toBeCloseTo(nanometer.toBase(1), 22);
+    });
+  });
+
+  describe('mil (thou)', () => {
+    it('has the right shape', () => {
+      expect(mil.id).toBe('mil');
+      expect(mil.label).toBe('Mil');
+      expect(mil.symbol).toBe('mil');
+      expect(mil.dimension).toBe(LENGTH);
+    });
+    it('1000 mil = 1 inch (exact)', () => {
+      expect(mil.toBase(1000)).toBeCloseTo(inch.toBase(1), 14);
+    });
+    it('1 mil = 25.4 µm', () => {
+      expect(mil.toBase(1)).toBeCloseTo(micrometer.toBase(25.4), 14);
+    });
+  });
+
+  describe('nauticalMile', () => {
+    it('has the right shape', () => {
+      expect(nauticalMile.id).toBe('nautical-mile');
+      expect(nauticalMile.label).toBe('Nautical Mile');
+      expect(nauticalMile.symbol).toBe('nmi');
+      expect(nauticalMile.dimension).toBe(LENGTH);
+    });
+    it('1 nmi = 1852 m (exact)', () => {
+      expect(nauticalMile.toBase(1)).toBe(1852);
+    });
+    it('is distinct from statute mile', () => {
+      expect(nauticalMile.toBase(1)).not.toBeCloseTo(statuteMile.toBase(1), 0);
+    });
+  });
+
+  describe('fathom', () => {
+    it('has the right shape', () => {
+      expect(fathom.id).toBe('fathom');
+      expect(fathom.label).toBe('Fathom');
+      expect(fathom.symbol).toBe('ftm');
+      expect(fathom.dimension).toBe(LENGTH);
+    });
+    it('1 fathom = 6 feet (exact)', () => {
+      expect(fathom.toBase(1)).toBeCloseTo(foot.toBase(6), 14);
+    });
+  });
+
+  describe('astronomicalUnit', () => {
+    it('has the right shape', () => {
+      expect(astronomicalUnit.id).toBe('astronomical-unit');
+      expect(astronomicalUnit.label).toBe('Astronomical Unit');
+      expect(astronomicalUnit.symbol).toBe('au');
+      expect(astronomicalUnit.dimension).toBe(LENGTH);
+    });
+    it('1 au = 149597870700 m (IAU 2012, exact)', () => {
+      expect(astronomicalUnit.toBase(1)).toBe(149597870700);
+    });
+  });
+
+  describe('lightYear', () => {
+    it('has the right shape', () => {
+      expect(lightYear.id).toBe('light-year');
+      expect(lightYear.label).toBe('Light-Year');
+      expect(lightYear.symbol).toBe('ly');
+      expect(lightYear.dimension).toBe(LENGTH);
+    });
+    it('1 ly = 9460730472580800 m (Julian year × c, exact)', () => {
+      expect(lightYear.toBase(1)).toBe(9460730472580800);
+    });
+  });
+
+  describe('parsec', () => {
+    it('has the right shape', () => {
+      expect(parsec.id).toBe('parsec');
+      expect(parsec.label).toBe('Parsec');
+      expect(parsec.symbol).toBe('pc');
+      expect(parsec.dimension).toBe(LENGTH);
+    });
+    it('1 pc ≈ 3.0857e16 m (within Float64)', () => {
+      expect(parsec.toBase(1)).toBeCloseTo(3.0857e16, -12);
+    });
+    it('1 pc ≈ 3.26156 ly (within Float64)', () => {
+      expect(parsec.toBase(1) / lightYear.toBase(1)).toBeCloseTo(3.26156, 4);
     });
   });
 });
@@ -325,6 +528,51 @@ describe('geometry/units: AREA', () => {
     it('fromBase is identity', () => {
       expect(squareMeter.fromBase(0)).toBe(0);
       expect(squareMeter.fromBase(7)).toBe(7);
+    });
+  });
+
+  describe('are', () => {
+    it('has the right shape', () => {
+      expect(are.id).toBe('are');
+      expect(are.label).toBe('Are');
+      expect(are.symbol).toBe('a');
+      expect(are.dimension).toBe(AREA);
+    });
+    it('1 a = 100 m² (exact)', () => {
+      expect(are.toBase(1)).toBe(100);
+    });
+    it('100 a = 1 ha (exact)', () => {
+      expect(are.toBase(100)).toBeCloseTo(hectare.toBase(1), 12);
+    });
+  });
+
+  describe('squareYard', () => {
+    it('has the right shape', () => {
+      expect(squareYard.id).toBe('square-yard');
+      expect(squareYard.label).toBe('Square Yard');
+      expect(squareYard.symbol).toBe('yd²');
+      expect(squareYard.dimension).toBe(AREA);
+    });
+    it('1 yd² = 0.83612736 m² (exact)', () => {
+      expect(squareYard.toBase(1)).toBeCloseTo(0.83612736, 14);
+    });
+    it('9 ft² = 1 yd² (exact)', () => {
+      expect(squareFoot.toBase(9)).toBeCloseTo(squareYard.toBase(1), 14);
+    });
+  });
+
+  describe('squareMile', () => {
+    it('has the right shape', () => {
+      expect(squareMile.id).toBe('square-mile');
+      expect(squareMile.label).toBe('Square Mile');
+      expect(squareMile.symbol).toBe('mi²');
+      expect(squareMile.dimension).toBe(AREA);
+    });
+    it('1 mi² = 2589988.110336 m² (exact)', () => {
+      expect(squareMile.toBase(1)).toBeCloseTo(2_589_988.110336, 8);
+    });
+    it('640 acres = 1 square mile (exact, the section)', () => {
+      expect(acre.toBase(640)).toBeCloseTo(squareMile.toBase(1), 8);
     });
   });
 });
@@ -482,27 +730,580 @@ describe('geometry/conversions: AREA derivations', () => {
       expect(() => fn({ radius: -1 })).toThrow(ValidationError);
     });
   });
+
+  describe('areaFromCircleDiameter', () => {
+    it('π · (d/2)² = area; agrees with areaFromCircleRadius', () => {
+      const fromDia = forge({ diameter: meter }, squareMeter, {
+        via: areaFromCircleDiameter,
+      });
+      const fromRad = forge({ radius: meter }, squareMeter, { via: areaFromCircleRadius });
+      expect(fromDia({ diameter: 2 })).toBeCloseTo(fromRad({ radius: 1 }), 12);
+      expect(fromDia({ diameter: 0 })).toBe(0);
+    });
+    it('rejects negative diameter', () => {
+      const fn = forge({ diameter: meter }, squareMeter, { via: areaFromCircleDiameter });
+      expect(() => fn({ diameter: -1 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('areaFromTriangleBaseAndHeight', () => {
+    it('½ · b · h = area', () => {
+      const fn = forge({ base: meter, height: meter }, squareMeter, {
+        via: areaFromTriangleBaseAndHeight,
+      });
+      expect(fn({ base: 4, height: 6 })).toBeCloseTo(12, 12);
+      expect(fn({ base: 0, height: 6 })).toBe(0);
+    });
+    it('rejects negative inputs', () => {
+      const fn = forge({ base: meter, height: meter }, squareMeter, {
+        via: areaFromTriangleBaseAndHeight,
+      });
+      expect(() => fn({ base: -1, height: 1 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('areaFromTriangleSides (Heron)', () => {
+    it('3-4-5 right triangle area = 6', () => {
+      const fn = forge({ a: meter, b: meter, c: meter }, squareMeter, {
+        via: areaFromTriangleSides,
+      });
+      expect(fn({ a: 3, b: 4, c: 5 })).toBeCloseTo(6, 12);
+    });
+    it('equilateral triangle agrees with closed form', () => {
+      const fn = forge({ a: meter, b: meter, c: meter }, squareMeter, {
+        via: areaFromTriangleSides,
+      });
+      const s = 7;
+      expect(fn({ a: s, b: s, c: s })).toBeCloseTo((Math.sqrt(3) / 4) * s * s, 9);
+    });
+    it('rejects triangle-inequality violation', () => {
+      const fn = forge({ a: meter, b: meter, c: meter }, squareMeter, {
+        via: areaFromTriangleSides,
+      });
+      // 1, 1, 5 cannot form a triangle (1 + 1 < 5)
+      expect(() => fn({ a: 1, b: 1, c: 5 })).toThrow(ValidationError);
+    });
+  });
+
+  describe('areaFromEquilateralTriangleSide', () => {
+    it('(√3/4) · s² = area', () => {
+      const fn = forge({ side: meter }, squareMeter, {
+        via: areaFromEquilateralTriangleSide,
+      });
+      expect(fn({ side: 2 })).toBeCloseTo(Math.sqrt(3), 12);
+    });
+  });
+
+  describe('areaFromTrapezoidBasesAndHeight', () => {
+    it('½ (a + b) · h = area', () => {
+      const fn = forge({ a: meter, b: meter, height: meter }, squareMeter, {
+        via: areaFromTrapezoidBasesAndHeight,
+      });
+      expect(fn({ a: 3, b: 5, height: 4 })).toBeCloseTo(16, 12);
+    });
+  });
+
+  describe('areaFromParallelogramBaseAndHeight', () => {
+    it('b · h = area; matches rectangle area for the same inputs', () => {
+      const para = forge({ base: meter, height: meter }, squareMeter, {
+        via: areaFromParallelogramBaseAndHeight,
+      });
+      const rect = forge({ length: meter, width: meter }, squareMeter, {
+        via: areaFromRectangleLengthAndWidth,
+      });
+      expect(para({ base: 5, height: 3 })).toBeCloseTo(rect({ length: 5, width: 3 }), 12);
+    });
+  });
+
+  describe('areaFromRhombusDiagonals', () => {
+    it('½ · d1 · d2 = area', () => {
+      const fn = forge({ d1: meter, d2: meter }, squareMeter, {
+        via: areaFromRhombusDiagonals,
+      });
+      expect(fn({ d1: 6, d2: 8 })).toBeCloseTo(24, 12);
+    });
+  });
+
+  describe('areaFromKiteDiagonals', () => {
+    it('½ · d1 · d2 = area; matches rhombus for the same inputs', () => {
+      const kite = forge({ d1: meter, d2: meter }, squareMeter, {
+        via: areaFromKiteDiagonals,
+      });
+      const rhomb = forge({ d1: meter, d2: meter }, squareMeter, {
+        via: areaFromRhombusDiagonals,
+      });
+      expect(kite({ d1: 6, d2: 8 })).toBeCloseTo(rhomb({ d1: 6, d2: 8 }), 12);
+    });
+  });
+
+  describe('areaFromEllipseSemiAxes', () => {
+    it('π · a · b = area; circle (a=b) matches areaFromCircleRadius', () => {
+      const ellipse = forge({ a: meter, b: meter }, squareMeter, {
+        via: areaFromEllipseSemiAxes,
+      });
+      const circle = forge({ radius: meter }, squareMeter, { via: areaFromCircleRadius });
+      expect(ellipse({ a: 3, b: 3 })).toBeCloseTo(circle({ radius: 3 }), 12);
+      expect(ellipse({ a: 3, b: 4 })).toBeCloseTo(12 * Math.PI, 12);
+    });
+  });
+
+  describe('areaFromAnnulusRadii', () => {
+    it('π (R² − r²) = area', () => {
+      const fn = forge({ outerRadius: meter, innerRadius: meter }, squareMeter, {
+        via: areaFromAnnulusRadii,
+      });
+      expect(fn({ outerRadius: 3, innerRadius: 2 })).toBeCloseTo(Math.PI * (9 - 4), 12);
+    });
+    it('rejects outer < inner', () => {
+      const fn = forge({ outerRadius: meter, innerRadius: meter }, squareMeter, {
+        via: areaFromAnnulusRadii,
+      });
+      expect(() => fn({ outerRadius: 2, innerRadius: 3 })).toThrow(ValidationError);
+    });
+    it('zero annulus (outer = inner) = 0', () => {
+      const fn = forge({ outerRadius: meter, innerRadius: meter }, squareMeter, {
+        via: areaFromAnnulusRadii,
+      });
+      expect(fn({ outerRadius: 5, innerRadius: 5 })).toBe(0);
+    });
+  });
+
+  describe('areaFromSectorRadiusAndAngle', () => {
+    it('½ · r² · θ = area; full circle (θ=2π) = π r²', () => {
+      const fn = forge({ radius: meter, angle: radian }, squareMeter, {
+        via: areaFromSectorRadiusAndAngle,
+      });
+      expect(fn({ radius: 2, angle: 2 * Math.PI })).toBeCloseTo(4 * Math.PI, 12);
+      expect(fn({ radius: 2, angle: Math.PI / 2 })).toBeCloseTo(Math.PI, 12);
+    });
+    it('accepts degrees via unit-aware forge', () => {
+      const fn = forge({ radius: meter, angle: degree }, squareMeter, {
+        via: areaFromSectorRadiusAndAngle,
+      });
+      // 90° = π/2 rad
+      expect(fn({ radius: 2, angle: 90 })).toBeCloseTo(Math.PI, 9);
+    });
+    it('rejects negative angle but accepts > 2π honestly (validator runs on raw input)', () => {
+      const fn = forge({ radius: meter, angle: radian }, squareMeter, {
+        via: areaFromSectorRadiusAndAngle,
+      });
+      expect(() => fn({ radius: 1, angle: -0.1 })).toThrow(ValidationError);
+      // multiple turns compute honestly; not the conversion's job to reject
+      expect(fn({ radius: 1, angle: 4 * Math.PI })).toBeCloseTo(2 * Math.PI, 12);
+    });
+  });
+
+  describe('areaFromCircularSegmentRadiusAndAngle', () => {
+    it('½ · r² · (θ − sin θ) = area; θ = π gives a half-disk', () => {
+      const fn = forge({ radius: meter, angle: radian }, squareMeter, {
+        via: areaFromCircularSegmentRadiusAndAngle,
+      });
+      // Segment at θ = π: ½ · 1² · (π − sin π) = π/2
+      expect(fn({ radius: 1, angle: Math.PI })).toBeCloseTo(Math.PI / 2, 12);
+    });
+  });
+
+  describe('areaFromRegularPolygonApothemAndPerimeter', () => {
+    it('½ · a · P; square (a = s/2, P = 4s) recovers s²', () => {
+      const fn = forge({ apothem: meter, perimeter: meter }, squareMeter, {
+        via: areaFromRegularPolygonApothemAndPerimeter,
+      });
+      // Side s = 2: apothem 1, perimeter 8 → area 4 = s²
+      expect(fn({ apothem: 1, perimeter: 8 })).toBeCloseTo(4, 12);
+    });
+
+    it('regular hexagon agrees with side-formula 3√3/2 · s²', () => {
+      const fn = forge({ apothem: meter, perimeter: meter }, squareMeter, {
+        via: areaFromRegularPolygonApothemAndPerimeter,
+      });
+      // Hexagon side s = 1: apothem = s · √3/2, perimeter = 6s
+      const s = 1;
+      const apothem = (s * Math.sqrt(3)) / 2;
+      const perimeter = 6 * s;
+      const expected = ((3 * Math.sqrt(3)) / 2) * s * s;
+      expect(fn({ apothem, perimeter })).toBeCloseTo(expected, 12);
+    });
+
+    it('rejects negative apothem and negative perimeter', () => {
+      const fn = forge({ apothem: meter, perimeter: meter }, squareMeter, {
+        via: areaFromRegularPolygonApothemAndPerimeter,
+      });
+      expect(() => fn({ apothem: -1, perimeter: 4 })).toThrow(ValidationError);
+      expect(() => fn({ apothem: 1, perimeter: -4 })).toThrow(ValidationError);
+    });
+  });
+});
+
+describe('geometry/conversions: perimeter / circumference / arc length', () => {
+  it('perimeterOfRectangleFromLengthAndWidth = 2(L+W)', () => {
+    const fn = forge({ length: meter, width: meter }, meter, {
+      via: perimeterOfRectangleFromLengthAndWidth,
+    });
+    expect(fn({ length: 5, width: 3 })).toBeCloseTo(16, 12);
+  });
+
+  it('perimeterOfSquareFromSide = 4s', () => {
+    const fn = forge({ side: meter }, meter, { via: perimeterOfSquareFromSide });
+    expect(fn({ side: 7 })).toBeCloseTo(28, 12);
+  });
+
+  it('perimeterOfTriangleFromSides = a+b+c; no triangle-inequality rejection', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: perimeterOfTriangleFromSides,
+    });
+    expect(fn({ a: 3, b: 4, c: 5 })).toBeCloseTo(12, 12);
+    // 1+1+5 is a degenerate triple; perimeter is still meaningful
+    expect(fn({ a: 1, b: 1, c: 5 })).toBeCloseTo(7, 12);
+  });
+
+  it('perimeterOfEquilateralTriangleFromSide = 3s', () => {
+    const fn = forge({ side: meter }, meter, {
+      via: perimeterOfEquilateralTriangleFromSide,
+    });
+    expect(fn({ side: 4 })).toBeCloseTo(12, 12);
+  });
+
+  it('perimeterOfRhombusFromSide = 4s', () => {
+    const fn = forge({ side: meter }, meter, { via: perimeterOfRhombusFromSide });
+    expect(fn({ side: 5 })).toBeCloseTo(20, 12);
+  });
+
+  it('perimeterOfParallelogramFromBaseAndSide = 2(b+s)', () => {
+    const fn = forge({ base: meter, side: meter }, meter, {
+      via: perimeterOfParallelogramFromBaseAndSide,
+    });
+    expect(fn({ base: 6, side: 4 })).toBeCloseTo(20, 12);
+  });
+
+  it('perimeterOfTrapezoidFromSides = a+b+c+d', () => {
+    const fn = forge({ a: meter, b: meter, c: meter, d: meter }, meter, {
+      via: perimeterOfTrapezoidFromSides,
+    });
+    expect(fn({ a: 3, b: 5, c: 4, d: 4 })).toBeCloseTo(16, 12);
+  });
+
+  it('circumferenceOfCircleFromRadius = 2πr', () => {
+    const fn = forge({ radius: meter }, meter, { via: circumferenceOfCircleFromRadius });
+    expect(fn({ radius: 1 })).toBeCloseTo(2 * Math.PI, 12);
+    expect(fn({ radius: 5 })).toBeCloseTo(10 * Math.PI, 12);
+  });
+
+  it('circumferenceOfCircleFromDiameter = πd; agrees with from-radius', () => {
+    const fromDia = forge({ diameter: meter }, meter, {
+      via: circumferenceOfCircleFromDiameter,
+    });
+    const fromRad = forge({ radius: meter }, meter, {
+      via: circumferenceOfCircleFromRadius,
+    });
+    expect(fromDia({ diameter: 2 })).toBeCloseTo(fromRad({ radius: 1 }), 12);
+  });
+
+  it('arcLengthFromRadiusAndAngle = r·θ', () => {
+    const fn = forge({ radius: meter, angle: radian }, meter, {
+      via: arcLengthFromRadiusAndAngle,
+    });
+    // Full circle: arc = 2π · r
+    expect(fn({ radius: 1, angle: 2 * Math.PI })).toBeCloseTo(2 * Math.PI, 12);
+    // Quarter circle, r = 4: arc = π/2 · 4 = 2π
+    expect(fn({ radius: 4, angle: Math.PI / 2 })).toBeCloseTo(2 * Math.PI, 12);
+  });
+
+  it('arcLengthFromRadiusAndAngle accepts degree input via forge', () => {
+    const fn = forge({ radius: meter, angle: degree }, meter, {
+      via: arcLengthFromRadiusAndAngle,
+    });
+    // 90° arc on r = 4 = π/2 · 4 = 2π
+    expect(fn({ radius: 4, angle: 90 })).toBeCloseTo(2 * Math.PI, 9);
+  });
+
+  it('angleFromRadiusAndArcLength = arcLength / radius (round-trips arc length)', () => {
+    const angOf = forge({ radius: meter, arcLength: meter }, radian, {
+      via: angleFromRadiusAndArcLength,
+    });
+    // Full circle: arc 2π · r = 2π → θ = 2π
+    expect(angOf({ radius: 1, arcLength: 2 * Math.PI })).toBeCloseTo(2 * Math.PI, 12);
+    // Quarter circle r = 4: arc = 2π → θ = π/2
+    expect(angOf({ radius: 4, arcLength: 2 * Math.PI })).toBeCloseTo(Math.PI / 2, 12);
+  });
+
+  it('angleFromRadiusAndArcLength returns degrees when caller asks (forge boundary)', () => {
+    const angOf = forge({ radius: meter, arcLength: meter }, degree, {
+      via: angleFromRadiusAndArcLength,
+    });
+    // r = 4, arc = 2π → θ = π/2 rad = 90°
+    expect(angOf({ radius: 4, arcLength: 2 * Math.PI })).toBeCloseTo(90, 9);
+  });
+
+  it('angleFromRadiusAndArcLength rejects radius = 0', () => {
+    const angOf = forge({ radius: meter, arcLength: meter }, radian, {
+      via: angleFromRadiusAndArcLength,
+    });
+    expect(() => angOf({ radius: 0, arcLength: 1 })).toThrow(ValidationError);
+  });
+
+  it('chordLengthFromRadiusAndAngle = 2·r·sin(θ/2); θ=π gives diameter', () => {
+    const fn = forge({ radius: meter, angle: radian }, meter, {
+      via: chordLengthFromRadiusAndAngle,
+    });
+    expect(fn({ radius: 5, angle: Math.PI })).toBeCloseTo(10, 12);
+    // θ = π/2 on r = 1: chord = 2 · 1 · sin(π/4) = √2
+    expect(fn({ radius: 1, angle: Math.PI / 2 })).toBeCloseTo(Math.SQRT2, 12);
+  });
+});
+
+describe('geometry/conversions: diagonals and Pythagorean', () => {
+  it('diagonalOfRectangleFromLengthAndWidth: 3-4-5 triangle', () => {
+    const fn = forge({ length: meter, width: meter }, meter, {
+      via: diagonalOfRectangleFromLengthAndWidth,
+    });
+    expect(fn({ length: 3, width: 4 })).toBeCloseTo(5, 12);
+  });
+
+  it('diagonalOfSquareFromSide = s · √2', () => {
+    const fn = forge({ side: meter }, meter, { via: diagonalOfSquareFromSide });
+    expect(fn({ side: 1 })).toBeCloseTo(Math.SQRT2, 12);
+    expect(fn({ side: 5 })).toBeCloseTo(5 * Math.SQRT2, 12);
+  });
+
+  it('hypotenuseFromLegs agrees with rectangle diagonal', () => {
+    const hyp = forge({ a: meter, b: meter }, meter, { via: hypotenuseFromLegs });
+    const diag = forge({ length: meter, width: meter }, meter, {
+      via: diagonalOfRectangleFromLengthAndWidth,
+    });
+    expect(hyp({ a: 5, b: 12 })).toBeCloseTo(diag({ length: 5, width: 12 }), 12);
+    expect(hyp({ a: 5, b: 12 })).toBeCloseTo(13, 12);
+  });
+
+  it('legFromHypotenuseAndOtherLeg recovers the unknown leg', () => {
+    const fn = forge({ hypotenuse: meter, otherLeg: meter }, meter, {
+      via: legFromHypotenuseAndOtherLeg,
+    });
+    // 5-12-13: hyp=13, known leg=5 → other leg = 12
+    expect(fn({ hypotenuse: 13, otherLeg: 5 })).toBeCloseTo(12, 12);
+  });
+
+  it('legFromHypotenuseAndOtherLeg rejects hypotenuse < otherLeg', () => {
+    const fn = forge({ hypotenuse: meter, otherLeg: meter }, meter, {
+      via: legFromHypotenuseAndOtherLeg,
+    });
+    expect(() => fn({ hypotenuse: 3, otherLeg: 5 })).toThrow(ValidationError);
+  });
+
+  it('inradiusOfTriangleFromSides: 3-4-5 right triangle → r = 1', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: inradiusOfTriangleFromSides,
+    });
+    expect(fn({ a: 3, b: 4, c: 5 })).toBeCloseTo(1, 12);
+  });
+
+  it('inradiusOfTriangleFromSides: equilateral side s → r = s · √3 / 6', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: inradiusOfTriangleFromSides,
+    });
+    const s = 6;
+    expect(fn({ a: s, b: s, c: s })).toBeCloseTo((s * Math.sqrt(3)) / 6, 12);
+  });
+
+  it('inradiusOfTriangleFromSides rejects triangle-inequality violation', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: inradiusOfTriangleFromSides,
+    });
+    expect(() => fn({ a: 1, b: 2, c: 5 })).toThrow(ValidationError);
+  });
+
+  it('circumradiusOfTriangleFromSides: 3-4-5 right triangle → R = hypotenuse/2 = 2.5', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: circumradiusOfTriangleFromSides,
+    });
+    expect(fn({ a: 3, b: 4, c: 5 })).toBeCloseTo(2.5, 12);
+  });
+
+  it('circumradiusOfTriangleFromSides: equilateral side s → R = s · √3 / 3', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: circumradiusOfTriangleFromSides,
+    });
+    const s = 6;
+    expect(fn({ a: s, b: s, c: s })).toBeCloseTo((s * Math.sqrt(3)) / 3, 12);
+  });
+
+  it('circumradiusOfTriangleFromSides rejects triangle-inequality violation', () => {
+    const fn = forge({ a: meter, b: meter, c: meter }, meter, {
+      via: circumradiusOfTriangleFromSides,
+    });
+    expect(() => fn({ a: 1, b: 1, c: 3 })).toThrow(ValidationError);
+  });
+});
+
+describe('geometry/conversions: coordinate geometry', () => {
+  it('distanceBetweenPoints: 3-4-5 right triangle', () => {
+    const fn = forge({ x1: meter, y1: meter, x2: meter, y2: meter }, meter, {
+      via: distanceBetweenPoints,
+    });
+    expect(fn({ x1: 0, y1: 0, x2: 3, y2: 4 })).toBeCloseTo(5, 12);
+  });
+
+  it('distanceBetweenPoints accepts negative coordinates', () => {
+    const fn = forge({ x1: meter, y1: meter, x2: meter, y2: meter }, meter, {
+      via: distanceBetweenPoints,
+    });
+    expect(fn({ x1: -1, y1: -1, x2: 2, y2: 3 })).toBeCloseTo(5, 12);
+  });
+
+  it('distanceBetweenPoints rejects NaN/Infinity', () => {
+    const fn = forge({ x1: meter, y1: meter, x2: meter, y2: meter }, meter, {
+      via: distanceBetweenPoints,
+    });
+    expect(() => fn({ x1: Number.NaN, y1: 0, x2: 0, y2: 0 })).toThrow(ValidationError);
+    expect(() => fn({ x1: 0, y1: Number.POSITIVE_INFINITY, x2: 0, y2: 0 })).toThrow(
+      ValidationError,
+    );
+  });
+
+  it('midpointBetweenPoints returns {x, y} object', () => {
+    const fn = forge(
+      { x1: meter, y1: meter, x2: meter, y2: meter },
+      { x: meter, y: meter },
+      { via: midpointBetweenPoints },
+    );
+    const result = fn({ x1: 0, y1: 0, x2: 4, y2: 6 });
+    expect(result.x).toBeCloseTo(2, 12);
+    expect(result.y).toBeCloseTo(3, 12);
+  });
+
+  it('midpointBetweenPoints accepts negative coordinates', () => {
+    const fn = forge(
+      { x1: meter, y1: meter, x2: meter, y2: meter },
+      { x: meter, y: meter },
+      { via: midpointBetweenPoints },
+    );
+    const result = fn({ x1: -2, y1: -4, x2: 4, y2: 8 });
+    expect(result.x).toBeCloseTo(1, 12);
+    expect(result.y).toBeCloseTo(2, 12);
+  });
+
+  it('cartesianFromPolar: r=2, θ=π/2 → (0, 2)', () => {
+    const fn = forge(
+      { radius: meter, angle: radian },
+      { x: meter, y: meter },
+      { via: cartesianFromPolar },
+    );
+    const result = fn({ radius: 2, angle: Math.PI / 2 });
+    expect(result.x).toBeCloseTo(0, 12);
+    expect(result.y).toBeCloseTo(2, 12);
+  });
+
+  it('cartesianFromPolar accepts degree input via forge boundary', () => {
+    const fn = forge(
+      { radius: meter, angle: degree },
+      { x: meter, y: meter },
+      { via: cartesianFromPolar },
+    );
+    const result = fn({ radius: 1, angle: 180 });
+    expect(result.x).toBeCloseTo(-1, 12);
+    expect(result.y).toBeCloseTo(0, 9);
+  });
+
+  it('cartesianFromPolar rejects negative radius', () => {
+    const fn = forge(
+      { radius: meter, angle: radian },
+      { x: meter, y: meter },
+      { via: cartesianFromPolar },
+    );
+    expect(() => fn({ radius: -1, angle: 0 })).toThrow(ValidationError);
+  });
+
+  it('polarFromCartesian: (3, 4) → r=5, θ=atan2(4,3)', () => {
+    const fn = forge(
+      { x: meter, y: meter },
+      { radius: meter, angle: radian },
+      { via: polarFromCartesian },
+    );
+    const result = fn({ x: 3, y: 4 });
+    expect(result.radius).toBeCloseTo(5, 12);
+    expect(result.angle).toBeCloseTo(Math.atan2(4, 3), 12);
+  });
+
+  it('polarFromCartesian: origin maps to r=0, θ=0', () => {
+    const fn = forge(
+      { x: meter, y: meter },
+      { radius: meter, angle: radian },
+      { via: polarFromCartesian },
+    );
+    const result = fn({ x: 0, y: 0 });
+    expect(result.radius).toBeCloseTo(0, 12);
+    expect(result.angle).toBeCloseTo(0, 12);
+  });
+
+  it('polarFromCartesian/cartesianFromPolar round-trip', () => {
+    const toPolar = forge(
+      { x: meter, y: meter },
+      { radius: meter, angle: radian },
+      { via: polarFromCartesian },
+    );
+    const toCartesian = forge(
+      { radius: meter, angle: radian },
+      { x: meter, y: meter },
+      { via: cartesianFromPolar },
+    );
+    const polar = toPolar({ x: -3, y: 4 });
+    const back = toCartesian(polar);
+    expect(back.x).toBeCloseTo(-3, 12);
+    expect(back.y).toBeCloseTo(4, 12);
+  });
+});
+
+describe('geometry/conversions: ellipse perimeter (Ramanujan II)', () => {
+  it('agrees with circle circumference for a = b (degenerate case)', () => {
+    const ellipse = forge({ a: meter, b: meter }, meter, {
+      via: perimeterOfEllipseFromSemiAxes,
+    });
+    const circle = forge({ radius: meter }, meter, {
+      via: circumferenceOfCircleFromRadius,
+    });
+    // Within Ramanujan II's accuracy: a = b is the easiest case (zero
+    // eccentricity), should agree very tightly.
+    expect(ellipse({ a: 5, b: 5 })).toBeCloseTo(circle({ radius: 5 }), 6);
+  });
+
+  it('moderate eccentricity (3:2) lands within published error band', () => {
+    const fn = forge({ a: meter, b: meter }, meter, {
+      via: perimeterOfEllipseFromSemiAxes,
+    });
+    // Ellipse with a = 3, b = 2. Numerical reference value (integrated
+    // elliptic integral) ≈ 15.86543958. Ramanujan II should be within
+    // 4e-5 relative error (and is much better than that here).
+    const expected = 15.86543958891069;
+    const actual = fn({ a: 3, b: 2 });
+    expect(Math.abs(actual - expected) / expected).toBeLessThan(4e-5);
+  });
+
+  it('rejects negative inputs', () => {
+    const fn = forge({ a: meter, b: meter }, meter, {
+      via: perimeterOfEllipseFromSemiAxes,
+    });
+    expect(() => fn({ a: -1, b: 1 })).toThrow(ValidationError);
+  });
 });
 
 describe('geometry/conversions: VOLUME derivations', () => {
-  describe('volumeFromLengthAndWidthAndHeight', () => {
+  describe('volumeFromCuboidDimensions', () => {
     it('l × w × h = volume in base units', () => {
       const fn = forge({ length: meter, width: meter, height: meter }, cubicMeter, {
-        via: volumeFromLengthAndWidthAndHeight,
+        via: volumeFromCuboidDimensions,
       });
       expect(fn({ length: 2, width: 3, height: 4 })).toBeCloseTo(24, 12);
       expect(fn({ length: 0, width: 5, height: 5 })).toBe(0);
     });
     it('honors mixed input units (cm × m × m)', () => {
       const fn = forge({ length: centimeter, width: meter, height: meter }, cubicMeter, {
-        via: volumeFromLengthAndWidthAndHeight,
+        via: volumeFromCuboidDimensions,
       });
       // 200 cm = 2 m; 2 × 3 × 4 = 24 m³
       expect(fn({ length: 200, width: 3, height: 4 })).toBeCloseTo(24, 9);
     });
     it('rejects any negative dimension; aggregates failures', () => {
       const fn = forge({ length: meter, width: meter, height: meter }, cubicMeter, {
-        via: volumeFromLengthAndWidthAndHeight,
+        via: volumeFromCuboidDimensions,
       });
       let caught: ValidationError | null = null;
       try {
@@ -580,6 +1381,195 @@ describe('geometry/conversions: VOLUME derivations', () => {
       }
       if (!caught) throw new Error('expected ValidationError');
       expect(caught.failures).toHaveLength(2);
+    });
+  });
+});
+
+describe('geometry/units: VOLUME additions', () => {
+  describe('cubicMillimeter', () => {
+    it('has the right shape', () => {
+      expect(cubicMillimeter.id).toBe('cubic-millimeter');
+      expect(cubicMillimeter.label).toBe('Cubic Millimeter');
+      expect(cubicMillimeter.symbol).toBe('mm³');
+      expect(cubicMillimeter.dimension).toBe(VOLUME);
+    });
+    it('1 mm³ = 1e-9 m³', () => {
+      expect(cubicMillimeter.toBase(1)).toBeCloseTo(1e-9, 18);
+    });
+  });
+
+  describe('cubicDecimeter', () => {
+    it('has the right shape', () => {
+      expect(cubicDecimeter.id).toBe('cubic-decimeter');
+      expect(cubicDecimeter.label).toBe('Cubic Decimeter');
+      expect(cubicDecimeter.symbol).toBe('dm³');
+      expect(cubicDecimeter.dimension).toBe(VOLUME);
+    });
+    it('1 dm³ = 1 L (CGPM 1964 redefinition)', () => {
+      expect(cubicDecimeter.toBase(1)).toBeCloseTo(liter.toBase(1), 14);
+    });
+  });
+
+  describe('cubicKilometer', () => {
+    it('has the right shape', () => {
+      expect(cubicKilometer.id).toBe('cubic-kilometer');
+      expect(cubicKilometer.label).toBe('Cubic Kilometer');
+      expect(cubicKilometer.symbol).toBe('km³');
+      expect(cubicKilometer.dimension).toBe(VOLUME);
+    });
+    it('1 km³ = 1e9 m³', () => {
+      expect(cubicKilometer.toBase(1)).toBe(1e9);
+    });
+  });
+
+  describe('cubicYard', () => {
+    it('has the right shape', () => {
+      expect(cubicYard.id).toBe('cubic-yard');
+      expect(cubicYard.label).toBe('Cubic Yard');
+      expect(cubicYard.symbol).toBe('yd³');
+      expect(cubicYard.dimension).toBe(VOLUME);
+    });
+    it('1 yd³ = 0.764554857984 m³ (exact)', () => {
+      expect(cubicYard.toBase(1)).toBeCloseTo(0.764554857984, 14);
+    });
+    it('27 ft³ = 1 yd³ (exact)', () => {
+      expect(cubicFoot.toBase(27)).toBeCloseTo(cubicYard.toBase(1), 14);
+    });
+  });
+
+  describe('centiliter', () => {
+    it('has the right shape', () => {
+      expect(centiliter.id).toBe('centiliter');
+      expect(centiliter.label).toBe('Centiliter');
+      expect(centiliter.symbol).toBe('cL');
+      expect(centiliter.dimension).toBe(VOLUME);
+    });
+    it('10 mL = 1 cL', () => {
+      expect(milliliter.toBase(10)).toBeCloseTo(centiliter.toBase(1), 14);
+    });
+  });
+
+  describe('deciliter', () => {
+    it('has the right shape', () => {
+      expect(deciliter.id).toBe('deciliter');
+      expect(deciliter.label).toBe('Deciliter');
+      expect(deciliter.symbol).toBe('dL');
+      expect(deciliter.dimension).toBe(VOLUME);
+    });
+    it('100 mL = 1 dL', () => {
+      expect(milliliter.toBase(100)).toBeCloseTo(deciliter.toBase(1), 14);
+    });
+  });
+});
+
+describe('geometry/units: ANGLE', () => {
+  describe('radian (base)', () => {
+    it('has the right shape', () => {
+      expect(radian.id).toBe('radian');
+      expect(radian.label).toBe('Radian');
+      expect(radian.symbol).toBe('rad');
+      expect(radian.dimension).toBe(ANGLE);
+      expect(radian.base).toBe(true);
+    });
+
+    it('toBase / fromBase are identity', () => {
+      expect(radian.toBase(1.5)).toBe(1.5);
+      expect(radian.fromBase(1.5)).toBe(1.5);
+    });
+  });
+
+  describe('degree', () => {
+    it('has the right shape', () => {
+      expect(degree.id).toBe('degree');
+      expect(degree.label).toBe('Degree');
+      expect(degree.symbol).toBe('°');
+      expect(degree.dimension).toBe(ANGLE);
+    });
+
+    it('180° = π rad', () => {
+      expect(degree.toBase(180)).toBeCloseTo(Math.PI, 12);
+    });
+
+    it('round-trips through base', () => {
+      expect(degree.fromBase(degree.toBase(45))).toBeCloseTo(45, 12);
+    });
+  });
+
+  describe('gradian', () => {
+    it('has the right shape', () => {
+      expect(gradian.id).toBe('gradian');
+      expect(gradian.label).toBe('Gradian');
+      expect(gradian.symbol).toBe('gon');
+      expect(gradian.dimension).toBe(ANGLE);
+    });
+
+    it('400 gon = 2π rad (one turn)', () => {
+      expect(gradian.toBase(400)).toBeCloseTo(2 * Math.PI, 12);
+    });
+
+    it('round-trips through base', () => {
+      expect(gradian.fromBase(gradian.toBase(100))).toBeCloseTo(100, 12);
+    });
+  });
+
+  describe('arcminute', () => {
+    it('has the right shape', () => {
+      expect(arcminute.id).toBe('arcminute');
+      expect(arcminute.label).toBe('Arcminute');
+      expect(arcminute.symbol).toBe("'");
+      expect(arcminute.dimension).toBe(ANGLE);
+    });
+
+    it('60 arcminutes = 1 degree', () => {
+      expect(arcminute.toBase(60)).toBeCloseTo(degree.toBase(1), 14);
+    });
+
+    it('round-trips through base', () => {
+      expect(arcminute.fromBase(arcminute.toBase(30))).toBeCloseTo(30, 12);
+    });
+  });
+
+  describe('arcsecond', () => {
+    it('has the right shape', () => {
+      expect(arcsecond.id).toBe('arcsecond');
+      expect(arcsecond.label).toBe('Arcsecond');
+      expect(arcsecond.symbol).toBe('"');
+      expect(arcsecond.dimension).toBe(ANGLE);
+    });
+
+    it('3600 arcseconds = 1 degree', () => {
+      expect(arcsecond.toBase(3600)).toBeCloseTo(degree.toBase(1), 14);
+    });
+
+    it('round-trips through base', () => {
+      expect(arcsecond.fromBase(arcsecond.toBase(7200))).toBeCloseTo(7200, 9);
+    });
+  });
+
+  describe('turn', () => {
+    it('has the right shape', () => {
+      expect(turn.id).toBe('turn');
+      expect(turn.label).toBe('Turn');
+      expect(turn.symbol).toBe('tr');
+      expect(turn.dimension).toBe(ANGLE);
+    });
+
+    it('1 turn = 2π rad', () => {
+      expect(turn.toBase(1)).toBeCloseTo(2 * Math.PI, 12);
+    });
+
+    it('round-trips through base', () => {
+      expect(turn.fromBase(turn.toBase(0.25))).toBeCloseTo(0.25, 12);
+    });
+  });
+
+  describe('within-dimension forge across ANGLE', () => {
+    it('forges 90° to π/2 rad', () => {
+      expect(forge(degree, radian)(90)).toBeCloseTo(Math.PI / 2, 12);
+    });
+
+    it('forges 1 turn to 360°', () => {
+      expect(forge(turn, degree)(1)).toBeCloseTo(360, 12);
     });
   });
 });

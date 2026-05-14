@@ -42,6 +42,16 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 - Per-kit subpath (`unitforge/kits/<name>`) so importing from `geometry` never pulls a sibling kit.
 - Kit unit definitions inline `toBase`/`fromBase` closures rather than spreading `...linear(scale)` because a `CallExpression` inside the spec literal defeats per-export tree-shake even when the outer `defineUnit(...)` is PURE-marked.
 
+## Kit categories
+
+Three categories of kit; each has different authoring rules. Decide which a new kit is before opening the directory.
+
+1. **Foundational** — canonical units in a well-known dimension. Today: `geometry` (LENGTH + AREA + VOLUME units + 2D shape derivations), `solid-geometry` (3D shape derivations; imports units from `geometry`), `data-storage` (DATA). Future: `mass`, `time`, `thermodynamics`, `electromagnetism`, `force-and-energy`, `velocity`, `currency`. Must be canon-correct (NIST / IEC / ISO / BIPM / IEEE values), comprehensive within the dimension, and JSDoc-cite the standard. Reviewer pairing: domain expert (geometer / pharmacist / data-hoarder / mrp-planner / astrometrist / antiquary / color-scientist) plus architect for surface coherence.
+2. **Composition** — curated barrel for a working domain. Re-exports atomic units from one or more foundational kits, adds 3-10 domain-specific units and conversions. Examples (proposed): `home-improvement` (contractor subset of geometry + mass + light electrical + finance + `boardFoot`, `drywallSheet`), `kitchen-baking`, `sewing`, `real-estate`. **The re-exported `Unit` instance is the same JS object as the foundational source**; `forge(comp.foot, geom.foot)` is identity. Never redefine a unit a foundational kit already ships. NOT required to be canonically complete in any one dimension; that is the foundational kit's job. Reviewer pairing: working-profession expert plus architect.
+3. **In-universe** — invented dimensions, mostly self-contained. Examples: `battletech` (TONNAGE / DAMAGE / HEAT / MP / BV / C-BILLS), the bundled crouton teaching demo (COUNT with wheat/ore/city). Future: `dnd-currency`, `sci-fi-power-levels`, `magic-mana`. Prefix dimension names with the universe to avoid collision (`battletech-heat`, not `heat`). Cite source material (rulebook edition, record sheets). Reviewer pairing: genre lens (e.g., battletech-grognard).
+
+Cross-kit imports between foundational and composition kits are explicitly blessed and tree-shake-correct. Every export is `/*#__PURE__*/` and named, so a composition kit's barrel pays the byte cost only of the exports it actually re-exports. Domain composition is a curation problem, not an engineering one.
+
 ## Extending the library
 
 EXTENDING.md is canonical. Distilled rules below; check the doc for worked examples.

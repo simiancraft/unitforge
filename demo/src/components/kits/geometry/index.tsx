@@ -33,7 +33,7 @@ const CELL_PX_BY_UNIT: Record<string, number> = {
   inch: 14,
   foot: 20,
   yard: 24,
-  mile: 28,
+  'statute-mile': 28,
 };
 
 // Slider bounds for the geometry kit's bench, in the user-selected
