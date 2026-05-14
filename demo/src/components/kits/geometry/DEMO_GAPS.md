@@ -63,9 +63,9 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [ ] `areaFromRhombusDiagonals`
 - [ ] `areaFromKiteDiagonals`
 - [ ] `areaFromEllipseSemiAxes`
-- [ ] `areaFromAnnulusRadii`
-- [ ] `areaFromSectorRadiusAndAngle`
-- [ ] `areaFromCircularSegmentRadiusAndAngle`
+- [x] ~~`areaFromAnnulusRadii`~~
+- [x] ~~`areaFromSectorRadiusAndAngle`~~
+- [x] ~~`areaFromCircularSegmentRadiusAndAngle`~~
 - [ ] `areaFromRegularPolygonApothemAndPerimeter`
 
 ### Volume derivations
@@ -75,7 +75,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [ ] `volumeFromCylinderRadiusAndHeight`
 
 ### Perimeter / circumference / arc length
-- [ ] `perimeterOfRectangleFromLengthAndWidth`
+- [x] ~~`perimeterOfRectangleFromLengthAndWidth`~~
 - [ ] `perimeterOfSquareFromSide`
 - [ ] `perimeterOfTriangleFromSides`
 - [ ] `perimeterOfEquilateralTriangleFromSide`
@@ -83,14 +83,14 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [ ] `perimeterOfParallelogramFromBaseAndSide`
 - [ ] `perimeterOfTrapezoidFromSides`
 - [ ] `circumferenceOfCircleFromDiameter`
-- [ ] `arcLengthFromRadiusAndAngle`
+- [x] ~~`arcLengthFromRadiusAndAngle`~~
 - [ ] `perimeterOfEllipseFromSemiAxes` (Ramanujan II)
 
 ### Angle derivations (ANGLE-output)
-- [ ] `angleFromRadiusAndArcLength`
+- [x] ~~`angleFromRadiusAndArcLength`~~
 
 ### Diagonals
-- [ ] `diagonalOfRectangleFromLengthAndWidth`
+- [x] ~~`diagonalOfRectangleFromLengthAndWidth`~~
 - [ ] `diagonalOfSquareFromSide`
 
 ### Triangle radii

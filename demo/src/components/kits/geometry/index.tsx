@@ -15,9 +15,8 @@ import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
-import { CircleMachine } from './sections/circle-machine.js';
+import { TwoDShapeMachine } from './sections/2d-shape-machine/index.js';
 import { HelloUnit } from './sections/hello-unit.js';
-import { RectangleMachine } from './sections/rectangle-machine.js';
 import { LENGTH_UNITS } from './units.js';
 import './geometry.css';
 
@@ -81,8 +80,7 @@ export function GeometryScreen() {
       sectionsZone={
         <>
           <HelloUnit />
-          <RectangleMachine />
-          <CircleMachine />
+          <TwoDShapeMachine />
         </>
       }
     />
