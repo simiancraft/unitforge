@@ -53,7 +53,7 @@ When a library symbol is added or renamed in this kit, append it here under the 
 Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMachine` (`areaFromRectangleLengthAndWidth`), `CircleMachine` (`areaFromCircleRadius` + length-to-length for circumference output).
 
 ### Area derivations
-- [ ] `areaFromSquareSide`
+- [x] ~~`areaFromSquareSide`~~
 - [ ] `areaFromCircleDiameter`
 - [ ] `areaFromTriangleBaseAndHeight`
 - [ ] `areaFromTriangleSides` (Heron)
@@ -76,7 +76,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 
 ### Perimeter / circumference / arc length
 - [x] ~~`perimeterOfRectangleFromLengthAndWidth`~~
-- [ ] `perimeterOfSquareFromSide`
+- [x] ~~`perimeterOfSquareFromSide`~~
 - [ ] `perimeterOfTriangleFromSides`
 - [ ] `perimeterOfEquilateralTriangleFromSide`
 - [ ] `perimeterOfRhombusFromSide`
@@ -91,7 +91,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 
 ### Diagonals
 - [x] ~~`diagonalOfRectangleFromLengthAndWidth`~~
-- [ ] `diagonalOfSquareFromSide`
+- [x] ~~`diagonalOfSquareFromSide`~~
 
 ### Triangle radii
 - [ ] `inradiusOfTriangleFromSides`
