@@ -83,6 +83,7 @@ export function GeometryScreen() {
           <HelloUnit />
           <TwoDShapeMachine />
           <ThreeDShapeMachine />
+          <CoordinateMachine />
         </>
       }
     />

@@ -98,7 +98,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [x] ~~`circumradiusOfTriangleFromSides`~~
 
 ### Coordinate geometry
-- [ ] `distanceBetweenPoints`
-- [ ] `midpointBetweenPoints`
-- [ ] `cartesianFromPolar`
-- [ ] `polarFromCartesian`
+- [x] ~~`distanceBetweenPoints`~~
+- [x] ~~`midpointBetweenPoints`~~
+- [x] ~~`cartesianFromPolar`~~
+- [x] ~~`polarFromCartesian`~~
