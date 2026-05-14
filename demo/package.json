@@ -10,6 +10,7 @@
     "lint:eslint": "eslint src"
   },
   "dependencies": {
+    "@babylonjs/core": "^9.7.0",
     "@radix-ui/react-select": "^2.2.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

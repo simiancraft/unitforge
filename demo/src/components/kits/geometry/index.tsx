@@ -16,6 +16,7 @@ import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { TwoDShapeMachine } from './sections/2d-shape-machine/index.js';
+import { ThreeDShapeMachine } from './sections/3d-shape-machine/index.js';
 import { HelloUnit } from './sections/hello-unit.js';
 import { LENGTH_UNITS } from './units.js';
 import './geometry.css';
@@ -81,6 +82,7 @@ export function GeometryScreen() {
         <>
           <HelloUnit />
           <TwoDShapeMachine />
+          <ThreeDShapeMachine />
         </>
       }
     />
