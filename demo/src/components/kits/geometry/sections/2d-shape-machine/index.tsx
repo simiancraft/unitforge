@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
 import { MenuPill } from './parts/menu-pill.js';
 import { useCircle } from './shapes/circle.js';
+import { useEllipse } from './shapes/ellipse.js';
 import { useQuadrilateral } from './shapes/quadrilateral.js';
 import { useRectangle } from './shapes/rectangle.js';
 import { useSquare } from './shapes/square.js';
@@ -25,10 +26,18 @@ export function TwoDShapeMachine() {
   const triangle = useTriangle();
   const quadrilateral = useQuadrilateral();
   const circle = useCircle();
+  const ellipse = useEllipse();
 
-  const shapes = { rectangle, square, triangle, quadrilateral, circle } as const;
+  const shapes = { rectangle, square, triangle, quadrilateral, circle, ellipse } as const;
   type ShapeKey = keyof typeof shapes;
-  const order: readonly ShapeKey[] = ['rectangle', 'square', 'triangle', 'quadrilateral', 'circle'];
+  const order: readonly ShapeKey[] = [
+    'rectangle',
+    'square',
+    'triangle',
+    'quadrilateral',
+    'circle',
+    'ellipse',
+  ];
 
   const [activeKey, setActiveKey] = useState<ShapeKey>('rectangle');
   const active = shapes[activeKey];

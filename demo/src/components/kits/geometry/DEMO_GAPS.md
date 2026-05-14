@@ -62,7 +62,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [x] ~~`areaFromParallelogramBaseAndHeight`~~
 - [x] ~~`areaFromRhombusDiagonals`~~
 - [x] ~~`areaFromKiteDiagonals`~~
-- [ ] `areaFromEllipseSemiAxes`
+- [x] ~~`areaFromEllipseSemiAxes`~~
 - [x] ~~`areaFromAnnulusRadii`~~
 - [x] ~~`areaFromSectorRadiusAndAngle`~~
 - [x] ~~`areaFromCircularSegmentRadiusAndAngle`~~
@@ -84,7 +84,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [x] ~~`perimeterOfTrapezoidFromSides`~~
 - [ ] `circumferenceOfCircleFromDiameter`
 - [x] ~~`arcLengthFromRadiusAndAngle`~~
-- [ ] `perimeterOfEllipseFromSemiAxes` (Ramanujan II)
+- [x] ~~`perimeterOfEllipseFromSemiAxes` (Ramanujan II)~~
 
 ### Angle derivations (ANGLE-output)
 - [x] ~~`angleFromRadiusAndArcLength`~~
