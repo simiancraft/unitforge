@@ -1,3 +1,19 @@
+# [3.1.0](https://github.com/simiancraft/unitforge/compare/v3.0.0...v3.1.0) (2026-05-14)
+
+
+### Bug Fixes
+
+* **data-storage:** correct JEDEC mis-attribution; tighten IEC and IEEE cites ([b15764f](https://github.com/simiancraft/unitforge/commit/b15764f89872f5ae585f64f14b856684257e777e))
+
+
+### Features
+
+* **data-storage:** ship exabyte / zettabyte / yottabyte (SI 10^18..10^24) ([931f1d3](https://github.com/simiancraft/unitforge/commit/931f1d389bb0363b635265654d209c8abfea7f18))
+* **data-storage:** ship exbibyte / zebibyte / yobibyte (IEC 2^60..2^80) ([875e7f5](https://github.com/simiancraft/unitforge/commit/875e7f5dc938206ed671ed8e03a6c81101962d57))
+* **data-storage:** ship octet as RFC-vocabulary 8-bit alias of byte ([7bfef2f](https://github.com/simiancraft/unitforge/commit/7bfef2fbdaaaa4614f699b675902e776c9430492))
+* **data-storage:** ship terabit and petabit for modern line rates ([44839cc](https://github.com/simiancraft/unitforge/commit/44839cc92f76df6a33f83fe1650129fcab79a14e))
+* **demo:** rename Settlers-of-Crouton section to Arpy Gee Shop ([2140cd3](https://github.com/simiancraft/unitforge/commit/2140cd36f8e34e525aed084d4b14ac54e569bfaa)), closes [#crouton](https://github.com/simiancraft/unitforge/issues/crouton)
+
 # [3.0.0](https://github.com/simiancraft/unitforge/compare/v2.0.0...v3.0.0) (2026-05-14)
 
 
