@@ -70,9 +70,9 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 
 ### Volume derivations
 - [x] ~~`volumeFromCuboidDimensions`~~
-- [ ] `volumeFromCubeSide`
-- [ ] `volumeFromSphereRadius`
-- [ ] `volumeFromCylinderRadiusAndHeight`
+- [x] ~~`volumeFromCubeSide`~~
+- [x] ~~`volumeFromSphereRadius`~~
+- [x] ~~`volumeFromCylinderRadiusAndHeight`~~
 
 ### Perimeter / circumference / arc length
 - [x] ~~`perimeterOfRectangleFromLengthAndWidth`~~
