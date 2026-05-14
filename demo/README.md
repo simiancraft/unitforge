@@ -46,7 +46,7 @@ demo/src/
 │   ├── Home.tsx
 │   ├── HomeBench.tsx                    slim 2-row converter
 │   ├── CoreApiIntro.tsx                 three-verb teaser
-│   └── CroutonDemo.tsx                  BYO custom-dimensions demo
+│   └── ArpyGeeShop.tsx                  BYO custom-dimensions demo
 ├── components/                          truly shared, kit-agnostic
 │   ├── ForgeBench.tsx                   sticky instrument used by every kit
 │   ├── DemoSection.tsx                  title + intro + widget + code block

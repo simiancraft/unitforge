@@ -13,12 +13,27 @@
 // kit unit definitions; using it here would re-introduce the spread and
 // regress per-unit tree-shake.
 //
-// Naming convention: kilobyte/megabyte/... are decimal (×1000^n, per SI/JEDEC
-// disk-vendor convention); kibibyte/mebibyte/... are binary (×1024^n, per
-// IEC 80000-13). Both are shipped because conflating them is the canonical
-// units-library bug this dimension exists to prevent. Bits are 1/8 byte and
-// share the DATA dimension since network throughput specs (gigabit ethernet)
-// describe the same quantity as storage (gigabyte file) at a different scale.
+// Naming convention: kilobyte/megabyte/... are decimal (×1000^n, per the SI
+// prefix system as published in the BIPM SI Brochure, 9th ed., Table 7, and
+// codified for storage by the disk industry through IDEMA and the SFF
+// Committee); kibibyte/mebibyte/... are binary (×1024^n, per IEC 80000-13:2008
+// "Quantities and units - Part 13: Information science and technology",
+// §13-9 through §13-16). Both are shipped because conflating them is the
+// canonical units-library bug this dimension exists to prevent.
+//
+// JEDEC's separate convention (JEDEC Standard 100B.01, §3.16) defines K/M/G
+// as 2^10 / 2^20 / 2^30 in semiconductor memory contexts only. That
+// convention is the historical source of the kB/KiB confusion; it does not
+// apply to file or disk capacity, and the kit deliberately does not ship a
+// "JEDEC kilobyte" as a third unit (the right disambiguating spelling is
+// `kibibyte`, already provided).
+//
+// Bits are 1/8 byte and share the DATA dimension since network throughput
+// specs (gigabit Ethernet, per IEEE 802.3) describe the same quantity as
+// storage (gigabyte file) at a different scale. Throughput proper
+// (bits-per-second, transfers-per-second) is rate-shaped and lives in a
+// future RATE dimension once one is added; this kit measures information
+// content, not flow.
 
 import { defineUnit } from '../../define.js';
 import { DATA } from '../../dimensions.js';
@@ -36,7 +51,29 @@ export const byte = /*#__PURE__*/ defineUnit({
   base: true,
 });
 
-/** 1 kB = 1000 bytes (decimal/SI; per JEDEC and disk-vendor convention). */
+/** 1 octet = 8 bits ≡ 1 byte. Identical to {@link byte} on every system
+ *  this library targets; shipped as a separate unit because RFC / IETF
+ *  network literature uses "octet" precisely to disambiguate from
+ *  historically variable byte sizes on older architectures (the PDP-10
+ *  used 9-bit and 36-bit bytes; the convention is no longer relevant on
+ *  modern hardware but the RFC vocabulary survived). The conversion is
+ *  intentionally not the identity closure so reference-equality checks
+ *  treat `byte` and `octet` as distinct units. */
+export const octet = /*#__PURE__*/ defineUnit({
+  id: 'octet',
+  label: 'Octet',
+  symbol: 'o',
+  dimension: DATA,
+  // `* 1` (not `v`) keeps the closure body visibly distinct from byte's;
+  // semantics identical, but a future "simplify" pass collapsing this to
+  // `(v) => v` would erase the deliberate signal that octet and byte are
+  // separate units, not aliases of one identity closure.
+  toBase: (v) => v * 1,
+  fromBase: (b) => b / 1,
+});
+
+/** 1 kB = 1000 bytes (decimal/SI; per BIPM SI Brochure Table 7 and the
+ *  disk-industry convention codified by IDEMA / SFF). */
 export const kilobyte = /*#__PURE__*/ defineUnit({
   id: 'kilobyte',
   label: 'Kilobyte',
@@ -86,9 +123,48 @@ export const petabyte = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1_000_000_000_000_000,
 });
 
+/** 1 EB = 10¹⁸ bytes (decimal/SI). Operating scale of AWS S3 and global
+ *  datasphere reports; first decimal byte tier that no longer round-trips
+ *  to an exact Float64 integer (10¹⁸ < 2^60 but `Number.MAX_SAFE_INTEGER`
+ *  is 2^53−1 ≈ 9.007 × 10¹⁵; any byte count ≥ 1 EB has fewer than
+ *  ~16 significant digits of precision). Caveat applies to ZB and YB
+ *  below as well. */
+export const exabyte = /*#__PURE__*/ defineUnit({
+  id: 'exabyte',
+  label: 'Exabyte',
+  symbol: 'EB',
+  dimension: DATA,
+  toBase: (v) => v * 1_000_000_000_000_000_000,
+  fromBase: (b) => b / 1_000_000_000_000_000_000,
+});
+
+/** 1 ZB = 10²¹ bytes (decimal/SI). Operating scale of IDC "global
+ *  datasphere" reports; values converted to or from byte exceed
+ *  `Number.MAX_SAFE_INTEGER` (see {@link exabyte}). */
+export const zettabyte = /*#__PURE__*/ defineUnit({
+  id: 'zettabyte',
+  label: 'Zettabyte',
+  symbol: 'ZB',
+  dimension: DATA,
+  toBase: (v) => v * 1e21,
+  fromBase: (b) => b / 1e21,
+});
+
+/** 1 YB = 10²⁴ bytes (decimal/SI). Beyond any single deployed system in
+ *  2026; shipped for ladder completeness. Values converted to or from
+ *  byte exceed `Number.MAX_SAFE_INTEGER` (see {@link exabyte}). */
+export const yottabyte = /*#__PURE__*/ defineUnit({
+  id: 'yottabyte',
+  label: 'Yottabyte',
+  symbol: 'YB',
+  dimension: DATA,
+  toBase: (v) => v * 1e24,
+  fromBase: (b) => b / 1e24,
+});
+
 // ─── BYTES (binary / IEC 80000-13 multiples) ─────────────────────────────
 
-/** 1 KiB = 1024 bytes (binary; IEC 80000-13). */
+/** 1 KiB = 1024 bytes (binary; see kit header for IEC 80000-13:2008 cite). */
 export const kibibyte = /*#__PURE__*/ defineUnit({
   id: 'kibibyte',
   label: 'Kibibyte',
@@ -98,7 +174,7 @@ export const kibibyte = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1024,
 });
 
-/** 1 MiB = 1024² = 1 048 576 bytes (binary; IEC 80000-13). */
+/** 1 MiB = 1024² = 1 048 576 bytes (binary; see kit header for IEC cite). */
 export const mebibyte = /*#__PURE__*/ defineUnit({
   id: 'mebibyte',
   label: 'Mebibyte',
@@ -108,7 +184,7 @@ export const mebibyte = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1_048_576,
 });
 
-/** 1 GiB = 1024³ = 1 073 741 824 bytes (binary; IEC 80000-13). */
+/** 1 GiB = 1024³ = 1 073 741 824 bytes (binary; see kit header for IEC cite). */
 export const gibibyte = /*#__PURE__*/ defineUnit({
   id: 'gibibyte',
   label: 'Gibibyte',
@@ -118,7 +194,7 @@ export const gibibyte = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1_073_741_824,
 });
 
-/** 1 TiB = 1024⁴ = 1 099 511 627 776 bytes (binary; IEC 80000-13). */
+/** 1 TiB = 1024⁴ = 1 099 511 627 776 bytes (binary; see kit header for IEC cite). */
 export const tebibyte = /*#__PURE__*/ defineUnit({
   id: 'tebibyte',
   label: 'Tebibyte',
@@ -128,7 +204,7 @@ export const tebibyte = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1_099_511_627_776,
 });
 
-/** 1 PiB = 1024⁵ = 1 125 899 906 842 624 bytes (binary; IEC 80000-13). */
+/** 1 PiB = 1024⁵ = 1 125 899 906 842 624 bytes (binary; see kit header for IEC cite). */
 export const pebibyte = /*#__PURE__*/ defineUnit({
   id: 'pebibyte',
   label: 'Pebibyte',
@@ -138,9 +214,54 @@ export const pebibyte = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1_125_899_906_842_624,
 });
 
+/** 1 EiB = 1024⁶ = 2^60 bytes (binary; see kit header for IEC cite).
+ *
+ *  Float64 precision caveat: the scale factor itself is an exact power of
+ *  two and is representable in Float64, but `Number.MAX_SAFE_INTEGER` is
+ *  2^53 − 1, so byte counts at or above 2^60 cannot resolve individual
+ *  bytes; the bottom ~7 bits are below the Float64 ULP for values near
+ *  this magnitude. Caller-visible: `forge(exbibyte, byte)(1) + 1 ===
+ *  forge(exbibyte, byte)(1)` (the +1 vanishes). Limitation is Float64,
+ *  not the kit; same caveat applies to ZiB and YiB below. */
+export const exbibyte = /*#__PURE__*/ defineUnit({
+  id: 'exbibyte',
+  label: 'Exbibyte',
+  symbol: 'EiB',
+  dimension: DATA,
+  toBase: (v) => v * 2 ** 60,
+  fromBase: (b) => b / 2 ** 60,
+});
+
+/** 1 ZiB = 1024⁷ = 2^70 bytes (binary; see kit header for IEC cite).
+ *  Float64 precision caveat applies (see {@link exbibyte}). */
+export const zebibyte = /*#__PURE__*/ defineUnit({
+  id: 'zebibyte',
+  label: 'Zebibyte',
+  symbol: 'ZiB',
+  dimension: DATA,
+  toBase: (v) => v * 2 ** 70,
+  fromBase: (b) => b / 2 ** 70,
+});
+
+/** 1 YiB = 1024⁸ = 2^80 bytes (binary; see kit header for IEC cite).
+ *  Float64 precision caveat applies (see {@link exbibyte}). */
+export const yobibyte = /*#__PURE__*/ defineUnit({
+  id: 'yobibyte',
+  label: 'Yobibyte',
+  symbol: 'YiB',
+  dimension: DATA,
+  toBase: (v) => v * 2 ** 80,
+  fromBase: (b) => b / 2 ** 80,
+});
+
 // ─── BITS (1 bit = 1/8 byte; decimal multiples for throughput) ───────────
 
-/** 1 bit = 0.125 byte; 8 bits = 1 byte. */
+/** 1 bit = 0.125 byte; 8 bits = 1 byte.
+ *
+ *  IEC 80000-13 specifies the symbol as lowercase `b`; this kit ships the
+ *  symbol as `bit` instead because lowercase `b` is the dominant source of
+ *  the "is it bits or bytes" confusion the kit exists to prevent, and the
+ *  spelled-out word is unambiguous in any caller-facing UI. */
 export const bit = /*#__PURE__*/ defineUnit({
   id: 'bit',
   label: 'Bit',
@@ -150,7 +271,7 @@ export const bit = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 0.125,
 });
 
-/** 1 kbit = 1000 bits = 125 bytes (decimal; per IEEE 802 throughput convention). */
+/** 1 kbit = 1000 bits = 125 bytes (decimal; per IEEE 802.3 line-rate convention). */
 export const kilobit = /*#__PURE__*/ defineUnit({
   id: 'kilobit',
   label: 'Kilobit',
@@ -160,7 +281,7 @@ export const kilobit = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 125,
 });
 
-/** 1 Mbit = 10⁶ bits = 125 000 bytes (decimal; per IEEE 802). */
+/** 1 Mbit = 10⁶ bits = 125 000 bytes (decimal; per IEEE 802.3). */
 export const megabit = /*#__PURE__*/ defineUnit({
   id: 'megabit',
   label: 'Megabit',
@@ -170,7 +291,7 @@ export const megabit = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 125_000,
 });
 
-/** 1 Gbit = 10⁹ bits = 125 000 000 bytes (decimal; per IEEE 802). */
+/** 1 Gbit = 10⁹ bits = 125 000 000 bytes (decimal; per IEEE 802.3). */
 export const gigabit = /*#__PURE__*/ defineUnit({
   id: 'gigabit',
   label: 'Gigabit',
@@ -178,4 +299,27 @@ export const gigabit = /*#__PURE__*/ defineUnit({
   dimension: DATA,
   toBase: (v) => v * 125_000_000,
   fromBase: (b) => b / 125_000_000,
+});
+
+/** 1 Tbit = 10¹² bits = 125 × 10⁹ bytes (decimal; per IEEE 802.3).
+ *  Operational scale: 400 GbE and 800 GbE are deployed; 200 Gb/s-per-lane
+ *  signaling that enables 1.6 TbE is specified in IEEE 802.3dj. */
+export const terabit = /*#__PURE__*/ defineUnit({
+  id: 'terabit',
+  label: 'Terabit',
+  symbol: 'Tbit',
+  dimension: DATA,
+  toBase: (v) => v * 125_000_000_000,
+  fromBase: (b) => b / 125_000_000_000,
+});
+
+/** 1 Pbit = 10¹⁵ bits = 125 × 10¹² bytes (decimal; per IEEE 802.3).
+ *  Operational scale: aggregate backbone capacity is quoted in Pbit/s. */
+export const petabit = /*#__PURE__*/ defineUnit({
+  id: 'petabit',
+  label: 'Petabit',
+  symbol: 'Pbit',
+  dimension: DATA,
+  toBase: (v) => v * 125_000_000_000_000,
+  fromBase: (b) => b / 125_000_000_000_000,
 });

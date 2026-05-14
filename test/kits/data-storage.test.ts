@@ -4,6 +4,8 @@ import { forge } from '../../src/index.js';
 import {
   bit,
   byte,
+  exabyte,
+  exbibyte,
   gibibyte,
   gigabit,
   gigabyte,
@@ -13,10 +15,17 @@ import {
   mebibyte,
   megabit,
   megabyte,
+  octet,
   pebibyte,
+  petabit,
   petabyte,
   tebibyte,
+  terabit,
   terabyte,
+  yobibyte,
+  yottabyte,
+  zebibyte,
+  zettabyte,
 } from '../../src/kits/data-storage/index.js';
 
 // Per-unit tests assert the four invariants every Unit must hold:
@@ -44,6 +53,35 @@ describe('data-storage/units: bytes (decimal)', () => {
       expect(byte.fromBase(0)).toBe(0);
       expect(byte.fromBase(1)).toBe(1);
       expect(byte.fromBase(123.456)).toBe(123.456);
+    });
+  });
+
+  describe('octet (RFC alias of byte)', () => {
+    it('has the right shape', () => {
+      expect(octet.id).toBe('octet');
+      expect(octet.label).toBe('Octet');
+      expect(octet.symbol).toBe('o');
+      expect(octet.dimension).toBe(DATA);
+      expect(octet.base).toBeUndefined();
+    });
+    it('1 octet = 1 byte via toBase', () => {
+      expect(octet.toBase(1)).toBe(1);
+      expect(octet.toBase(8)).toBe(8);
+    });
+    it('1 byte = 1 octet via fromBase', () => {
+      expect(octet.fromBase(1)).toBe(1);
+      expect(octet.fromBase(8)).toBe(8);
+    });
+    it('is a distinct Unit value from byte (not the same reference)', () => {
+      expect(octet).not.toBe(byte);
+    });
+    it('forge round-trips identically with byte', () => {
+      expect(forge(octet, byte)(123.456)).toBe(123.456);
+      expect(forge(byte, octet)(123.456)).toBe(123.456);
+    });
+    it('forge octet → bit gives 8 bits per octet', () => {
+      expect(forge(octet, bit)(1)).toBe(8);
+      expect(forge(bit, octet)(8)).toBe(1);
     });
   });
 
@@ -124,6 +162,51 @@ describe('data-storage/units: bytes (decimal)', () => {
       expect(petabyte.fromBase(1_000_000_000_000_000)).toBe(1);
     });
   });
+
+  describe('exabyte', () => {
+    it('has the right shape', () => {
+      expect(exabyte.id).toBe('exabyte');
+      expect(exabyte.label).toBe('Exabyte');
+      expect(exabyte.symbol).toBe('EB');
+      expect(exabyte.dimension).toBe(DATA);
+    });
+    it('1 EB = 1e18 B via toBase', () => {
+      expect(exabyte.toBase(1)).toBe(1e18);
+    });
+    it('1e18 B = 1 EB via fromBase', () => {
+      expect(exabyte.fromBase(1e18)).toBe(1);
+    });
+  });
+
+  describe('zettabyte', () => {
+    it('has the right shape', () => {
+      expect(zettabyte.id).toBe('zettabyte');
+      expect(zettabyte.label).toBe('Zettabyte');
+      expect(zettabyte.symbol).toBe('ZB');
+      expect(zettabyte.dimension).toBe(DATA);
+    });
+    it('1 ZB = 1e21 B via toBase', () => {
+      expect(zettabyte.toBase(1)).toBe(1e21);
+    });
+    it('1e21 B = 1 ZB via fromBase', () => {
+      expect(zettabyte.fromBase(1e21)).toBe(1);
+    });
+  });
+
+  describe('yottabyte', () => {
+    it('has the right shape', () => {
+      expect(yottabyte.id).toBe('yottabyte');
+      expect(yottabyte.label).toBe('Yottabyte');
+      expect(yottabyte.symbol).toBe('YB');
+      expect(yottabyte.dimension).toBe(DATA);
+    });
+    it('1 YB = 1e24 B via toBase', () => {
+      expect(yottabyte.toBase(1)).toBe(1e24);
+    });
+    it('1e24 B = 1 YB via fromBase', () => {
+      expect(yottabyte.fromBase(1e24)).toBe(1);
+    });
+  });
 });
 
 describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
@@ -201,6 +284,61 @@ describe('data-storage/units: bytes (binary / IEC 80000-13)', () => {
       expect(pebibyte.fromBase(1_125_899_906_842_624)).toBe(1);
     });
   });
+
+  describe('exbibyte', () => {
+    it('has the right shape', () => {
+      expect(exbibyte.id).toBe('exbibyte');
+      expect(exbibyte.label).toBe('Exbibyte');
+      expect(exbibyte.symbol).toBe('EiB');
+      expect(exbibyte.dimension).toBe(DATA);
+    });
+    it('1 EiB = 2^60 B via toBase', () => {
+      expect(exbibyte.toBase(1)).toBe(2 ** 60);
+    });
+    it('2^60 B = 1 EiB via fromBase', () => {
+      expect(exbibyte.fromBase(2 ** 60)).toBe(1);
+    });
+    it('round-trip 1 EiB → byte → EiB preserves identity (factor is exact power of 2)', () => {
+      expect(exbibyte.fromBase(exbibyte.toBase(1))).toBe(1);
+    });
+    it('Float64 precision cliff: adding 1 byte to 1 EiB is below the ULP and vanishes', () => {
+      // Documents the JSDoc-promised behavior: at 2^60, byte-resolution
+      // arithmetic is below the Float64 ULP for this magnitude. A future
+      // refactor that quietly switches to BigInt would break this and
+      // surface the change.
+      expect(exbibyte.toBase(1) + 1).toBe(exbibyte.toBase(1));
+    });
+  });
+
+  describe('zebibyte', () => {
+    it('has the right shape', () => {
+      expect(zebibyte.id).toBe('zebibyte');
+      expect(zebibyte.label).toBe('Zebibyte');
+      expect(zebibyte.symbol).toBe('ZiB');
+      expect(zebibyte.dimension).toBe(DATA);
+    });
+    it('1 ZiB = 2^70 B via toBase', () => {
+      expect(zebibyte.toBase(1)).toBe(2 ** 70);
+    });
+    it('2^70 B = 1 ZiB via fromBase', () => {
+      expect(zebibyte.fromBase(2 ** 70)).toBe(1);
+    });
+  });
+
+  describe('yobibyte', () => {
+    it('has the right shape', () => {
+      expect(yobibyte.id).toBe('yobibyte');
+      expect(yobibyte.label).toBe('Yobibyte');
+      expect(yobibyte.symbol).toBe('YiB');
+      expect(yobibyte.dimension).toBe(DATA);
+    });
+    it('1 YiB = 2^80 B via toBase', () => {
+      expect(yobibyte.toBase(1)).toBe(2 ** 80);
+    });
+    it('2^80 B = 1 YiB via fromBase', () => {
+      expect(yobibyte.fromBase(2 ** 80)).toBe(1);
+    });
+  });
 });
 
 describe('data-storage/units: bits', () => {
@@ -263,6 +401,36 @@ describe('data-storage/units: bits', () => {
     });
     it('125 000 000 B = 1 Gbit via fromBase', () => {
       expect(gigabit.fromBase(125_000_000)).toBe(1);
+    });
+  });
+
+  describe('terabit', () => {
+    it('has the right shape', () => {
+      expect(terabit.id).toBe('terabit');
+      expect(terabit.label).toBe('Terabit');
+      expect(terabit.symbol).toBe('Tbit');
+      expect(terabit.dimension).toBe(DATA);
+    });
+    it('1 Tbit = 125 × 10⁹ B via toBase', () => {
+      expect(terabit.toBase(1)).toBe(125_000_000_000);
+    });
+    it('125 × 10⁹ B = 1 Tbit via fromBase', () => {
+      expect(terabit.fromBase(125_000_000_000)).toBe(1);
+    });
+  });
+
+  describe('petabit', () => {
+    it('has the right shape', () => {
+      expect(petabit.id).toBe('petabit');
+      expect(petabit.label).toBe('Petabit');
+      expect(petabit.symbol).toBe('Pbit');
+      expect(petabit.dimension).toBe(DATA);
+    });
+    it('1 Pbit = 125 × 10¹² B via toBase', () => {
+      expect(petabit.toBase(1)).toBe(125_000_000_000_000);
+    });
+    it('125 × 10¹² B = 1 Pbit via fromBase', () => {
+      expect(petabit.fromBase(125_000_000_000_000)).toBe(1);
     });
   });
 });
