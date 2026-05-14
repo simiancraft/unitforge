@@ -16,15 +16,17 @@ import { MenuPill } from './parts/menu-pill.js';
 import { useCircle } from './shapes/circle.js';
 import { useRectangle } from './shapes/rectangle.js';
 import { useSquare } from './shapes/square.js';
+import { useTriangle } from './shapes/triangle.js';
 
 export function TwoDShapeMachine() {
   const rectangle = useRectangle();
   const square = useSquare();
+  const triangle = useTriangle();
   const circle = useCircle();
 
-  const shapes = { rectangle, square, circle } as const;
+  const shapes = { rectangle, square, triangle, circle } as const;
   type ShapeKey = keyof typeof shapes;
-  const order: readonly ShapeKey[] = ['rectangle', 'square', 'circle'];
+  const order: readonly ShapeKey[] = ['rectangle', 'square', 'triangle', 'circle'];
 
   const [activeKey, setActiveKey] = useState<ShapeKey>('rectangle');
   const active = shapes[activeKey];

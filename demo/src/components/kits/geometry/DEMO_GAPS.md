@@ -55,9 +55,9 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 ### Area derivations
 - [x] ~~`areaFromSquareSide`~~
 - [ ] `areaFromCircleDiameter`
-- [ ] `areaFromTriangleBaseAndHeight`
-- [ ] `areaFromTriangleSides` (Heron)
-- [ ] `areaFromEquilateralTriangleSide`
+- [x] ~~`areaFromTriangleBaseAndHeight`~~
+- [x] ~~`areaFromTriangleSides` (Heron)~~
+- [x] ~~`areaFromEquilateralTriangleSide`~~
 - [ ] `areaFromTrapezoidBasesAndHeight`
 - [ ] `areaFromParallelogramBaseAndHeight`
 - [ ] `areaFromRhombusDiagonals`
@@ -77,8 +77,8 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 ### Perimeter / circumference / arc length
 - [x] ~~`perimeterOfRectangleFromLengthAndWidth`~~
 - [x] ~~`perimeterOfSquareFromSide`~~
-- [ ] `perimeterOfTriangleFromSides`
-- [ ] `perimeterOfEquilateralTriangleFromSide`
+- [x] ~~`perimeterOfTriangleFromSides`~~
+- [x] ~~`perimeterOfEquilateralTriangleFromSide`~~
 - [ ] `perimeterOfRhombusFromSide`
 - [ ] `perimeterOfParallelogramFromBaseAndSide`
 - [ ] `perimeterOfTrapezoidFromSides`
@@ -94,8 +94,8 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [x] ~~`diagonalOfSquareFromSide`~~
 
 ### Triangle radii
-- [ ] `inradiusOfTriangleFromSides`
-- [ ] `circumradiusOfTriangleFromSides`
+- [x] ~~`inradiusOfTriangleFromSides`~~
+- [x] ~~`circumradiusOfTriangleFromSides`~~
 
 ### Coordinate geometry
 - [ ] `distanceBetweenPoints`
