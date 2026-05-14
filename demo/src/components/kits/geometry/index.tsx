@@ -17,6 +17,7 @@ import type { KitMeta } from '../registry.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { TwoDShapeMachine } from './sections/2d-shape-machine/index.js';
 import { ThreeDShapeMachine } from './sections/3d-shape-machine/index.js';
+import { CoordinateMachine } from './sections/coordinate-machine/index.js';
 import { HelloUnit } from './sections/hello-unit.js';
 import { LENGTH_UNITS } from './units.js';
 import './geometry.css';
@@ -28,13 +29,19 @@ import './geometry.css';
 const CELL_PX_BY_UNIT: Record<string, number> = {
   millimeter: 8,
   centimeter: 12,
+  decimeter: 16,
   meter: 18,
   kilometer: 26,
   inch: 14,
   foot: 20,
   yard: 24,
+  fathom: 22,
   'statute-mile': 28,
+  'nautical-mile': 30,
 };
+// Sub-millimeter units (micrometer, nanometer, angstrom, mil) and astronomy
+// units (astronomical-unit, light-year, parsec) fall back to 18; the grid
+// would not visually retick at those scales anyway.
 
 // Slider bounds for the geometry kit's bench, in the user-selected
 // from-unit. Local to this kit; other kits' benches pick their own.
@@ -58,9 +65,13 @@ export function GeometryScreen() {
           <p className="uf-eyebrow">kit · 01</p>
           <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">geometry</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-uf-muted">
-            Length, area, and volume; metric and imperial; cross-dimensional conversions for
-            rectangles, circles, and spheres. Pick any unit for any input. Watch the engineering
-            paper retick as you change units on the bench below.
+            Length, area, volume, and angle; metric, imperial, marine, and astronomy. The 2D shape
+            machine swaps interaction across rectangle, square, triangle (SAS / Heron /
+            equilateral), quadrilateral (trapezoid / parallelogram / rhombus / kite), circle (with
+            sector, segment, annulus, arc length), ellipse, and regular polygon. The 3D shape
+            machine renders cuboid, cube, sphere, and cylinder through Babylon. The coordinate
+            machine showcases forge's multi-output object form via distance / midpoint / cartesian ↔
+            polar. Watch the engineering paper retick as you change units on the bench below.
           </p>
         </header>
       }
@@ -93,7 +104,8 @@ export function GeometryScreen() {
 export const meta: KitMeta = {
   id: 'geometry',
   label: 'geometry',
-  blurb: 'length, area, volume; metric and imperial; rectangle, circle, sphere derivations.',
+  blurb:
+    'length, area, volume, angle; 2D + 3D shape machines + coordinate geometry; metric, imperial, marine, astronomy.',
   defaultThemeId: 'geometry-light',
   icon: Box,
   previewBg: ({ hovered }) => <GeometryBackdrop inline scale={hovered ? 1.5 : 1} />,
