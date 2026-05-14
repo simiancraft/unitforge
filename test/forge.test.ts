@@ -9,7 +9,7 @@ import {
   type ValidationFailure,
 } from '../src/index.js';
 import {
-  areaFromLengthAndWidth,
+  areaFromRectangleLengthAndWidth,
   centimeter,
   meter,
   squareMeter,
@@ -99,7 +99,7 @@ describe('forge: within-dimension', () => {
 describe('forge: cross-dimensional (object input, single output)', () => {
   it('computes area = length × width in base units', () => {
     const toArea = forge({ length: meter, width: meter }, squareMeter, {
-      via: areaFromLengthAndWidth,
+      via: areaFromRectangleLengthAndWidth,
     });
     expect(toArea({ length: 5, width: 3 })).toBeCloseTo(15, 10);
   });
@@ -107,7 +107,7 @@ describe('forge: cross-dimensional (object input, single output)', () => {
   it('handles mixed input units via toBase normalization', () => {
     // length in cm, width in m — both normalize to meters before compute.
     const toArea = forge({ length: centimeter, width: meter }, squareMeter, {
-      via: areaFromLengthAndWidth,
+      via: areaFromRectangleLengthAndWidth,
     });
     // 200 cm = 2 m; width 3 m; area = 6 m²
     expect(toArea({ length: 200, width: 3 })).toBeCloseTo(6, 10);
@@ -115,7 +115,7 @@ describe('forge: cross-dimensional (object input, single output)', () => {
 
   it('aggregates validator failures into one ValidationError', () => {
     const toArea = forge({ length: meter, width: meter }, squareMeter, {
-      via: areaFromLengthAndWidth,
+      via: areaFromRectangleLengthAndWidth,
     });
     let caught: unknown;
     try {
@@ -134,7 +134,7 @@ describe('forge: cross-dimensional (object input, single output)', () => {
 
   it('freezes inputs and failures at construction (mutation rejected at runtime)', () => {
     const toArea = forge({ length: meter, width: meter }, squareMeter, {
-      via: areaFromLengthAndWidth,
+      via: areaFromRectangleLengthAndWidth,
     });
     const originalInput = { length: -5, width: -3 };
     let caught: ValidationError | null = null;
@@ -170,7 +170,7 @@ describe('forge: cross-dimensional (object input, single output)', () => {
     // ValidationError constructor's defensive copy and mask the real failure.
     // safeShallowCopy catches per-key access throws and substitutes a sentinel.
     const toArea = forge({ length: meter, width: meter }, squareMeter, {
-      via: areaFromLengthAndWidth,
+      via: areaFromRectangleLengthAndWidth,
     });
     const hostile: Record<string, unknown> = { width: -3 };
     Object.defineProperty(hostile, 'length', {
@@ -192,7 +192,7 @@ describe('forge: cross-dimensional (object input, single output)', () => {
 
   it('error message handles BigInt and circular refs in input values without throwing', () => {
     const toArea = forge({ length: meter, width: meter }, squareMeter, {
-      via: areaFromLengthAndWidth,
+      via: areaFromRectangleLengthAndWidth,
     });
 
     // BigInt would crash JSON.stringify; ensure the per-value formatter handles it.
@@ -206,7 +206,7 @@ describe('forge: cross-dimensional (object input, single output)', () => {
 
   it('respects call-site validators (additive on top of conversion validators)', () => {
     const toArea = forge({ length: meter, width: meter }, squareMeter, {
-      via: areaFromLengthAndWidth,
+      via: areaFromRectangleLengthAndWidth,
       validate: { length: (v) => v <= 10 || 'this app caps length at 10' },
     });
     let caught: unknown;

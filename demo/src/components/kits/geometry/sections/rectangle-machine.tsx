@@ -10,7 +10,7 @@
 import { Square } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
-import { areaFromLengthAndWidth } from 'unitforge/kits/geometry';
+import { areaFromRectangleLengthAndWidth } from 'unitforge/kits/geometry';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
@@ -41,7 +41,7 @@ export function RectangleMachine() {
   const areaUnit = findById(AREA_UNITS, areaId);
 
   const area = forge({ length: lengthUnit, width: widthUnit }, areaUnit, {
-    via: areaFromLengthAndWidth,
+    via: areaFromRectangleLengthAndWidth,
   })({ length, width });
 
   // getHandleCenter reads the latest length/width via the closure each
@@ -333,14 +333,14 @@ function buildCode(
   const imports = Array.from(new Set([lengthName, widthName, areaName]));
   return `import { forge } from 'unitforge';
 import {
-  areaFromLengthAndWidth,
+  areaFromRectangleLengthAndWidth,
   ${imports.join(', ')},
 } from 'unitforge/kits/geometry';
 
 const area = forge(
   { length: ${lengthName}, width: ${widthName} },
   ${areaName},
-  { via: areaFromLengthAndWidth },
+  { via: areaFromRectangleLengthAndWidth },
 );
 
 area({ length: ${formatMagnitude(length)}, width: ${formatMagnitude(width)} }); // ${formatMagnitude(area)}
