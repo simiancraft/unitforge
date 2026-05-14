@@ -12,9 +12,11 @@ import {
   angleFromRadiusAndArcLength,
   arcLengthFromRadiusAndAngle,
   areaFromAnnulusRadii,
+  areaFromCircleDiameter,
   areaFromCircleRadius,
   areaFromCircularSegmentRadiusAndAngle,
   areaFromSectorRadiusAndAngle,
+  circumferenceOfCircleFromDiameter,
   circumferenceOfCircleFromRadius,
 } from 'unitforge/kits/geometry';
 import { CodeBlock } from '~/components/ui/code-block.js';
@@ -52,10 +54,18 @@ export function useCircle() {
   const safeInner = Math.min(innerRadius, radius);
 
   const area = forge({ radius: radiusUnit }, areaUnit, { via: areaFromCircleRadius })({ radius });
+  // Alternate form via diameter; numerically identical to the radius form,
+  // surfaced so the demo exercises both API shapes the library exposes.
+  const areaViaDiameter = forge({ diameter: radiusUnit }, areaUnit, {
+    via: areaFromCircleDiameter,
+  })({ diameter: radius * 2 });
 
   const circumference = forge({ radius: radiusUnit }, circUnit, {
     via: circumferenceOfCircleFromRadius,
   })({ radius });
+  const circumferenceViaDiameter = forge({ diameter: radiusUnit }, circUnit, {
+    via: circumferenceOfCircleFromDiameter,
+  })({ diameter: radius * 2 });
 
   const arcLength = forge({ radius: radiusUnit, angle: angleUnit }, circUnit, {
     via: arcLengthFromRadiusAndAngle,
@@ -171,6 +181,14 @@ export function useCircle() {
             <Result
               label="circumference (2π · r)"
               value={`${formatMagnitude(circumference)} ${circUnit.symbol}`}
+            />
+            <Result
+              label="circumference via diameter (π · d)"
+              value={`${formatMagnitude(circumferenceViaDiameter)} ${circUnit.symbol}`}
+            />
+            <Result
+              label="area via diameter (π · d² / 4)"
+              value={`${formatMagnitude(areaViaDiameter)} ${areaUnit.symbol}`}
             />
             <Result
               label="arc length (r · θ)"

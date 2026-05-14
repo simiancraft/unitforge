@@ -13,38 +13,38 @@ When a library symbol is added or renamed in this kit, append it here under the 
 ## Units not yet in the demo catalogs
 
 ### LENGTH (`./units.ts:LENGTH_UNITS`)
-- [ ] `decimeter`
-- [ ] `micrometer`
-- [ ] `nanometer`
-- [ ] `angstrom`
-- [ ] `mil`
-- [ ] `nauticalMile`
-- [ ] `fathom`
-- [ ] `astronomicalUnit`
-- [ ] `lightYear`
-- [ ] `parsec`
+- [x] ~~`decimeter`~~
+- [x] ~~`micrometer`~~
+- [x] ~~`nanometer`~~
+- [x] ~~`angstrom`~~
+- [x] ~~`mil`~~
+- [x] ~~`nauticalMile`~~
+- [x] ~~`fathom`~~
+- [x] ~~`astronomicalUnit`~~
+- [x] ~~`lightYear`~~
+- [x] ~~`parsec`~~
 
 ### AREA (`./units.ts:AREA_UNITS`)
-- [ ] `squareKilometer`
-- [ ] `are`
-- [ ] `squareYard`
-- [ ] `squareMile`
+- [x] ~~`squareKilometer`~~
+- [x] ~~`are`~~
+- [x] ~~`squareYard`~~
+- [x] ~~`squareMile`~~
 
 ### VOLUME (`./units.ts:VOLUME_UNITS`)
-- [ ] `cubicMillimeter`
-- [ ] `cubicDecimeter`
-- [ ] `cubicKilometer`
-- [ ] `cubicYard`
-- [ ] `centiliter`
-- [ ] `deciliter`
+- [x] ~~`cubicMillimeter`~~
+- [x] ~~`cubicDecimeter`~~
+- [x] ~~`cubicKilometer`~~
+- [x] ~~`cubicYard`~~
+- [x] ~~`centiliter`~~
+- [x] ~~`deciliter`~~
 
 ### ANGLE (no catalog yet; whole dimension unrepresented)
-- [ ] `radian`
-- [ ] `degree`
-- [ ] `gradian`
-- [ ] `arcminute`
-- [ ] `arcsecond`
-- [ ] `turn`
+- [x] ~~`radian`~~
+- [x] ~~`degree`~~
+- [x] ~~`gradian`~~
+- [x] ~~`arcminute`~~
+- [x] ~~`arcsecond`~~
+- [x] ~~`turn`~~
 
 ---
 
@@ -54,7 +54,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 
 ### Area derivations
 - [x] ~~`areaFromSquareSide`~~
-- [ ] `areaFromCircleDiameter`
+- [x] ~~`areaFromCircleDiameter`~~
 - [x] ~~`areaFromTriangleBaseAndHeight`~~
 - [x] ~~`areaFromTriangleSides` (Heron)~~
 - [x] ~~`areaFromEquilateralTriangleSide`~~
@@ -82,7 +82,7 @@ Sections that exist today: `HelloUnit` (basic `forge(from, to)`), `RectangleMach
 - [x] ~~`perimeterOfRhombusFromSide`~~
 - [x] ~~`perimeterOfParallelogramFromBaseAndSide`~~
 - [x] ~~`perimeterOfTrapezoidFromSides`~~
-- [ ] `circumferenceOfCircleFromDiameter`
+- [x] ~~`circumferenceOfCircleFromDiameter`~~
 - [x] ~~`arcLengthFromRadiusAndAngle`~~
 - [x] ~~`perimeterOfEllipseFromSemiAxes` (Ramanujan II)~~
 
