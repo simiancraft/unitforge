@@ -8,9 +8,9 @@ import { Disc3 } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, kibibyte, mebibyte, megabyte } from 'unitforge/kits/data-storage';
+import { ChipRow } from '~/components/kits/chip-row.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
-import { cn } from '~/lib/cn.js';
 import { ControlPanel } from '../parts/control-panel.js';
 
 type Media = '8' | '5.25' | '3.5';
@@ -155,10 +155,11 @@ export function useFloppy() {
     interactivityZone: (
       <ControlPanel
         pickersZone={
-          <FormatChipRow
+          <ChipRow
             value={formatId}
             options={FORMATS}
             onChange={setFormatId}
+            ariaLabel="floppy format"
           />
         }
         visualZone={<FloppyVisual fmt={fmt} />}
@@ -183,39 +184,6 @@ export function useFloppy() {
 
 function FloppyIcon() {
   return <Disc3 size={22} strokeWidth={1.6} />;
-}
-
-interface FormatChipRowProps {
-  value: string;
-  options: readonly FloppyFormat[];
-  onChange: (id: string) => void;
-}
-
-function FormatChipRow({ value, options, onChange }: FormatChipRowProps) {
-  return (
-    <div className="sm:col-span-3 flex flex-wrap gap-1.5" role="radiogroup" aria-label="floppy format">
-      {options.map((f) => {
-        const active = f.id === value;
-        return (
-          <button
-            key={f.id}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            onClick={() => onChange(f.id)}
-            className={cn(
-              'rounded border px-2 py-1 text-[11px] mono transition focus:outline-none focus-visible:ring-1 focus-visible:ring-uf-accent',
-              active
-                ? 'border-uf-accent bg-uf-accent/15 text-uf-accent'
-                : 'border-uf-fg/15 bg-transparent text-uf-fg hover:border-uf-accent/50',
-            )}
-          >
-            {f.short}
-          </button>
-        );
-      })}
-    </div>
-  );
 }
 
 function FloppyVisual({ fmt }: { fmt: FloppyFormat }) {

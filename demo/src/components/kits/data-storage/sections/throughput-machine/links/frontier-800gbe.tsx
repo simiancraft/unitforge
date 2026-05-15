@@ -9,10 +9,10 @@
 import { Zap } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
-import { byte, gibibyte, gigabit, gigabyte, megabyte } from 'unitforge/kits/data-storage';
+import { byte, gibibyte, gigabit, gigabyte } from 'unitforge/kits/data-storage';
+import { ChipRow } from '~/components/kits/chip-row.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
-import { cn } from '~/lib/cn.js';
 import { ControlPanel } from '../parts/control-panel.js';
 
 type RateId = '200g' | '400g' | '800g' | '1600g';
@@ -85,6 +85,9 @@ const TARGETS: readonly DrainTarget[] = [
 const DEFAULT_RATE: RateId = '800g';
 const DEFAULT_TARGET: TargetId = 'ssd';
 
+const RATE_OPTIONS = RATES.map((r) => ({ id: r.id, short: r.short }));
+const TARGET_OPTIONS = TARGETS.map((t) => ({ id: t.id, short: t.short }));
+
 function findRate(id: RateId): RateSpec {
   return RATES.find((r) => r.id === id) ?? RATES[0]!;
 }
@@ -101,7 +104,6 @@ export function useFrontier() {
   const target = findTarget(targetId);
 
   const gbPerSec = forge(gigabit, gigabyte)(rate.gbits);
-  const mbPerSec = forge(gigabit, megabyte)(rate.gbits);
   const gibPerSec = forge(gigabit, gibibyte)(rate.gbits);
   const bytesPerSec = forge(gigabit, byte)(rate.gbits);
   const drainSeconds = target.bytes / bytesPerSec;
@@ -116,14 +118,14 @@ export function useFrontier() {
               label="IEEE rate"
               ariaLabel="ieee 802.3 rate"
               value={rateId}
-              options={RATES.map((r) => ({ id: r.id, short: r.short }))}
+              options={RATE_OPTIONS}
               onChange={(v) => setRateId(v as RateId)}
             />
             <ChipRow
               label="drain target"
               ariaLabel="drain target"
               value={targetId}
-              options={TARGETS.map((t) => ({ id: t.id, short: t.short }))}
+              options={TARGET_OPTIONS}
               onChange={(v) => setTargetId(v as TargetId)}
             />
           </>
@@ -159,44 +161,6 @@ export function useFrontier() {
 
 function FrontierIcon() {
   return <Zap size={22} strokeWidth={1.6} />;
-}
-
-interface ChipRowProps {
-  label: string;
-  ariaLabel: string;
-  value: string;
-  options: ReadonlyArray<{ id: string; short: string }>;
-  onChange: (v: string) => void;
-}
-
-function ChipRow({ label, ariaLabel, value, options, onChange }: ChipRowProps) {
-  return (
-    <div className="sm:col-span-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-      <span className="uf-eyebrow shrink-0 w-28 leading-tight">{label}</span>
-      <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={ariaLabel}>
-        {options.map((o) => {
-          const active = o.id === value;
-          return (
-            <button
-              key={o.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onChange(o.id)}
-              className={cn(
-                'rounded border px-2.5 py-1 text-[11px] mono transition focus:outline-none focus-visible:ring-1 focus-visible:ring-uf-accent',
-                active
-                  ? 'border-uf-accent bg-uf-accent/20 text-uf-accent shadow-[inset_0_0_0_1px_var(--uf-accent)]'
-                  : 'border-uf-fg/15 bg-transparent text-uf-fg hover:border-uf-accent/50',
-              )}
-            >
-              {o.short}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
 }
 
 function FrontierVisual({ rate }: { rate: RateSpec }) {
