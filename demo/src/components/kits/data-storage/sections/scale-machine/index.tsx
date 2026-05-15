@@ -10,15 +10,17 @@ import { useState } from 'react';
 import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
 import { MenuPill } from './parts/menu-pill.js';
 import { useDrive } from './tiers/drive.js';
+import { useFloppy } from './tiers/floppy.js';
 import { useMemory } from './tiers/memory.js';
 
 export function ScaleMachine() {
   const drive = useDrive();
   const memory = useMemory();
+  const floppy = useFloppy();
 
-  const tiers = { drive, memory } as const;
+  const tiers = { drive, memory, floppy } as const;
   type TierKey = keyof typeof tiers;
-  const order: readonly TierKey[] = ['drive', 'memory'];
+  const order: readonly TierKey[] = ['drive', 'memory', 'floppy'];
 
   const [activeKey, setActiveKey] = useState<TierKey>('drive');
   const active = tiers[activeKey];
@@ -36,9 +38,9 @@ export function ScaleMachine() {
       introZone={
         <>
           The decimal-vs-binary gap is the same gap at every scale. Pick a tier and watch the same
-          story play out: drive vendors mark capacity in decimal GB while the OS reports binary
-          GiB; DDR modules are sold in GiB while transfer rates use GB; floppies were a hybrid
-          that's neither; servers measure in tebibytes; at the exbibyte scale the gap is dwarfed by
+          story play out: drive vendors mark capacity in decimal GB while the OS reports binary GiB;
+          DDR modules are sold in GiB while transfer rates use GB; floppies were a hybrid that's
+          neither; servers measure in tebibytes; at the exbibyte scale the gap is dwarfed by
           Float64's own precision cliff.
         </>
       }
