@@ -8,40 +8,40 @@ import { foot, meter } from '../../src/kits/geometry/index.js';
 // code WOULDN'T exhibit (an error class, an error-message fragment, a
 // rejection path).
 
-describe('forge: isUnitLike duck-type rejection', () => {
-  // A function with toBase/fromBase methods would pass every check
-  // EXCEPT `typeof x === 'object'` (functions are typeof 'function').
-  // If the typeof-object guard is mutated to `true`, forge would route
-  // this through the within-dim path and "work"; the original routes
-  // it through the cross-dim path and throws the no-via error.
-  it('rejects a callable as `from` even when it carries toBase/fromBase', () => {
-    const callable = (() => 1) as unknown as { toBase: (v: number) => number };
-    (callable as { toBase: (v: number) => number }).toBase = (v) => v;
-    (callable as unknown as { fromBase: (v: number) => number }).fromBase = (v) => v;
-    expect(() => forge(callable as never, foot)).toThrow(
-      /object-shaped `from` with no `via:`/,
-    );
+describe('forge: rejects null/undefined as a Unit', () => {
+  // Optional chaining inside isUnitLike protects against null/undefined
+  // hitting the within-dim path. Without it, isUnitLike(null) would
+  // crash on a .toBase property access; the cross-dim path's later
+  // Object.keys(null) throw is the wrong surface for "null isn't a
+  // unit." These tests pin the rejection at the forge() entry boundary.
+  it('throws when `from` is null', () => {
+    expect(() => forge(null as never, foot)).toThrow();
   });
 
-  // An object with `fromBase` but NO `toBase` would pass every check
-  // EXCEPT the toBase guard. If THAT guard is mutated to `true`, the
-  // object routes through within-dim; calling `obj.toBase(value)` then
-  // throws TypeError. The original routes through cross-dim → no-via
-  // error.
+  it('throws when `to` is null', () => {
+    expect(() => forge(meter, null as never)).toThrow();
+  });
+
+  it('throws when `from` is undefined', () => {
+    expect(() => forge(undefined as never, foot)).toThrow();
+  });
+});
+
+describe('forge: isUnitLike duck-type rejection', () => {
+  // An object with `fromBase` but NO `toBase` fails the toBase guard.
+  // If the guard is mutated to `true`, the object routes through
+  // within-dim; calling `obj.toBase(value)` then throws TypeError. The
+  // original routes through cross-dim → no-via error.
   it('rejects a `from` object that has fromBase but no toBase', () => {
     const halfUnit = { fromBase: (b: number) => b };
-    expect(() => forge(halfUnit as never, foot)).toThrow(
-      /object-shaped `from` with no `via:`/,
-    );
+    expect(() => forge(halfUnit as never, foot)).toThrow(/object-shaped `from` with no `via:`/);
   });
 
   // Symmetric: object with toBase but no fromBase. Kills the fromBase
   // guard mutation.
   it('rejects a `to` object that has toBase but no fromBase', () => {
     const halfUnit = { toBase: (v: number) => v };
-    expect(() => forge(meter, halfUnit as never)).toThrow(
-      /object-shaped `from` with no `via:`/,
-    );
+    expect(() => forge(meter, halfUnit as never)).toThrow(/object-shaped `from` with no `via:`/);
   });
 });
 

@@ -163,9 +163,11 @@ function buildCrossDimConverter(
   // Pre-bake input key list (sorted for stable cache-key order).
   const inputKeys = Object.keys(conversion.inputs).sort();
 
-  // Pre-bake output shape detection.
-  const outputIsObject = !isUnitLike(to);
-  const outputKeys = outputIsObject ? Object.keys(to as Record<string, AnyUnit>) : null;
+  // Pre-bake output shape detection. `outputKeys` is the array of
+  // result-object keys when `to` is an object; null when `to` is a
+  // single Unit (the scalar-output overload). Truthiness of this one
+  // variable encodes the dispatch decision downstream.
+  const outputKeys = isUnitLike(to) ? null : Object.keys(to as Record<string, AnyUnit>);
 
   const cache = memoCap > 0 ? new Map<string, unknown>() : null;
 
@@ -215,16 +217,16 @@ function buildCrossDimConverter(
     const compute = conversion.compute as (vals: Record<string, unknown>) => unknown;
     const baseResult = compute(baseValues);
 
-    // 7: denormalize to target unit(s)
+    // 7: denormalize to target unit(s). outputKeys is non-null iff
+    // the output is object-shaped; outputKeys was derived from `to`
+    // at forge time, so each key resolves to a defined Unit.
     let result: unknown;
-    if (outputIsObject && outputKeys) {
+    if (outputKeys) {
       const out: Record<string, unknown> = {};
       const toMap = to as Record<string, AnyUnit>;
       const baseMap = baseResult as Record<string, unknown>;
       for (const k of outputKeys) {
-        const u = toMap[k];
-        if (!u) continue;
-        out[k] = roundIfNumber(u.fromBase(baseMap[k]), precisionMul);
+        out[k] = roundIfNumber((toMap[k] as AnyUnit).fromBase(baseMap[k]), precisionMul);
       }
       result = out;
     } else {
@@ -243,13 +245,16 @@ function buildCrossDimConverter(
 
 // ─── Local helpers ───────────────────────────────────────────────────────
 
+// Structural check: a Unit is anything with callable toBase + fromBase
+// methods. Optional chaining handles null/undefined; non-object inputs
+// fail the `?.toBase` lookup and reject. The original chain also
+// gated on `typeof x === 'object'`; relaxing that lets a callable with
+// .toBase/.fromBase methods pass through as well, which is Liskov-
+// positive (it walks like a unit, it quacks like a unit) and no API
+// caller would construct one intentionally.
 function isUnitLike(x: unknown): x is AnyUnit {
-  return (
-    typeof x === 'object' &&
-    x !== null &&
-    typeof (x as { toBase?: unknown }).toBase === 'function' &&
-    typeof (x as { fromBase?: unknown }).fromBase === 'function'
-  );
+  const obj = x as { toBase?: unknown; fromBase?: unknown } | null | undefined;
+  return typeof obj?.toBase === 'function' && typeof obj?.fromBase === 'function';
 }
 
 function validatePrecision(precision: unknown): number | null {
