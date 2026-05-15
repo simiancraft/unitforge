@@ -5,10 +5,20 @@
 
 import { Network } from 'lucide-react';
 import { useState } from 'react';
+import { MenuPill } from '~/components/kits/menu-pill.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
 import { useAnyRate } from './links/any-rate.js';
 import { useFrontier } from './links/frontier-800gbe.js';
-import { MenuPill } from './parts/menu-pill.js';
+
+interface LinkMeta {
+  label: string;
+  hint: string;
+}
+
+const LINK_META: Record<string, LinkMeta> = {
+  anyRate: { label: 'any rate', hint: 'tune line rate; sweep against the clock' },
+  frontier: { label: 'IEEE frontier', hint: '802.3df / 802.3dj line rates' },
+};
 
 export function ThroughputMachine() {
   const anyRate = useAnyRate();
@@ -39,16 +49,20 @@ export function ThroughputMachine() {
           stretch from microseconds to years.
         </>
       }
-      menuZone={order.map((key) => (
-        <MenuPill
-          key={key}
-          active={key === activeKey}
-          onClick={() => setActiveKey(key)}
-          label={key}
-        >
-          {links[key].menuZone}
-        </MenuPill>
-      ))}
+      menuZone={order.map((key) => {
+        const meta = LINK_META[key];
+        return (
+          <MenuPill
+            key={key}
+            active={key === activeKey}
+            onClick={() => setActiveKey(key)}
+            label={meta?.label ?? key}
+            hint={meta?.hint}
+          >
+            {links[key].menuZone}
+          </MenuPill>
+        );
+      })}
       widgetZone={
         <WidgetLayout
           key={activeKey}

@@ -7,13 +7,26 @@
 
 import { Layers } from 'lucide-react';
 import { useState } from 'react';
+import { MenuPill } from '~/components/kits/menu-pill.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
-import { MenuPill } from './parts/menu-pill.js';
 import { useDrive } from './tiers/drive.js';
 import { useExbibytePrecision } from './tiers/exbibyte-precision.js';
 import { useFloppy } from './tiers/floppy.js';
 import { useMemory } from './tiers/memory.js';
 import { useServerArray } from './tiers/server-array.js';
+
+interface TierMeta {
+  label: string;
+  hint: string;
+}
+
+const TIER_META: Record<string, TierMeta> = {
+  drive: { label: 'drive', hint: 'GB label vs GiB on the OS' },
+  memory: { label: 'memory', hint: 'DDR sold in GiB, rates in GB' },
+  floppy: { label: 'floppy', hint: 'ten formats, three filesystems' },
+  serverArray: { label: 'server array', hint: 'TB / TiB at datacenter scale' },
+  exbibyte: { label: 'exbibyte', hint: 'where Float64 stops counting' },
+};
 
 export function ScaleMachine() {
   const drive = useDrive();
@@ -47,16 +60,20 @@ export function ScaleMachine() {
           unitforge moment: one conversion makes the weirdness legible.
         </>
       }
-      menuZone={order.map((key) => (
-        <MenuPill
-          key={key}
-          active={key === activeKey}
-          onClick={() => setActiveKey(key)}
-          label={key}
-        >
-          {tiers[key].menuZone}
-        </MenuPill>
-      ))}
+      menuZone={order.map((key) => {
+        const meta = TIER_META[key];
+        return (
+          <MenuPill
+            key={key}
+            active={key === activeKey}
+            onClick={() => setActiveKey(key)}
+            label={meta?.label ?? key}
+            hint={meta?.hint}
+          >
+            {tiers[key].menuZone}
+          </MenuPill>
+        );
+      })}
       widgetZone={
         <WidgetLayout
           key={activeKey}
