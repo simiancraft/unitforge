@@ -76,9 +76,11 @@ export function CoordinateMachine() {
       }
       introZone={
         <>
-          Drag the two points; the readouts update together. Distance is a scalar; midpoint and
-          polar form return objects (`{'{ x, y }'}` and `{'{ radius, angle }'}`). The polar →
-          cartesian round-trip below should match point A exactly within Float64 precision.
+          Drag the two points; the readouts update together. forge is not just scalar-to-scalar:
+          midpoint returns <code className="mono">{'{ x, y }'}</code>, polar form returns{' '}
+          <code className="mono">{'{ radius, angle }'}</code>, distance returns a scalar, all from
+          the same primitive. The polar → cartesian round-trip below should land back on point A
+          within Float64 precision.
         </>
       }
       widgetZone={

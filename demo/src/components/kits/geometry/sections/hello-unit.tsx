@@ -39,9 +39,9 @@ export function HelloUnit() {
       }
       introZone={
         <>
-          The smallest forge call: pick a value, pick its unit, pick a target unit, and read out the
-          conversion. Within-dimension overload: scalar in, scalar out, no{' '}
-          <code className="mono">via</code>.
+          Pick a value, pick its unit, pick a target unit, read the conversion. Within-dimension
+          overload: scalar in, scalar out, no <code className="mono">via</code>, no glue code, no
+          unit-system branching at the call site.
         </>
       }
       widgetZone={
@@ -62,8 +62,9 @@ export function HelloUnit() {
       }
       notesZone={
         <>
-          <code className="mono">forge(meter, foot)</code> returns a cached converter; the call
-          signature is the same for any pair of LENGTH units shipped by the kit.
+          <code className="mono">forge(meter, foot)</code> returns a cached converter; the same call
+          shape works for <code className="mono">forge(parsec, fathom)</code> or any other length
+          pairing the kit ships.
         </>
       }
     />
