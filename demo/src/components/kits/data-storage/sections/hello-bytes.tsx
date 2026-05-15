@@ -16,6 +16,7 @@ import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { findById } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import {
+  DATA_ALIAS_UNITS,
   DATA_ALL_UNITS,
   DATA_BINARY_UNITS,
   DATA_BIT_UNITS,
@@ -174,6 +175,7 @@ const READOUT_COLUMNS: readonly ReadoutColumn[] = [
   { family: 'decimal (SI)', units: DATA_DECIMAL_UNITS },
   { family: 'binary (IEC)', units: DATA_BINARY_UNITS },
   { family: 'bits', units: DATA_BIT_UNITS },
+  { family: 'aliases (RFC)', units: DATA_ALIAS_UNITS },
 ];
 
 // Digit-count threshold above which a value gets shrunk one font step.
@@ -185,7 +187,7 @@ const LONG_DIGIT_THRESHOLD = 11;
 
 function ReadoutMatrix({ inBytes }: { inBytes: number }) {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {READOUT_COLUMNS.map((col) => (
         <div key={col.family} className="flex flex-col gap-1">
           <span className="uf-eyebrow">{col.family}</span>
