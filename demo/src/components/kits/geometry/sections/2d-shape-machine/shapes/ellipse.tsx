@@ -16,7 +16,7 @@ import { ControlPanel } from '../parts/control-panel.js';
 
 const VIEW = 280;
 const PAD = 24;
-const MAX_VAL = 10;
+const MAX_VAL = 15;
 const MIN_VAL = 0.1;
 const SCALE = (VIEW / 2 - PAD) / MAX_VAL;
 

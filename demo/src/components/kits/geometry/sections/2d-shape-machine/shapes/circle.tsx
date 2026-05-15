@@ -33,7 +33,7 @@ import { buildCircleCode } from '../utils/code-builders.js';
 
 const VIEW = 280;
 const PAD = 24;
-const MAX_R = 10;
+const MAX_R = 15;
 const MIN_R = 0.1;
 const SCALE = (VIEW / 2 - PAD) / MAX_R;
 

@@ -25,7 +25,7 @@ import { buildRectangleCode } from '../utils/code-builders.js';
 const VIEW_W = 340;
 const VIEW_H = 260;
 const PAD = 28;
-const MAX_VAL = 10;
+const MAX_VAL = 15;
 const MIN_VAL = 0.1;
 const SCALE = Math.min((VIEW_W - PAD * 2) / MAX_VAL, (VIEW_H - PAD * 2) / MAX_VAL);
 

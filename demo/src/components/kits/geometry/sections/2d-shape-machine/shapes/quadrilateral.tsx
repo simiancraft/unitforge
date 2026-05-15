@@ -28,7 +28,7 @@ type Mode = 'trapezoid' | 'parallelogram' | 'rhombus' | 'kite';
 const VIEW_W = 320;
 const VIEW_H = 220;
 const PAD = 28;
-const MAX_VAL = 10;
+const MAX_VAL = 15;
 const MIN_VAL = 0.1;
 
 function safeCall<T>(fn: () => T): { ok: true; value: T } | { ok: false; error: string } {
