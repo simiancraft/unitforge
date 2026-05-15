@@ -36,8 +36,9 @@ export function ThreeDShapeMachine() {
       }
       introZone={
         <>
-          Babylon.js renders a live mesh per shape; sliders drive its dimensions and the volume is
-          re-emitted through the kit's volume derivations. Drag the canvas to orbit; scroll to zoom.
+          Drive a solid's dimensions in any LENGTH unit the kit ships; volume comes back in any
+          VOLUME unit you ask for, no manual cubing, no unit gymnastics. Cuboid, cube, sphere, and
+          cylinder all share the same call shape. Drag the canvas to orbit; scroll to zoom.
         </>
       }
       menuZone={order.map((key) => (

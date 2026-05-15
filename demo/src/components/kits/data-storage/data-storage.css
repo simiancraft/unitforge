@@ -21,6 +21,14 @@
   --uf-display: "JetBrains Mono", ui-monospace, monospace;
   --uf-trace: #c8881e;
   --uf-trace-faint: #c8881e22;
+
+  /* Cube-pair color tokens. The Babylon scenes read these via
+   * getComputedStyle at mount and pass them down to materials; Result
+   * rows reference them via bulletColor so the readout doubles as a
+   * legend keyed to the 3D objects.
+   */
+  --uf-cube-outer: #f97316;
+  --uf-cube-inner: #4a90e2;
 }
 
 /* Silkscreen / datasheet daylight: cream bg with PCB-green forest tones
@@ -39,6 +47,12 @@
   --uf-display: "JetBrains Mono", ui-monospace, monospace;
   --uf-trace: #7c8a36;
   --uf-trace-faint: #7c8a3622;
+
+  /* Deeper saturations so the cube pair holds contrast against the
+   * cream silkscreen background.
+   */
+  --uf-cube-outer: #b85a0a;
+  --uf-cube-inner: #2c5d8c;
 }
 
 /* Subtle phosphor scanline shimmer (dark only; light variant is a

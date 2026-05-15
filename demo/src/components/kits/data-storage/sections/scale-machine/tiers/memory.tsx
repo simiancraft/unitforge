@@ -1,18 +1,18 @@
-// RAM-module visualizer. Memory chips light in sequence as capacity scales;
-// each chip's status LED breathes when active. Slide the capacity and you
-// watch the DIMM "post". The staggered boot is pure CSS: each chip carries
-// a per-index `transition-delay`, so when the lit count jumps the browser
-// sequences the chips on its own. No effect, no state animation loop.
+// Memory tier of the scale machine. `useMemory` returns three ReactNodes:
+// the menu icon, the interactivity (animated DIMM SVG with sequenced
+// chip-boot LEDs), and the code template. Lifted from the original
+// RamStick section; chip-boot stagger is pure CSS transition-delay
+// (no JS animation loop).
 
 import { MemoryStick } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
 import { formatMagnitude } from '~/lib/format.js';
-import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
 const CHIPS = 8;
 const VIEW_W = 460;
@@ -28,7 +28,7 @@ const CHIP_W = (VIEW_W - 100) / CHIPS - 8;
 const CHIP_H = 52;
 const CHIP_Y = 40;
 
-export function RamStick() {
+export function useMemory() {
   const [gibValue, setGibValue] = useState(16);
 
   const inBytes = forge(gibibyte, byte)(gibValue);
@@ -36,80 +36,42 @@ export function RamStick() {
 
   const litCount = Math.min(CHIPS, Math.max(0, Math.round((gibValue / RAMSTICK_MAX_GIB) * CHIPS)));
 
-  return (
-    <SectionLayout
-      headerZone={
-        <SectionHeader
-          eyebrow="demo 04 · flair"
-          title="RAM stick"
-          kicker="memory you can light up"
-          iconZone={<MemoryStick size={28} strokeWidth={1.5} className="text-uf-accent" />}
-        />
-      }
-      introZone={
-        <>
-          Modern memory is sold in GiB; consumer drives use decimal GB. Move the slider and the
-          chips boot in sequence with their status LEDs glowing. Same capacity, two unit families.
-        </>
-      }
-      widgetZone={
-        <WidgetLayout
-          interactionZone={
-            <RamStickWidget
-              gibValue={gibValue}
-              inBytes={inBytes}
-              inGB={inGB}
-              litCount={litCount}
-              onGibValueChange={setGibValue}
+  return {
+    menuZone: <MemoryIcon />,
+    interactivityZone: (
+      <ControlPanel
+        visualZone={<RamStickVisual litCount={litCount} />}
+        controlsZone={
+          <Slider
+            label={`capacity (${gibibyte.symbol})`}
+            value={gibValue}
+            min={1}
+            max={RAMSTICK_MAX_GIB}
+            step={1}
+            onChange={setGibValue}
+            suffix={gibibyte.symbol}
+          />
+        }
+        resultsZone={
+          <>
+            <Result
+              label="same value (decimal)"
+              value={`${inGB.toFixed(3)} ${gigabyte.symbol}`}
+              variant="hero"
             />
-          }
-          codeZone={<CodeBlock code={buildCode(gibValue, inGB, inBytes)} />}
-        />
-      }
-    />
-  );
-}
-
-interface RamStickWidgetProps {
-  gibValue: number;
-  inBytes: number;
-  inGB: number;
-  litCount: number;
-  onGibValueChange: (next: number) => void;
-}
-
-function RamStickWidget({
-  gibValue,
-  inBytes,
-  inGB,
-  litCount,
-  onGibValueChange,
-}: RamStickWidgetProps) {
-  return (
-    <div className="flex flex-col gap-4">
-      <RamStickVisual litCount={litCount} />
-
-      <Slider
-        label={`capacity (${gibibyte.symbol})`}
-        value={gibValue}
-        min={1}
-        max={RAMSTICK_MAX_GIB}
-        step={1}
-        onChange={onGibValueChange}
-        suffix={gibibyte.symbol}
+            <Result label="raw bytes" value={`${formatMagnitude(inBytes)} ${byte.symbol}`} />
+          </>
+        }
       />
-      <Result label="same value" value={`${inGB.toFixed(3)} ${gigabyte.symbol}`} />
-      <Result label="raw bytes" value={`${formatMagnitude(inBytes)} ${byte.symbol}`} />
-    </div>
-  );
+    ),
+    codeZone: <CodeBlock code={buildCode(gibValue, inGB, inBytes)} />,
+  };
 }
 
-// RAM stick visualizer. Named Organ: the DIMM with chips + status LEDs +
-// SPD chip + edge connector is one cohesive named artifact. Sink: takes
-// the lit-chip count and renders. Per-chip transitionDelay (i * STAGGER_MS)
-// sequences the boot animation without any React state — chip 0 lights at
-// 0 ms, chip 1 at 65 ms, ..., chip 7 at 455 ms. Going down works the same
-// way; chips fade out in their own ordered delays.
+function MemoryIcon() {
+  return <MemoryStick size={22} strokeWidth={1.6} />;
+}
+
 interface RamStickVisualProps {
   litCount: number;
 }
@@ -228,11 +190,9 @@ function RamStickVisual({ litCount }: RamStickVisualProps) {
 
 function buildCode(gib: number, decimalGB: number, bytes: number): string {
   return `import { forge } from 'unitforge';
-import {
-  byte, gigabyte, gibibyte,
-} from 'unitforge/kits/data-storage';
+import { byte, gigabyte, gibibyte } from 'unitforge/kits/data-storage';
 
-const inDecimalGB = forge(gibibyte, gigabyte)(${formatMagnitude(gib)}); // ${formatMagnitude(decimalGB)}
-const bytes = forge(gibibyte, byte)(${formatMagnitude(gib)}); // ${formatMagnitude(bytes)}
+forge(gibibyte, gigabyte)(${formatMagnitude(gib)}); // ${formatMagnitude(decimalGB)}
+forge(gibibyte, byte)(${formatMagnitude(gib)}); // ${formatMagnitude(bytes)}
 `;
 }

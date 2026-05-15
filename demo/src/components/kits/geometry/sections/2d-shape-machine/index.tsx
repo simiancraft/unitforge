@@ -65,9 +65,10 @@ export function TwoDShapeMachine() {
       }
       introZone={
         <>
-          Pick a shape from the menu; the panel below swaps interaction + code for that shape's full
-          family of derivations. State stays alive when you switch shapes (the hooks compose at the
-          chassis), so you can compare your work across shapes without resetting.
+          Every closed planar figure ships with a family of derivations: a triangle solves three
+          ways, a circle exposes sector, segment, annulus, and arc length, a quadrilateral splits
+          into trapezoid, parallelogram, rhombus, and kite. Pick a shape from the menu; the panel
+          below shows the call you would actually write.
         </>
       }
       menuZone={order.map((key) => (

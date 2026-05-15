@@ -65,13 +65,13 @@ export function GeometryScreen() {
           <p className="uf-eyebrow">kit · 01</p>
           <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">geometry</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-uf-muted">
-            Length, area, volume, and angle; metric, imperial, marine, and astronomy. The 2D shape
-            machine swaps interaction across rectangle, square, triangle (SAS / Heron /
-            equilateral), quadrilateral (trapezoid / parallelogram / rhombus / kite), circle (with
-            sector, segment, annulus, arc length), ellipse, and regular polygon. The 3D shape
-            machine renders cuboid, cube, sphere, and cylinder through Babylon. The coordinate
-            machine showcases forge's multi-output object form via distance / midpoint / cartesian ↔
-            polar. Watch the engineering paper retick as you change units on the bench below.
+            Length, area, volume, and angle, across metric, imperial, marine, and astronomy units;
+            one call shape for every conversion. Derive every member of the rectangle, square,
+            triangle (SAS, Heron, equilateral), quadrilateral (trapezoid, parallelogram, rhombus,
+            kite), circle (sector, segment, annulus, arc length), ellipse, and regular-polygon
+            families. Get volume out of any cuboid, cube, sphere, or cylinder in any unit you ask
+            for, no manual cubing. Round-trip cartesian and polar through forge's multi-output
+            object form. Change units on the bench below; the engineering paper reticks to match.
           </p>
         </header>
       }

@@ -16,6 +16,7 @@ import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { findById } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import {
+  DATA_ALIAS_UNITS,
   DATA_ALL_UNITS,
   DATA_BINARY_UNITS,
   DATA_BIT_UNITS,
@@ -90,9 +91,10 @@ export function HelloBytes() {
       }
       introZone={
         <>
-          Pick a number and a unit; every other byte and bit unit renders side by side. Decimal and
-          binary columns sit next to each other so the gap between (say) GB and GiB is visible at a
-          glance.
+          One quantity, expressed in every byte and bit unit at once. The decimal column drifts away
+          from the binary column as you climb the ladder; the gap is right there in the readout. The
+          same number is also an octet count by RFC convention and a stack of bits eight times
+          taller.
         </>
       }
       widgetZone={
@@ -174,6 +176,7 @@ const READOUT_COLUMNS: readonly ReadoutColumn[] = [
   { family: 'decimal (SI)', units: DATA_DECIMAL_UNITS },
   { family: 'binary (IEC)', units: DATA_BINARY_UNITS },
   { family: 'bits', units: DATA_BIT_UNITS },
+  { family: 'aliases (RFC)', units: DATA_ALIAS_UNITS },
 ];
 
 // Digit-count threshold above which a value gets shrunk one font step.
@@ -185,7 +188,7 @@ const LONG_DIGIT_THRESHOLD = 11;
 
 function ReadoutMatrix({ inBytes }: { inBytes: number }) {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {READOUT_COLUMNS.map((col) => (
         <div key={col.family} className="flex flex-col gap-1">
           <span className="uf-eyebrow">{col.family}</span>

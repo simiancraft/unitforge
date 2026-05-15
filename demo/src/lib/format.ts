@@ -27,3 +27,39 @@ export function formatMagnitude(n: number): string {
 export function toJsName(id: string): string {
   return id.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 }
+
+/**
+ * Render a raw byte count at the most legible SI-decimal ladder rung
+ * (B, kB, MB, GB, TB, PB, EB, ZB, YB). Picks the largest rung whose
+ * value is ≤ the input, then formats to 2-3 significant figures.
+ * Generic across kits; consumers anywhere needing a human-readable
+ * byte size should reach for this instead of hand-rolling a ladder
+ * lookup. For per-instance unit conversion (forge into a specific
+ * unit) use `forge` directly.
+ */
+const BYTE_LADDER: ReadonlyArray<readonly [number, string]> = [
+  [1, 'B'],
+  [1e3, 'kB'],
+  [1e6, 'MB'],
+  [1e9, 'GB'],
+  [1e12, 'TB'],
+  [1e15, 'PB'],
+  [1e18, 'EB'],
+  [1e21, 'ZB'],
+  [1e24, 'YB'],
+];
+
+export function formatBytesShort(bytes: number): string {
+  let scale = 1;
+  let symbol = 'B';
+  for (const [rung, sym] of BYTE_LADDER) {
+    if (bytes >= rung) {
+      scale = rung;
+      symbol = sym;
+    }
+  }
+  const scaled = bytes / scale;
+  if (scaled >= 100) return `${scaled.toFixed(0)} ${symbol}`;
+  if (scaled >= 10) return `${scaled.toFixed(1)} ${symbol}`;
+  return `${scaled.toFixed(2)} ${symbol}`;
+}
