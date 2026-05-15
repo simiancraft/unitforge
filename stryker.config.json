@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "command",
+  "commandRunner": {
+    "command": "bun test"
+  },
+  "mutate": [
+    "src/forge.ts",
+    "src/define.ts",
+    "src/lib/memoize.ts",
+    "src/lib/validation.ts",
+    "src/lib/safeCopy.ts",
+    "src/lib/math.ts"
+  ],
+  "reporters": ["html", "clear-text", "progress"],
+  "thresholds": {
+    "high": 90,
+    "low": 80,
+    "break": 75
+  },
+  "timeoutMS": 60000,
+  "concurrency": 4,
+  "incremental": true,
+  "incrementalFile": ".stryker-tmp/incremental.json"
+}
