@@ -21,7 +21,7 @@ import { Result } from '~/components/ui/result.js';
 import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { cn } from '~/lib/cn.js';
 import { formatBytesShort, formatMagnitude, toJsName } from '~/lib/format.js';
-import { type Anchor, ANCHOR_UNITS, findAnchorById } from '../parts/anchors.js';
+import { ANCHOR_UNITS, type Anchor, findAnchorById } from '../parts/anchors.js';
 import { BabylonFill, MAX_VISIBLE } from '../parts/babylon-fill.js';
 
 const DEFAULT_OUTER = 'library-of-congress';

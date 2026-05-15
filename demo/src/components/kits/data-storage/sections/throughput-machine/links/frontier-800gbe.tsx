@@ -11,9 +11,9 @@ import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, gibibyte, gigabit, gigabyte } from 'unitforge/kits/data-storage';
 import { ChipRow } from '~/components/kits/chip-row.js';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
-import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 type RateId = '200g' | '400g' | '800g' | '1600g';
 type TargetId = 'ssd' | 'drive' | 'rack' | 'archive' | 'cluster';
@@ -89,11 +89,15 @@ const RATE_OPTIONS = RATES.map((r) => ({ id: r.id, short: r.short }));
 const TARGET_OPTIONS = TARGETS.map((t) => ({ id: t.id, short: t.short }));
 
 function findRate(id: RateId): RateSpec {
-  return RATES.find((r) => r.id === id) ?? RATES[0]!;
+  const found = RATES.find((r) => r.id === id);
+  if (!found) throw new Error(`unknown IEEE rate: ${id}`);
+  return found;
 }
 
 function findTarget(id: TargetId): DrainTarget {
-  return TARGETS.find((t) => t.id === id) ?? TARGETS[0]!;
+  const found = TARGETS.find((t) => t.id === id);
+  if (!found) throw new Error(`unknown drain target: ${id}`);
+  return found;
 }
 
 export function useFrontier() {
@@ -139,10 +143,7 @@ export function useFrontier() {
               variant="hero"
             />
             <Result label="line rate" value={`${rate.gbits} Gbit/s · ${rate.lanes}`} />
-            <Result
-              label={`time to drain ${target.long}`}
-              value={formatDuration(drainSeconds)}
-            />
+            <Result label={`time to drain ${target.long}`} value={formatDuration(drainSeconds)} />
             <Result
               label="bit-to-byte forge"
               value={`forge(gigabit, gigabyte)(${rate.gbits}) = ${gbPerSec} (exact)`}
@@ -184,9 +185,7 @@ function FrontierVisual({ rate }: { rate: RateSpec }) {
         <code className="rounded bg-uf-code-bg px-1 py-[1px] text-uf-fg">
           forge(gigabit, gigabyte)({rate.gbits})
         </code>{' '}
-        ={' '}
-        <span className="text-uf-accent">{forge(gigabit, gigabyte)(rate.gbits)}</span>{' '}
-        exactly.
+        = <span className="text-uf-accent">{forge(gigabit, gigabyte)(rate.gbits)}</span> exactly.
       </div>
     </div>
   );

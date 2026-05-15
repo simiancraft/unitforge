@@ -50,8 +50,7 @@ export function BabylonFill({ drawnCount, ariaLabel }: BabylonFillProps) {
   const outerMeshRef = useRef<Mesh | null>(null);
   const innerProtoRef = useRef<Mesh | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: engine
-  // lifecycle is a genuine mount-once side effect.
+  // Engine lifecycle is a genuine mount-once side effect.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;

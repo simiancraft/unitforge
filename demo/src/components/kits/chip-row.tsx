@@ -9,7 +9,15 @@
 // the eyebrow sits on the row's left edge with a fixed width so two
 // stacked ChipRows align their chip columns; the label drops above
 // the chips at sub-tablet widths.
+//
+// Each chip is a `<label>` wrapping a visually-hidden `<input
+// type="radio">` so native radio semantics carry through (arrow-key
+// navigation, screen-reader group/checked announcements, label↔input
+// association). The visible chip chrome lives on the label and reads
+// the active flag from the parent's state, not from a CSS sibling
+// selector — simpler and avoids relying on `:has`.
 
+import { useId } from 'react';
 import { cn } from '~/lib/cn.js';
 
 interface ChipOption {
@@ -33,21 +41,26 @@ interface ChipRowProps {
    */
   label?: string;
   /**
-   * Required when `label` is set. Names the radio group for screen
-   * readers; not rendered visually.
+   * Required when `label` is unset; otherwise optional. Names the
+   * radio group for screen readers; not rendered visually.
    */
   ariaLabel?: string;
 }
 
 export function ChipRow({ value, options, onChange, label, ariaLabel }: ChipRowProps) {
+  // Stable group name for native radio coupling. React's useId is
+  // SSR-safe and unique per mount.
+  const groupName = useId();
   const chips = (
-    <div
-      className="flex flex-wrap gap-1.5"
-      role="radiogroup"
-      aria-label={ariaLabel ?? label}
-    >
+    <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={ariaLabel ?? label}>
       {options.map((o) => (
-        <Chip key={o.id} option={o} active={o.id === value} onSelect={onChange} />
+        <Chip
+          key={o.id}
+          option={o}
+          active={o.id === value}
+          groupName={groupName}
+          onSelect={onChange}
+        />
       ))}
     </div>
   );
@@ -66,24 +79,29 @@ export function ChipRow({ value, options, onChange, label, ariaLabel }: ChipRowP
 interface ChipProps {
   option: ChipOption;
   active: boolean;
+  groupName: string;
   onSelect: (id: string) => void;
 }
 
-function Chip({ option, active, onSelect }: ChipProps) {
+function Chip({ option, active, groupName, onSelect }: ChipProps) {
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={active}
-      onClick={() => onSelect(option.id)}
+    <label
       className={cn(
-        'rounded border px-2.5 py-1 text-[11px] mono transition focus:outline-none focus-visible:ring-1 focus-visible:ring-uf-accent',
+        'rounded border px-2.5 py-1 text-[11px] mono transition cursor-pointer focus-within:ring-1 focus-within:ring-uf-accent',
         active
           ? 'border-uf-accent bg-uf-accent/20 text-uf-accent shadow-[inset_0_0_0_1px_var(--uf-accent)]'
           : 'border-uf-fg/15 bg-transparent text-uf-fg hover:border-uf-accent/50',
       )}
     >
+      <input
+        type="radio"
+        name={groupName}
+        value={option.id}
+        checked={active}
+        onChange={() => onSelect(option.id)}
+        className="sr-only"
+      />
       {option.short}
-    </button>
+    </label>
   );
 }

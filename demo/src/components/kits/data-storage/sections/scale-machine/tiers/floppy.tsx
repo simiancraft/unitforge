@@ -9,9 +9,9 @@ import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, kibibyte, mebibyte, megabyte } from 'unitforge/kits/data-storage';
 import { ChipRow } from '~/components/kits/chip-row.js';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
-import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 type Media = '8' | '5.25' | '3.5';
 type Variant = 'dos' | 'acorn' | 'amiga' | null;
@@ -126,7 +126,9 @@ const FORMATS: readonly FloppyFormat[] = [
 const DEFAULT_FORMAT_ID = '35-hd-ms';
 
 function findFormat(id: string): FloppyFormat {
-  return FORMATS.find((f) => f.id === id) ?? FORMATS[0]!;
+  const found = FORMATS.find((f) => f.id === id);
+  if (!found) throw new Error(`unknown floppy format: ${id}`);
+  return found;
 }
 
 function variantLabel(v: Variant): string {
@@ -169,10 +171,7 @@ export function useFloppy() {
             <Result label="caption" value={fmt.caption} />
             <Result label="bytes" value={`${fmt.bytes.toLocaleString()} B`} />
             <Result label="in kibibytes (1024 B)" value={`${inKiB.toLocaleString()} KiB`} />
-            <Result
-              label="in true megabytes (10⁶ B)"
-              value={`${inMB.toFixed(6)} MB`}
-            />
+            <Result label="in true megabytes (10⁶ B)" value={`${inMB.toFixed(6)} MB`} />
             <Result label="in mebibytes (2²⁰ B)" value={`${inMiB.toFixed(6)} MiB`} />
           </>
         }
@@ -225,15 +224,36 @@ function EightInchSvg({ fmt }: { fmt: FloppyFormat }) {
         stroke="var(--uf-trace)"
         strokeOpacity="0.7"
       />
-      <circle cx="120" cy="130" r="36" fill="var(--uf-bg)" stroke="var(--uf-trace)" strokeOpacity="0.55" />
-      <circle cx="120" cy="130" r="10" fill="var(--uf-card)" stroke="var(--uf-trace)" strokeOpacity="0.6" />
+      <circle
+        cx="120"
+        cy="130"
+        r="36"
+        fill="var(--uf-bg)"
+        stroke="var(--uf-trace)"
+        strokeOpacity="0.55"
+      />
+      <circle
+        cx="120"
+        cy="130"
+        r="10"
+        fill="var(--uf-card)"
+        stroke="var(--uf-trace)"
+        strokeOpacity="0.6"
+      />
       <path
         d="M 84 158 L 120 200 L 156 158 Z"
         fill="var(--uf-bg)"
         stroke="var(--uf-trace)"
         strokeOpacity="0.45"
       />
-      <text x="120" y="50" textAnchor="middle" className="mono" fontSize="11" fill="var(--uf-muted)">
+      <text
+        x="120"
+        y="50"
+        textAnchor="middle"
+        className="mono"
+        fontSize="11"
+        fill="var(--uf-muted)"
+      >
         8" DISKETTE
       </text>
       <text
@@ -280,15 +300,36 @@ function FiveTwentyFiveSvg({ fmt }: { fmt: FloppyFormat }) {
         stroke="var(--uf-trace)"
         strokeOpacity="0.7"
       />
-      <circle cx="120" cy="140" r="28" fill="var(--uf-bg)" stroke="var(--uf-trace)" strokeOpacity="0.5" />
-      <circle cx="120" cy="140" r="9" fill="var(--uf-card)" stroke="var(--uf-trace)" strokeOpacity="0.6" />
+      <circle
+        cx="120"
+        cy="140"
+        r="28"
+        fill="var(--uf-bg)"
+        stroke="var(--uf-trace)"
+        strokeOpacity="0.5"
+      />
+      <circle
+        cx="120"
+        cy="140"
+        r="9"
+        fill="var(--uf-card)"
+        stroke="var(--uf-trace)"
+        strokeOpacity="0.6"
+      />
       <path
         d="M 96 162 L 120 198 L 144 162 Z"
         fill="var(--uf-bg)"
         stroke="var(--uf-trace)"
         strokeOpacity="0.4"
       />
-      <text x="120" y="58" textAnchor="middle" className="mono" fontSize="11" fill="var(--uf-muted)">
+      <text
+        x="120"
+        y="58"
+        textAnchor="middle"
+        className="mono"
+        fontSize="11"
+        fill="var(--uf-muted)"
+      >
         5.25" DISKETTE
       </text>
       <text
@@ -303,7 +344,14 @@ function FiveTwentyFiveSvg({ fmt }: { fmt: FloppyFormat }) {
         {capacityLabel(fmt.bytes)}
       </text>
       {fmt.variant ? (
-        <text x="120" y="108" textAnchor="middle" className="mono" fontSize="9" fill="var(--uf-muted)">
+        <text
+          x="120"
+          y="108"
+          textAnchor="middle"
+          className="mono"
+          fontSize="9"
+          fill="var(--uf-muted)"
+        >
           {variantLabel(fmt.variant)}
         </text>
       ) : null}
@@ -371,7 +419,14 @@ function ThreeFiveSvg({ fmt }: { fmt: FloppyFormat }) {
         stroke="var(--uf-trace)"
         strokeOpacity="0.65"
       />
-      <text x="120" y="104" textAnchor="middle" className="mono" fontSize="10" fill="var(--uf-muted)">
+      <text
+        x="120"
+        y="104"
+        textAnchor="middle"
+        className="mono"
+        fontSize="10"
+        fill="var(--uf-muted)"
+      >
         3.5" {fmt.short.includes('HD') ? 'HD' : 'DD'} DISKETTE
       </text>
       <text
@@ -386,7 +441,14 @@ function ThreeFiveSvg({ fmt }: { fmt: FloppyFormat }) {
         {capacityLabel(fmt.bytes)}
       </text>
       {fmt.variant ? (
-        <text x="120" y="152" textAnchor="middle" className="mono" fontSize="9" fill="var(--uf-muted)">
+        <text
+          x="120"
+          y="152"
+          textAnchor="middle"
+          className="mono"
+          fontSize="9"
+          fill="var(--uf-muted)"
+        >
           {variantLabel(fmt.variant)}
         </text>
       ) : null}

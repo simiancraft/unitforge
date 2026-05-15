@@ -7,10 +7,10 @@ import { Server } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, pebibyte, petabyte, tebibyte, terabyte } from 'unitforge/kits/data-storage';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
-import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 const RACK_DRIVES = 24;
 const DRIVE_SLOTS = Array.from({ length: RACK_DRIVES }, (_, i) => ({ id: `drive-${i}` }));

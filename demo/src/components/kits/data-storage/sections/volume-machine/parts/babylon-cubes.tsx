@@ -48,9 +48,8 @@ export function BabylonCubes({ binaryEdgeRatio }: BabylonCubesProps) {
   const ratioRef = useRef(binaryEdgeRatio);
   ratioRef.current = binaryEdgeRatio;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: engine
-  // lifecycle is a genuine mount-once side effect; binaryEdgeRatio is
-  // intentionally read via ref for the initial scaling, then driven by
+  // Engine lifecycle is a genuine mount-once side effect; binaryEdgeRatio
+  // is intentionally read via ref for the initial scaling, then driven by
   // the second useEffect for subsequent updates.
   useEffect(() => {
     const canvas = canvasRef.current;

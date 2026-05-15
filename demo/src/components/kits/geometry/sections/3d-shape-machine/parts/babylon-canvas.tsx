@@ -66,7 +66,6 @@ export function BabylonCanvas({ init }: BabylonCanvasProps) {
   // WebGL render loop + camera + window-resize listener), not a
   // user-action side effect. Engine creation must happen on mount and
   // disposal on unmount; we can't move this into a handler.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;

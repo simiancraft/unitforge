@@ -11,7 +11,7 @@
 // absent) lives in two private mini-chassis (PopoverSlot, HintLine)
 // that flat-return null when their state hasn't fired.
 
-import { useId, useState, type ReactNode } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { cn } from '~/lib/cn.js';
 
 type Placement = 'top' | 'bottom';
@@ -60,13 +60,7 @@ export function MenuPill({
       >
         {children}
       </button>
-      <PopoverSlot
-        open={open}
-        id={tooltipId}
-        label={label}
-        hint={hint}
-        placement={placement}
-      />
+      <PopoverSlot open={open} id={tooltipId} label={label} hint={hint} placement={placement} />
     </div>
   );
 }

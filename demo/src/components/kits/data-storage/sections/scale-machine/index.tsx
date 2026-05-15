@@ -54,10 +54,10 @@ export function ScaleMachine() {
       }
       introZone={
         <>
-          Retread floppy history across a decade of incompatible marketing labels. Cross the
-          GB/GiB chasm on a drive whose label disagrees with the OS. Find the magnitude at which
-          Float64 itself stops being able to count individual bytes. Different tiers, same kind of
-          unitforge moment: one conversion makes the weirdness legible.
+          Retread floppy history across a decade of incompatible marketing labels. Cross the GB/GiB
+          chasm on a drive whose label disagrees with the OS. Find the magnitude at which Float64
+          itself stops being able to count individual bytes. Different tiers, same kind of unitforge
+          moment: one conversion makes the weirdness legible.
         </>
       }
       menuZone={order.map((key) => {

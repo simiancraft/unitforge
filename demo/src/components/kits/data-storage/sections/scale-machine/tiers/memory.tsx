@@ -8,11 +8,11 @@ import { MemoryStick } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
 import { formatMagnitude } from '~/lib/format.js';
-import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 const CHIPS = 8;
 const VIEW_W = 460;
