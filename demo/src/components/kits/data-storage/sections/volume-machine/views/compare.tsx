@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { UnitPicker } from '~/components/ui/unit-picker.js';
+import { cn } from '~/lib/cn.js';
 import { formatBytesShort, formatMagnitude, toJsName } from '~/lib/format.js';
 import { type Anchor, ANCHOR_UNITS, findAnchorById } from '../parts/anchors.js';
 import { BabylonFill, MAX_VISIBLE } from '../parts/babylon-fill.js';
@@ -95,7 +96,7 @@ export function useCompare() {
             label={`${inner.unit.symbol} per ${outer.unit.symbol}`}
             value={heroValue}
             variant="hero"
-            valueClassName={trueN >= 1e6 ? 'text-lg leading-snug' : undefined}
+            valueClassName={cn(trueN >= 1e6 && 'text-lg leading-snug')}
           />
           {isGrouped ? (
             <Result
