@@ -171,8 +171,8 @@ interface ChipRowProps {
 
 function ChipRow({ label, ariaLabel, value, options, onChange }: ChipRowProps) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="uf-eyebrow">{label}</span>
+    <div className="sm:col-span-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <span className="uf-eyebrow shrink-0 w-28 leading-tight">{label}</span>
       <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={ariaLabel}>
         {options.map((o) => {
           const active = o.id === value;
@@ -184,9 +184,9 @@ function ChipRow({ label, ariaLabel, value, options, onChange }: ChipRowProps) {
               aria-checked={active}
               onClick={() => onChange(o.id)}
               className={cn(
-                'rounded border px-2 py-1 text-[11px] mono transition focus:outline-none focus-visible:ring-1 focus-visible:ring-uf-accent',
+                'rounded border px-2.5 py-1 text-[11px] mono transition focus:outline-none focus-visible:ring-1 focus-visible:ring-uf-accent',
                 active
-                  ? 'border-uf-accent bg-uf-accent/15 text-uf-accent'
+                  ? 'border-uf-accent bg-uf-accent/20 text-uf-accent shadow-[inset_0_0_0_1px_var(--uf-accent)]'
                   : 'border-uf-fg/15 bg-transparent text-uf-fg hover:border-uf-accent/50',
               )}
             >
