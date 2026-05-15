@@ -1,9 +1,10 @@
-// Volume machine. Standalone surface (no menu): a tier slider scrubs
-// through 8 decimal:binary unit pairs (kilo through yotta). The Babylon
-// scene shows the decimal cube (opaque) nested inside the binary cube
-// (translucent shell); the shell's thickness IS the gap, growing from
-// a sliver at kilo to a visible layer at yotta. Color-coded Result rows
-// match the cube colors so the readout doubles as a legend.
+// Volume machine. Two widgets stacked: the flagship compare widget
+// (pick two anchor units; thin-instanced inner cubes fill the outer
+// cube) and the original tier-scrub (decimal vs binary at every prefix,
+// shell-thickness rendering). Both share the same translucent-outer
+// + opaque-inner visual idiom and the same --uf-cube-{outer,inner}
+// color tokens, so the readout rows double as a legend across both
+// widgets.
 
 import { Box } from 'lucide-react';
 import { useState } from 'react';
@@ -31,6 +32,7 @@ import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
 import { BabylonCubes } from './parts/babylon-cubes.js';
+import { CompareWidget } from './parts/compare-widget.js';
 
 interface Pair {
   label: string;
@@ -56,19 +58,6 @@ function ratioFor(pair: Pair): number {
 }
 
 export function VolumeMachine() {
-  const [tierIndex, setTierIndex] = useState(2); // default: giga
-  // Clamp the index; the slider's min/max are wired to PAIRS bounds, so
-  // the OR-fallback is dead code in practice but satisfies TypeScript's
-  // noUncheckedIndexedAccess without a non-null assertion.
-  const safeIndex = Math.max(0, Math.min(PAIRS.length - 1, Math.round(tierIndex)));
-  const pair: Pair = PAIRS[safeIndex] ??
-    PAIRS[0] ?? { label: 'kilo', decimal: kilobyte, binary: kibibyte };
-  const ratio = ratioFor(pair);
-  // Edge-length ratio for the binary cube is the cube root of the
-  // byte-count ratio; volume scales as edge^3.
-  const edgeRatio = Math.cbrt(ratio);
-  const percentBigger = (ratio - 1) * 100;
-
   return (
     <SectionLayout
       headerZone={
@@ -81,57 +70,93 @@ export function VolumeMachine() {
       }
       introZone={
         <>
-          The decimal-vs-binary gap is also literal volumetric difference. The decimal cube sits
-          opaque at the center; the binary cube wraps it as a translucent shell. The shell's
-          thickness is the gap. Scrub the tier slider from kilo to yotta and watch a 2.4% ratio
-          grow into 20.9% as the shell thickens. Drag the canvas to orbit; the camera auto-rotates
-          after a moment of idle.
+          Pack any anchor with copies of another and watch the count roll up; floppies inside a
+          Wikipedia, Wikipedias inside a Library of Congress, LoCs inside the global datasphere.
+          Or scrub the decimal/binary ladder and see the same gap grow shell-thick from kilo to
+          yotta. Drag either canvas to orbit; the camera auto-rotates after a moment of idle.
         </>
       }
       widgetZone={
-        <WidgetLayout
-          interactionZone={
-            <div className="flex flex-col gap-4">
-              <BabylonCubes binaryEdgeRatio={edgeRatio} />
-              <Slider
-                label={`tier · ${pair.label} (${pair.decimal.symbol} vs ${pair.binary.symbol})`}
-                value={tierIndex}
-                min={0}
-                max={PAIRS.length - 1}
-                step={1}
-                onChange={(v) => setTierIndex(Math.round(v))}
-              />
-              <div className="flex flex-col gap-2">
-                <Result
-                  label={`${pair.binary.symbol} / ${pair.decimal.symbol} ratio`}
-                  value={`${ratio.toFixed(4)} (${percentBigger.toFixed(2)}% bigger)`}
-                  variant="hero"
-                />
-                <Result
-                  label={`1 ${pair.decimal.symbol} in bytes (inner cube)`}
-                  value={pair.decimal.toBase(1).toExponential(3)}
-                  bulletColor="var(--uf-cube-inner)"
-                />
-                <Result
-                  label={`1 ${pair.binary.symbol} in bytes (outer shell)`}
-                  value={pair.binary.toBase(1).toExponential(3)}
-                  bulletColor="var(--uf-cube-outer)"
-                />
-                <Result
-                  label="byte gap"
-                  value={`${(pair.binary.toBase(1) - pair.decimal.toBase(1)).toExponential(3)}`}
-                />
-                <Result
-                  label="outer-cube edge"
-                  value={`${edgeRatio.toFixed(4)}× the inner cube`}
-                  bulletColor="var(--uf-cube-outer)"
-                />
-              </div>
-            </div>
-          }
-          codeZone={<CodeBlock code={buildCode(pair, ratio)} />}
-        />
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-2">
+            <SubHeading
+              eyebrow="compare"
+              hint="pack one anchor with another; every cube is a defineUnit call"
+            />
+            <CompareWidget />
+          </div>
+          <div className="flex flex-col gap-2">
+            <SubHeading
+              eyebrow="scrub"
+              hint="the decimal-vs-binary gap as a shell, every prefix on the ladder"
+            />
+            <TierScrubBody />
+          </div>
+        </div>
       }
+    />
+  );
+}
+
+function SubHeading({ eyebrow, hint }: { eyebrow: string; hint: string }) {
+  return (
+    <div className="flex items-baseline gap-3 border-b border-uf-border/60 pb-1">
+      <span className="uf-eyebrow text-uf-accent">{eyebrow}</span>
+      <span className="text-xs text-uf-muted">{hint}</span>
+    </div>
+  );
+}
+
+function TierScrubBody() {
+  const [tierIndex, setTierIndex] = useState(2);
+  const safeIndex = Math.max(0, Math.min(PAIRS.length - 1, Math.round(tierIndex)));
+  const pair: Pair = PAIRS[safeIndex] ??
+    PAIRS[0] ?? { label: 'kilo', decimal: kilobyte, binary: kibibyte };
+  const ratio = ratioFor(pair);
+  const edgeRatio = Math.cbrt(ratio);
+  const percentBigger = (ratio - 1) * 100;
+  return (
+    <WidgetLayout
+      interactionZone={
+        <div className="flex flex-col gap-4">
+          <BabylonCubes binaryEdgeRatio={edgeRatio} />
+          <Slider
+            label={`tier · ${pair.label} (${pair.decimal.symbol} vs ${pair.binary.symbol})`}
+            value={tierIndex}
+            min={0}
+            max={PAIRS.length - 1}
+            step={1}
+            onChange={(v) => setTierIndex(Math.round(v))}
+          />
+          <div className="flex flex-col gap-2">
+            <Result
+              label={`${pair.binary.symbol} / ${pair.decimal.symbol} ratio`}
+              value={`${ratio.toFixed(4)} (${percentBigger.toFixed(2)}% bigger)`}
+              variant="hero"
+            />
+            <Result
+              label={`1 ${pair.decimal.symbol} in bytes (inner cube)`}
+              value={pair.decimal.toBase(1).toExponential(3)}
+              bulletColor="var(--uf-cube-inner)"
+            />
+            <Result
+              label={`1 ${pair.binary.symbol} in bytes (outer shell)`}
+              value={pair.binary.toBase(1).toExponential(3)}
+              bulletColor="var(--uf-cube-outer)"
+            />
+            <Result
+              label="byte gap"
+              value={`${(pair.binary.toBase(1) - pair.decimal.toBase(1)).toExponential(3)}`}
+            />
+            <Result
+              label="outer-cube edge"
+              value={`${edgeRatio.toFixed(4)}× the inner cube`}
+              bulletColor="var(--uf-cube-outer)"
+            />
+          </div>
+        </div>
+      }
+      codeZone={<CodeBlock code={buildCode(pair, ratio)} />}
     />
   );
 }
