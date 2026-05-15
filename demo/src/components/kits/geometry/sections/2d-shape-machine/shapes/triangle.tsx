@@ -31,7 +31,7 @@ type Mode = 'sas' | 'sss' | 'equilateral';
 const VIEW_W = 320;
 const VIEW_H = 240;
 const PAD = 28;
-const MAX_VAL = 10;
+const MAX_VAL = 15;
 const MIN_VAL = 0.1;
 
 function safeCall<T>(fn: () => T): { ok: true; value: T } | { ok: false; error: string } {
@@ -338,9 +338,11 @@ function TriangleVisual({
   const cy = VIEW_H - PAD;
   const scale = (VIEW_H - PAD * 2) / MAX_VAL;
 
-  let p1 = { x: cx - 30, y: cy };
-  let p2 = { x: cx + 30, y: cy };
-  let p3 = { x: cx, y: cy - 60 };
+  // Declared without initializers because every branch below assigns
+  // all three before they're read (the bot caught this as dead-init).
+  let p1: { x: number; y: number };
+  let p2: { x: number; y: number };
+  let p3: { x: number; y: number };
 
   if (mode === 'sas') {
     const b = base * scale;
