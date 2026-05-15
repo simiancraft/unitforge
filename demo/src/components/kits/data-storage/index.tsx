@@ -43,8 +43,13 @@ export function DataStorageScreen() {
           <p className="uf-eyebrow">kit · 02</p>
           <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">data-storage</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-uf-muted">
-            Decimal bytes (kilobyte through petabyte), IEC binary bytes (kibibyte through pebibyte),
-            and bits. Every conversion is a real forge call against the built package.
+            Decimal bytes (kilobyte through yottabyte), IEC binary bytes (kibibyte through
+            yobibyte), bits (kilobit through petabit), and the RFC octet alias. Three machines
+            below: the scale machine surfaces decimal-vs-binary across five tiers from floppy to
+            exbibyte; the throughput machine covers bits-vs-bytes for tunable and modern datacenter
+            link rates; the volume machine renders the decimal-vs-binary gap as 3D cube pairs that
+            scrub through the unit ladder. Every conversion is a real forge call against the built
+            package.
           </p>
         </header>
       }
@@ -77,7 +82,8 @@ export function DataStorageScreen() {
 export const meta: KitMeta = {
   id: 'data-storage',
   label: 'data-storage',
-  blurb: 'bytes (decimal and IEC binary), bits; GB vs GiB, network throughput, RAM scaling.',
+  blurb:
+    'bytes (decimal + IEC binary, kB through YiB), bits (through Pbit), octet alias; scale / throughput / volume machines.',
   defaultThemeId: 'data-storage-dark',
   icon: Database,
   previewBg: () => <DataStorageBackdrop inline />,
