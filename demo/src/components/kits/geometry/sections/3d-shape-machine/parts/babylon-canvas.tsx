@@ -93,6 +93,17 @@ export function BabylonCanvas({ init }: BabylonCanvasProps) {
     camera.lowerRadiusLimit = 4;
     camera.upperRadiusLimit = 40;
     camera.wheelDeltaPercentage = 0.01;
+    // Slow idle auto-rotation around the scene. Babylon's built-in
+    // AutoRotationBehavior pauses while the user drags or scrolls and
+    // resumes after `idleRotationWaitTime` ms; the gentle spin makes
+    // the mesh read as 3D from the moment a shape mounts without
+    // requiring the user to grab the canvas first.
+    camera.useAutoRotationBehavior = true;
+    if (camera.autoRotationBehavior) {
+      camera.autoRotationBehavior.idleRotationSpeed = 0.18;
+      camera.autoRotationBehavior.idleRotationWaitTime = 1500;
+      camera.autoRotationBehavior.idleRotationSpinupTime = 1500;
+    }
     const light = new HemisphericLight('light', new Vector3(0.5, 1, 0.3), scene);
     light.intensity = 0.95;
     light.specular = new Color3(0.4, 0.4, 0.4);
