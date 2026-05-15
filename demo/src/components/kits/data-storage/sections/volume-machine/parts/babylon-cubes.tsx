@@ -1,14 +1,14 @@
-// Babylon canvas for the volume machine. Two cubes side-by-side: the
-// decimal cube fixed at edge-length 4; the binary cube scaled by the
-// cube-root of (binary bytes / decimal bytes). At kB:KiB the ratio is
-// 1.024 (binary cube is 2.4% bigger per axis); at YB:YiB the ratio is
-// 1.209 (20.9% bigger). The user can see the gap grow tier by tier.
+// Babylon canvas for the volume machine. A decimal-sized opaque cube
+// nested inside a binary-sized translucent cube; the gap between their
+// surfaces IS the decimal-vs-binary gap, rendered as visible volumetric
+// shell. At kB:KiB the shell is a sliver (~0.8% per axis); at YB:YiB it
+// thickens to ~6.5% per axis. The outer cube's edges are crisply rendered
+// on top of the translucent fill so the bounding shape stays legible.
 //
 // Follows the babylon-react skill: mount engine + scene + camera + light
 // once via useEffect with empty deps; keep mesh refs in useRef; do all
 // state-driven updates in a separate useEffect that depends on the
-// active tier. Auto-rotation behavior on the camera makes the cubes
-// read as 3D from mount.
+// active tier.
 
 import {
   ArcRotateCamera,
@@ -26,67 +26,66 @@ import { useEffect, useRef } from 'react';
 
 interface BabylonCubesProps {
   /**
-   * Edge length multiplier for the binary cube relative to the decimal
-   * cube (which is fixed at edge length 4 in world units). Computed by
-   * the parent as `Math.cbrt(binary_bytes / decimal_bytes)`. The closer
-   * to 1, the more visually identical the cubes; the farther, the more
-   * dramatic the gap.
+   * Edge length multiplier for the outer (binary) cube relative to the
+   * inner (decimal) cube, which is fixed at edge length 4 in world
+   * units. Computed by the parent as `Math.cbrt(binary_bytes /
+   * decimal_bytes)`. The closer to 1, the thinner the visible shell;
+   * the farther, the more dramatic the gap.
    */
   binaryEdgeRatio: number;
 }
 
-const DECIMAL_EDGE = 4;
-const SEPARATION = 6;
+const INNER_EDGE = 4;
 
-function hexToColor4(hex: string): Color4 {
+function readCssColor(el: Element, varName: string, fallback: string): string {
+  const v =
+    getComputedStyle(el).getPropertyValue(varName).trim() ||
+    getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return v || fallback;
+}
+
+function hexToColor4(hex: string, alpha = 1): Color4 {
   const h = hex.replace('#', '');
   const r = parseInt(h.slice(0, 2), 16) / 255;
   const g = parseInt(h.slice(2, 4), 16) / 255;
   const b = parseInt(h.slice(4, 6), 16) / 255;
-  return new Color4(r, g, b, 1);
+  return new Color4(r, g, b, alpha);
 }
 
 export function BabylonCubes({ binaryEdgeRatio }: BabylonCubesProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const decimalMeshRef = useRef<Mesh | null>(null);
-  const binaryMeshRef = useRef<Mesh | null>(null);
+  const innerMeshRef = useRef<Mesh | null>(null);
+  const outerMeshRef = useRef<Mesh | null>(null);
 
-  // Latest binaryEdgeRatio held in a ref so the mount-once effect
-  // captures the up-to-date value when it runs initial scaling; the
-  // imperative-update effect below handles all subsequent state-driven
-  // changes via dep array.
-  const binaryRatioRef = useRef(binaryEdgeRatio);
-  binaryRatioRef.current = binaryEdgeRatio;
+  // Latest ratio held in a ref so the mount-once effect can read the
+  // up-to-date value during initial scaling; the imperative-update
+  // effect below handles subsequent state-driven changes via deps.
+  const ratioRef = useRef(binaryEdgeRatio);
+  ratioRef.current = binaryEdgeRatio;
 
-  // Mount engine + scene + camera + light + two cubes once. The cubes
-  // are created at unit size; scaling is applied via the separate
-  // imperative-update effect below.
   // biome-ignore lint/correctness/useExhaustiveDependencies: engine
   // lifecycle is a genuine mount-once side effect; binaryEdgeRatio is
-  // intentionally read via ref for the initial scaling, then driven
-  // by the second useEffect for subsequent updates.
+  // intentionally read via ref for the initial scaling, then driven by
+  // the second useEffect for subsequent updates.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
     const scene = new SceneClass(engine);
-    const bg =
-      getComputedStyle(canvas).getPropertyValue('--uf-bg').trim() ||
-      getComputedStyle(document.documentElement).getPropertyValue('--uf-bg').trim() ||
-      '#0c1b2d';
+    const bg = readCssColor(canvas, '--uf-bg', '#0c1b2d');
     scene.clearColor = hexToColor4(bg);
 
     const camera = new ArcRotateCamera(
       'camera',
-      -Math.PI / 2,
+      -Math.PI / 2.6,
       Math.PI / 3.2,
-      20,
+      12,
       Vector3.Zero(),
       scene,
     );
     camera.attachControl(canvas, true);
     camera.lowerRadiusLimit = 6;
-    camera.upperRadiusLimit = 40;
+    camera.upperRadiusLimit = 28;
     camera.wheelDeltaPercentage = 0.01;
     camera.useAutoRotationBehavior = true;
     if (camera.autoRotationBehavior) {
@@ -99,25 +98,34 @@ export function BabylonCubes({ binaryEdgeRatio }: BabylonCubesProps) {
     light.intensity = 0.95;
     light.specular = new Color3(0.4, 0.4, 0.4);
 
-    // Decimal cube: cooler color (steel-ish), fixed size.
-    const decimalMat = new StandardMaterial('decimal-mat', scene);
-    decimalMat.diffuseColor = Color3.FromHexString('#4a90e2');
-    decimalMat.alpha = 0.92;
-    const decimalMesh = MeshBuilder.CreateBox('decimal-cube', { size: 1 }, scene);
-    decimalMesh.material = decimalMat;
-    decimalMesh.scaling.setAll(DECIMAL_EDGE);
-    decimalMesh.position.x = -SEPARATION / 2;
-    decimalMeshRef.current = decimalMesh;
+    const innerColor = readCssColor(canvas, '--uf-cube-inner', '#4a90e2');
+    const outerColor = readCssColor(canvas, '--uf-cube-outer', '#f97316');
 
-    // Binary cube: warmer color (amber-ish), scaled by the ratio.
-    const binaryMat = new StandardMaterial('binary-mat', scene);
-    binaryMat.diffuseColor = Color3.FromHexString('#f97316');
-    binaryMat.alpha = 0.92;
-    const binaryMesh = MeshBuilder.CreateBox('binary-cube', { size: 1 }, scene);
-    binaryMesh.material = binaryMat;
-    binaryMesh.scaling.setAll(DECIMAL_EDGE * binaryRatioRef.current);
-    binaryMesh.position.x = SEPARATION / 2;
-    binaryMeshRef.current = binaryMesh;
+    // Inner (decimal) cube: opaque, fixed size, at origin.
+    const innerMat = new StandardMaterial('inner-mat', scene);
+    innerMat.diffuseColor = Color3.FromHexString(innerColor);
+    innerMat.alpha = 1.0;
+    const innerMesh = MeshBuilder.CreateBox('inner-cube', { size: 1 }, scene);
+    innerMesh.material = innerMat;
+    innerMesh.scaling.setAll(INNER_EDGE);
+    innerMeshRef.current = innerMesh;
+
+    // Outer (binary) cube: translucent shell, also at origin, scaled by
+    // the byte-ratio's cube root. Edges are rendered crisply so the
+    // bounding shape stays legible even at low alpha. backFaceCulling
+    // off ensures the far-side faces still draw when the camera orbits
+    // around.
+    const outerMat = new StandardMaterial('outer-mat', scene);
+    outerMat.diffuseColor = Color3.FromHexString(outerColor);
+    outerMat.alpha = 0.32;
+    outerMat.backFaceCulling = false;
+    const outerMesh = MeshBuilder.CreateBox('outer-cube', { size: 1 }, scene);
+    outerMesh.material = outerMat;
+    outerMesh.scaling.setAll(INNER_EDGE * ratioRef.current);
+    outerMesh.enableEdgesRendering();
+    outerMesh.edgesWidth = 2.0;
+    outerMesh.edgesColor = hexToColor4(outerColor, 0.9);
+    outerMeshRef.current = outerMesh;
 
     engine.runRenderLoop(() => scene.render());
     const onResize = () => engine.resize();
@@ -125,23 +133,24 @@ export function BabylonCubes({ binaryEdgeRatio }: BabylonCubesProps) {
 
     return () => {
       window.removeEventListener('resize', onResize);
-      binaryMesh.dispose();
-      decimalMesh.dispose();
-      binaryMat.dispose();
-      decimalMat.dispose();
+      outerMesh.dispose();
+      innerMesh.dispose();
+      outerMat.dispose();
+      innerMat.dispose();
       scene.dispose();
       engine.dispose();
-      decimalMeshRef.current = null;
-      binaryMeshRef.current = null;
+      innerMeshRef.current = null;
+      outerMeshRef.current = null;
     };
   }, []);
 
-  // Imperative update: scale the binary cube whenever the active tier's
-  // ratio changes. Decimal cube stays at DECIMAL_EDGE. No mesh disposal.
+  // Imperative update: re-scale the outer cube when the tier changes.
+  // The inner cube is fixed at INNER_EDGE; only the shell thickness
+  // moves with the slider.
   useEffect(() => {
-    const binary = binaryMeshRef.current;
-    if (!binary) return;
-    binary.scaling.setAll(DECIMAL_EDGE * binaryEdgeRatio);
+    const outer = outerMeshRef.current;
+    if (!outer) return;
+    outer.scaling.setAll(INNER_EDGE * binaryEdgeRatio);
   }, [binaryEdgeRatio]);
 
   return (
@@ -153,7 +162,7 @@ export function BabylonCubes({ binaryEdgeRatio }: BabylonCubesProps) {
         ref={canvasRef}
         className="block h-full w-full"
         style={{ touchAction: 'none' }}
-        aria-label="3D cube pair: decimal cube vs binary cube; binary visibly larger by the tier's ratio"
+        aria-label="3D cubes: opaque decimal cube nested inside a translucent binary cube; the visible shell is the gap"
       />
     </div>
   );

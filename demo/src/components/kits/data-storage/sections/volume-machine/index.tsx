@@ -1,9 +1,9 @@
 // Volume machine. Standalone surface (no menu): a tier slider scrubs
-// through 8 decimal:binary unit pairs (kilo through yotta), and the
-// Babylon scene shows two cubes whose volumes are proportional to the
-// tier's actual byte counts. The binary cube grows from 2.4% bigger
-// per axis (kilo) to 20.9% bigger (yotta) as the user scrubs. The gap
-// is literal volumetric space the user can rotate the cubes to inspect.
+// through 8 decimal:binary unit pairs (kilo through yotta). The Babylon
+// scene shows the decimal cube (opaque) nested inside the binary cube
+// (translucent shell); the shell's thickness IS the gap, growing from
+// a sliver at kilo to a visible layer at yotta. Color-coded Result rows
+// match the cube colors so the readout doubles as a legend.
 
 import { Box } from 'lucide-react';
 import { useState } from 'react';
@@ -81,11 +81,11 @@ export function VolumeMachine() {
       }
       introZone={
         <>
-          The decimal-vs-binary gap is also literal volumetric difference. Each pair shows two
-          cubes; the binary cube has the byte count of one binary unit, the decimal cube has the
-          byte count of one decimal unit. As you scrub the tier slider from kilo to yotta the binary
-          cube grows from 2.4% bigger per axis to 20.9% bigger; the gap is dwarfed by itself at
-          higher scales. Drag the canvas to orbit; the camera auto-rotates after a moment of idle.
+          The decimal-vs-binary gap is also literal volumetric difference. The decimal cube sits
+          opaque at the center; the binary cube wraps it as a translucent shell. The shell's
+          thickness is the gap. Scrub the tier slider from kilo to yotta and watch a 2.4% ratio
+          grow into 20.9% as the shell thickens. Drag the canvas to orbit; the camera auto-rotates
+          after a moment of idle.
         </>
       }
       widgetZone={
@@ -108,20 +108,23 @@ export function VolumeMachine() {
                   variant="hero"
                 />
                 <Result
-                  label={`1 ${pair.decimal.symbol} in bytes`}
+                  label={`1 ${pair.decimal.symbol} in bytes (inner cube)`}
                   value={pair.decimal.toBase(1).toExponential(3)}
+                  bulletColor="var(--uf-cube-inner)"
                 />
                 <Result
-                  label={`1 ${pair.binary.symbol} in bytes`}
+                  label={`1 ${pair.binary.symbol} in bytes (outer shell)`}
                   value={pair.binary.toBase(1).toExponential(3)}
+                  bulletColor="var(--uf-cube-outer)"
                 />
                 <Result
                   label="byte gap"
                   value={`${(pair.binary.toBase(1) - pair.decimal.toBase(1)).toExponential(3)}`}
                 />
                 <Result
-                  label="binary cube edge"
-                  value={`${edgeRatio.toFixed(4)}× the decimal cube`}
+                  label="outer-cube edge"
+                  value={`${edgeRatio.toFixed(4)}× the inner cube`}
+                  bulletColor="var(--uf-cube-outer)"
                 />
               </div>
             </div>
