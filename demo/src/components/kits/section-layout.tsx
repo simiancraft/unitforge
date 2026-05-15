@@ -1,9 +1,12 @@
 // SectionLayout; the zone container every kit's sections compose into.
-// Zones (in render order): header, intro, widget, notes. Pure
+// Zones (in render order): header, intro, menu, widget, notes. Pure
 // presentational; the section file (kits/<kit>/sections/<name>.tsx)
 // decides what fills each zone. The widget slot conventionally
 // receives a WidgetLayout that holds the live interaction surface
-// alongside its code sample.
+// alongside its code sample. The optional menu slot is for
+// enumerative-machine sections (a row of pills that dispatch which
+// shape / variant fills the widget below); when absent, the section
+// renders flat with no menu strip.
 //
 // SectionHeader is a convenience helper for the standard look (eyebrow +
 // optional kicker + title + optional icon). Sections that need a different
@@ -28,6 +31,18 @@ interface SectionLayoutProps {
    */
   introZone: ReactNode;
   /**
+   * Optional dispatch menu rendered between intro and widget. For
+   * "machine"-shape sections that enumerate variants (the 2D Shape
+   * Machine, the 3D Shape Machine), this is conventionally a row
+   * of pills, each wrapping the active entry's `menuZone` content
+   * (typically a small inline SVG). The pill's active state is the
+   * caller's responsibility (a `.active` class, a `data-active`
+   * attribute, etc.); SectionLayout does no styling here, just
+   * placement. Absent for ordinary sections; render is identical to
+   * pre-extension behavior when omitted.
+   */
+  menuZone?: ReactNode;
+  /**
    * The live demo body. Conventionally a `<WidgetLayout>` pairing
    * the interaction surface with its templated code sample, but
    * any ReactNode is accepted (sections that don't have a code
@@ -47,6 +62,7 @@ interface SectionLayoutProps {
 export function SectionLayout({
   headerZone,
   introZone,
+  menuZone,
   widgetZone,
   notesZone,
   id,
@@ -55,6 +71,7 @@ export function SectionLayout({
     <section id={id} className="flex flex-col gap-5">
       {headerZone}
       <p className="max-w-2xl text-sm leading-relaxed text-uf-muted">{introZone}</p>
+      {menuZone ? <div className="flex flex-wrap gap-2">{menuZone}</div> : null}
       {widgetZone}
       {notesZone ? (
         <p className="w-full text-xs leading-relaxed text-uf-muted text-right">{notesZone}</p>

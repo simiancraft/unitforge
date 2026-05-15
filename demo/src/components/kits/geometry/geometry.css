@@ -13,6 +13,18 @@
   --uf-fg: #1a2238;
   --uf-muted: #4d566b;
   --uf-accent: #b73a3b;
+  /* Secondary accent for sections that need a second color alongside
+   * --uf-accent (e.g. the coordinate machine plots distance in accent
+   * and midpoint in accent-2 so each Result row's bullet matches its
+   * drawn element). Light variant: deep teal-blue against cream + red. */
+  --uf-accent-2: #2563a8;
+  /* Tertiary accent for the coordinate machine: decomposes point A
+   * into its polar (radius + angle arc) and cartesian (x and y
+   * projection lines) representations in a third color so all three
+   * legend roles (distance, midpoint, decomposition) are visually
+   * distinct. Light variant: violet that contrasts with cream + red
+   * + teal. */
+  --uf-accent-3: #7c3aed;
   --uf-card: #fffaf0;
   --uf-border: #2b3553;
   /* Code bg: parchment one shade off the page cream so the block reads
@@ -33,6 +45,12 @@
   --uf-fg: #eef0f5;
   --uf-muted: #8a9aae;
   --uf-accent: #22d3ee;
+  /* Dark variant secondary accent: amber pops against navy + cyan,
+   * mirroring the light variant's teal-vs-red contrast role. */
+  --uf-accent-2: #fbbf24;
+  /* Dark variant tertiary: lighter violet/magenta pops against navy
+   * + cyan + amber. */
+  --uf-accent-3: #c084fc;
   --uf-card: #142436;
   --uf-border: #3a5274;
   --uf-code-bg: #08131f;

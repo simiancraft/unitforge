@@ -43,15 +43,38 @@ interface ResultProps extends VariantProps<typeof resultValue>, VariantProps<typ
    *  color on the value text without touching the row's layout. Use for
    *  per-row tweaks like shrinking very long digit strings. */
   valueClassName?: string;
+  /** Optional CSS color (hex / rgb / CSS var like `var(--uf-accent)`).
+   *  When set, renders a small filled circle before the label so the row
+   *  can act as a legend entry whose color matches a drawn element in
+   *  an accompanying visual (e.g. the coordinate plane's distance line
+   *  or midpoint marker). Omitted ⇒ no bullet, no layout shift. */
+  bulletColor?: string;
 }
 
-export function Result({ label, value, variant, layout, className, valueClassName }: ResultProps) {
+export function Result({
+  label,
+  value,
+  variant,
+  layout,
+  className,
+  valueClassName,
+  bulletColor,
+}: ResultProps) {
   // <dl>/<dt>/<dd> encodes the label↔value relationship for screen readers;
   // visually identical to the prior <div><span>/<span> via the flex overrides
   // + m-0 resets on the browser-default description-list margins.
   return (
     <dl className={cn(resultRoot({ layout }), className)}>
-      <dt className="uf-eyebrow">{label}</dt>
+      <dt className="uf-eyebrow flex items-center gap-2">
+        {bulletColor ? (
+          <span
+            aria-hidden="true"
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: bulletColor }}
+          />
+        ) : null}
+        {label}
+      </dt>
       <dd className={cn('m-0', resultValue({ variant }), valueClassName)}>{value}</dd>
     </dl>
   );
