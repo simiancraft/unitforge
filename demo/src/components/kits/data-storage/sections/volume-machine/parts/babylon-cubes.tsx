@@ -13,7 +13,6 @@
 import {
   ArcRotateCamera,
   Color3,
-  Color4,
   Engine,
   HemisphericLight,
   type Mesh,
@@ -23,6 +22,7 @@ import {
   Vector3,
 } from '@babylonjs/core';
 import { useEffect, useRef } from 'react';
+import { hexToColor4, readCssColor } from './babylon-utils.js';
 
 interface BabylonCubesProps {
   /**
@@ -36,21 +36,6 @@ interface BabylonCubesProps {
 }
 
 const INNER_EDGE = 4;
-
-function readCssColor(el: Element, varName: string, fallback: string): string {
-  const v =
-    getComputedStyle(el).getPropertyValue(varName).trim() ||
-    getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-  return v || fallback;
-}
-
-function hexToColor4(hex: string, alpha = 1): Color4 {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.slice(0, 2), 16) / 255;
-  const g = parseInt(h.slice(2, 4), 16) / 255;
-  const b = parseInt(h.slice(4, 6), 16) / 255;
-  return new Color4(r, g, b, alpha);
-}
 
 export function BabylonCubes({ binaryEdgeRatio }: BabylonCubesProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

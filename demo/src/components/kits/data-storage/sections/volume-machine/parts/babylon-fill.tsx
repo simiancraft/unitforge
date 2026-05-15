@@ -15,7 +15,6 @@
 import {
   ArcRotateCamera,
   Color3,
-  Color4,
   Engine,
   HemisphericLight,
   Matrix,
@@ -27,6 +26,7 @@ import {
   Vector3,
 } from '@babylonjs/core';
 import { useEffect, useRef } from 'react';
+import { hexToColor4, readCssColor } from './babylon-utils.js';
 
 export const MAX_VISIBLE = 1_000_000;
 const OUTER_EDGE = 8;
@@ -42,21 +42,6 @@ interface BabylonFillProps {
   drawnCount: number;
   /** Aria label fragment describing the pair (e.g., "1 LoC filled with Wikipedias"). */
   ariaLabel: string;
-}
-
-function readCssColor(el: Element, varName: string, fallback: string): string {
-  const v =
-    getComputedStyle(el).getPropertyValue(varName).trim() ||
-    getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-  return v || fallback;
-}
-
-function hexToColor4(hex: string, alpha = 1): Color4 {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.slice(0, 2), 16) / 255;
-  const g = parseInt(h.slice(2, 4), 16) / 255;
-  const b = parseInt(h.slice(4, 6), 16) / 255;
-  return new Color4(r, g, b, alpha);
 }
 
 export function BabylonFill({ drawnCount, ariaLabel }: BabylonFillProps) {
