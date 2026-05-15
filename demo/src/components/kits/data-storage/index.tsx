@@ -18,6 +18,7 @@ import { DataStorageBackdrop } from './parts/data-storage-backdrop.js';
 import { HelloBytes } from './sections/hello-bytes.js';
 import { ScaleMachine } from './sections/scale-machine/index.js';
 import { ThroughputMachine } from './sections/throughput-machine/index.js';
+import { VolumeMachine } from './sections/volume-machine/index.js';
 import { DATA_ALL_UNITS } from './units.js';
 import './data-storage.css';
 
@@ -66,6 +67,7 @@ export function DataStorageScreen() {
           <HelloBytes />
           <ScaleMachine />
           <ThroughputMachine />
+          <VolumeMachine />
         </>
       }
     />
