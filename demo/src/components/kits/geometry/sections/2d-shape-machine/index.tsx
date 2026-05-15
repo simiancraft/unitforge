@@ -81,7 +81,15 @@ export function TwoDShapeMachine() {
         </MenuPill>
       ))}
       widgetZone={
-        <WidgetLayout interactionZone={active.interactivityZone} codeZone={active.codeZone} />
+        // Key by activeKey to fully remount the visualZone subtree on
+        // shape swap; cheap insurance against DOM-level state leaking
+        // between shapes (e.g. a half-typed UnitPicker). Hook state
+        // per shape persists because hooks run at the chassis level.
+        <WidgetLayout
+          key={activeKey}
+          interactionZone={active.interactivityZone}
+          codeZone={active.codeZone}
+        />
       }
     />
   );

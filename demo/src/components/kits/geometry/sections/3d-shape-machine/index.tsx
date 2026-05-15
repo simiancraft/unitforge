@@ -51,7 +51,19 @@ export function ThreeDShapeMachine() {
         </MenuPill>
       ))}
       widgetZone={
-        <WidgetLayout interactionZone={active.interactivityZone} codeZone={active.codeZone} />
+        // Key by activeKey so the visualZone subtree remounts cleanly
+        // when the menu changes shapes; without this React reuses the
+        // same `<BabylonCanvas>` instance across every shape (same
+        // component at the same JSX position), so the mount-once init
+        // only ever runs for the first active shape and every other
+        // shape's menu pill shows the first shape's mesh. Hook state
+        // per shape persists because the hooks themselves run at the
+        // chassis level regardless of subtree remount.
+        <WidgetLayout
+          key={activeKey}
+          interactionZone={active.interactivityZone}
+          codeZone={active.codeZone}
+        />
       }
     />
   );

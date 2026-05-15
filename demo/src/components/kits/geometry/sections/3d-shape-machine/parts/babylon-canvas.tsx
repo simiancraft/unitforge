@@ -45,6 +45,14 @@ interface BabylonCanvasProps {
 const CAMERA_RADIUS = 18;
 const CAMERA_BETA = Math.PI / 3.2;
 
+function hexToColor4(hex: string): Color4 {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  return new Color4(r, g, b, 1);
+}
+
 export function BabylonCanvas({ init }: BabylonCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   // Latest init closure, captured per render. The mount-once effect
@@ -64,7 +72,15 @@ export function BabylonCanvas({ init }: BabylonCanvasProps) {
     if (!canvas) return;
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
     const scene = new SceneClass(engine);
-    scene.clearColor = new Color4(0, 0, 0, 0);
+    // Opaque clear color sampled from the kit's bg token so the
+    // canvas reads as its own surface rather than letting the
+    // geometry kit's engineering-paper backdrop bleed through.
+    // Read from CSS at mount time; light=cream, dark=navy.
+    const bg =
+      getComputedStyle(canvas).getPropertyValue('--uf-bg').trim() ||
+      getComputedStyle(document.documentElement).getPropertyValue('--uf-bg').trim() ||
+      '#0c1b2d';
+    scene.clearColor = hexToColor4(bg);
     const camera = new ArcRotateCamera(
       'camera',
       -Math.PI / 2,
@@ -95,24 +111,23 @@ export function BabylonCanvas({ init }: BabylonCanvasProps) {
     };
   }, []);
 
-  // Wrapper enforces aspect-ratio + centering so the canvas grows to
-  // the visualZone width on wider screens without going full-bleed on
-  // very wide layouts. The canvas itself is positioned absolutely
-  // inside the wrapper because Babylon's engine wants a sized canvas
-  // and resizes via the `engine.resize()` window listener above.
+  // Fixed-height wrapper (the aspect-ratio version collapsed because
+  // the parent ControlPanel's `items-center` flex column doesn't
+  // stretch its children, and the canvas inside was absolutely
+  // positioned so it didn't contribute intrinsic size). Fixed height
+  // is honest and simpler; `engine.resize()` keeps the WebGL canvas
+  // in sync with the wrapper's resolved width.
   return (
-    <div className="flex justify-center">
-      <div
-        className="relative w-full overflow-hidden rounded border border-uf-fg/15 bg-uf-bg"
-        style={{ maxWidth: '560px', aspectRatio: '4 / 3' }}
-      >
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 block h-full w-full"
-          style={{ touchAction: 'none' }}
-          aria-label="3D mesh preview; drag to orbit, scroll to zoom"
-        />
-      </div>
+    <div
+      className="mx-auto block w-full overflow-hidden rounded border border-uf-fg/15 bg-uf-bg"
+      style={{ maxWidth: '560px', height: '360px' }}
+    >
+      <canvas
+        ref={canvasRef}
+        className="block h-full w-full"
+        style={{ touchAction: 'none' }}
+        aria-label="3D mesh preview; drag to orbit, scroll to zoom"
+      />
     </div>
   );
 }
