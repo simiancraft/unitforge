@@ -55,12 +55,8 @@ describe('validateMemoCap', () => {
   });
 
   it('rejects non-number values', () => {
-    expect(() => validateMemoCap('128' as unknown as number)).toThrow(
-      /memoize must be an integer/,
-    );
-    expect(() => validateMemoCap(true as unknown as number)).toThrow(
-      /memoize must be an integer/,
-    );
+    expect(() => validateMemoCap('128' as unknown as number)).toThrow(/memoize must be an integer/);
+    expect(() => validateMemoCap(true as unknown as number)).toThrow(/memoize must be an integer/);
   });
 });
 
