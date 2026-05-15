@@ -5,6 +5,11 @@
 // matches the kit theme and that screen readers can announce via
 // aria-describedby. Position-aware via a small `placement` prop;
 // machines that put pills above the widget use 'bottom', the default.
+//
+// Composition: the outer file reads as a static JSX outline (button +
+// popover slot); state-driven branching (open / closed; hint present /
+// absent) lives in two private mini-chassis (PopoverSlot, HintLine)
+// that flat-return null when their state hasn't fired.
 
 import { useId, useState, type ReactNode } from 'react';
 import { cn } from '~/lib/cn.js';
@@ -55,23 +60,48 @@ export function MenuPill({
       >
         {children}
       </button>
-      {open ? (
-        <div
-          id={tooltipId}
-          role="tooltip"
-          className={cn(
-            'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded border border-uf-border bg-uf-card px-2 py-1 text-uf-fg shadow-md',
-            placement === 'bottom' ? 'top-full mt-1.5' : 'bottom-full mb-1.5',
-          )}
-        >
-          <div className="mono text-[11px] font-semibold leading-tight text-uf-accent">
-            {label}
-          </div>
-          {hint ? (
-            <div className="mono text-[10px] leading-tight text-uf-muted">{hint}</div>
-          ) : null}
-        </div>
-      ) : null}
+      <PopoverSlot
+        open={open}
+        id={tooltipId}
+        label={label}
+        hint={hint}
+        placement={placement}
+      />
     </div>
   );
+}
+
+interface PopoverSlotProps {
+  open: boolean;
+  id: string;
+  label: string;
+  hint?: string | undefined;
+  placement: Placement;
+}
+
+// Mini-chassis: flat-returns null when closed; renders the popover when
+// open. Keeps the visibility branch out of the parent's JSX outline.
+function PopoverSlot({ open, id, label, hint, placement }: PopoverSlotProps) {
+  if (!open) return null;
+  return (
+    <div
+      id={id}
+      role="tooltip"
+      className={cn(
+        'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded border border-uf-border bg-uf-card px-2 py-1 text-uf-fg shadow-md',
+        placement === 'bottom' ? 'top-full mt-1.5' : 'bottom-full mb-1.5',
+      )}
+    >
+      <div className="mono text-[11px] font-semibold leading-tight text-uf-accent">{label}</div>
+      <HintLine hint={hint} />
+    </div>
+  );
+}
+
+// Mini-chassis: flat-returns null when the hint is unset, otherwise
+// renders the muted caption. The hint presence/absence branch lives
+// here rather than as an inline conditional inside PopoverSlot.
+function HintLine({ hint }: { hint?: string | undefined }) {
+  if (!hint) return null;
+  return <div className="mono text-[10px] leading-tight text-uf-muted">{hint}</div>;
 }
