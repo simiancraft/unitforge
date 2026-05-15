@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
 import { MenuPill } from './parts/menu-pill.js';
 import { useDrive } from './tiers/drive.js';
+import { useExbibytePrecision } from './tiers/exbibyte-precision.js';
 import { useFloppy } from './tiers/floppy.js';
 import { useMemory } from './tiers/memory.js';
 import { useServerArray } from './tiers/server-array.js';
@@ -19,10 +20,11 @@ export function ScaleMachine() {
   const memory = useMemory();
   const floppy = useFloppy();
   const serverArray = useServerArray();
+  const exbibyte = useExbibytePrecision();
 
-  const tiers = { drive, memory, floppy, serverArray } as const;
+  const tiers = { drive, memory, floppy, serverArray, exbibyte } as const;
   type TierKey = keyof typeof tiers;
-  const order: readonly TierKey[] = ['drive', 'memory', 'floppy', 'serverArray'];
+  const order: readonly TierKey[] = ['drive', 'memory', 'floppy', 'serverArray', 'exbibyte'];
 
   const [activeKey, setActiveKey] = useState<TierKey>('drive');
   const active = tiers[activeKey];
