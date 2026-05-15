@@ -18,17 +18,22 @@ interface MenuPillProps {
   active: boolean;
   /** Click handler the chassis wires up to set this shape's id active. */
   onClick: () => void;
-  /** Plain-English description for screen readers ("select rectangle"). */
-  ariaLabel: string;
+  /**
+   * Human-readable name of this menu item ("rectangle", "circle"). Used
+   * both as the screen-reader label and the native `title` tooltip on
+   * hover; one string, double duty. Keep short — a one or two-word noun.
+   */
+  label: string;
 }
 
-export function MenuPill({ children, active, onClick, ariaLabel }: MenuPillProps) {
+export function MenuPill({ children, active, onClick, label }: MenuPillProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={ariaLabel}
+      aria-label={label}
       aria-pressed={active}
+      title={label}
       className={`relative flex h-12 w-12 items-center justify-center rounded-md border transition ${
         active
           ? 'border-uf-accent bg-uf-accent/15 text-uf-accent'

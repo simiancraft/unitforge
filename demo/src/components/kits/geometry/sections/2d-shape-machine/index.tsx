@@ -75,7 +75,7 @@ export function TwoDShapeMachine() {
           key={key}
           active={key === activeKey}
           onClick={() => setActiveKey(key)}
-          ariaLabel={`select ${key}`}
+          label={key}
         >
           {shapes[key].menuZone}
         </MenuPill>
