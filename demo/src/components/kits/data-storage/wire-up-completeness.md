@@ -18,9 +18,9 @@ Done = every DEMO_GAPS box struck, every library unit reachable, plan + DEMO_GAP
 
 - **Machine = a `SectionLayout` with an optional `menuZone`** that hosts a registry of interchangeable entries; the geometry kit's 2D Shape Machine and 3D Shape Machine are the templates. The chassis composes every entry's `use<Entry>()` hook each render; menu state lives in inline `useState`; the WidgetLayout is keyed by active key so the subtree remounts on swap (the React-reuse fix from geometry's commit `604c399`).
 - **Tiers / Links / Pairs.** Each machine's children get a domain-specific folder name based on what they actually represent in the data-storage domain. The ScaleMachine's children are *tiers* of scale (drive, memory, server-array); the ThroughputMachine's children are *links* of network capacity (any-rate, frontier). The VolumeMachine has no children folder because it's a single flat surface that scrubs across tier-pairs internally.
-- **VolumeMachine's Babylon use:** two cubes side-by-side in a Babylon scene. Edge length proportional to the cube-root of byte count, normalized so the decimal cube is always size 4. The binary cube is `4 × ∛(binary/decimal)` — visibly larger, by 2.4% at kB:KiB and 20.9% at YB:YiB. As the user drags a tier slider, mesh.scaling.set(...) updates the binary cube imperatively (per the babylon-react skill). Auto-rotation behavior on the camera (per geometry's pattern) makes the cubes read as 3D from mount without requiring a drag. A floating in-scene text label shows the byte gap.
+- **VolumeMachine's Babylon use:** two cubes side-by-side in a Babylon scene. Edge length proportional to the cube-root of byte count, normalized so the decimal cube is always size 4. The binary cube is `4 × ∛(binary/decimal)` ; visibly larger, by 2.4% at kB:KiB and 20.9% at YB:YiB. As the user drags a tier slider, mesh.scaling.set(...) updates the binary cube imperatively (per the babylon-react skill). Auto-rotation behavior on the camera (per geometry's pattern) makes the cubes read as 3D from mount without requiring a drag. A floating in-scene text label shows the byte gap.
 - **The bench (kit-level)** carries the 1D forge story and stays at the `benchZone` slot of `KitLayout`. Unchanged.
-- **`octet` alias:** add as a new `DATA_ALIAS_UNITS` family so HelloBytes shows it as a fourth readout column (matching the DEMO_GAPS suggestion). Doesn't deserve its own machine — it's a vocabulary alias of byte, not a scale variant.
+- **`octet` alias:** add as a new `DATA_ALIAS_UNITS` family so HelloBytes shows it as a fourth readout column (matching the DEMO_GAPS suggestion). Doesn't deserve its own machine ; it's a vocabulary alias of byte, not a scale variant.
 
 ## Current surface area
 
@@ -33,9 +33,9 @@ Done = every DEMO_GAPS box struck, every library unit reachable, plan + DEMO_GAP
 | `demo/src/components/kits/data-storage/sections/drive-vs-os.tsx` | 388 | Existing section | Refactored → `scale-machine/tiers/drive.tsx` (useDrive hook returning 3 ReactNodes); file deleted |
 | `demo/src/components/kits/data-storage/sections/ram-stick.tsx` | 238 | Existing section | Refactored → `scale-machine/tiers/memory.tsx`; file deleted |
 | `demo/src/components/kits/data-storage/sections/throughput-viz.tsx` | 251 | Existing section | Refactored → `throughput-machine/links/any-rate.tsx`; file deleted |
-| `demo/src/components/kits/data-storage/sections/scale-machine/` | — | NEW Zone-Composer feature | Created: chassis + parts + tiers + utils |
-| `demo/src/components/kits/data-storage/sections/throughput-machine/` | — | NEW | Created: chassis + parts + links + utils |
-| `demo/src/components/kits/data-storage/sections/volume-machine/` | — | NEW | Created: standalone Babylon-based scale-pair scrubber |
+| `demo/src/components/kits/data-storage/sections/scale-machine/` | ; | NEW Zone-Composer feature | Created: chassis + parts + tiers + utils |
+| `demo/src/components/kits/data-storage/sections/throughput-machine/` | ; | NEW | Created: chassis + parts + links + utils |
+| `demo/src/components/kits/data-storage/sections/volume-machine/` | ; | NEW | Created: standalone Babylon-based scale-pair scrubber |
 | `demo/src/components/kits/data-storage/index.tsx` | 85 | Kit chassis | Rewritten: 4 imports (HelloBytes + 3 machines); blurb update |
 | `demo/src/components/kits/data-storage/DEMO_GAPS.md` | 94 | Inventory | Struck through and deleted in final commit |
 | `demo/src/components/kits/data-storage/wire-up-completeness.md` | (this file) | This plan | Deleted in final commit |
@@ -47,13 +47,13 @@ Done = every DEMO_GAPS box struck, every library unit reachable, plan + DEMO_GAP
 | `DATA_DECIMAL_UNITS` | 6 | 9 | +3 (exabyte, zettabyte, yottabyte) |
 | `DATA_BINARY_UNITS` | 5 | 8 | +3 (exbibyte, zebibyte, yobibyte) |
 | `DATA_BIT_UNITS` | 4 | 6 | +2 (terabit, petabit) |
-| `DATA_ALIAS_UNITS` | — | 1 | +1 NEW catalog (octet) |
+| `DATA_ALIAS_UNITS` | ; | 1 | +1 NEW catalog (octet) |
 
 ### Machine inventory (after)
 
 | Section | Children | What |
 | --- | --- | --- |
-| `HelloBytes` | — | Intro; cross-family readout matrix gains an `octet` column |
+| `HelloBytes` | ; | Intro; cross-family readout matrix gains an `octet` column |
 | `scale-machine/` | 5 tiers | drive, memory, floppy, server-array, exbibyte-precision |
 | `throughput-machine/` | 2 links | any-rate (general-purpose, from `ThroughputViz`), frontier-800-GbE |
 | `volume-machine/` | none (flat) | Babylon scene with two cubes scrubbing through 8 decimal:binary pairs (kilo..yotta) via a single tier slider |
@@ -304,10 +304,10 @@ The chassis composes hooks at the top, dispatches menu state via `useState`, and
 
 ## References
 
-- `demo/src/components/kits/data-storage/DEMO_GAPS.md` — inventory this plan executes against.
-- `demo/src/components/kits/geometry/sections/2d-shape-machine/` — Zone Composer machine pattern (chassis + parts + shapes domain folder + utils).
-- `demo/src/components/kits/geometry/sections/3d-shape-machine/parts/babylon-canvas.tsx` — Babylon canvas pattern this branch copies into volume-machine/parts/.
-- `~/.claude/skills/babylon-react/SKILL.md` — recipe for Babylon + React integration (mount once, imperative updates, key by active variant, opaque clearColor).
-- `~/.claude/skills/zone-composer/SKILL.md` — the recipe this plan follows.
-- PR #23 (merged) — data-storage library expansion that created this demo gap.
-- PR #25 (merged) — geometry demo restructure that established the Zone Composer machine pattern in this codebase.
+- `demo/src/components/kits/data-storage/DEMO_GAPS.md` ; inventory this plan executes against.
+- `demo/src/components/kits/geometry/sections/2d-shape-machine/` ; Zone Composer machine pattern (chassis + parts + shapes domain folder + utils).
+- `demo/src/components/kits/geometry/sections/3d-shape-machine/parts/babylon-canvas.tsx` ; Babylon canvas pattern this branch copies into volume-machine/parts/.
+- `~/.claude/skills/babylon-react/SKILL.md` ; recipe for Babylon + React integration (mount once, imperative updates, key by active variant, opaque clearColor).
+- `~/.claude/skills/zone-composer/SKILL.md` ; the recipe this plan follows.
+- PR #23 (merged) ; data-storage library expansion that created this demo gap.
+- PR #25 (merged) ; geometry demo restructure that established the Zone Composer machine pattern in this codebase.

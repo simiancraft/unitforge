@@ -1,5 +1,5 @@
 // Floppy tier; the 1.44 MB hybrid trivia. Microsoft's "1.44 MB" floppy
-// label was actually 1440 × 1024 = 1,474,560 bytes — neither pure
+// label was actually 1440 x 1024 = 1,474,560 bytes; neither pure
 // decimal MB (10^6) nor pure binary MiB (2^20). The story is fun
 // trivia AND a real example of unit confusion in the wild.
 
