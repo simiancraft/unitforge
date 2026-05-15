@@ -1,8 +1,8 @@
-// Sphere shape entry. Single radius slider; Babylon mesh is a sphere
-// scaled to current radius.
+// Sphere shape entry. Single mesh created once at unit size; radius
+// slider updates mesh.scaling.setAll() imperatively.
 
-import { Color3, MeshBuilder, type Scene, StandardMaterial } from '@babylonjs/core';
-import { useState } from 'react';
+import { Color3, type Mesh, MeshBuilder, type Scene, StandardMaterial } from '@babylonjs/core';
+import { useEffect, useRef, useState } from 'react';
 import { forge } from 'unitforge';
 import { volumeFromSphereRadius } from 'unitforge/kits/geometry';
 import { CodeBlock } from '~/components/ui/code-block.js';
@@ -12,7 +12,7 @@ import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { findById } from '~/lib/units.js';
 import { LENGTH_UNITS, VOLUME_UNITS } from '../../../units.js';
-import { BabylonMesh } from '../parts/babylon-mesh.js';
+import { BabylonCanvas } from '../parts/babylon-canvas.js';
 import { ControlPanel } from '../parts/control-panel.js';
 
 const MIN_R = 0.1;
@@ -29,17 +29,28 @@ export function useSphere() {
     radius,
   });
 
-  const render = (scene: Scene) => {
+  const meshRef = useRef<Mesh | null>(null);
+
+  const init = (scene: Scene) => {
     const mat = new StandardMaterial('sphere-mat', scene);
     mat.diffuseColor = Color3.FromHexString('#f97316');
     mat.alpha = 0.92;
-    const m = MeshBuilder.CreateSphere('sphere', { diameter: radius * 2, segments: 24 }, scene);
+    // Diameter 2 (radius 1) as the base; scaling.setAll(radius) gives
+    // the actual radius without recreating geometry.
+    const m = MeshBuilder.CreateSphere('sphere', { diameter: 2, segments: 24 }, scene);
     m.material = mat;
+    m.scaling.setAll(radius);
+    meshRef.current = m;
     return () => {
       m.dispose();
       mat.dispose();
+      meshRef.current = null;
     };
   };
+
+  useEffect(() => {
+    meshRef.current?.scaling.setAll(radius);
+  }, [radius]);
 
   return {
     menuZone: <SphereIcon />,
@@ -62,7 +73,7 @@ export function useSphere() {
             <div />
           </>
         }
-        visualZone={<BabylonMesh render={render} />}
+        visualZone={<BabylonCanvas init={init} />}
         controlsZone={
           <div className="w-full max-w-md">
             <Slider

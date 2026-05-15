@@ -1,8 +1,8 @@
-// Cube shape entry. Single side slider; Babylon mesh is a unit-cube
-// scaled to current side.
+// Cube shape entry. Single mesh created once via BabylonCanvas's init
+// callback; side slider updates mesh.scaling imperatively.
 
-import { Color3, MeshBuilder, type Scene, StandardMaterial } from '@babylonjs/core';
-import { useState } from 'react';
+import { Color3, type Mesh, MeshBuilder, type Scene, StandardMaterial } from '@babylonjs/core';
+import { useEffect, useRef, useState } from 'react';
 import { forge } from 'unitforge';
 import { volumeFromCubeSide } from 'unitforge/kits/geometry';
 import { CodeBlock } from '~/components/ui/code-block.js';
@@ -12,7 +12,7 @@ import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { findById } from '~/lib/units.js';
 import { LENGTH_UNITS, VOLUME_UNITS } from '../../../units.js';
-import { BabylonMesh } from '../parts/babylon-mesh.js';
+import { BabylonCanvas } from '../parts/babylon-canvas.js';
 import { ControlPanel } from '../parts/control-panel.js';
 
 const MIN_VAL = 0.1;
@@ -27,17 +27,26 @@ export function useCube() {
 
   const volume = forge({ side: lengthUnit }, volumeUnit, { via: volumeFromCubeSide })({ side });
 
-  const render = (scene: Scene) => {
+  const meshRef = useRef<Mesh | null>(null);
+
+  const init = (scene: Scene) => {
     const mat = new StandardMaterial('cube-mat', scene);
     mat.diffuseColor = Color3.FromHexString('#f97316');
     mat.alpha = 0.92;
-    const m = MeshBuilder.CreateBox('cube', { size: side }, scene);
+    const m = MeshBuilder.CreateBox('cube', { size: 1 }, scene);
     m.material = mat;
+    m.scaling.setAll(side);
+    meshRef.current = m;
     return () => {
       m.dispose();
       mat.dispose();
+      meshRef.current = null;
     };
   };
+
+  useEffect(() => {
+    meshRef.current?.scaling.setAll(side);
+  }, [side]);
 
   return {
     menuZone: <CubeIcon />,
@@ -60,7 +69,7 @@ export function useCube() {
             <div />
           </>
         }
-        visualZone={<BabylonMesh render={render} />}
+        visualZone={<BabylonCanvas init={init} />}
         controlsZone={
           <div className="w-full max-w-md">
             <Slider

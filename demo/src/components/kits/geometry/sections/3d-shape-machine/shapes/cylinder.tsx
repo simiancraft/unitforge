@@ -1,8 +1,9 @@
-// Cylinder shape entry. Radius + height sliders; Babylon mesh is a
-// cylinder scaled to current parameters.
+// Cylinder shape entry. Mesh created once at unit size; radius and
+// height sliders drive mesh.scaling.set(radius, height, radius)
+// imperatively.
 
-import { Color3, MeshBuilder, type Scene, StandardMaterial } from '@babylonjs/core';
-import { useState } from 'react';
+import { Color3, type Mesh, MeshBuilder, type Scene, StandardMaterial } from '@babylonjs/core';
+import { useEffect, useRef, useState } from 'react';
 import { forge } from 'unitforge';
 import { volumeFromCylinderRadiusAndHeight } from 'unitforge/kits/geometry';
 import { CodeBlock } from '~/components/ui/code-block.js';
@@ -12,7 +13,7 @@ import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { findById } from '~/lib/units.js';
 import { LENGTH_UNITS, VOLUME_UNITS } from '../../../units.js';
-import { BabylonMesh } from '../parts/babylon-mesh.js';
+import { BabylonCanvas } from '../parts/babylon-canvas.js';
 import { ControlPanel } from '../parts/control-panel.js';
 
 const MIN_VAL = 0.1;
@@ -30,21 +31,32 @@ export function useCylinder() {
     via: volumeFromCylinderRadiusAndHeight,
   })({ radius, height });
 
-  const render = (scene: Scene) => {
+  const meshRef = useRef<Mesh | null>(null);
+
+  const init = (scene: Scene) => {
     const mat = new StandardMaterial('cyl-mat', scene);
     mat.diffuseColor = Color3.FromHexString('#f97316');
     mat.alpha = 0.92;
+    // Unit cylinder: diameter 2 (radius 1), height 1. scaling.set
+    // maps (radius, height, radius) onto the unit geometry.
     const m = MeshBuilder.CreateCylinder(
       'cyl',
-      { diameter: radius * 2, height, tessellation: 32 },
+      { diameter: 2, height: 1, tessellation: 32 },
       scene,
     );
     m.material = mat;
+    m.scaling.set(radius, height, radius);
+    meshRef.current = m;
     return () => {
       m.dispose();
       mat.dispose();
+      meshRef.current = null;
     };
   };
+
+  useEffect(() => {
+    meshRef.current?.scaling.set(radius, height, radius);
+  }, [radius, height]);
 
   return {
     menuZone: <CylinderIcon />,
@@ -67,7 +79,7 @@ export function useCylinder() {
             <div />
           </>
         }
-        visualZone={<BabylonMesh render={render} />}
+        visualZone={<BabylonCanvas init={init} />}
         controlsZone={
           <div className="flex flex-col gap-2 w-full max-w-md">
             <Slider

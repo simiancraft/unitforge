@@ -1,10 +1,9 @@
-// Cuboid shape entry. useCuboid() returns three ReactNodes; the
-// interactivity zone hosts the Babylon mesh wrapper drawing a box with
-// the current length / width / height. Volume is `forge`d through the
-// kit's volumeFromCuboidDimensions conversion.
+// Cuboid shape entry. Mesh is created once via the BabylonCanvas's
+// init callback; subsequent state changes update mesh.scaling
+// imperatively so the WebGL viewport never re-mounts during a drag.
 
-import { Color3, MeshBuilder, type Scene, StandardMaterial } from '@babylonjs/core';
-import { useState } from 'react';
+import { Color3, type Mesh, MeshBuilder, type Scene, StandardMaterial } from '@babylonjs/core';
+import { useEffect, useRef, useState } from 'react';
 import { forge } from 'unitforge';
 import { volumeFromCuboidDimensions } from 'unitforge/kits/geometry';
 import { CodeBlock } from '~/components/ui/code-block.js';
@@ -14,7 +13,7 @@ import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { findById } from '~/lib/units.js';
 import { LENGTH_UNITS, VOLUME_UNITS } from '../../../units.js';
-import { BabylonMesh } from '../parts/babylon-mesh.js';
+import { BabylonCanvas } from '../parts/babylon-canvas.js';
 import { ControlPanel } from '../parts/control-panel.js';
 
 const MIN_VAL = 0.1;
@@ -34,22 +33,36 @@ export function useCuboid() {
     via: volumeFromCuboidDimensions,
   })({ length, width, height });
 
-  const render = (scene: Scene) => {
+  const meshRef = useRef<Mesh | null>(null);
+
+  // Create the mesh once when the canvas mounts; cleanup disposes it.
+  // Captures the initial state values so the first frame shows the
+  // mesh at the right dimensions; subsequent state changes are picked
+  // up by the imperative-update effect below.
+  const init = (scene: Scene) => {
     const mat = new StandardMaterial('cuboid-mat', scene);
     mat.diffuseColor = Color3.FromHexString('#f97316');
     mat.specularColor = Color3.FromHexString('#222222');
     mat.alpha = 0.92;
-    const box = MeshBuilder.CreateBox(
-      'cuboid',
-      { width: length, height: height, depth: width },
-      scene,
-    );
+    const box = MeshBuilder.CreateBox('cuboid', { size: 1 }, scene);
     box.material = mat;
+    box.scaling.set(length, height, width);
+    meshRef.current = box;
     return () => {
       box.dispose();
       mat.dispose();
+      meshRef.current = null;
     };
   };
+
+  // Imperative update: scaling-only on every state change, no mesh
+  // disposal, no canvas remount. Genuine lifecycle exception to the
+  // no-useEffect rule (Babylon is an external imperative subsystem).
+  useEffect(() => {
+    const m = meshRef.current;
+    if (!m) return;
+    m.scaling.set(length, height, width);
+  }, [length, width, height]);
 
   return {
     menuZone: <CuboidIcon />,
@@ -72,7 +85,7 @@ export function useCuboid() {
             <div />
           </>
         }
-        visualZone={<BabylonMesh render={render} />}
+        visualZone={<BabylonCanvas init={init} />}
         controlsZone={
           <div className="flex flex-col gap-2 w-full max-w-md">
             <Slider
