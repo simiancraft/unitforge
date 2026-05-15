@@ -13,7 +13,7 @@ import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
 import { formatMagnitude } from '~/lib/format.js';
-import { ControlPanel } from '../parts/control-panel.js';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 // View-time mapping: real transfer seconds to sweep-bar seconds.
 // Modeled as two separate dimensions with a clamped linear remap;

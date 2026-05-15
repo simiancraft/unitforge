@@ -11,7 +11,7 @@ import { byte, kibibyte, mebibyte, megabyte } from 'unitforge/kits/data-storage'
 import { ChipRow } from '~/components/kits/chip-row.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
-import { ControlPanel } from '../parts/control-panel.js';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 type Media = '8' | '5.25' | '3.5';
 type Variant = 'dos' | 'acorn' | 'amiga' | null;

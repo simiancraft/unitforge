@@ -9,7 +9,7 @@ import { forge } from 'unitforge';
 import { byte, exbibyte, yobibyte, yottabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
-import { ControlPanel } from '../parts/control-panel.js';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 export function useExbibytePrecision() {
   const eibInBytes = forge(exbibyte, byte)(1);

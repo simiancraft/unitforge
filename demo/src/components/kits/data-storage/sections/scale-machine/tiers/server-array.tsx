@@ -10,7 +10,7 @@ import { byte, pebibyte, petabyte, tebibyte, terabyte } from 'unitforge/kits/dat
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
-import { ControlPanel } from '../parts/control-panel.js';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 const RACK_DRIVES = 24;
 const DRIVE_SLOTS = Array.from({ length: RACK_DRIVES }, (_, i) => ({ id: `drive-${i}` }));

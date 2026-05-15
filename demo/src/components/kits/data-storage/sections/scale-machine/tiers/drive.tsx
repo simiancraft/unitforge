@@ -13,7 +13,7 @@ import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
 import { cn } from '~/lib/cn.js';
 import { formatMagnitude } from '~/lib/format.js';
-import { ControlPanel } from '../parts/control-panel.js';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 const MAX_GB = 8000;
 const MAX_FILE_ICONS = 60;

@@ -13,7 +13,7 @@ import { byte, gibibyte, gigabit, gigabyte } from 'unitforge/kits/data-storage';
 import { ChipRow } from '~/components/kits/chip-row.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
-import { ControlPanel } from '../parts/control-panel.js';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 
 type RateId = '200g' | '400g' | '800g' | '1600g';
 type TargetId = 'ssd' | 'drive' | 'rack' | 'archive' | 'cluster';
