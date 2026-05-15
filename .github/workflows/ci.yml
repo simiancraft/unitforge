@@ -61,6 +61,13 @@ jobs:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
 
+      # Stryker mutation testing. Adds ~30-60s of wall time to the
+      # check job; gated on the break threshold in stryker.config.json
+      # (currently 75; baseline is 80.43). Runs after coverage so a
+      # mutation regression doesn't suppress the coverage upload.
+      - name: Mutation testing (Stryker)
+        run: bun run mutation
+
   release:
     name: Release
     needs: check
