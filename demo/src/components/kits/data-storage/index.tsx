@@ -15,9 +15,8 @@ import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { DataStorageBackdrop } from './parts/data-storage-backdrop.js';
-import { DriveVsOs } from './sections/drive-vs-os.js';
 import { HelloBytes } from './sections/hello-bytes.js';
-import { RamStick } from './sections/ram-stick.js';
+import { ScaleMachine } from './sections/scale-machine/index.js';
 import { ThroughputViz } from './sections/throughput-viz.js';
 import { DATA_ALL_UNITS } from './units.js';
 import './data-storage.css';
@@ -65,9 +64,8 @@ export function DataStorageScreen() {
       sectionsZone={
         <>
           <HelloBytes />
-          <DriveVsOs />
+          <ScaleMachine />
           <ThroughputViz />
-          <RamStick />
         </>
       }
     />
