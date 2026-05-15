@@ -42,7 +42,7 @@ interface ResultProps extends VariantProps<typeof resultValue>, VariantProps<typ
   /** Merged into the `<dd>` element; lets a caller override font-size or
    *  color on the value text without touching the row's layout. Use for
    *  per-row tweaks like shrinking very long digit strings. */
-  valueClassName?: string;
+  valueClassName?: string | undefined;
   /** Optional CSS color (hex / rgb / CSS var like `var(--uf-accent)`).
    *  When set, renders a small filled circle before the label so the row
    *  can act as a legend entry whose color matches a drawn element in

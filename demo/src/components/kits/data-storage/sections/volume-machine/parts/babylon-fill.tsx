@@ -32,14 +32,16 @@ export const MAX_VISIBLE = 1_000_000;
 const OUTER_EDGE = 8;
 
 interface BabylonFillProps {
-  /** Byte count of the outer (larger) anchor. */
-  outerBytes: number;
-  /** Byte count of the inner (smaller) anchor. */
-  innerBytes: number;
+  /**
+   * Exact number of inner cubes to draw. Caller is responsible for
+   * clamping this to ≤ MAX_VISIBLE; when the true anchor ratio exceeds
+   * MAX_VISIBLE the caller is expected to apply power-of-10 grouping
+   * (each drawn cube then represents that many real anchors) and pass
+   * the grouped count here. This keeps BabylonFill a pure renderer.
+   */
+  drawnCount: number;
   /** Aria label fragment describing the pair (e.g., "1 LoC filled with Wikipedias"). */
   ariaLabel: string;
-  /** Optional override for the visible-instance cap (testing only). */
-  maxVisible?: number;
 }
 
 function readCssColor(el: Element, varName: string, fallback: string): string {
@@ -57,7 +59,7 @@ function hexToColor4(hex: string, alpha = 1): Color4 {
   return new Color4(r, g, b, alpha);
 }
 
-export function BabylonFill({ outerBytes, innerBytes, ariaLabel, maxVisible = MAX_VISIBLE }: BabylonFillProps) {
+export function BabylonFill({ drawnCount, ariaLabel }: BabylonFillProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<SceneClass | null>(null);
   const outerMeshRef = useRef<Mesh | null>(null);
@@ -151,10 +153,7 @@ export function BabylonFill({ outerBytes, innerBytes, ariaLabel, maxVisible = MA
     const innerProto = innerProtoRef.current;
     if (!scene || !innerProto) return;
 
-    const trueN = outerBytes / innerBytes;
-    if (!Number.isFinite(trueN) || trueN <= 0) return;
-
-    const visibleN = Math.max(1, Math.min(maxVisible, Math.floor(trueN)));
+    const visibleN = Math.max(1, Math.min(MAX_VISIBLE, Math.floor(drawnCount)));
     const gridSize = Math.max(1, Math.ceil(Math.cbrt(visibleN)));
     const spacing = OUTER_EDGE / gridSize;
     const innerEdge = spacing * 0.85;
@@ -181,7 +180,7 @@ export function BabylonFill({ outerBytes, innerBytes, ariaLabel, maxVisible = MA
     }
 
     innerProto.thinInstanceSetBuffer('matrix', matrices, 16);
-  }, [outerBytes, innerBytes, maxVisible]);
+  }, [drawnCount]);
 
   return (
     <div

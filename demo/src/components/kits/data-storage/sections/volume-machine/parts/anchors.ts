@@ -29,6 +29,24 @@ const floppy144 = defineUnit({
   fromBase: (b) => b / 1_474_560,
 });
 
+const cdRom = defineUnit({
+  id: 'cd-rom',
+  label: 'CD-ROM',
+  symbol: '💿',
+  dimension: 'data',
+  toBase: (v) => v * 7e8,
+  fromBase: (b) => b / 7e8,
+});
+
+const dvdR = defineUnit({
+  id: 'dvd-single-layer',
+  label: 'DVD (single-layer)',
+  symbol: '📀',
+  dimension: 'data',
+  toBase: (v) => v * 4.7e9,
+  fromBase: (b) => b / 4.7e9,
+});
+
 const wikipediaEn = defineUnit({
   id: 'wikipedia-en',
   label: 'Wikipedia EN dump',
@@ -36,6 +54,15 @@ const wikipediaEn = defineUnit({
   dimension: 'data',
   toBase: (v) => v * 2.5e10,
   fromBase: (b) => b / 2.5e10,
+});
+
+const smartphone1TB = defineUnit({
+  id: 'smartphone-1tb',
+  label: 'Smartphone (1 TB)',
+  symbol: '📱',
+  dimension: 'data',
+  toBase: (v) => v * 1e12,
+  fromBase: (b) => b / 1e12,
 });
 
 const libraryOfCongress = defineUnit({
@@ -94,7 +121,10 @@ const datasphere2025 = defineUnit({
 
 export const ANCHORS: readonly Anchor[] = [
   { unit: floppy144, bytes: 1_474_560, category: 'hardware', caption: '1440 × 1024 bytes' },
+  { unit: cdRom, bytes: 7e8, category: 'hardware', caption: '~700 MB; 1985 spec' },
+  { unit: dvdR, bytes: 4.7e9, category: 'hardware', caption: '~4.7 GB; DVD-5' },
   { unit: wikipediaEn, bytes: 2.5e10, category: 'archive', caption: '~25 GB; dumps.wikimedia.org' },
+  { unit: smartphone1TB, bytes: 1e12, category: 'hardware', caption: '1 TB; flagship handset' },
   {
     unit: libraryOfCongress,
     bytes: 2e13,
