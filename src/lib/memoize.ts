@@ -90,9 +90,9 @@ export function writeCache(
 }
 
 /** Rounds `v` if it is a finite number; otherwise returns `v` unchanged.
- *  `Number.isFinite` already returns false for non-number inputs (it
- *  does not coerce), so the precondition collapses to a single check. */
+ *  The explicit `typeof === 'number'` check gives TypeScript a free
+ *  narrow into the math line below, avoiding a cast there. */
 export function roundIfNumber(v: unknown, mul: number | null): unknown {
-  if (mul == null || !Number.isFinite(v)) return v;
-  return Math.round((v as number) * mul) / mul;
+  if (mul == null || typeof v !== 'number' || !Number.isFinite(v)) return v;
+  return Math.round(v * mul) / mul;
 }

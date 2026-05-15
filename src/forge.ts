@@ -163,11 +163,13 @@ function buildCrossDimConverter(
   // Pre-bake input key list (sorted for stable cache-key order).
   const inputKeys = Object.keys(conversion.inputs).sort();
 
-  // Pre-bake output shape detection. `outputKeys` is the array of
-  // result-object keys when `to` is an object; null when `to` is a
+  // Pre-bake output shape detection. `toEntries` is the
+  // (key, Unit) pair list when `to` is an object; null when `to` is a
   // single Unit (the scalar-output overload). Truthiness of this one
-  // variable encodes the dispatch decision downstream.
-  const outputKeys = isUnitLike(to) ? null : Object.keys(to as Record<string, AnyUnit>);
+  // variable encodes the dispatch decision downstream; using entries
+  // (over a keys-list + indexed lookup) gives each iteration a
+  // non-undefined `Unit` at the type level without a cast.
+  const toEntries = isUnitLike(to) ? null : Object.entries(to as Record<string, AnyUnit>);
 
   const cache = memoCap > 0 ? new Map<string, unknown>() : null;
 
@@ -217,16 +219,15 @@ function buildCrossDimConverter(
     const compute = conversion.compute as (vals: Record<string, unknown>) => unknown;
     const baseResult = compute(baseValues);
 
-    // 7: denormalize to target unit(s). outputKeys is non-null iff
-    // the output is object-shaped; outputKeys was derived from `to`
-    // at forge time, so each key resolves to a defined Unit.
+    // 7: denormalize to target unit(s). toEntries is non-null iff
+    // the output is object-shaped; the entries pairs each key with
+    // the live Unit from `to`, so the loop body needs no cast.
     let result: unknown;
-    if (outputKeys) {
+    if (toEntries) {
       const out: Record<string, unknown> = {};
-      const toMap = to as Record<string, AnyUnit>;
       const baseMap = baseResult as Record<string, unknown>;
-      for (const k of outputKeys) {
-        out[k] = roundIfNumber((toMap[k] as AnyUnit).fromBase(baseMap[k]), precisionMul);
+      for (const [k, u] of toEntries) {
+        out[k] = roundIfNumber(u.fromBase(baseMap[k]), precisionMul);
       }
       result = out;
     } else {
