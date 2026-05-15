@@ -64,16 +64,17 @@ export function VolumeMachine() {
         <SectionHeader
           eyebrow="demo 04"
           title="volume machine"
-          kicker="see the gap grow"
+          kicker="fill it or scrub it"
           iconZone={<Box size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
       introZone={
         <>
-          Pack any anchor with copies of another and watch the count roll up; floppies inside a
-          Wikipedia, Wikipedias inside a Library of Congress, LoCs inside the global datasphere.
-          Or scrub the decimal/binary ladder and see the same gap grow shell-thick from kilo to
-          yotta. Drag either canvas to orbit; the camera auto-rotates after a moment of idle.
+          How many floppies fit in a Wikipedia; how many Wikipedias fit in a Library of Congress;
+          how many Libraries of Congress fit in the global datasphere. Each answer is one{' '}
+          <code className="mono">defineUnit</code> + <code className="mono">forge</code> away, and
+          renders as thin-instanced cubes packed in a translucent shell. The decimal-vs-binary
+          ladder gets the same treatment, with the shell thickness itself as the gap.
         </>
       }
       widgetZone={

@@ -41,11 +41,10 @@ export function ScaleMachine() {
       }
       introZone={
         <>
-          The decimal-vs-binary gap is the same gap at every scale. Pick a tier and watch the same
-          story play out: drive vendors mark capacity in decimal GB while the OS reports binary GiB;
-          DDR modules are sold in GiB while transfer rates use GB; floppies were a hybrid that's
-          neither; servers measure in tebibytes; at the exbibyte scale the gap is dwarfed by
-          Float64's own precision cliff.
+          Retread floppy history across a decade of incompatible marketing labels. Cross the
+          GB/GiB chasm on a drive whose label disagrees with the OS. Find the magnitude at which
+          Float64 itself stops being able to count individual bytes. Different tiers, same kind of
+          unitforge moment: one conversion makes the weirdness legible.
         </>
       }
       menuZone={order.map((key) => (

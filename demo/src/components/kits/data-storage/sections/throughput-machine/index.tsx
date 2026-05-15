@@ -33,10 +33,10 @@ export function ThroughputMachine() {
       }
       introZone={
         <>
-          Network specs are in bits; storage rates in bytes. Same DATA dimension, factor of 8 apart.
-          Pick a link tier to see the conversion at real-world rates: a tunable any-rate link, a
-          modern 800 GbE frontier that fills 100 GB/s exactly, and a backbone link quoted in Pbit/s.
-          The sweep bar fills against the clock at the computed rate.
+          Network specs quote bits per second; storage quotes bytes; same DATA dimension, exactly
+          eight times apart. Notice how cleanly the IEEE picked line rates that fall on round GB/s
+          by spec, then chase a 1 EB cluster across the 200G–1.6T frontier and watch drain time
+          stretch from microseconds to years.
         </>
       }
       menuZone={order.map((key) => (

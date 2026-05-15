@@ -91,9 +91,10 @@ export function HelloBytes() {
       }
       introZone={
         <>
-          Pick a number and a unit; every other byte and bit unit renders side by side. Decimal and
-          binary columns sit next to each other so the gap between (say) GB and GiB is visible at a
-          glance.
+          One quantity, expressed in every byte and bit unit at once. The decimal column drifts
+          away from the binary column as you climb the ladder; the gap is right there in the
+          readout. The same number is also an octet count by RFC convention and a stack of bits
+          eight times taller.
         </>
       }
       widgetZone={
