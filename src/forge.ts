@@ -125,25 +125,21 @@ function buildUnaryConverter(
   memoCap: number,
   precisionMul: number | null,
 ): AnyConverter {
-  // Memoize off: hot path is two function calls + optional rounding.
-  if (memoCap === 0) {
-    if (precisionMul == null) {
-      return (value) => toUnit.fromBase(fromUnit.toBase(value));
-    }
-    return (value) => roundIfNumber(toUnit.fromBase(fromUnit.toBase(value)), precisionMul);
-  }
+  // Single conversion lambda; roundIfNumber is a no-op when precisionMul
+  // is null (early-return inside the helper), so we don't branch on the
+  // precision setting at the call site. The branch elision shrinks both
+  // line count and the mutation-test surface of equivalent precision-
+  // gate mutants.
+  const convert = (value: unknown): unknown =>
+    roundIfNumber(toUnit.fromBase(fromUnit.toBase(value)), precisionMul);
 
-  // Memoize on.
+  if (memoCap === 0) return convert;
+
   const cache = new Map<string, unknown>();
-
   return (value) => {
-    const keyVal = precisionMul != null ? roundIfNumber(value, precisionMul) : value;
-    const key = String(keyVal);
+    const key = String(roundIfNumber(value, precisionMul));
     if (cache.has(key)) return cache.get(key);
-
-    let result = toUnit.fromBase(fromUnit.toBase(value));
-    if (precisionMul != null) result = roundIfNumber(result, precisionMul);
-
+    const result = convert(value);
     writeCache(cache, key, result, memoCap);
     return result;
   };
