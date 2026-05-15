@@ -1,55 +1,159 @@
-// Frontier 800 GbE link of the throughput machine. 800 Gigabit Ethernet
-// is a deployed datacenter rate as of 2026; the canonical conversion
-// forge(gigabit, gigabyte)(800) === 100 reads as "an 800 GbE port can
-// drain a 100 GB SSD in one second." This link demonstrates the bit-to-
-// byte conversion at the actual modern frontier and exercises terabit
-// and petabit for context on the bit ladder.
+// IEEE 802.3df / 802.3dj rate frontier. Pick a spec rate (200G / 400G /
+// 800G / 1.6T) and a drain target (100 GB SSD through 1 EB cluster) and
+// read the bandwidth and time-to-drain. Same forge composition through
+// the bit↔byte conversion at every rate; the IEEE picked numbers that
+// round cleanly so each (rate, target) pair lands on exact GB/s. The
+// secondary GiB/s figure surfaces the decimal-vs-binary tax that kicks
+// back in once you cross the bit-to-byte boundary.
 
 import { Zap } from 'lucide-react';
+import { useState } from 'react';
 import { forge } from 'unitforge';
-import { byte, gigabit, gigabyte, megabyte, petabit, terabit } from 'unitforge/kits/data-storage';
+import { byte, gibibyte, gigabit, gigabyte, megabyte } from 'unitforge/kits/data-storage';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
+import { cn } from '~/lib/cn.js';
 import { ControlPanel } from '../parts/control-panel.js';
 
-// Fixed link rate: 800 Gbit/s. This entry is not interactive; the rate
-// is the story.
-const GBITS = 800;
-const TARGET_GB = 100;
+type RateId = '200g' | '400g' | '800g' | '1600g';
+type TargetId = 'ssd' | 'drive' | 'rack' | 'archive' | 'cluster';
 
-export function useFrontier800GbE() {
-  const mbPerSec = forge(gigabit, megabyte)(GBITS);
-  const gbPerSec = forge(gigabit, gigabyte)(GBITS);
-  const bytesPerSec = forge(gigabit, byte)(GBITS);
-  const targetBytes = forge(gigabyte, byte)(TARGET_GB);
-  const seconds = targetBytes / bytesPerSec;
+interface RateSpec {
+  id: RateId;
+  short: string;
+  long: string;
+  gbits: number;
+  clause: string;
+  year: string;
+  lanes: string;
+}
 
-  // Context: where 800 Gbit/s sits relative to the larger bit ladder.
-  const inTbit = forge(gigabit, terabit)(GBITS);
-  const inPbit = forge(gigabit, petabit)(GBITS);
+const RATES: readonly RateSpec[] = [
+  {
+    id: '200g',
+    short: '200G',
+    long: '200 GbE',
+    gbits: 200,
+    clause: '802.3df',
+    year: '2024',
+    lanes: '4 × 50G PAM4',
+  },
+  {
+    id: '400g',
+    short: '400G',
+    long: '400 GbE',
+    gbits: 400,
+    clause: '802.3df',
+    year: '2024',
+    lanes: '4 × 100G PAM4',
+  },
+  {
+    id: '800g',
+    short: '800G',
+    long: '800 GbE',
+    gbits: 800,
+    clause: '802.3df',
+    year: '2024',
+    lanes: '4 × 200G PAM4',
+  },
+  {
+    id: '1600g',
+    short: '1.6T',
+    long: '1.6 TbE',
+    gbits: 1600,
+    clause: '802.3dj',
+    year: '2026 (expected)',
+    lanes: '8 × 200G PAM4',
+  },
+];
+
+interface DrainTarget {
+  id: TargetId;
+  short: string;
+  long: string;
+  bytes: number;
+}
+
+const TARGETS: readonly DrainTarget[] = [
+  { id: 'ssd', short: '100 GB SSD', long: '100 GB SSD', bytes: 100e9 },
+  { id: 'drive', short: '1 TB drive', long: '1 TB drive', bytes: 1e12 },
+  { id: 'rack', short: '100 TB rack', long: '100 TB datacenter rack', bytes: 100e12 },
+  { id: 'archive', short: '1 PB archive', long: '1 PB archive', bytes: 1e15 },
+  { id: 'cluster', short: '1 EB cluster', long: '1 EB compute cluster', bytes: 1e18 },
+];
+
+const DEFAULT_RATE: RateId = '800g';
+const DEFAULT_TARGET: TargetId = 'ssd';
+
+function findRate(id: RateId): RateSpec {
+  return RATES.find((r) => r.id === id) ?? RATES[0]!;
+}
+
+function findTarget(id: TargetId): DrainTarget {
+  return TARGETS.find((t) => t.id === id) ?? TARGETS[0]!;
+}
+
+export function useFrontier() {
+  const [rateId, setRateId] = useState<RateId>(DEFAULT_RATE);
+  const [targetId, setTargetId] = useState<TargetId>(DEFAULT_TARGET);
+
+  const rate = findRate(rateId);
+  const target = findTarget(targetId);
+
+  const gbPerSec = forge(gigabit, gigabyte)(rate.gbits);
+  const mbPerSec = forge(gigabit, megabyte)(rate.gbits);
+  const gibPerSec = forge(gigabit, gibibyte)(rate.gbits);
+  const bytesPerSec = forge(gigabit, byte)(rate.gbits);
+  const drainSeconds = target.bytes / bytesPerSec;
 
   return {
     menuZone: <FrontierIcon />,
     interactivityZone: (
       <ControlPanel
-        visualZone={<FrontierVisual />}
+        pickersZone={
+          <>
+            <ChipRow
+              label="IEEE rate"
+              ariaLabel="ieee 802.3 rate"
+              value={rateId}
+              options={RATES.map((r) => ({ id: r.id, short: r.short }))}
+              onChange={(v) => setRateId(v as RateId)}
+            />
+            <ChipRow
+              label="drain target"
+              ariaLabel="drain target"
+              value={targetId}
+              options={TARGETS.map((t) => ({ id: t.id, short: t.short }))}
+              onChange={(v) => setTargetId(v as TargetId)}
+            />
+          </>
+        }
+        visualZone={<FrontierVisual rate={rate} />}
         resultsZone={
           <>
             <Result
-              label="800 GbE bandwidth"
-              value={`${gbPerSec.toFixed(0)} GB/s · ${mbPerSec.toFixed(0)} MB/s`}
+              label={`${rate.long} bandwidth`}
+              value={`${formatBandwidth(gbPerSec)} · ${gibPerSec.toFixed(2)} GiB/s`}
               variant="hero"
             />
-            <Result label="time to drain a 100 GB SSD" value={`${seconds.toFixed(2)} seconds`} />
+            <Result label="line rate" value={`${rate.gbits} Gbit/s · ${rate.lanes}`} />
             <Result
-              label="bit ladder context"
-              value={`${inTbit.toFixed(2)} Tbit · ${inPbit.toFixed(4)} Pbit`}
+              label={`time to drain ${target.long}`}
+              value={formatDuration(drainSeconds)}
+            />
+            <Result
+              label="bit-to-byte forge"
+              value={`forge(gigabit, gigabyte)(${rate.gbits}) = ${gbPerSec} (exact)`}
+            />
+            <Result
+              label="binary tax"
+              value={`${gbPerSec} GB/s = ${gibPerSec.toFixed(3)} GiB/s (${(((gbPerSec - gibPerSec) / gbPerSec) * 100).toFixed(2)}% drift)`}
             />
           </>
         }
       />
     ),
-    codeZone: <CodeBlock code={buildCode()} />,
+    codeZone: <CodeBlock code={buildCode(rate, target, drainSeconds)} />,
   };
 }
 
@@ -57,8 +161,45 @@ function FrontierIcon() {
   return <Zap size={22} strokeWidth={1.6} />;
 }
 
-// Static visual: a stylized fiber-optic link badge with 800 GbE label.
-function FrontierVisual() {
+interface ChipRowProps {
+  label: string;
+  ariaLabel: string;
+  value: string;
+  options: ReadonlyArray<{ id: string; short: string }>;
+  onChange: (v: string) => void;
+}
+
+function ChipRow({ label, ariaLabel, value, options, onChange }: ChipRowProps) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="uf-eyebrow">{label}</span>
+      <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={ariaLabel}>
+        {options.map((o) => {
+          const active = o.id === value;
+          return (
+            <button
+              key={o.id}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onChange(o.id)}
+              className={cn(
+                'rounded border px-2 py-1 text-[11px] mono transition focus:outline-none focus-visible:ring-1 focus-visible:ring-uf-accent',
+                active
+                  ? 'border-uf-accent bg-uf-accent/15 text-uf-accent'
+                  : 'border-uf-fg/15 bg-transparent text-uf-fg hover:border-uf-accent/50',
+              )}
+            >
+              {o.short}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function FrontierVisual({ rate }: { rate: RateSpec }) {
   return (
     <div
       className="rounded-md border border-uf-accent/40 p-4"
@@ -68,35 +209,50 @@ function FrontierVisual() {
       }}
     >
       <div className="mono text-[10px] uppercase tracking-[0.3em] text-uf-trace">
-        ieee 802.3df / 802.3dj
+        ieee {rate.clause} · {rate.year}
       </div>
       <div className="flex items-baseline gap-3">
-        <span className="mono text-5xl font-bold text-uf-accent">800</span>
-        <span className="mono text-2xl text-uf-fg">GbE</span>
-        <span className="mono ml-auto text-xs text-uf-muted">
-          per-lane 200 Gb/s · 4 lanes · QSFP-DD800
-        </span>
+        <span className="mono text-5xl font-bold text-uf-accent">{rate.short}</span>
+        <span className="mono text-2xl text-uf-fg">Ethernet</span>
+        <span className="mono ml-auto text-xs text-uf-muted">{rate.lanes}</span>
       </div>
       <div className="mt-3 mono text-[11px] leading-relaxed text-uf-muted">
         <code className="rounded bg-uf-code-bg px-1 py-[1px] text-uf-fg">
-          forge(gigabit, gigabyte)(800)
+          forge(gigabit, gigabyte)({rate.gbits})
         </code>{' '}
-        = <span className="text-uf-accent">100</span> exactly; a single 800 GbE port can drain a 100
-        GB SSD in one second.
+        ={' '}
+        <span className="text-uf-accent">{forge(gigabit, gigabyte)(rate.gbits)}</span>{' '}
+        exactly.
       </div>
     </div>
   );
 }
 
-function buildCode(): string {
+function formatBandwidth(gbPerSec: number): string {
+  if (gbPerSec >= 1000) return `${(gbPerSec / 1000).toFixed(2)} TB/s`;
+  return `${gbPerSec.toFixed(0)} GB/s`;
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds < 0.001) return `${(seconds * 1e6).toFixed(0)} µs`;
+  if (seconds < 1) return `${(seconds * 1000).toFixed(0)} ms`;
+  if (seconds < 60) return `${seconds.toFixed(2)} s`;
+  if (seconds < 3600) return `${(seconds / 60).toFixed(2)} min`;
+  if (seconds < 86400) return `${(seconds / 3600).toFixed(2)} h`;
+  if (seconds < 86400 * 365.25) return `${(seconds / 86400).toFixed(1)} days`;
+  return `${(seconds / (86400 * 365.25)).toFixed(2)} years`;
+}
+
+function buildCode(rate: RateSpec, target: DrainTarget, drainSeconds: number): string {
   return `import { forge } from 'unitforge';
-import { gigabit, gigabyte, megabyte, terabit } from 'unitforge/kits/data-storage';
+import { gigabit, gigabyte, gibibyte, byte } from 'unitforge/kits/data-storage';
 
-// 800 Gigabit Ethernet line rate, exact:
-forge(gigabit, gigabyte)(800);  // 100 GB/s (decimal)
-forge(gigabit, megabyte)(800);  // 100,000 MB/s
+// IEEE ${rate.clause} (${rate.year}): ${rate.long}, ${rate.lanes}.
+forge(gigabit, gigabyte)(${rate.gbits});  // ${forge(gigabit, gigabyte)(rate.gbits)} GB/s (exact)
+forge(gigabit, gibibyte)(${rate.gbits});  // ${forge(gigabit, gibibyte)(rate.gbits).toFixed(3)} GiB/s (binary tax)
 
-// Context on the bit ladder:
-forge(gigabit, terabit)(800);   // 0.8 Tbit/s
+// Time to drain ${target.long} at line rate:
+const bytesPerSec = forge(gigabit, byte)(${rate.gbits});
+const seconds = ${target.bytes} / bytesPerSec; // ${drainSeconds.toExponential(3)} s ≈ ${formatDuration(drainSeconds)}
 `;
 }

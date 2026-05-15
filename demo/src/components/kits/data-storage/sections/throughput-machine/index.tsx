@@ -7,12 +7,12 @@ import { Network } from 'lucide-react';
 import { useState } from 'react';
 import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
 import { useAnyRate } from './links/any-rate.js';
-import { useFrontier800GbE } from './links/frontier-800gbe.js';
+import { useFrontier } from './links/frontier-800gbe.js';
 import { MenuPill } from './parts/menu-pill.js';
 
 export function ThroughputMachine() {
   const anyRate = useAnyRate();
-  const frontier = useFrontier800GbE();
+  const frontier = useFrontier();
 
   const links = { anyRate, frontier } as const;
   type LinkKey = keyof typeof links;
