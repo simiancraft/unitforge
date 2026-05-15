@@ -12,15 +12,17 @@ import { MenuPill } from './parts/menu-pill.js';
 import { useDrive } from './tiers/drive.js';
 import { useFloppy } from './tiers/floppy.js';
 import { useMemory } from './tiers/memory.js';
+import { useServerArray } from './tiers/server-array.js';
 
 export function ScaleMachine() {
   const drive = useDrive();
   const memory = useMemory();
   const floppy = useFloppy();
+  const serverArray = useServerArray();
 
-  const tiers = { drive, memory, floppy } as const;
+  const tiers = { drive, memory, floppy, serverArray } as const;
   type TierKey = keyof typeof tiers;
-  const order: readonly TierKey[] = ['drive', 'memory', 'floppy'];
+  const order: readonly TierKey[] = ['drive', 'memory', 'floppy', 'serverArray'];
 
   const [activeKey, setActiveKey] = useState<TierKey>('drive');
   const active = tiers[activeKey];
