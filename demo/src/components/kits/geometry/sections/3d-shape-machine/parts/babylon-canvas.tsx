@@ -95,12 +95,24 @@ export function BabylonCanvas({ init }: BabylonCanvasProps) {
     };
   }, []);
 
+  // Wrapper enforces aspect-ratio + centering so the canvas grows to
+  // the visualZone width on wider screens without going full-bleed on
+  // very wide layouts. The canvas itself is positioned absolutely
+  // inside the wrapper because Babylon's engine wants a sized canvas
+  // and resizes via the `engine.resize()` window listener above.
   return (
-    <canvas
-      ref={canvasRef}
-      className="block w-full rounded border border-uf-fg/15 bg-uf-bg"
-      style={{ maxWidth: '320px', height: '240px', touchAction: 'none' }}
-      aria-label="3D mesh preview; drag to orbit, scroll to zoom"
-    />
+    <div className="flex justify-center">
+      <div
+        className="relative w-full overflow-hidden rounded border border-uf-fg/15 bg-uf-bg"
+        style={{ maxWidth: '560px', aspectRatio: '4 / 3' }}
+      >
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 block h-full w-full"
+          style={{ touchAction: 'none' }}
+          aria-label="3D mesh preview; drag to orbit, scroll to zoom"
+        />
+      </div>
+    </div>
   );
 }

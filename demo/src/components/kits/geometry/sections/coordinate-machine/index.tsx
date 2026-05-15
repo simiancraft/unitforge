@@ -22,6 +22,14 @@ import { findById } from '~/lib/units.js';
 import { ANGLE_UNITS, LENGTH_UNITS } from '../../units.js';
 import { PlaneCanvas } from './parts/plane-canvas.js';
 
+// Legend colors. Each drawn element in the plane (distance line,
+// midpoint marker) reuses one of these, and the matching Result row
+// renders a bullet in the same color so the plane reads as a legend
+// instead of just a visualization. Theme-aware via CSS variables so
+// the colors track the geometry kit's light / dark palette swap.
+const DISTANCE_COLOR = 'var(--uf-accent)';
+const MIDPOINT_COLOR = 'var(--uf-accent-2)';
+
 export function CoordinateMachine() {
   const [pointA, setPointA] = useState({ x: -2, y: 1 });
   const [pointB, setPointB] = useState({ x: 2, y: -1.5 });
@@ -90,21 +98,30 @@ export function CoordinateMachine() {
                   onChange={setAngleId}
                 />
               </div>
-              <PlaneCanvas
-                pointA={pointA}
-                pointB={pointB}
-                onPointAChange={setPointA}
-                onPointBChange={setPointB}
-              />
+              <div className="flex justify-center">
+                <div className="w-full max-w-[480px]">
+                  <PlaneCanvas
+                    pointA={pointA}
+                    pointB={pointB}
+                    midpoint={midpoint}
+                    onPointAChange={setPointA}
+                    onPointBChange={setPointB}
+                    distanceColor={DISTANCE_COLOR}
+                    midpointColor={MIDPOINT_COLOR}
+                  />
+                </div>
+              </div>
               <div className="flex flex-col gap-2">
                 <Result
                   label="distance(A, B)"
                   value={`${formatMagnitude(distance)} ${lengthUnit.symbol}`}
                   variant="hero"
+                  bulletColor={DISTANCE_COLOR}
                 />
                 <Result
                   label="midpoint(A, B)"
                   value={`{ x: ${formatMagnitude(midpoint.x)}, y: ${formatMagnitude(midpoint.y)} } ${lengthUnit.symbol}`}
+                  bulletColor={MIDPOINT_COLOR}
                 />
                 <Result
                   label="polar(A)"
