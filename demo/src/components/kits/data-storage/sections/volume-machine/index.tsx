@@ -1,63 +1,39 @@
-// Volume machine. Two widgets stacked: the flagship compare widget
-// (pick two anchor units; thin-instanced inner cubes fill the outer
-// cube) and the original tier-scrub (decimal vs binary at every prefix,
-// shell-thickness rendering). Both share the same translucent-outer
-// + opaque-inner visual idiom and the same --uf-cube-{outer,inner}
-// color tokens, so the readout rows double as a legend across both
-// widgets.
+// Volume machine chassis. Same Zone Composer dispatch shape as the
+// scale and throughput machines: each view hook owns its state and
+// returns { menuZone, interactivityZone, codeZone }; this chassis
+// renders the active view's interaction surface alongside its code
+// sample. The two views (compare, scrub) share the same translucent-
+// outer + opaque-inner cube idiom and the same --uf-cube-{outer,inner}
+// CSS tokens, so the readout rows in both double as a legend.
 
 import { Box } from 'lucide-react';
 import { useState } from 'react';
-import type { Unit } from 'unitforge';
-import {
-  exabyte,
-  exbibyte,
-  gibibyte,
-  gigabyte,
-  kibibyte,
-  kilobyte,
-  mebibyte,
-  megabyte,
-  pebibyte,
-  petabyte,
-  tebibyte,
-  terabyte,
-  yobibyte,
-  yottabyte,
-  zebibyte,
-  zettabyte,
-} from 'unitforge/kits/data-storage';
+import { MenuPill } from '~/components/kits/menu-pill.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
-import { CodeBlock } from '~/components/ui/code-block.js';
-import { Result } from '~/components/ui/result.js';
-import { Slider } from '~/components/ui/slider.js';
-import { BabylonCubes } from './parts/babylon-cubes.js';
-import { CompareWidget } from './parts/compare-widget.js';
+import { useCompare } from './views/compare.js';
+import { useScrub } from './views/scrub.js';
 
-interface Pair {
+interface ViewMeta {
   label: string;
-  decimal: Unit<'data', number>;
-  binary: Unit<'data', number>;
+  hint: string;
 }
 
-const PAIRS: readonly Pair[] = [
-  { label: 'kilo', decimal: kilobyte, binary: kibibyte },
-  { label: 'mega', decimal: megabyte, binary: mebibyte },
-  { label: 'giga', decimal: gigabyte, binary: gibibyte },
-  { label: 'tera', decimal: terabyte, binary: tebibyte },
-  { label: 'peta', decimal: petabyte, binary: pebibyte },
-  { label: 'exa', decimal: exabyte, binary: exbibyte },
-  { label: 'zetta', decimal: zettabyte, binary: zebibyte },
-  { label: 'yotta', decimal: yottabyte, binary: yobibyte },
-];
-
-// Decimal-vs-binary ratio at each tier. binary/decimal = 1024^n / 1000^n.
-// At kilo: 1.024; at yotta: 1.20892...
-function ratioFor(pair: Pair): number {
-  return pair.binary.toBase(1) / pair.decimal.toBase(1);
-}
+const VIEW_META: Record<string, ViewMeta> = {
+  compare: { label: 'compare', hint: 'pack one anchor with another' },
+  scrub: { label: 'scrub', hint: 'decimal vs binary at every prefix' },
+};
 
 export function VolumeMachine() {
+  const compare = useCompare();
+  const scrub = useScrub();
+
+  const views = { compare, scrub } as const;
+  type ViewKey = keyof typeof views;
+  const order: readonly ViewKey[] = ['compare', 'scrub'];
+
+  const [activeKey, setActiveKey] = useState<ViewKey>('compare');
+  const active = views[activeKey];
+
   return (
     <SectionLayout
       headerZone={
@@ -77,101 +53,27 @@ export function VolumeMachine() {
           ladder gets the same treatment, with the shell thickness itself as the gap.
         </>
       }
+      menuZone={order.map((key) => {
+        const meta = VIEW_META[key];
+        return (
+          <MenuPill
+            key={key}
+            active={key === activeKey}
+            onClick={() => setActiveKey(key)}
+            label={meta?.label ?? key}
+            hint={meta?.hint}
+          >
+            {views[key].menuZone}
+          </MenuPill>
+        );
+      })}
       widgetZone={
-        <div className="flex flex-col gap-8">
-          <div className="flex flex-col gap-2">
-            <SubHeading
-              eyebrow="compare"
-              hint="pack one anchor with another; every cube is a defineUnit call"
-            />
-            <CompareWidget />
-          </div>
-          <div className="flex flex-col gap-2">
-            <SubHeading
-              eyebrow="scrub"
-              hint="the decimal-vs-binary gap as a shell, every prefix on the ladder"
-            />
-            <TierScrubBody />
-          </div>
-        </div>
+        <WidgetLayout
+          key={activeKey}
+          interactionZone={active.interactivityZone}
+          codeZone={active.codeZone}
+        />
       }
     />
   );
-}
-
-function SubHeading({ eyebrow, hint }: { eyebrow: string; hint: string }) {
-  return (
-    <div className="flex items-baseline gap-3 border-b border-uf-border/60 pb-1">
-      <span className="uf-eyebrow text-uf-accent">{eyebrow}</span>
-      <span className="text-xs text-uf-muted">{hint}</span>
-    </div>
-  );
-}
-
-function TierScrubBody() {
-  const [tierIndex, setTierIndex] = useState(2);
-  const safeIndex = Math.max(0, Math.min(PAIRS.length - 1, Math.round(tierIndex)));
-  const pair: Pair = PAIRS[safeIndex] ??
-    PAIRS[0] ?? { label: 'kilo', decimal: kilobyte, binary: kibibyte };
-  const ratio = ratioFor(pair);
-  const edgeRatio = Math.cbrt(ratio);
-  const percentBigger = (ratio - 1) * 100;
-  return (
-    <WidgetLayout
-      interactionZone={
-        <div className="flex flex-col gap-4">
-          <BabylonCubes binaryEdgeRatio={edgeRatio} />
-          <Slider
-            label={`tier · ${pair.label} (${pair.decimal.symbol} vs ${pair.binary.symbol})`}
-            value={tierIndex}
-            min={0}
-            max={PAIRS.length - 1}
-            step={1}
-            onChange={(v) => setTierIndex(Math.round(v))}
-          />
-          <div className="flex flex-col gap-2">
-            <Result
-              label={`${pair.binary.symbol} / ${pair.decimal.symbol} ratio`}
-              value={`${ratio.toFixed(4)} (${percentBigger.toFixed(2)}% bigger)`}
-              variant="hero"
-            />
-            <Result
-              label={`1 ${pair.decimal.symbol} in bytes (inner cube)`}
-              value={pair.decimal.toBase(1).toExponential(3)}
-              bulletColor="var(--uf-cube-inner)"
-            />
-            <Result
-              label={`1 ${pair.binary.symbol} in bytes (outer shell)`}
-              value={pair.binary.toBase(1).toExponential(3)}
-              bulletColor="var(--uf-cube-outer)"
-            />
-            <Result
-              label="byte gap"
-              value={`${(pair.binary.toBase(1) - pair.decimal.toBase(1)).toExponential(3)}`}
-            />
-            <Result
-              label="outer-cube edge"
-              value={`${edgeRatio.toFixed(4)}× the inner cube`}
-              bulletColor="var(--uf-cube-outer)"
-            />
-          </div>
-        </div>
-      }
-      codeZone={<CodeBlock code={buildCode(pair, ratio)} />}
-    />
-  );
-}
-
-function buildCode(pair: Pair, ratio: number): string {
-  return `import { forge } from 'unitforge';
-import { ${pair.decimal.id.replace(/-/g, '')}, ${pair.binary.id.replace(/-/g, '')}, byte } from 'unitforge/kits/data-storage';
-
-// At the ${pair.label} tier the binary unit is ${((ratio - 1) * 100).toFixed(2)}% larger.
-forge(${pair.decimal.id.replace(/-/g, '')}, byte)(1); // ${pair.decimal.toBase(1).toExponential(3)}
-forge(${pair.binary.id.replace(/-/g, '')}, byte)(1);  // ${pair.binary.toBase(1).toExponential(3)}
-
-// Volume ratio in 3D space: binary cube edge is the cube root of the
-// byte-count ratio relative to the decimal cube.
-const edgeRatio = Math.cbrt(${ratio.toFixed(6)}); // ${Math.cbrt(ratio).toFixed(4)}
-`;
 }

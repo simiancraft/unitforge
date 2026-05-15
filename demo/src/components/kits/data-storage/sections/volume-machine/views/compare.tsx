@@ -1,26 +1,26 @@
-// Compare widget: pick any two anchor units and see how many of the
-// smaller fit inside the larger, rendered as thin-instanced inner cubes
-// packed inside a translucent outer cube. The flagship demo of the
-// volume machine; the headline `defineUnit` showcase for the kit.
+// Compare view of the volume machine. Pick any two anchor units and
+// see how many of the smaller fit inside the larger, rendered as
+// thin-instanced inner cubes packed inside a translucent outer cube.
+// The flagship view; the headline `defineUnit` showcase for the kit.
 //
 // Auto-swap: the widget enforces outer = larger of the two so the
 // "fill" reading is always positive. If the user picks anchor A larger
 // than B, the larger one becomes the outer regardless of which picker
 // they touched.
 
+import { Boxes } from 'lucide-react';
 import { useState } from 'react';
-import { WidgetLayout } from '~/components/kits/section-layout.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
-import { type Anchor, ANCHOR_UNITS, findAnchorById } from './anchors.js';
-import { BabylonFill, MAX_VISIBLE } from './babylon-fill.js';
+import { type Anchor, ANCHOR_UNITS, findAnchorById } from '../parts/anchors.js';
+import { BabylonFill, MAX_VISIBLE } from '../parts/babylon-fill.js';
 
 const DEFAULT_OUTER = 'library-of-congress';
 const DEFAULT_INNER = 'wikipedia-en';
 
-export function CompareWidget() {
+export function useCompare() {
   const [aId, setAId] = useState(DEFAULT_OUTER);
   const [bId, setBId] = useState(DEFAULT_INNER);
 
@@ -38,70 +38,63 @@ export function CompareWidget() {
   const isCapped = trueN > MAX_VISIBLE;
   const visibleN = Math.max(1, Math.min(MAX_VISIBLE, Math.floor(trueN)));
 
-  return (
-    <WidgetLayout
-      interactionZone={
-        <div className="flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <UnitPicker
-              label="anchor A"
-              value={aId}
-              units={ANCHOR_UNITS}
-              onChange={setAId}
-            />
-            <UnitPicker
-              label="anchor B"
-              value={bId}
-              units={ANCHOR_UNITS}
-              onChange={setBId}
-            />
-          </div>
-
-          <div className="relative">
-            <BabylonFill
-              outerBytes={outer.bytes}
-              innerBytes={inner.bytes}
-              ariaLabel={`one ${outer.unit.label} as a translucent outer cube, filled with ${formatBigCount(trueN)} ${inner.unit.label} inner cubes`}
-            />
-            {isCapped ? <CapBadge visibleN={visibleN} trueN={trueN} /> : null}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Result
-              label={`${inner.unit.symbol} per ${outer.unit.symbol}`}
-              value={
-                sameAnchor
-                  ? '1 (same anchor)'
-                  : `${formatBigCount(trueN)} ${inner.unit.symbol} fit in one ${outer.unit.symbol}`
-              }
-              variant="hero"
-            />
-            <Result
-              label={`outer · ${outer.unit.label}`}
-              value={`${formatBytesShort(outer.bytes)} · ${outer.caption}`}
-              bulletColor="var(--uf-cube-outer)"
-            />
-            <Result
-              label={`inner · ${inner.unit.label}`}
-              value={`${formatBytesShort(inner.bytes)} · ${inner.caption}`}
-              bulletColor="var(--uf-cube-inner)"
-            />
-            <Result
-              label={`reverse: ${outer.unit.symbol} per ${inner.unit.symbol}`}
-              value={sameAnchor ? '1' : `${formatBigCount(reverseN)} ${outer.unit.symbol}`}
-            />
-            {isCapped ? (
-              <Result
-                label="render cap"
-                value={`visible ${visibleN.toLocaleString()}; true count exceeds ${MAX_VISIBLE.toLocaleString()}`}
-              />
-            ) : null}
-          </div>
+  return {
+    menuZone: <CompareIcon />,
+    interactivityZone: (
+      <div className="flex flex-col gap-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <UnitPicker label="anchor A" value={aId} units={ANCHOR_UNITS} onChange={setAId} />
+          <UnitPicker label="anchor B" value={bId} units={ANCHOR_UNITS} onChange={setBId} />
         </div>
-      }
-      codeZone={<CodeBlock code={buildCode(outer, inner, trueN)} />}
-    />
-  );
+
+        <div className="relative">
+          <BabylonFill
+            outerBytes={outer.bytes}
+            innerBytes={inner.bytes}
+            ariaLabel={`one ${outer.unit.label} as a translucent outer cube, filled with ${formatBigCount(trueN)} ${inner.unit.label} inner cubes`}
+          />
+          {isCapped ? <CapBadge visibleN={visibleN} trueN={trueN} /> : null}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Result
+            label={`${inner.unit.symbol} per ${outer.unit.symbol}`}
+            value={
+              sameAnchor
+                ? '1 (same anchor)'
+                : `${formatBigCount(trueN)} ${inner.unit.symbol} fit in one ${outer.unit.symbol}`
+            }
+            variant="hero"
+          />
+          <Result
+            label={`outer · ${outer.unit.label}`}
+            value={`${formatBytesShort(outer.bytes)} · ${outer.caption}`}
+            bulletColor="var(--uf-cube-outer)"
+          />
+          <Result
+            label={`inner · ${inner.unit.label}`}
+            value={`${formatBytesShort(inner.bytes)} · ${inner.caption}`}
+            bulletColor="var(--uf-cube-inner)"
+          />
+          <Result
+            label={`reverse: ${outer.unit.symbol} per ${inner.unit.symbol}`}
+            value={sameAnchor ? '1' : `${formatBigCount(reverseN)} ${outer.unit.symbol}`}
+          />
+          {isCapped ? (
+            <Result
+              label="render cap"
+              value={`visible ${visibleN.toLocaleString()}; true count exceeds ${MAX_VISIBLE.toLocaleString()}`}
+            />
+          ) : null}
+        </div>
+      </div>
+    ),
+    codeZone: <CodeBlock code={buildCode(outer, inner, trueN)} />,
+  };
+}
+
+function CompareIcon() {
+  return <Boxes size={22} strokeWidth={1.6} />;
 }
 
 function CapBadge({ visibleN, trueN }: { visibleN: number; trueN: number }) {
