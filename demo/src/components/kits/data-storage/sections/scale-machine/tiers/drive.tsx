@@ -7,13 +7,13 @@
 import { HardDrive } from 'lucide-react';
 import { useState } from 'react';
 import { defineUnit, forge, type Unit } from 'unitforge';
-import { byte, gibibyte, gigabyte, megabyte } from 'unitforge/kits/data-storage';
+import { byte, gibibyte, gigabyte } from 'unitforge/kits/data-storage';
+import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
 import { cn } from '~/lib/cn.js';
-import { formatMagnitude } from '~/lib/format.js';
-import { ControlPanel } from '~/components/kits/data-storage/control-panel.js';
+import { formatBytesShort, formatMagnitude } from '~/lib/format.js';
 
 const MAX_GB = 8000;
 const MAX_FILE_ICONS = 60;
@@ -48,11 +48,7 @@ const musicAlbum = defineUnit({
 const FILE_TYPES: ReadonlyArray<Unit<'data', number>> = [hdMovie, aaaGame, musicAlbum];
 
 function formatPerFileSize(unit: Unit<'data', number>): string {
-  const bytesPerFile = unit.toBase(1);
-  const inGB = forge(byte, gigabyte)(bytesPerFile);
-  if (inGB >= 1) return `${formatMagnitude(inGB)} GB each`;
-  const inMB = forge(byte, megabyte)(bytesPerFile);
-  return `${formatMagnitude(inMB)} MB each`;
+  return `${formatBytesShort(unit.toBase(1))} each`;
 }
 
 const ICON_SLOTS = Array.from({ length: MAX_FILE_ICONS }, (_, i) => ({ id: `icon-${i}` }));

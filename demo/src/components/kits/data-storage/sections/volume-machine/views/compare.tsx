@@ -19,7 +19,7 @@ import { useState } from 'react';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { UnitPicker } from '~/components/ui/unit-picker.js';
-import { formatMagnitude, toJsName } from '~/lib/format.js';
+import { formatBytesShort, formatMagnitude, toJsName } from '~/lib/format.js';
 import { type Anchor, ANCHOR_UNITS, findAnchorById } from '../parts/anchors.js';
 import { BabylonFill, MAX_VISIBLE } from '../parts/babylon-fill.js';
 
@@ -184,32 +184,6 @@ function formatBigCount(n: number): string {
   if (v >= 100) return `${v.toFixed(0)} ${chosen[1]}`;
   if (v >= 10) return `${v.toFixed(1)} ${chosen[1]}`;
   return `${v.toFixed(2)} ${chosen[1]}`;
-}
-
-function formatBytesShort(bytes: number): string {
-  const decimalLadder: ReadonlyArray<readonly [number, string]> = [
-    [1, 'B'],
-    [1e3, 'kB'],
-    [1e6, 'MB'],
-    [1e9, 'GB'],
-    [1e12, 'TB'],
-    [1e15, 'PB'],
-    [1e18, 'EB'],
-    [1e21, 'ZB'],
-    [1e24, 'YB'],
-  ];
-  let scale = 1;
-  let symbol = 'B';
-  for (const [rung, sym] of decimalLadder) {
-    if (bytes >= rung) {
-      scale = rung;
-      symbol = sym;
-    }
-  }
-  const scaled = bytes / scale;
-  if (scaled >= 100) return `${scaled.toFixed(0)} ${symbol}`;
-  if (scaled >= 10) return `${scaled.toFixed(1)} ${symbol}`;
-  return `${scaled.toFixed(2)} ${symbol}`;
 }
 
 function buildCode(outer: Anchor, inner: Anchor, ratio: number): string {
