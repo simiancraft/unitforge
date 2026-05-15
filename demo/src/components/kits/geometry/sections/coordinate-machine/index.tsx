@@ -29,6 +29,7 @@ import { PlaneCanvas } from './parts/plane-canvas.js';
 // the colors track the geometry kit's light / dark palette swap.
 const DISTANCE_COLOR = 'var(--uf-accent)';
 const MIDPOINT_COLOR = 'var(--uf-accent-2)';
+const DECOMPOSE_COLOR = 'var(--uf-accent-3)';
 
 export function CoordinateMachine() {
   const [pointA, setPointA] = useState({ x: -2, y: 1 });
@@ -104,10 +105,12 @@ export function CoordinateMachine() {
                     pointA={pointA}
                     pointB={pointB}
                     midpoint={midpoint}
+                    polarAngle={polarA.angle}
                     onPointAChange={setPointA}
                     onPointBChange={setPointB}
                     distanceColor={DISTANCE_COLOR}
                     midpointColor={MIDPOINT_COLOR}
+                    decomposeColor={DECOMPOSE_COLOR}
                   />
                 </div>
               </div>
@@ -126,10 +129,12 @@ export function CoordinateMachine() {
                 <Result
                   label="polar(A)"
                   value={`{ r: ${formatMagnitude(polarA.radius)} ${lengthUnit.symbol}, θ: ${formatMagnitude(polarA.angle)} ${angleUnit.symbol} }`}
+                  bulletColor={DECOMPOSE_COLOR}
                 />
                 <Result
                   label="cartesian(polar(A))  // round-trip"
                   value={`{ x: ${formatMagnitude(cartesianA.x)}, y: ${formatMagnitude(cartesianA.y)} } ${lengthUnit.symbol}`}
+                  bulletColor={DECOMPOSE_COLOR}
                 />
               </div>
             </div>
