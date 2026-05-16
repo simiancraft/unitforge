@@ -66,15 +66,19 @@ interface Slot {
 }
 
 // FROM pool: savories + drinks + working tools. 8 slots.
+// Base sizes are ~5x the original (the previous max ≈ the new min)
+// so the glyphs read as poster-scale recipe-card doodles rather than
+// faint thumbnails. The slider's scale multiplier (0.6 to 1.4) still
+// rides on top.
 const FROM_POOL: ReadonlyArray<Slot> = [
-  { Icon: CookingPot, x: 8, y: 12, size: 64, rotate: -3 },
-  { Icon: Pizza, x: 22, y: 30, size: 72, rotate: 12 },
-  { Icon: Soup, x: 14, y: 56, size: 60, rotate: -5 },
-  { Icon: Sandwich, x: 28, y: 80, size: 60, rotate: -8 },
-  { Icon: Beef, x: 38, y: 18, size: 56, rotate: 4 },
-  { Icon: Salad, x: 40, y: 48, size: 60, rotate: -6 },
-  { Icon: Utensils, x: 48, y: 88, size: 52, rotate: 3 },
-  { Icon: Coffee, x: 4, y: 78, size: 56, rotate: 6 },
+  { Icon: CookingPot, x: 8, y: 12, size: 320, rotate: -3 },
+  { Icon: Pizza, x: 22, y: 30, size: 360, rotate: 12 },
+  { Icon: Soup, x: 14, y: 56, size: 300, rotate: -5 },
+  { Icon: Sandwich, x: 28, y: 80, size: 300, rotate: -8 },
+  { Icon: Beef, x: 38, y: 18, size: 280, rotate: 4 },
+  { Icon: Salad, x: 40, y: 48, size: 300, rotate: -6 },
+  { Icon: Utensils, x: 48, y: 88, size: 260, rotate: 3 },
+  { Icon: Coffee, x: 4, y: 78, size: 280, rotate: 6 },
 ];
 
 // TO pool: sweet + dessert + fruit. 8 slots, placed on the right side
@@ -82,14 +86,14 @@ const FROM_POOL: ReadonlyArray<Slot> = [
 // (helps the eye read "from-cluster on the left, to-cluster on the
 // right"). Mixed sizes / rotations for hand-drawn feel.
 const TO_POOL: ReadonlyArray<Slot> = [
-  { Icon: Cookie, x: 60, y: 10, size: 56, rotate: -8 },
-  { Icon: Donut, x: 78, y: 8, size: 64, rotate: 5 },
-  { Icon: Cake, x: 64, y: 32, size: 56, rotate: 8 },
-  { Icon: CakeSlice, x: 90, y: 24, size: 52, rotate: -4 },
-  { Icon: Croissant, x: 56, y: 58, size: 60, rotate: -10 },
-  { Icon: IceCream, x: 88, y: 56, size: 56, rotate: 10 },
-  { Icon: Candy, x: 62, y: 78, size: 48, rotate: 12 },
-  { Icon: Apple, x: 84, y: 84, size: 60, rotate: -5 },
+  { Icon: Cookie, x: 60, y: 10, size: 280, rotate: -8 },
+  { Icon: Donut, x: 78, y: 8, size: 320, rotate: 5 },
+  { Icon: Cake, x: 64, y: 32, size: 280, rotate: 8 },
+  { Icon: CakeSlice, x: 90, y: 24, size: 260, rotate: -4 },
+  { Icon: Croissant, x: 56, y: 58, size: 300, rotate: -10 },
+  { Icon: IceCream, x: 88, y: 56, size: 280, rotate: 10 },
+  { Icon: Candy, x: 62, y: 78, size: 240, rotate: 12 },
+  { Icon: Apple, x: 84, y: 84, size: 300, rotate: -5 },
 ];
 
 const PREFERS_REDUCED_MOTION_QUERY =
