@@ -63,7 +63,12 @@ export function UnitPicker({
       <span id={labelId} className={cn('uf-eyebrow', labelHidden && 'sr-only')}>
         {label}
       </span>
-      <Select.Root value={value} onValueChange={onChange}>
+      {/* modal={false} disables Radix's body scroll-lock; otherwise the
+          select opens, body overflow flips to hidden, the Windows
+          scrollbar disappears, the page width grows by ~16 px, and
+          the whole layout jostles. The select still keyboard-traps
+          correctly inside the popper. */}
+      <Select.Root modal={false} value={value} onValueChange={onChange}>
         <Select.Trigger
           aria-labelledby={labelId}
           className="flex items-center justify-between gap-2 rounded border border-uf-border bg-uf-card px-2 py-1 text-sm text-uf-fg outline-none focus-visible:ring-1 focus-visible:ring-uf-accent"
