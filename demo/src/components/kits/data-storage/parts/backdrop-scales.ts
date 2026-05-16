@@ -63,13 +63,14 @@ const secPulsePeriod = defineUnit({
 
 // ─── Dash length (unit-driven) ───────────────────────────────────────────
 
-// Input domain in bytes: byte through terabyte. Chosen so the visible
-// progression lands across the units users actually pick (byte/KB/MB
-// cluster small; GB chunky; TB+ saturated at max). The full kit range
-// extends to yottabyte, but lerping linearly across 1e24 byte-units
-// would make everything except YB itself look identical at min.
+// Input domain in bytes: byte through yottabyte. The kit spans 24
+// orders of magnitude (byte to yobibyte) and human-pickable units
+// cluster across 10+ orders, so a linear lerp over byte-scale pins
+// almost every unit to the floor (a kilobyte is one billionth of a
+// terabyte). We lerp over log10(bytes) instead, so each rung of the
+// ladder steps the visible dash one notch larger.
 const DASH_LENGTH_MIN_BYTES = 1;
-const DASH_LENGTH_MAX_BYTES = 1e12;
+const DASH_LENGTH_MAX_BYTES = 1e24;
 const DASH_LENGTH_MIN_PX = 2;
 const DASH_LENGTH_MAX_PX = 14;
 
@@ -77,11 +78,10 @@ const dashLengthFromBytes = defineConversion({
   inputs: { amount: 'data' as const },
   output: BG_DASH_LENGTH_DIMENSION,
   compute: ({ amount }) => {
-    const t = clamp(
-      (amount - DASH_LENGTH_MIN_BYTES) / (DASH_LENGTH_MAX_BYTES - DASH_LENGTH_MIN_BYTES),
-      0,
-      1,
-    );
+    const logAmount = Math.log10(Math.max(amount, DASH_LENGTH_MIN_BYTES));
+    const logMin = Math.log10(DASH_LENGTH_MIN_BYTES);
+    const logMax = Math.log10(DASH_LENGTH_MAX_BYTES);
+    const t = clamp((logAmount - logMin) / (logMax - logMin), 0, 1);
     return DASH_LENGTH_MIN_PX + t * (DASH_LENGTH_MAX_PX - DASH_LENGTH_MIN_PX);
   },
 });
