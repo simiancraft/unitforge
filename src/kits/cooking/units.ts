@@ -79,6 +79,18 @@ export const milliliter = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1e-6,
 });
 
+/** 1 L = 1e-3 m³. The home cook's metric workhorse: stockpots, milk
+ *  jugs, water bottles. Same canonical SI value as the geometry kit's
+ *  `liter`; redefined here so the cooking kit is self-contained. */
+export const liter = /*#__PURE__*/ defineUnit({
+  id: 'liter',
+  label: 'Liter',
+  symbol: 'L',
+  dimension: VOLUME,
+  toBase: (v) => v * 1e-3,
+  fromBase: (b) => b / 1e-3,
+});
+
 /** US customary fluid ounce; 1/128 US gallon. */
 export const fluidOunceUs = /*#__PURE__*/ defineUnit({
   id: 'fluid-ounce-us',

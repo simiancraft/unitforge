@@ -10,6 +10,7 @@ import {
   dash,
   fluidOunceUk,
   fluidOunceUs,
+  liter,
   milliliter,
   pinch,
   stickOfButter,
@@ -28,6 +29,7 @@ import {
 describe('cooking units carry VOLUME dimension', () => {
   for (const u of [
     milliliter,
+    liter,
     fluidOunceUs,
     fluidOunceUk,
     teaspoonUs,
@@ -44,6 +46,20 @@ describe('cooking units carry VOLUME dimension', () => {
       expect(u.dimension).toBe(VOLUME);
     });
   }
+});
+
+describe('liter / milliliter relationships', () => {
+  it('1 L = 1000 mL', () => {
+    expect(forge(liter, milliliter)(1)).toBeCloseTo(1000, 9);
+  });
+
+  it('1 US cup ≈ 0.2366 L', () => {
+    expect(forge(cupUs, liter)(1)).toBeCloseTo(0.2365882365, 9);
+  });
+
+  it('1 UK cup ≈ 0.2841 L', () => {
+    expect(forge(cupUk, liter)(1)).toBeCloseTo(0.284130625, 9);
+  });
 });
 
 describe('US/UK split: cups are NOT interchangeable', () => {
