@@ -85,10 +85,11 @@ const pxPerSecGridSpeed = defineUnit({
 });
 
 // At slider min the to-grid scrolls slowly (small differential vs the
-// from-grid's base speed; reads as "almost no depth"); at slider max it
-// scrolls 4x faster than the base, producing strong parallax.
-const GRID_SPEED_MIN_PX_S = 4;
-const GRID_SPEED_MAX_PX_S = 64;
+// from-grid's base speed; reads as "almost no depth"); at slider max
+// the differential opens up to ~5x the base, producing visible
+// parallax without dominating the page.
+const GRID_SPEED_MIN_PX_S = 2;
+const GRID_SPEED_MAX_PX_S = 32;
 
 const gridSpeedFromLength = defineConversion({
   inputs: {
@@ -122,5 +123,63 @@ export function gridSpeedPxPerSecFor(
 }
 
 /** Fixed scroll speed in px/sec for the from-grid (the "background"
- *  layer; the to-grid is parallaxed against this baseline). */
-export const GRID_FROM_BASE_SPEED_PX_S = 12;
+ *  layer; the to-grid is parallaxed against this baseline). Halved
+ *  from the previous 12 so the ambient page texture is calmer; the
+ *  slider opens the differential rather than the page racing on
+ *  load. */
+export const GRID_FROM_BASE_SPEED_PX_S = 6;
+
+// ─── To-grid scale multiplier (slider-driven, runtime-bounded) ──────────
+//
+// Compounds the parallax cue: as the slider drives the to-grid faster
+// (foreground "coming toward us"), the same slider also nudges its
+// cell-size up so the foreground visibly enlarges. At slider min the
+// to-grid sits at 0.85x its unit-driven cell size (denser, reads as
+// further away); at slider max it returns to 1.0x. Subtle range; the
+// effect compounds with the speed differential rather than competing
+// with it.
+
+const BG_GRID_SCALE_DIMENSION = 'bg.grid_scale' as const;
+
+const gridScaleRatio = defineUnit({
+  id: 'bg-grid-scale-ratio',
+  label: 'Background grid scale (ratio)',
+  symbol: '×',
+  dimension: BG_GRID_SCALE_DIMENSION,
+  toBase: (v) => v,
+  fromBase: (b) => b,
+  base: true,
+});
+
+const GRID_SCALE_MIN = 0.85;
+const GRID_SCALE_MAX = 1.0;
+
+const gridScaleFromLength = defineConversion({
+  inputs: {
+    length: 'length' as const,
+    minLength: 'length' as const,
+    maxLength: 'length' as const,
+  },
+  output: BG_GRID_SCALE_DIMENSION,
+  compute: ({ length, minLength, maxLength }) => {
+    const range = maxLength - minLength;
+    const t = range > 0 ? clamp((length - minLength) / range, 0, 1) : 0;
+    return GRID_SCALE_MIN + t * (GRID_SCALE_MAX - GRID_SCALE_MIN);
+  },
+});
+
+/**
+ * Returns the multiplicative scale factor for the to-grid's cell size,
+ * lerped over the bench's UI bounds so the slider's full travel always
+ * uses the full scale range regardless of the picked fromUnit.
+ */
+export function gridScaleFor(
+  fromUnit: Unit<'length', number>,
+  amount: number,
+  minAmount: number,
+  maxAmount: number,
+): number {
+  return forge({ length: fromUnit, minLength: fromUnit, maxLength: fromUnit }, gridScaleRatio, {
+    via: gridScaleFromLength,
+  })({ length: amount, minLength: minAmount, maxLength: maxAmount });
+}

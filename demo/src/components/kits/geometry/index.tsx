@@ -14,7 +14,7 @@ import { findById } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
-import { gridCellPxForUnit, gridSpeedPxPerSecFor } from './parts/backdrop-scales.js';
+import { gridCellPxForUnit, gridScaleFor, gridSpeedPxPerSecFor } from './parts/backdrop-scales.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { TwoDShapeMachine } from './sections/2d-shape-machine/index.js';
 import { ThreeDShapeMachine } from './sections/3d-shape-machine/index.js';
@@ -38,7 +38,13 @@ export function GeometryScreen() {
   const fromUnit = findById(LENGTH_UNITS, bench.fromId);
   const toUnit = findById(LENGTH_UNITS, bench.toId);
   const cellSize = gridCellPxForUnit(fromUnit);
-  const cellSizeTo = gridCellPxForUnit(toUnit);
+  // To-grid cell size compounds the unit-driven baseline with a
+  // slider-driven scale (gridScaleFor → 0.85 ↑ 1.0). At slider min the
+  // to-grid sits at 85% of its unit-driven size (denser, reads as
+  // further); at slider max it returns to 100%, matching the speed
+  // increase so the foreground "approaches" along both cues.
+  const toGridScale = gridScaleFor(fromUnit, bench.value, GEOMETRY_BENCH_MIN, GEOMETRY_BENCH_MAX);
+  const cellSizeTo = gridCellPxForUnit(toUnit) * toGridScale;
   const speedPxPerSec = gridSpeedPxPerSecFor(
     fromUnit,
     bench.value,
