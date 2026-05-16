@@ -177,7 +177,15 @@ bun install && bun run check
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table (test, typecheck, lint, build, packaging, knip).
 
-The test suite combines example-based assertions, property-based fuzz tests via [`fast-check`](https://github.com/dubzzz/fast-check), and Stryker mutation testing (`bun run mutation`) over `forge`, `defineUnit`, `defineConversion`, and the `lib/` primitives. Coverage and the mutation-score gate run on every CI build.
+## Testing
+
+Three layers, all gated on every CI build:
+
+- **Example-based tests** (`bun test`): 422 assertions across `forge`, `defineUnit`, `defineConversion`, dimensions, the kits, and the `lib/` primitives. 100% line coverage, tracked on every PR via Codecov.
+- **Property-based fuzz tests** via [`fast-check`](https://github.com/dubzzz/fast-check) in `test/fuzz/`: within-dim round-trip + composition, cross-dim monotonicity, precision-0 integer output, `ValidationError` invariants, memoize cap-invariance, and `defineUnit` prototype-pollution hygiene. Also satisfies the [OpenSSF Scorecard](https://github.com/ossf/scorecard) Fuzzing check.
+- **Mutation testing** via [Stryker](https://stryker-mutator.io/) (`bun run mutation`) over `forge`, `defineUnit`, `defineConversion`, and the `lib/` primitives. Gated on a 75% mutation score; current baseline 96.36%. Coverage measures whether the suite *ran* a line of code; mutation measures whether the suite *asserted hard enough to catch a behavioral change*. The two are complementary: high coverage with weak assertions passes the first check and fails the second.
+
+If a future PR drops the mutation score below the gate, CI blocks the merge until either the surviving mutants are killed (by tightening assertions) or explicitly classified as equivalent (with a [`// Stryker disable`](https://stryker-mutator.io/docs/stryker-js/configuration/#ignore-comments) comment explaining why).
 
 ## Community
 
