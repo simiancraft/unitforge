@@ -35,6 +35,11 @@
   --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #3e7fa6;
   --uf-grid-faint: #3e7fa666;
+  /* Secondary grid: lighter teal-blue for the to-unit layer
+   * superimposed on the from-unit grid. Same hue family so the two
+   * read as two grids on the same paper, not two separate UIs. */
+  --uf-grid-secondary: #76b8e3;
+  --uf-grid-secondary-faint: #76b8e366;
 }
 
 /* Blueprint-night: deep navy bg, pale ink, electric-cyan accent, lighter
@@ -58,6 +63,11 @@
   --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #76b8e3;
   --uf-grid-faint: #76b8e333;
+  /* Secondary grid: deeper steel-blue for the to-unit layer. On the
+   * navy bg the primary already runs near max lightness, so the
+   * secondary darkens instead of brightening to stay distinguishable. */
+  --uf-grid-secondary: #3a6b9b;
+  --uf-grid-secondary-faint: #3a6b9b66;
 }
 
 /* Subtle paper-grain dot texture on `.uf-paper` surfaces (both variants;

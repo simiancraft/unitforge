@@ -14,7 +14,7 @@ import { findById } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
-import { gridCellPxForUnit } from './parts/backdrop-scales.js';
+import { gridCellPxForUnit, gridOffsetPxFor } from './parts/backdrop-scales.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { TwoDShapeMachine } from './sections/2d-shape-machine/index.js';
 import { ThreeDShapeMachine } from './sections/3d-shape-machine/index.js';
@@ -35,11 +35,17 @@ export function GeometryScreen() {
     toId: 'foot',
     value: 5,
   });
-  const cellSize = gridCellPxForUnit(findById(LENGTH_UNITS, bench.fromId));
+  const fromUnit = findById(LENGTH_UNITS, bench.fromId);
+  const toUnit = findById(LENGTH_UNITS, bench.toId);
+  const cellSize = gridCellPxForUnit(fromUnit);
+  const cellSizeTo = gridCellPxForUnit(toUnit);
+  const offsetPx = gridOffsetPxFor(fromUnit, bench.value, GEOMETRY_BENCH_MIN, GEOMETRY_BENCH_MAX);
 
   return (
     <KitLayout
-      backdropZone={<GeometryBackdrop cellSize={cellSize} />}
+      backdropZone={
+        <GeometryBackdrop cellSize={cellSize} cellSizeTo={cellSizeTo} offsetPx={offsetPx} />
+      }
       headerZone={
         <header className="flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 01</p>
