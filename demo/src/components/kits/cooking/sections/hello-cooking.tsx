@@ -10,7 +10,6 @@ import { useState } from 'react';
 import { forge } from 'unitforge';
 import { cupUs, milliliter } from 'unitforge/kits/cooking';
 import { CodeBlock } from '~/components/ui/code-block.js';
-import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
 import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
@@ -20,9 +19,7 @@ import {
   COOKING_ALL_UNITS,
   COOKING_METRIC_UNITS,
   COOKING_TRADITION_UNITS,
-  COOKING_UK_UNITS,
-  COOKING_US_UNITS,
-  type CookingUnit,
+  COOKING_US_UK_PAIRS,
   cookingBoundsFor,
   type SliderBounds,
 } from '../units.js';
@@ -131,43 +128,107 @@ function HelloCookingWidget({
   );
 }
 
-// Four-column readout matrix; one canonical milliliter quantity mapped
-// to every unit-family at once. Named Organ extraction: sink (no state
-// of its own), bounded prop surface (just inMl), runs on the
-// slider-driven cadence while pickers above it tick on rare unit
-// changes. Pulling it out lets the compiler memoize each Result row
-// inside without re-walking the SectionLayout chrome.
-interface ReadoutColumn {
-  family: string;
-  units: ReadonlyArray<CookingUnit>;
-}
-
-const READOUT_COLUMNS: readonly ReadoutColumn[] = [
-  { family: 'metric (SI)', units: COOKING_METRIC_UNITS },
-  { family: 'US customary', units: COOKING_US_UNITS },
-  { family: 'UK imperial', units: COOKING_UK_UNITS },
-  { family: 'tradition', units: COOKING_TRADITION_UNITS },
-];
+// Three-column readout matrix; one canonical milliliter quantity mapped
+// to every unit-family at once. Customary collapses US + UK into a
+// single column with the UK value stacked above the US value per family
+// (cup / tablespoon / teaspoon / fluid ounce), so the eye reads the
+// Atlantic gap inside one cell instead of comparing across columns.
+// Named Organ extraction: sink (no state of its own), bounded prop
+// surface (just inMl).
 
 function ReadoutMatrix({ inMl }: { inMl: number }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {READOUT_COLUMNS.map((col) => (
-        <div key={col.family} className="flex flex-col gap-1">
-          <span className="uf-eyebrow">{col.family}</span>
-          {col.units.map((unit) => {
-            const v = forge(milliliter, unit)(inMl);
-            return (
-              <Result
-                key={unit.id}
-                layout="stack"
-                label={unit.label}
-                value={`${formatMagnitude(v)} ${unit.symbol}`}
-              />
-            );
-          })}
+    <div className="grid gap-4 md:grid-cols-3">
+      <MetricColumn inMl={inMl} />
+      <CustomaryColumn inMl={inMl} />
+      <TraditionColumn inMl={inMl} />
+    </div>
+  );
+}
+
+function MetricColumn({ inMl }: { inMl: number }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="uf-eyebrow">metric (SI)</span>
+      {COOKING_METRIC_UNITS.map((unit) => (
+        <ValueRow
+          key={unit.id}
+          label={unit.label}
+          value={forge(milliliter, unit)(inMl)}
+          symbol={unit.symbol}
+        />
+      ))}
+    </div>
+  );
+}
+
+function CustomaryColumn({ inMl }: { inMl: number }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="uf-eyebrow">customary · UK above US</span>
+      {COOKING_US_UK_PAIRS.map((pair) => (
+        <div key={pair.family} className="flex flex-col">
+          <span className="mono text-[10px] uppercase tracking-wider text-uf-muted">
+            {pair.family}
+          </span>
+          <PairedValue
+            ukValue={forge(milliliter, pair.uk)(inMl)}
+            ukSymbol={pair.uk.symbol}
+            usValue={forge(milliliter, pair.us)(inMl)}
+            usSymbol={pair.us.symbol}
+          />
         </div>
       ))}
+    </div>
+  );
+}
+
+function TraditionColumn({ inMl }: { inMl: number }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="uf-eyebrow">tradition</span>
+      {COOKING_TRADITION_UNITS.map((unit) => (
+        <ValueRow
+          key={unit.id}
+          label={unit.label}
+          value={forge(milliliter, unit)(inMl)}
+          symbol={unit.symbol}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ValueRow({ label, value, symbol }: { label: string; value: number; symbol: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="mono text-[10px] uppercase tracking-wider text-uf-muted">{label}</span>
+      <span className="mono leading-tight">
+        <span className="text-base text-uf-fg tabular-nums">{formatMagnitude(value)}</span>
+        <span className="ml-1 text-xs text-uf-muted">{symbol}</span>
+      </span>
+    </div>
+  );
+}
+
+interface PairedValueProps {
+  ukValue: number;
+  ukSymbol: string;
+  usValue: number;
+  usSymbol: string;
+}
+
+function PairedValue({ ukValue, ukSymbol, usValue, usSymbol }: PairedValueProps) {
+  return (
+    <div className="flex flex-col leading-tight">
+      <span className="mono">
+        <span className="text-base text-uf-accent-2 tabular-nums">{formatMagnitude(ukValue)}</span>
+        <span className="ml-1 text-xs text-uf-muted">{ukSymbol}</span>
+      </span>
+      <span className="mono">
+        <span className="text-base text-uf-accent tabular-nums">{formatMagnitude(usValue)}</span>
+        <span className="ml-1 text-xs text-uf-muted">{usSymbol}</span>
+      </span>
     </div>
   );
 }

@@ -1,23 +1,29 @@
-// Shared visualizer for the recipe-machine recipes. A recipe card with
-// three columns: the original US ingredient list, the UK translation,
-// and the metric ground truth. The scale slider above the card
-// multiplies every ingredient at once, so 2x cookies needs 2 sticks of
-// butter and 2 UK-cups become "2.4 US-cups", which is the gotcha the
-// kit exists to surface.
+// Recipe card visualization. Three load-bearing parts:
+//   1. A marching-icons row up top showing the yield of the current
+//      batch (24 cookies × 2 batches = 48 cookies; capped at 40 with
+//      "+N more" tail). The slider drives this directly so the reader
+//      feels the scale before reading the table.
+//   2. A real <table> with the ingredient on the row-header axis and
+//      US / UK / metric on the column-header axis. The metric column
+//      header is left blank because every cell ends in `mL` anyway
+//      and the lack of a label reads cleaner.
+//   3. Typography: each cell is `<large value> <small muted unit>`.
+//      Regional suffix is stripped from the unit symbol because the
+//      column header already carries it (so "cup (US)" → "cup" inside
+//      the US column).
 //
-// Rendered as a real `<table>`: native row/column header semantics for
-// screen readers, native cell focus, and native collapse behavior at
-// narrow viewports (the cell text wraps rather than overflowing the
-// card). Column-header `scope="col"` and the visible caption are the
-// load-bearing a11y bits.
+// Rendered inside the kit-scoped ControlPanel's visualZone; the
+// section file owns the scale slider.
 
+import type { LucideIcon } from 'lucide-react';
 import type { Unit } from 'unitforge';
 import { forge } from 'unitforge';
+import { MarchingIcons } from '../../comparison-machine/parts/marching-icons.js';
 
 export interface Ingredient {
   /** Stable id used as the React key. */
   id: string;
-  /** Plain-English name shown in the leftmost cell of each row. */
+  /** Plain-English name shown in the row header. */
   name: string;
   /** Quantity in the recipe's source units (the value before scaling). */
   amount: number;
@@ -33,31 +39,55 @@ interface RecipeCardProps {
   title: string;
   scale: number;
   ingredients: ReadonlyArray<Ingredient>;
+  /** Items produced by one batch (24 cookies, 12 donuts, 8 slices). */
+  itemsPerBatch: number;
+  /** Plain word for one item, plural form. */
+  itemNoun: string;
+  /** Lucide icon for the marching-icons yield row. */
+  ItemIcon: LucideIcon;
 }
 
-export function RecipeCard({ title, scale, ingredients }: RecipeCardProps) {
+export function RecipeCard({
+  title,
+  scale,
+  ingredients,
+  itemsPerBatch,
+  itemNoun,
+  ItemIcon,
+}: RecipeCardProps) {
+  const totalItems = itemsPerBatch * scale;
+
   return (
-    <div className="rounded-md border border-uf-border bg-uf-card p-4 uf-grease-spot">
+    <div className="flex flex-col gap-4 rounded-md border border-uf-border bg-uf-card p-4 uf-grease-spot">
+      <header className="flex items-baseline justify-between gap-3 border-b border-uf-border pb-2">
+        <span className="display text-2xl text-uf-fg">{title}</span>
+        <span className="mono whitespace-nowrap text-xs uppercase tracking-wider text-uf-muted">
+          ×{scale.toFixed(2)} batch
+        </span>
+      </header>
+
+      <YieldRow count={totalItems} itemNoun={itemNoun} ItemIcon={ItemIcon} />
+
       <table className="w-full border-collapse">
-        <caption className="mb-3 flex items-baseline justify-between border-b border-uf-border pb-2 caption-top">
-          <span className="display text-2xl text-uf-fg">{title}</span>
-          <span className="mono text-xs uppercase tracking-wider text-uf-muted">
-            ×{scale.toFixed(2)} batch
-          </span>
-        </caption>
+        <colgroup>
+          <col style={{ width: '28%' }} />
+          <col style={{ width: '24%' }} />
+          <col style={{ width: '24%' }} />
+          <col style={{ width: '24%' }} />
+        </colgroup>
         <thead>
           <tr>
             <th scope="col" className="uf-eyebrow text-left">
               ingredient
             </th>
             <th scope="col" className="uf-eyebrow text-right">
-              US (orig)
+              US
             </th>
             <th scope="col" className="uf-eyebrow text-right">
               UK
             </th>
             <th scope="col" className="uf-eyebrow text-right">
-              metric
+              {/* deliberately blank; every cell in this column ends in mL */}
             </th>
           </tr>
         </thead>
@@ -71,9 +101,9 @@ export function RecipeCard({ title, scale, ingredients }: RecipeCardProps) {
                 key={ing.id}
                 name={ing.name}
                 usValue={scaled}
-                usSymbol={ing.sourceUnit.symbol}
+                usSymbol={stripRegion(ing.sourceUnit.symbol)}
                 ukValue={inUk}
-                ukSymbol={ing.ukUnit.symbol}
+                ukSymbol={stripRegion(ing.ukUnit.symbol)}
                 metricValue={inMetric}
                 metricSymbol={ing.metricUnit.symbol}
               />
@@ -81,6 +111,29 @@ export function RecipeCard({ title, scale, ingredients }: RecipeCardProps) {
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+interface YieldRowProps {
+  count: number;
+  itemNoun: string;
+  ItemIcon: LucideIcon;
+}
+
+function YieldRow({ count, itemNoun, ItemIcon }: YieldRowProps) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="uf-eyebrow">
+        makes {count.toFixed(0)} {itemNoun}
+      </span>
+      <MarchingIcons
+        count={count}
+        Icon={ItemIcon}
+        iconClassName="h-6 w-6"
+        colorClassName="text-uf-accent"
+        ariaLabel={`${count.toFixed(0)} ${itemNoun} yielded by this recipe at the current batch scale`}
+      />
     </div>
   );
 }
@@ -106,20 +159,33 @@ function IngredientRow({
 }: IngredientRowProps) {
   return (
     <tr>
-      <th scope="row" className="py-0.5 text-left text-sm font-normal text-uf-fg">
+      <th scope="row" className="py-1 pr-2 text-left text-sm font-normal text-uf-fg">
         {name}
       </th>
-      <td className="mono py-0.5 pl-4 text-right text-sm tabular-nums text-uf-accent">
-        {fmt(usValue)} {usSymbol}
-      </td>
-      <td className="mono py-0.5 pl-4 text-right text-sm tabular-nums text-uf-accent-2">
-        {fmt(ukValue)} {ukSymbol}
-      </td>
-      <td className="mono py-0.5 pl-4 text-right text-sm tabular-nums text-uf-muted">
-        {fmt(metricValue)} {metricSymbol}
-      </td>
+      <ValueCell value={usValue} unit={usSymbol} colorClassName="text-uf-accent" />
+      <ValueCell value={ukValue} unit={ukSymbol} colorClassName="text-uf-accent-2" />
+      <ValueCell value={metricValue} unit={metricSymbol} colorClassName="text-uf-fg" />
     </tr>
   );
+}
+
+interface ValueCellProps {
+  value: number;
+  unit: string;
+  colorClassName: string;
+}
+
+function ValueCell({ value, unit, colorClassName }: ValueCellProps) {
+  return (
+    <td className="mono whitespace-nowrap py-1 pl-3 text-right tabular-nums">
+      <span className={`text-base font-medium ${colorClassName}`}>{fmt(value)}</span>
+      <span className="ml-1 text-xs text-uf-muted">{unit}</span>
+    </td>
+  );
+}
+
+function stripRegion(symbol: string): string {
+  return symbol.replace(/\s*\((US|UK)\)\s*$/, '').trim();
 }
 
 function fmt(n: number): string {

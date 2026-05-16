@@ -66,6 +66,8 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
   },
 ];
 
+const SALADS_PER_BATCH = 6;
+
 export function useVinaigrette() {
   const [scale, setScale] = useState(1);
 
@@ -74,7 +76,14 @@ export function useVinaigrette() {
     interactivityZone: (
       <ControlPanel
         visualZone={
-          <RecipeCard title="vinaigrette (3:1)" scale={scale} ingredients={INGREDIENTS} />
+          <RecipeCard
+            title="vinaigrette (3:1)"
+            scale={scale}
+            ingredients={INGREDIENTS}
+            itemsPerBatch={SALADS_PER_BATCH}
+            itemNoun="salads"
+            ItemIcon={Salad}
+          />
         }
         controlsZone={
           <Slider
@@ -89,8 +98,8 @@ export function useVinaigrette() {
         }
         resultsZone={
           <Result
-            label="full ladder"
-            value="cup → tablespoon → teaspoon → pinch all in one ingredient list; same dimension"
+            label="yield"
+            value={`${Math.round(SALADS_PER_BATCH * scale)} dressed salads`}
             variant="hero"
           />
         }

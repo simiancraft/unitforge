@@ -1,18 +1,68 @@
 // Recipe-card background for the cooking theme. Faint horizontal ruled
-// lines (recipe-card stationery) overlaid with a sparse pattern of
-// measuring-spoon and cup silhouettes; an animated drip slowly traces a
-// vertical line through one accent lane (always on, slow enough to live
-// as ambient page texture, just lively enough to feel like a kitchen
-// where something is cooking).
+// lines (recipe-card stationery), a margin rule down the left, and a
+// scattered field of Lucide food icons stamped at low opacity so the
+// page reads as "a stained, marked-up index card from a working
+// kitchen" rather than a styled SVG silhouette. Two slow vertical
+// drip lanes animate continuously, quiet enough to live as ambient
+// page texture.
+
+import {
+  Cake,
+  Candy,
+  Coffee,
+  Cookie,
+  CookingPot,
+  Croissant,
+  CupSoda,
+  Donut,
+  IceCream,
+  type LucideIcon,
+  Pizza,
+  Salad,
+  Sandwich,
+  Soup,
+  Utensils,
+  Wine,
+} from 'lucide-react';
 
 interface CookingBackdropProps {
   inline?: boolean;
 }
 
+// Hand-picked positions so the stamps feel scattered rather than
+// gridded. Coordinates are percentages of the backdrop's bounding box,
+// resolution-independent. Mix of food categories so the page reads as
+// the whole kitchen (baking + drinks + sides + main course).
+interface Stamp {
+  Icon: LucideIcon;
+  x: number;
+  y: number;
+  size: number;
+  rotate: number;
+}
+
+const STAMPS: ReadonlyArray<Stamp> = [
+  { Icon: Cookie, x: 6, y: 8, size: 56, rotate: -8 },
+  { Icon: Donut, x: 78, y: 6, size: 64, rotate: 5 },
+  { Icon: Pizza, x: 18, y: 28, size: 72, rotate: 12 },
+  { Icon: CupSoda, x: 88, y: 22, size: 60, rotate: -4 },
+  { Icon: CookingPot, x: 40, y: 10, size: 64, rotate: -3 },
+  { Icon: Cake, x: 62, y: 30, size: 56, rotate: 8 },
+  { Icon: Croissant, x: 12, y: 52, size: 60, rotate: -10 },
+  { Icon: Salad, x: 70, y: 50, size: 64, rotate: 4 },
+  { Icon: Wine, x: 36, y: 42, size: 48, rotate: -6 },
+  { Icon: IceCream, x: 90, y: 60, size: 56, rotate: 10 },
+  { Icon: Coffee, x: 8, y: 76, size: 56, rotate: 6 },
+  { Icon: Sandwich, x: 26, y: 84, size: 64, rotate: -8 },
+  { Icon: Candy, x: 58, y: 74, size: 48, rotate: 12 },
+  { Icon: Soup, x: 82, y: 86, size: 60, rotate: -5 },
+  { Icon: Utensils, x: 48, y: 92, size: 56, rotate: 3 },
+];
+
 export function CookingBackdrop({ inline }: CookingBackdropProps) {
   const className = inline
-    ? 'absolute inset-0 pointer-events-none'
-    : 'fixed inset-0 pointer-events-none -z-10';
+    ? 'absolute inset-0 pointer-events-none overflow-hidden'
+    : 'fixed inset-0 pointer-events-none -z-10 overflow-hidden';
 
   return (
     <div aria-hidden className={className} style={{ zIndex: inline ? 0 : -1 }}>
@@ -30,6 +80,9 @@ export function CookingBackdrop({ inline }: CookingBackdropProps) {
           }
         }
       `}</style>
+
+      {/* Ruled-paper + margin underlay rendered as SVG so it scales to
+          fill the backdrop without per-resolution math. */}
       <svg
         width="100%"
         height="100%"
@@ -37,51 +90,23 @@ export function CookingBackdrop({ inline }: CookingBackdropProps) {
         preserveAspectRatio="xMidYMid slice"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
+        className="absolute inset-0"
       >
         <defs>
           <pattern id="uf-recipe-card" width="800" height="36" patternUnits="userSpaceOnUse">
             <line x1="0" y1="35" x2="800" y2="35" stroke="var(--uf-grid-faint)" strokeWidth="1" />
           </pattern>
-          <pattern id="uf-utensils" width="160" height="160" patternUnits="userSpaceOnUse">
-            {/* Stylized measuring cup silhouette */}
-            <g
-              transform="translate(20, 20)"
-              fill="none"
-              stroke="var(--uf-grid-faint)"
-              strokeWidth="1.4"
-            >
-              <path d="M 0 4 L 26 4 L 24 28 L 2 28 Z" />
-              <line x1="6" y1="12" x2="20" y2="12" />
-              <line x1="6" y1="20" x2="20" y2="20" />
-              <path d="M 26 8 Q 36 8 36 14 Q 36 20 30 20" />
-            </g>
-            {/* Stylized spoon silhouette */}
-            <g
-              transform="translate(100, 90)"
-              fill="none"
-              stroke="var(--uf-grid-faint)"
-              strokeWidth="1.4"
-            >
-              <ellipse cx="8" cy="8" rx="8" ry="6" />
-              <line x1="14" y1="10" x2="40" y2="32" />
-            </g>
-          </pattern>
-          <pattern id="uf-margin-rule" width="800" height="600" patternUnits="userSpaceOnUse">
-            <line
-              x1="60"
-              y1="0"
-              x2="60"
-              y2="600"
-              stroke="var(--uf-accent)"
-              strokeWidth="1"
-              opacity="0.18"
-            />
-          </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#uf-recipe-card)" />
-        <rect width="100%" height="100%" fill="url(#uf-utensils)" />
-        <rect width="100%" height="100%" fill="url(#uf-margin-rule)" />
-
+        <line
+          x1="60"
+          y1="0"
+          x2="60"
+          y2="600"
+          stroke="var(--uf-accent)"
+          strokeWidth="1"
+          opacity="0.18"
+        />
         <g>
           <line x1="120" y1="60" x2="120" y2="540" strokeWidth="1.5" className="uf-drip" />
           <line
@@ -95,6 +120,27 @@ export function CookingBackdrop({ inline }: CookingBackdropProps) {
           />
         </g>
       </svg>
+
+      {/* Lucide stamps positioned percentage-wise. text-uf-grid-faint
+          paints them in the kit's accent color at very low opacity so
+          they read as recipe-card doodles rather than UI chrome. */}
+      <div className="absolute inset-0">
+        {STAMPS.map((s, i) => (
+          <s.Icon
+            // biome-ignore lint/suspicious/noArrayIndexKey: stamps are a static module-scope array
+            key={i}
+            size={s.size}
+            strokeWidth={1.2}
+            className="absolute text-uf-grid"
+            style={{
+              left: `${s.x}%`,
+              top: `${s.y}%`,
+              transform: `translate(-50%, -50%) rotate(${s.rotate}deg)`,
+              opacity: 0.08,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

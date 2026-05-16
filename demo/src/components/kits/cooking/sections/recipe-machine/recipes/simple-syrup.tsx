@@ -4,7 +4,7 @@
 // recipe demonstrates the conversion ladder from cup down to teaspoon
 // for a tiny "I just need a few drinks" batch.
 
-import { Wine } from 'lucide-react';
+import { Martini, Wine } from 'lucide-react';
 import { useState } from 'react';
 import { cupUk, cupUs, milliliter, tablespoonUk, tablespoonUs } from 'unitforge/kits/cooking';
 import { CodeBlock } from '~/components/ui/code-block.js';
@@ -48,7 +48,14 @@ export function useSimpleSyrup() {
     interactivityZone: (
       <ControlPanel
         visualZone={
-          <RecipeCard title="simple syrup (1:1)" scale={scale} ingredients={INGREDIENTS} />
+          <RecipeCard
+            title="simple syrup (1:1)"
+            scale={scale}
+            ingredients={INGREDIENTS}
+            itemsPerBatch={COCKTAILS_PER_BATCH}
+            itemNoun="cocktails"
+            ItemIcon={Martini}
+          />
         }
         controlsZone={
           <Slider
@@ -63,8 +70,8 @@ export function useSimpleSyrup() {
         }
         resultsZone={
           <Result
-            label="ratio invariant"
-            value="sugar:water stays 1:1 by volume in any unit; only the absolute number changes"
+            label="yield"
+            value={`${Math.round(COCKTAILS_PER_BATCH * scale)} cocktails (one barspoon each)`}
             variant="hero"
           />
         }
@@ -73,6 +80,10 @@ export function useSimpleSyrup() {
     codeZone: <CodeBlock code={buildCode(scale)} />,
   };
 }
+
+// 1 batch ≈ 1.5 cups of syrup; the average mixed drink takes ~1 tsp
+// of simple syrup, and 1.5 cups holds ~72 tsp. Round down for headroom.
+const COCKTAILS_PER_BATCH = 48;
 
 function buildCode(scale: number): string {
   const usCups = scale.toFixed(2);

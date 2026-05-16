@@ -81,6 +81,8 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
   },
 ];
 
+const ITEMS_PER_BATCH = 24;
+
 export function useChocolateChipCookies() {
   const [scale, setScale] = useState(1);
 
@@ -89,7 +91,14 @@ export function useChocolateChipCookies() {
     interactivityZone: (
       <ControlPanel
         visualZone={
-          <RecipeCard title="chocolate chip cookies" scale={scale} ingredients={INGREDIENTS} />
+          <RecipeCard
+            title="chocolate chip cookies"
+            scale={scale}
+            ingredients={INGREDIENTS}
+            itemsPerBatch={ITEMS_PER_BATCH}
+            itemNoun="cookies"
+            ItemIcon={Cookie}
+          />
         }
         controlsZone={
           <Slider
@@ -104,12 +113,8 @@ export function useChocolateChipCookies() {
         }
         resultsZone={
           <Result
-            label="UK cook converting from this card"
-            value={
-              scale === 1
-                ? 'each "1 US cup" becomes 0.83 UK cups; the 20% gap means UK cookies WILL spread less'
-                : `at ×${scale.toFixed(1)} batch, every cup-line still has the 20% US/UK gap baked in`
-            }
+            label="yield"
+            value={`${Math.round(ITEMS_PER_BATCH * scale)} cookies`}
             variant="hero"
           />
         }

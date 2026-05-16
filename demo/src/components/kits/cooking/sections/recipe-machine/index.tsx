@@ -1,43 +1,67 @@
-// Recipe machine chassis. Different recipes, same kind of forge moment:
-// a US-customary recipe card translated into UK imperial alongside the
-// metric ground truth, scaled by a batch slider that multiplies every
-// ingredient row at once. Each recipe hook composes at this chassis;
-// menu state is local useState; WidgetLayout is keyed by activeKey so
-// the recipe subtree remounts on swap.
+// Recipe machine chassis. Six recipes: cookies, donuts, chocolate
+// cake, pizza, simple syrup, and vinaigrette. Each pairs a US-customary
+// ingredient table with a live UK + metric translation, scaled by a
+// batch slider that drives both the table and a marching-icons yield
+// row up top (24 cookies become 48 cookies at ×2 batch). Each recipe
+// hook composes at this chassis; menu state is local useState;
+// WidgetLayout is keyed by activeKey so the recipe subtree remounts
+// on swap.
 
 import { ChefHat } from 'lucide-react';
 import { useState } from 'react';
 import { MenuPill } from '~/components/kits/menu-pill.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
+import { useChocolateCake } from './recipes/chocolate-cake.js';
 import { useChocolateChipCookies } from './recipes/chocolate-chip-cookies.js';
+import { useGlazedDonuts } from './recipes/glazed-donuts.js';
+import { usePizzaDough } from './recipes/pizza-dough.js';
 import { useSimpleSyrup } from './recipes/simple-syrup.js';
 import { useVinaigrette } from './recipes/vinaigrette.js';
 
-type RecipeKey = 'chocolateChipCookies' | 'simpleSyrup' | 'vinaigrette';
+type RecipeKey =
+  | 'chocolateChipCookies'
+  | 'glazedDonuts'
+  | 'chocolateCake'
+  | 'pizzaDough'
+  | 'simpleSyrup'
+  | 'vinaigrette';
 
 interface RecipeMeta {
   label: string;
   hint: string;
 }
 
-const ORDER: readonly RecipeKey[] = ['chocolateChipCookies', 'simpleSyrup', 'vinaigrette'];
+const ORDER: readonly RecipeKey[] = [
+  'chocolateChipCookies',
+  'glazedDonuts',
+  'chocolateCake',
+  'pizzaDough',
+  'simpleSyrup',
+  'vinaigrette',
+];
 
 const RECIPE_META: Record<RecipeKey, RecipeMeta> = {
-  chocolateChipCookies: {
-    label: 'chocolate chip cookies',
-    hint: 'sticks of butter, cups of flour, US classic',
-  },
-  simpleSyrup: { label: 'simple syrup', hint: '1:1 by volume; ratio is the invariant' },
-  vinaigrette: { label: 'vinaigrette', hint: 'cup → tbsp → tsp → pinch full ladder' },
+  chocolateChipCookies: { label: 'cookies', hint: '24 per batch; sticks + cups' },
+  glazedDonuts: { label: 'glazed donuts', hint: "baker's dozen per batch" },
+  chocolateCake: { label: 'chocolate cake', hint: '8 slices per layer' },
+  pizzaDough: { label: 'pizza', hint: '12-inch, 8 slices' },
+  simpleSyrup: { label: 'simple syrup', hint: '1:1 by volume; cocktails per batch' },
+  vinaigrette: { label: 'vinaigrette', hint: 'dresses 6 salads per batch' },
 };
 
 export function RecipeMachine() {
   const chocolateChipCookies = useChocolateChipCookies();
+  const glazedDonuts = useGlazedDonuts();
+  const chocolateCake = useChocolateCake();
+  const pizzaDough = usePizzaDough();
   const simpleSyrup = useSimpleSyrup();
   const vinaigrette = useVinaigrette();
 
   const recipes: Record<RecipeKey, ReturnType<typeof useChocolateChipCookies>> = {
     chocolateChipCookies,
+    glazedDonuts,
+    chocolateCake,
+    pizzaDough,
     simpleSyrup,
     vinaigrette,
   };
@@ -51,15 +75,15 @@ export function RecipeMachine() {
         <SectionHeader
           eyebrow="demo 03"
           title="recipe machine"
-          kicker="every cup, every column"
+          kicker="ingredients in, yield out, every column"
           iconZone={<ChefHat size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
       introZone={
         <>
           A recipe is a list of forge calls waiting to happen. Pick a recipe, scrub the batch
-          slider, watch the same dish translate live across US customary, UK imperial, and metric.
-          The ingredient table is the readout; the slider is the input; the kit is the math.
+          slider, watch the yield march up top and the ingredient table translate live across US,
+          UK, and metric. Six recipes range from a baker's dozen donuts to a single pizza.
         </>
       }
       menuZone={ORDER.map((key) => {

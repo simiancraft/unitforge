@@ -18,6 +18,7 @@ import {
   dash,
   fluidOunceUk,
   fluidOunceUs,
+  liter,
   milliliter,
   pinch,
   stickOfButter,
@@ -31,7 +32,7 @@ export const COOKING_US_UNITS = [teaspoonUs, tablespoonUs, fluidOunceUs, cupUs] 
 
 export const COOKING_UK_UNITS = [teaspoonUk, tablespoonUk, fluidOunceUk, cupUk] as const;
 
-export const COOKING_METRIC_UNITS = [milliliter] as const;
+export const COOKING_METRIC_UNITS = [milliliter, liter] as const;
 
 export const COOKING_TRADITION_UNITS = [pinch, dash, stickOfButter] as const;
 
@@ -65,6 +66,7 @@ export interface SliderBounds {
  *  `CookingUnitId` so a typo or a stale key surfaces at compile time. */
 export const COOKING_BOUNDS: Record<CookingUnitId, SliderBounds> = {
   milliliter: { min: 1, max: 1000, step: 1, init: 250 },
+  liter: { min: 0.25, max: 8, step: 0.25, init: 1 },
   'teaspoon-us': { min: 0.25, max: 24, step: 0.25, init: 1 },
   'teaspoon-uk': { min: 0.25, max: 24, step: 0.25, init: 1 },
   'tablespoon-us': { min: 0.25, max: 16, step: 0.25, init: 1 },
@@ -85,3 +87,14 @@ export const COOKING_BOUNDS: Record<CookingUnitId, SliderBounds> = {
 export function cookingBoundsFor(id: string): SliderBounds {
   return (COOKING_BOUNDS as Record<string, SliderBounds>)[id] ?? COOKING_BOUNDS['cup-us'];
 }
+
+/** US / UK pairs for the customary column. Each row in the cooking
+ *  readout matrix lists the unit *family* (teaspoon, tablespoon, fluid
+ *  ounce, cup), with the UK row stacked above the US row so the reader
+ *  sees the two values side by side without needing two columns. */
+export const COOKING_US_UK_PAIRS = [
+  { family: 'teaspoon', us: teaspoonUs, uk: teaspoonUk },
+  { family: 'tablespoon', us: tablespoonUs, uk: tablespoonUk },
+  { family: 'fluid ounce', us: fluidOunceUs, uk: fluidOunceUk },
+  { family: 'cup', us: cupUs, uk: cupUk },
+] as const;

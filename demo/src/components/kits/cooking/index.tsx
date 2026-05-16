@@ -14,9 +14,9 @@ import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { CookingBackdrop } from './parts/cooking-backdrop.js';
+import { ComparisonMachine } from './sections/comparison-machine/index.js';
 import { HelloCooking } from './sections/hello-cooking.js';
 import { RecipeMachine } from './sections/recipe-machine/index.js';
-import { SystemMachine } from './sections/system-machine/index.js';
 import { COOKING_ALL_UNITS, cookingBoundsFor } from './units.js';
 import './cooking.css';
 
@@ -77,7 +77,7 @@ export function CookingScreen() {
       sectionsZone={
         <>
           <HelloCooking />
-          <SystemMachine />
+          <ComparisonMachine />
           <RecipeMachine />
         </>
       }
