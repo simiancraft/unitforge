@@ -32,6 +32,7 @@ Ships with kits across multiple domains; define your own for anything else (game
 
 - [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume; metric and imperial; rectangle, circle, sphere, and cylinder derivations.
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; covers GB-vs-GiB and Gbit-vs-MB.
+- **`cooking`**: culinary volumes; US/UK split for cup, tablespoon, teaspoon, and fluid ounce (mixing them ruins the dish); stick of butter, dash, pinch.
 
 ## Quick start
 
@@ -128,6 +129,8 @@ cities({ wheat: 6, ore: 9 }); // 3
 ```
 
 **Drag the sliders and watch cities accumulate:** [Settlers of Crouton demo](https://simiancraft.github.io/unitforge/#crouton). Same code, live.
+
+> **Custom-dimension prefix convention.** When you ship a kit publicly (your own package, an org-wide one, anything other-people-might-install-alongside), prefix the dimension string with your package or namespace name to avoid silent collisions with other third-party kits. Two kits both exporting `MANA = 'mana'` would forge against each other unintentionally; `MANA = '@mycorp/mana'` or `'mycorp/mana'` keeps them isolated. The library does not enforce this — dimension strings are trusted opaque values — so the discipline lives at the kit-author tier. The `COUNT` example above uses the bare string for readability; production-shipping kits should namespace.
 
 For multiplicative units (handspans, pints, miles), the exported `linear(scale)` helper builds the `{ toBase, fromBase }` pair so you can compose alongside imports from a kit:
 
