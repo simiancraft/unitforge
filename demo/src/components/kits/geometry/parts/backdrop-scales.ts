@@ -82,7 +82,9 @@ const pxGridOffset = defineUnit({
 });
 
 const GRID_OFFSET_MIN_PX = 0;
-const GRID_OFFSET_MAX_PX = 32;
+// Doubled from 32 so the slider's full travel produces a clearly
+// noticeable phase swing rather than a subtle nudge.
+const GRID_OFFSET_MAX_PX = 64;
 
 const gridOffsetFromLength = defineConversion({
   inputs: {

@@ -35,11 +35,14 @@
   --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #3e7fa6;
   --uf-grid-faint: #3e7fa666;
-  /* Secondary grid: lighter teal-blue for the to-unit layer
-   * superimposed on the from-unit grid. Same hue family so the two
-   * read as two grids on the same paper, not two separate UIs. */
-  --uf-grid-secondary: #76b8e3;
-  --uf-grid-secondary-faint: #76b8e366;
+  /* Secondary grid: dim burnt-orange for the to-unit layer. The cream
+   * paper already carries teal-blue from the primary grid; a faint
+   * complementary orange gives the two layers a real hue contrast
+   * (not just two shades of the same blue) without breaking the
+   * blueprint identity. Kept low-saturation so it reads as a marked-up
+   * second pass on the same sheet, not a second UI. */
+  --uf-grid-secondary: #b8552c;
+  --uf-grid-secondary-faint: #b8552c55;
 }
 
 /* Blueprint-night: deep navy bg, pale ink, electric-cyan accent, lighter
@@ -63,11 +66,14 @@
   --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #76b8e3;
   --uf-grid-faint: #76b8e333;
-  /* Secondary grid: deeper steel-blue for the to-unit layer. On the
-   * navy bg the primary already runs near max lightness, so the
-   * secondary darkens instead of brightening to stay distinguishable. */
-  --uf-grid-secondary: #3a6b9b;
-  --uf-grid-secondary-faint: #3a6b9b66;
+  /* Secondary grid: deep slate-navy for the to-unit layer, pushed much
+   * darker than the primary so the contrast against the cyan-bright
+   * primary reads clearly even at low opacity. Previous #3a6b9b was
+   * too close to the primary's lightness; this drops it further into
+   * the bg's value range so the two layers stop blending into a single
+   * teal haze. Same blue family, sharper lightness split. */
+  --uf-grid-secondary: #1a3d6e;
+  --uf-grid-secondary-faint: #1a3d6e88;
 }
 
 /* Subtle paper-grain dot texture on `.uf-paper` surfaces (both variants;
