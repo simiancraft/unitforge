@@ -1,3 +1,23 @@
+// All units shipped by the cooking kit. Named-export-per-unit; per-export
+// tree-shaking under `sideEffects: false` works because:
+//   1. Each `defineUnit({...})` is annotated `/*#__PURE__*/`, which tells
+//      bundlers (esbuild, rollup, webpack) the call is side-effect-free.
+//   2. The spec object literal contains NO function calls; `toBase` and
+//      `fromBase` are inline arrow closures, not `...linear(scale)` spreads.
+//      A CallExpression inside the literal (even when PURE-marked itself)
+//      defeats per-export tree-shaking because the bundler treats the whole
+//      RHS expression as needed once the variable is referenced.
+//   3. Module-private constants (`US_FL_OZ_M3`, `UK_FL_OZ_M3`, `US_TSP_M3`)
+//      are plain numeric `const`s derived at module init; they participate
+//      in tree-shaking by being non-call, non-side-effecting, and they let
+//      the per-unit derivations read closer to NIST without duplicating
+//      the same long literal eleven times.
+//
+// Authoring convention for kit units: inline closures here. The `linear`
+// helper exported from the root barrel is for ad-hoc userland use, not for
+// kit unit definitions; using it here would re-introduce the spread and
+// regress per-unit tree-shake.
+
 /**
  * Cooking-domain volume units. The dimensions here (`VOLUME`) are physics;
  * the *units* are culturally specific. The point of this kit is to confirm
@@ -17,7 +37,8 @@
  * - US fluid ounce = 29.5735295625 mL (exact, by definition: 1 US gallon =
  *   3.785411784 L; 1 fl oz = 1/128 gal).
  * - UK (imperial) fluid ounce = 28.4130625 mL (exact, by definition: 1
- *   imperial gallon = 4.54609 L; 1 fl oz = 1/160 gal).
+ *   imperial gallon = 4.54609 L per the UK Weights and Measures Act 1985;
+ *   1 fl oz = 1/160 gal).
  * - US: 1 cup = 8 fl oz, 1 tablespoon = 1/2 fl oz, 1 teaspoon = 1/3 tbsp.
  * - UK: 1 cup = 10 fl oz, 1 tablespoon = 5/8 fl oz, 1 teaspoon = 1/8 fl oz.
  * - 1 stick of butter (US) = 1/2 US cup = 4 US fl oz.
@@ -30,6 +51,14 @@
  * factors above give 14.787 mL and 236.588 mL respectively. The kit
  * ships the exact values; downstream call sites can apply their own
  * rounding via `forge`'s `precision:` option.
+ *
+ * **This is a cooking kit, not a clinical-dosing kit.** US OTC liquid
+ * medication labels use a 5 mL teaspoon (USP <17>, ISMP guidance), not
+ * the exact 4.929 mL `teaspoonUs` defined here; the 1.4% delta is
+ * dosing-irrelevant for most adults but matters for mcg/kg pediatric and
+ * veterinary calculations. If you are reaching for this kit from a
+ * clinically-adjacent project, define your own `clinicalTeaspoon` at
+ * exactly 5e-6 m³ via `defineUnit` rather than importing `teaspoonUs`.
  */
 
 import { defineUnit } from '../../define.js';
@@ -148,7 +177,10 @@ export const stickOfButter = /*#__PURE__*/ defineUnit({
 
 /** Dash; 1/8 US teaspoon ≈ 0.616 mL. Bar/kitchen tradition; not a legal
  *  measure. Some sources put it at 1/6 tsp; this kit picks the common
- *  modern convention of 1/8. */
+ *  modern convention of 1/8.
+ *
+ *  Do not use for medication dosing. Spoon-, dropper-, and pinch-based
+ *  dispensing has a documented patient-harm history (ISMP). */
 export const dash = /*#__PURE__*/ defineUnit({
   id: 'dash',
   label: 'Dash',
@@ -160,7 +192,9 @@ export const dash = /*#__PURE__*/ defineUnit({
 
 /** Pinch; 1/16 US teaspoon ≈ 0.308 mL = half a dash. Same caveat as
  *  dash: tradition, not legal. Two pinches equal one dash by this
- *  convention. */
+ *  convention.
+ *
+ *  Do not use for medication dosing. */
 export const pinch = /*#__PURE__*/ defineUnit({
   id: 'pinch',
   label: 'Pinch',

@@ -21,7 +21,7 @@ import {
 
 // Cooking kit lives in the VOLUME dimension. Every unit shares dimension
 // with the geometry kit's milliliter / liter / cubic-meter, so a recipe
-// in cookin units can forge() against a metric kitchen scale without
+// in cooking units can forge() against a metric kitchen scale without
 // either kit knowing about the other. The headline test is the US/UK
 // cup split: same name, different volume, distinct units.
 
@@ -178,8 +178,24 @@ describe('cross-kit interop: cooking units forge against geometry milliliter', (
   // geometry kit's milliliter (same dimension string, same toBase
   // factor); forging an oz against either yields the same result.
   // This pins the contract that "VOLUME is VOLUME" no matter which
-  // kit shipped the unit.
+  // kit shipped the unit, and that the two `milliliter` definitions
+  // do not drift apart silently.
   it('US fl oz → cooking-mL matches the canonical 29.574', () => {
     expect(forge(fluidOunceUs, milliliter)(1)).toBeCloseTo(29.5735295625, 6);
+  });
+
+  it('US fl oz → geometry-mL yields the same number as cooking-mL', async () => {
+    const { milliliter: geometryMl } = await import('../../src/kits/geometry/index.js');
+    expect(forge(fluidOunceUs, geometryMl)(1)).toBeCloseTo(forge(fluidOunceUs, milliliter)(1), 12);
+  });
+
+  it('cooking-cup → geometry-liter round-trips through the shared VOLUME base', async () => {
+    const { liter: geometryLiter } = await import('../../src/kits/geometry/index.js');
+    // 1 US cup = 236.5882365 mL = 0.2365882365 L; forging into geometry's
+    // liter must produce the same answer the cooking-side milliliter
+    // would after a unit step.
+    const inLiter = forge(cupUs, geometryLiter)(1);
+    expect(inLiter).toBeCloseTo(0.2365882365, 9);
+    expect(inLiter * 1000).toBeCloseTo(forge(cupUs, milliliter)(1), 9);
   });
 });

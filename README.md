@@ -32,7 +32,7 @@ Ships with kits across multiple domains; define your own for anything else (game
 
 - [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume; metric and imperial; rectangle, circle, sphere, and cylinder derivations.
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; covers GB-vs-GiB and Gbit-vs-MB.
-- **`cooking`**: culinary volumes; US/UK split for cup, tablespoon, teaspoon, and fluid ounce (mixing them ruins the dish); stick of butter, dash, pinch.
+- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): culinary volumes; US/UK split for cup, tablespoon, teaspoon, and fluid ounce (mixing them ruins the dish); stick of butter, dash, pinch.
 
 ## Quick start
 
@@ -48,6 +48,13 @@ import { forge } from 'unitforge';
 import { gigabyte, gibibyte } from 'unitforge/kits/data-storage';
 
 forge(gigabyte, gibibyte)(500); // 465.66; the 500 GB drive Windows reports as 465 GB
+```
+
+```ts
+import { forge } from 'unitforge';
+import { cupUs, cupUk } from 'unitforge/kits/cooking';
+
+forge(cupUs, cupUk)(1); // 0.8327; one US cup is ~17% short of a UK cup
 ```
 
 ## What this isn't
