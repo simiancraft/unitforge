@@ -1,10 +1,13 @@
 // Engineering / grid paper background for the geometry theme. The grid IS
 // the ruler: the fine cell size is driven by the page's currently-selected
-// "from" unit, so switching from meters to feet visibly reticks the grid.
-// Coarse grid lines mark every 5 fine cells.
+// "from" unit, mapped to pixels via a real forge() call (see
+// ./backdrop-scales.ts). Coarse grid lines mark every 5 fine cells.
 //
 // Renders as a fixed-position aria-hidden layer behind page content; SVG
-// patterns stay crisp at any zoom level.
+// patterns stay crisp at any zoom level. Cell-size changes ease over ~320ms
+// so swapping from meter to foot visibly retickts rather than snapping.
+
+import { useAnimatedNumber } from '~/lib/use-animated-number.js';
 
 interface GeometryBackdropProps {
   /** Render inline (sized to parent) instead of fixed to viewport. */
@@ -24,7 +27,11 @@ export function GeometryBackdrop({ inline, cellSize = 12, scale = 1 }: GeometryB
     ? 'absolute inset-0 pointer-events-none overflow-hidden'
     : 'fixed inset-0 pointer-events-none -z-10 overflow-hidden';
 
-  const coarse = cellSize * 5;
+  // Ease cellSize so the grid morphs between unit selections instead of
+  // snapping. Coarse grid follows on the same eased value, so the two
+  // layers stay phase-locked.
+  const animatedCellSize = useAnimatedNumber(cellSize);
+  const coarse = animatedCellSize * 5;
 
   return (
     <div
@@ -49,12 +56,12 @@ export function GeometryBackdrop({ inline, cellSize = 12, scale = 1 }: GeometryB
         <defs>
           <pattern
             id="uf-grid-fine"
-            width={cellSize}
-            height={cellSize}
+            width={animatedCellSize}
+            height={animatedCellSize}
             patternUnits="userSpaceOnUse"
           >
             <path
-              d={`M ${cellSize} 0 L 0 0 0 ${cellSize}`}
+              d={`M ${animatedCellSize} 0 L 0 0 0 ${animatedCellSize}`}
               fill="none"
               stroke="var(--uf-grid-faint)"
               strokeWidth="0.8"

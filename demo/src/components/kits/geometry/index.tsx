@@ -15,33 +15,13 @@ import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
+import { gridCellPxForUnit } from './parts/backdrop-scales.js';
 import { TwoDShapeMachine } from './sections/2d-shape-machine/index.js';
 import { ThreeDShapeMachine } from './sections/3d-shape-machine/index.js';
 import { CoordinateMachine } from './sections/coordinate-machine/index.js';
 import { HelloUnit } from './sections/hello-unit.js';
 import { LENGTH_UNITS } from './units.js';
 import './geometry.css';
-
-// Grid cell size in pixels, per length unit id. The grid background
-// reads this and reticks; the effect is "the paper resamples when you
-// change units". Keyed by the unit's stable id so a kit unit rename
-// fails fast.
-const CELL_PX_BY_UNIT: Record<string, number> = {
-  millimeter: 8,
-  centimeter: 12,
-  decimeter: 16,
-  meter: 18,
-  kilometer: 26,
-  inch: 14,
-  foot: 20,
-  yard: 24,
-  fathom: 22,
-  'statute-mile': 28,
-  'nautical-mile': 30,
-};
-// Sub-millimeter units (micrometer, nanometer, angstrom, mil) and astronomy
-// units (astronomical-unit, light-year, parsec) fall back to 18; the grid
-// would not visually retick at those scales anyway.
 
 // Slider bounds for the geometry kit's bench, in the user-selected
 // from-unit. Local to this kit; other kits' benches pick their own.
@@ -55,7 +35,7 @@ export function GeometryScreen() {
     toId: 'foot',
     value: 5,
   });
-  const cellSize = CELL_PX_BY_UNIT[bench.fromId] ?? 18;
+  const cellSize = gridCellPxForUnit(findById(LENGTH_UNITS, bench.fromId));
 
   return (
     <KitLayout
