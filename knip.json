@@ -1,6 +1,5 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "ignore": ["demo/**"],
-  "ignoreDependencies": ["@semantic-release/.*"],
-  "ignoreExportsUsedInFile": true
+  "ignoreDependencies": ["@stryker-mutator/command-runner", "@semantic-release/npm"]
 }
