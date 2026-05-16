@@ -6,7 +6,8 @@
       {
         "releaseRules": [
           { "scope": "demo", "release": false },
-          { "type": "refactor", "release": "patch" }
+          { "type": "refactor", "release": "patch" },
+          { "type": "docs", "release": "patch" }
         ]
       }
     ],

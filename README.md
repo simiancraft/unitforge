@@ -177,6 +177,8 @@ bun install && bun run check
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table (test, typecheck, lint, build, packaging, knip).
 
+The test suite combines example-based assertions, property-based fuzz tests via [`fast-check`](https://github.com/dubzzz/fast-check), and Stryker mutation testing (`bun run mutation`) over `forge`, `defineUnit`, `defineConversion`, and the `lib/` primitives. Coverage and the mutation-score gate run on every CI build.
+
 ## Community
 
 - Bugs and feature requests: [GitHub issues](https://github.com/simiancraft/unitforge/issues)
