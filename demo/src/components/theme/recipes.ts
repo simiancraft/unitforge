@@ -8,7 +8,7 @@
 // the kit's CSS file, then append a recipe here. The provider, toggle,
 // and code blocks pick it up with no further changes.
 
-export type KitId = 'forge' | 'geometry' | 'data-storage';
+export type KitId = 'forge' | 'geometry' | 'data-storage' | 'cooking';
 
 export type ThemeVariant = 'dark' | 'light';
 
@@ -67,6 +67,18 @@ export const THEMES: Record<ThemeId, ThemeRecipe> = {
     kit: 'data-storage',
     variant: 'light',
     shikiTheme: 'light-plus',
+  },
+  'cooking-light': {
+    id: 'cooking-light',
+    kit: 'cooking',
+    variant: 'light',
+    shikiTheme: 'rose-pine-dawn',
+  },
+  'cooking-dark': {
+    id: 'cooking-dark',
+    kit: 'cooking',
+    variant: 'dark',
+    shikiTheme: 'monokai',
   },
 };
 

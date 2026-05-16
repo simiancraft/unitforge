@@ -13,6 +13,7 @@
 import type { LucideIcon } from 'lucide-react';
 import type { ComponentType } from 'react';
 import type { KitId, ThemeId } from '../theme/recipes.js';
+import { CookingScreen, meta as cookingMeta } from './cooking/index.js';
 import { DataStorageScreen, meta as dataStorageMeta } from './data-storage/index.js';
 import { ForgeScreen, meta as forgeMeta } from './forge/index.js';
 import { GeometryScreen, meta as geometryMeta } from './geometry/index.js';
@@ -50,6 +51,7 @@ export const KITS: readonly [KitEntry, ...KitEntry[]] = [
   { meta: forgeMeta, Screen: ForgeScreen },
   { meta: geometryMeta, Screen: GeometryScreen },
   { meta: dataStorageMeta, Screen: DataStorageScreen },
+  { meta: cookingMeta, Screen: CookingScreen },
 ];
 
 /** Look up a kit by its id; returns undefined if no match. */

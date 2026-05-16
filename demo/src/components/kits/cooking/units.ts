@@ -1,0 +1,87 @@
+// Per-kit unit catalogs for the cooking surfaces. Three semantic
+// families (US customary, UK imperial, metric + tradition) listed
+// explicitly so demo components don't have to re-derive groupings from
+// id morphology; if the lib adds a new cooking unit, drop it in the
+// relevant family here and the picker + readout matrix follow on next
+// build.
+//
+// `COOKING_TRADITION_UNITS` covers stick-of-butter, dash, and pinch:
+// vocabulary that is common in US recipes but isn't strictly "US
+// customary measurement" the way fluid-ounce is. Kept separate so the
+// HelloCooking readout matrix renders them as their own column rather
+// than padding the US column.
+
+import type { Unit } from 'unitforge';
+import {
+  cupUk,
+  cupUs,
+  dash,
+  fluidOunceUk,
+  fluidOunceUs,
+  milliliter,
+  pinch,
+  stickOfButter,
+  tablespoonUk,
+  tablespoonUs,
+  teaspoonUk,
+  teaspoonUs,
+} from 'unitforge/kits/cooking';
+
+export const COOKING_US_UNITS = [teaspoonUs, tablespoonUs, fluidOunceUs, cupUs] as const;
+
+export const COOKING_UK_UNITS = [teaspoonUk, tablespoonUk, fluidOunceUk, cupUk] as const;
+
+export const COOKING_METRIC_UNITS = [milliliter] as const;
+
+export const COOKING_TRADITION_UNITS = [pinch, dash, stickOfButter] as const;
+
+export const COOKING_ALL_UNITS = [
+  ...COOKING_METRIC_UNITS,
+  ...COOKING_US_UNITS,
+  ...COOKING_UK_UNITS,
+  ...COOKING_TRADITION_UNITS,
+] as const;
+
+export type CookingUnit = Unit<'volume', number>;
+
+/** Cooking-unit ids as a string-literal union. Lets registries keyed on
+ *  unit id type-error on stale keys instead of silently falling through
+ *  to a default. */
+export type CookingUnitId = (typeof COOKING_ALL_UNITS)[number]['id'];
+
+export interface SliderBounds {
+  min: number;
+  max: number;
+  step: number;
+  /** Pedagogically meaningful default the slider snaps to when the
+   *  user switches into this unit. */
+  init: number;
+}
+
+/** Per-unit slider bounds, keyed by stable unit id. The cooking catalog
+ *  spans six orders of magnitude (pinch ≈ 0.3 mL up through stick of
+ *  butter ≈ 118 mL), so a single (min, max, step) triple cannot serve
+ *  every unit; ranges below are tuned per-unit. Typed against
+ *  `CookingUnitId` so a typo or a stale key surfaces at compile time. */
+export const COOKING_BOUNDS: Record<CookingUnitId, SliderBounds> = {
+  milliliter: { min: 1, max: 1000, step: 1, init: 250 },
+  'teaspoon-us': { min: 0.25, max: 24, step: 0.25, init: 1 },
+  'teaspoon-uk': { min: 0.25, max: 24, step: 0.25, init: 1 },
+  'tablespoon-us': { min: 0.25, max: 16, step: 0.25, init: 1 },
+  'tablespoon-uk': { min: 0.25, max: 16, step: 0.25, init: 1 },
+  'fluid-ounce-us': { min: 0.5, max: 16, step: 0.5, init: 1 },
+  'fluid-ounce-uk': { min: 0.5, max: 16, step: 0.5, init: 1 },
+  'cup-us': { min: 0.25, max: 8, step: 0.25, init: 1 },
+  'cup-uk': { min: 0.25, max: 8, step: 0.25, init: 1 },
+  'stick-of-butter': { min: 0.25, max: 8, step: 0.25, init: 1 },
+  dash: { min: 1, max: 24, step: 1, init: 4 },
+  pinch: { min: 1, max: 32, step: 1, init: 4 },
+};
+
+/** Returns the slider bounds for a given unit id, with a string-typed
+ *  signature so callers driven by runtime state (bench picker, slider
+ *  range table) don't have to cast. The typed COOKING_BOUNDS above is
+ *  the source of truth; this wrapper is the consumer surface. */
+export function cookingBoundsFor(id: string): SliderBounds {
+  return (COOKING_BOUNDS as Record<string, SliderBounds>)[id] ?? COOKING_BOUNDS['cup-us'];
+}

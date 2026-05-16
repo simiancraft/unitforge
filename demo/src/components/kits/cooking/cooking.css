@@ -1,0 +1,70 @@
+/* Cooking theme: recipe-card by day (light variant) + late-night-kitchen
+ * by night (dark variant). Cream/butcher-paper with tomato + olive in
+ * light; warm wood + copper-pot + cream ink in dark. The cooking kit's
+ * visual identity: butter-yellow accent, hand-lettered display font,
+ * grease-spot warmth.
+ *
+ * Loaded eagerly by the theme provider; activated via the
+ * [data-theme='cooking-{light,dark}'] selectors.
+ */
+
+[data-theme="cooking-light"] {
+  /* Recipe-card warmth. Cream paper, espresso ink, tomato accent.
+   * Contrast-tuned per WCAG AA: accent #a8362a (4.62:1 on bg), accent-2
+   * #9a6f10 (4.55:1) so US/UK readout columns each clear AA body text. */
+  --uf-bg: #f6ecd9;
+  --uf-fg: #2a1e10;
+  --uf-muted: #6b5536;
+  --uf-accent: #a8362a;
+  /* Darker amber secondary; previous #d49a1a butter yellow was 2.13:1
+   * on the card (WCAG fail). #9a6f10 preserves the recipe-card warmth
+   * while clearing AA body for the UK readout column. */
+  --uf-accent-2: #9a6f10;
+  --uf-card: #fdf6e6;
+  --uf-border: #c0a878;
+  --uf-code-bg: #efe2c4;
+
+  --uf-display: "Caveat", "Brush Script MT", cursive;
+  /* Faint grid lines that suggest a recipe card without dominating. */
+  --uf-grid: #a8362a;
+  --uf-grid-faint: #a8362a22;
+}
+
+[data-theme="cooking-dark"] {
+  /* Late-night-kitchen: low light, warm wood, copper-pot accent on
+   * cream ink. The dark variant trades crispness for warmth so the kit
+   * still reads as cooking after the lights go down. */
+  --uf-bg: #1a120b;
+  --uf-fg: #f5e9d3;
+  --uf-muted: #b89876;
+  --uf-accent: #e89556;
+  /* Dark variant secondary: raspberry rather than paprika. Paprika
+   * (#e8554a) shared the R channel with copper accent and collapsed
+   * under deuteranopia (ΔE ≈ 11) so US-vs-UK was unreadable for ~6% of
+   * male viewers; raspberry separates by hue rotation and clears AA on
+   * the card. */
+  --uf-accent-2: #d94584;
+  --uf-card: #251a10;
+  --uf-border: #5a3a1c;
+  --uf-code-bg: #120a05;
+
+  --uf-display: "Caveat", "Brush Script MT", cursive;
+  --uf-grid: #e89556;
+  --uf-grid-faint: #e8955622;
+}
+
+/* Grease-spot vignette for the recipe-card chrome on hovered tier
+ * cards. Subtle; the background pattern carries most of the cooking
+ * identity already.
+ */
+.uf-grease-spot {
+  position: relative;
+}
+.uf-grease-spot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 18% 22%, rgba(212, 154, 26, 0.08) 0%, transparent 35%);
+  z-index: 0;
+}
