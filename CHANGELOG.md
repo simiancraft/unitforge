@@ -1,3 +1,50 @@
+## [3.1.1](https://github.com/simiancraft/unitforge/compare/v3.1.0...v3.1.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* **demo:** Babylon mesh wasn't changing per shape; canvas was transparent ([604c399](https://github.com/simiancraft/unitforge/commit/604c3995978fa37f668f2c1c44d1836f32d46daf))
+* **demo:** disable thin-instance fill animation to surface static render ([2d5adf2](https://github.com/simiancraft/unitforge/commit/2d5adf23a42c893efccc0862182c2976c24665f1))
+* **demo:** mount Babylon engine once and update mesh imperatively to stop flashing ([f95ecef](https://github.com/simiancraft/unitforge/commit/f95ecefb2430d702aee7b3ce96c220cecd92f38a))
+* **demo:** one-line frontier chip rows; inline labels; firmer active state ([11f0f23](https://github.com/simiancraft/unitforge/commit/11f0f23de3cbd1cc8499a614f54e0307ec1b2a35))
+* **demo:** triangle MAX_VAL bump; drop dead-init for p1/p2/p3 per quality bot ([772b482](https://github.com/simiancraft/unitforge/commit/772b482086a3dae9c3380ca9720d48cd24a08ef3))
+
+
+### Features
+
+* **demo:** add aliases (RFC) column to HelloBytes readout matrix ([a4dd0b4](https://github.com/simiancraft/unitforge/commit/a4dd0b404271c6f7f43842a4c886a09ca9f5abc4))
+* **demo:** add compare-widget flagship to volume machine ([ef76fb8](https://github.com/simiancraft/unitforge/commit/ef76fb8974475f05ac757290dd5827c00b08c4d6))
+* **demo:** add coordinate machine with two-point drag plane ([660b69d](https://github.com/simiancraft/unitforge/commit/660b69d19d78f6dedf568fde4c15d8c70e281ea5))
+* **demo:** add cube / sphere / cylinder to 3D shape machine ([aab0820](https://github.com/simiancraft/unitforge/commit/aab082055d7e6463e682e7ce5997212e479f96ff))
+* **demo:** add ellipse shape with Ramanujan II perimeter ([53eb3b9](https://github.com/simiancraft/unitforge/commit/53eb3b9cfe23b31302274d8cc576c4d9adfe064a))
+* **demo:** add exbibyte-precision tier (Float64 cliff) ([a112770](https://github.com/simiancraft/unitforge/commit/a112770925d60b3139115813241df0406e0b68ad))
+* **demo:** add floppy tier to scale-machine (1.44 MB hybrid trivia) ([c792c0e](https://github.com/simiancraft/unitforge/commit/c792c0ef852db88595ba8e66b88ace5b59bd02dc))
+* **demo:** add frontier-800gbe link to throughput-machine ([cae9157](https://github.com/simiancraft/unitforge/commit/cae9157cc2668516b4ccac32899cbf888d1d07a7))
+* **demo:** add hover tooltip to shape-machine menu pills ([cd2ca7f](https://github.com/simiancraft/unitforge/commit/cd2ca7f9108af114bc9078d8be5d34d6c3d01373))
+* **demo:** add optional menuZone slot to SectionLayout ([ccc2482](https://github.com/simiancraft/unitforge/commit/ccc24821db4b3f89459feab37a1fb1a2e8260219))
+* **demo:** add quadrilateral shape with trapezoid / parallelogram / rhombus / kite modes ([ecd24d9](https://github.com/simiancraft/unitforge/commit/ecd24d910a69c5fb2547f99a04a00112680225ad))
+* **demo:** add regular polygon shape with side-count stepper ([d84310a](https://github.com/simiancraft/unitforge/commit/d84310a9353089bd8ccd51c2ecf4a40299dad8cc))
+* **demo:** add server-array tier (TB / TiB / PiB scale) ([d0c9a21](https://github.com/simiancraft/unitforge/commit/d0c9a214e9bb38996d62d91c12f000b5ac26b70a))
+* **demo:** add square shape to 2D shape machine ([8d07357](https://github.com/simiancraft/unitforge/commit/8d07357788cb2132dbec550be27b74ce34c79ad7))
+* **demo:** add triangle shape with SAS / SSS / equilateral modes ([6814eb3](https://github.com/simiancraft/unitforge/commit/6814eb386de184ada428c188973ebfc197ca475f))
+* **demo:** bump 2D shape slider max from 10 to 15 (50% larger range) ([dc7985d](https://github.com/simiancraft/unitforge/commit/dc7985d66d0413a90eac2851b668714b104a56c3))
+* **demo:** coordinate machine legend coloring; widen 3D + 2D canvases ([57e0633](https://github.com/simiancraft/unitforge/commit/57e06337f33540c4d2be6044c1796ee58f0b83a9)), closes [#2563a8](https://github.com/simiancraft/unitforge/issues/2563a8) [#fbbf24](https://github.com/simiancraft/unitforge/issues/fbbf24)
+* **demo:** exercise circle diameter forms and finalize DEMO_GAPS strikes ([aaebd6d](https://github.com/simiancraft/unitforge/commit/aaebd6d956efc15402ab97a3bf45b927c602bc9c))
+* **demo:** expand 802.3df link to rate + drain-target pickers ([e946345](https://github.com/simiancraft/unitforge/commit/e946345828a68e96406536185a54cda95078cbfe))
+* **demo:** expand data-storage catalogs to full library coverage; add aliases ([80ad9f7](https://github.com/simiancraft/unitforge/commit/80ad9f7edd02de2e104f2da293c4e071931a5289))
+* **demo:** expand geometry catalogs to full library coverage; add ANGLE_UNITS ([d7a8c2a](https://github.com/simiancraft/unitforge/commit/d7a8c2a02cc07e50bb1b7bf5585249d431ef04f1))
+* **demo:** install Babylon.js; scaffold 3D shape machine with cuboid ([20c661f](https://github.com/simiancraft/unitforge/commit/20c661f43ed3c794c2356ea4d80fc78473bf9dc1))
+* **demo:** make floppy tier interactive with 10-format chip row ([2f346a4](https://github.com/simiancraft/unitforge/commit/2f346a4638fd6adab2afb083a5393fa653f35819))
+* **demo:** polish data-storage kit chassis after machine wiring ([99cc489](https://github.com/simiancraft/unitforge/commit/99cc489aa2cc9faf0e1bd82c1eda83239a974542))
+* **demo:** polish geometry kit chassis after machine wiring ([ec4ac49](https://github.com/simiancraft/unitforge/commit/ec4ac49b00493309643268bcf7a490fa31d4b099))
+* **demo:** power-of-10 grouping + new anchors + word-scale counts ([a2ca6fa](https://github.com/simiancraft/unitforge/commit/a2ca6fa373b3057ff8c9e3ab5ffdd0cbfe4a445f))
+* **demo:** scaffold 2D shape machine; fold rectangle and circle as hooks ([d63fa2d](https://github.com/simiancraft/unitforge/commit/d63fa2ddf2cc1f03ca08aee3c981a3c967082eb7))
+* **demo:** scaffold scale-machine; fold drive + memory as tier entries ([a6470e5](https://github.com/simiancraft/unitforge/commit/a6470e52b06cafb22804bdc7a4774626ca1c1568))
+* **demo:** scaffold throughput-machine; fold ThroughputViz as any-rate link ([ca284e4](https://github.com/simiancraft/unitforge/commit/ca284e48ef85a1af2d776a846e74e6e1d5fb662a))
+* **demo:** scaffold volume-machine with Babylon cube-pair visualization ([7b3357f](https://github.com/simiancraft/unitforge/commit/7b3357fdff105ce78e088324702e8a251640f8f8))
+* **demo:** slow auto-rotate the Babylon scene via ArcRotateCamera idle behavior ([03a937f](https://github.com/simiancraft/unitforge/commit/03a937fa439c9856844db2b89effa0678a439a2c))
+* **demo:** visualize polar + cartesian decomposition of A in coord machine ([091b3d1](https://github.com/simiancraft/unitforge/commit/091b3d1c70ec50ef685ac6211947efac99046120)), closes [#7c3aed](https://github.com/simiancraft/unitforge/issues/7c3aed) [#c084fc](https://github.com/simiancraft/unitforge/issues/c084fc)
+
 # [3.1.0](https://github.com/simiancraft/unitforge/compare/v3.0.0...v3.1.0) (2026-05-14)
 
 
