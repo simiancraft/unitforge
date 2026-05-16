@@ -8,14 +8,32 @@
 // the reader recognizes on sight.
 
 import type { LucideIcon } from 'lucide-react';
-import { Cake, Candy, Cookie, CupSoda, Donut, IceCream, Square } from 'lucide-react';
+import {
+  Beer,
+  Cake,
+  Candy,
+  Coffee,
+  Cookie,
+  CupSoda,
+  Donut,
+  IceCream,
+  Square,
+  Wine,
+} from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { ControlPanel } from '../../../control-panel.js';
 import { MarchingIcons } from '../parts/marching-icons.js';
-import { cokeCan, FOODS, SODAS, type SugarUnit, sugarCube } from '../parts/sugar-units.js';
+import {
+  cokeCan,
+  FOODS,
+  SODA_FL_OZ,
+  SODAS,
+  type SugarUnit,
+  sugarCube,
+} from '../parts/sugar-units.js';
 
 // Lucide icon per food id; chosen for instant visual recognition.
 const FOOD_ICONS: Record<string, LucideIcon> = {
@@ -27,13 +45,46 @@ const FOOD_ICONS: Record<string, LucideIcon> = {
   'snickers-bar': Candy,
 };
 
+// Lucide icon per soda id; chosen so the container shape reads at a
+// glance — small Coffee cup for the 8.4 oz Red Bull, CupSoda for the
+// 12 oz cans, Wine glass for the 20 oz bottle, Beer stein for the
+// hulking 2 L bottle. Plus the rendered size is fl-oz-driven (see
+// `sodaIconPx`) so the picker has visible size variation across the
+// container ladder.
+const SODA_ICONS: Record<string, LucideIcon> = {
+  'red-bull-can': Coffee,
+  'coke-can': CupSoda,
+  'mtn-dew-can': CupSoda,
+  'sprite-can': CupSoda,
+  'coke-bottle': Wine,
+  'coke-2l': Beer,
+  'mtn-dew-2l': Beer,
+};
+
 const SODA_NAMES: Record<string, string> = {
   'coke-can': 'cokeCan',
   'coke-bottle': 'cokeBottle',
   'mtn-dew-can': 'mtnDewCan',
   'sprite-can': 'spriteCan',
   'red-bull-can': 'redBullCan',
+  'coke-2l': 'coke2L',
+  'mtn-dew-2l': 'mtnDew2L',
 };
+
+// Map a soda's fl oz to a rendered icon size in px. Linear over the
+// realistic container ladder (8.4 to 67.6 fl oz) so picking a bigger
+// container visibly grows the glyph rather than rendering every soda
+// at the same 64 px.
+const SODA_PX_MIN = 40;
+const SODA_PX_MAX = 96;
+const SODA_FL_OZ_MIN = 8;
+const SODA_FL_OZ_MAX = 68;
+
+function sodaIconPx(sodaId: string): number {
+  const flOz = SODA_FL_OZ[sodaId] ?? 12;
+  const t = Math.max(0, Math.min(1, (flOz - SODA_FL_OZ_MIN) / (SODA_FL_OZ_MAX - SODA_FL_OZ_MIN)));
+  return SODA_PX_MIN + t * (SODA_PX_MAX - SODA_PX_MIN);
+}
 
 const FOOD_NAMES: Record<string, string> = {
   'sugar-cube': 'sugarCube',
@@ -56,6 +107,8 @@ export function useSoda() {
   const foodPerSoda = forge(soda, food)(1);
   const sodaSugarG = soda.toBase(1);
   const FoodIcon = FOOD_ICONS[food.id] ?? Cookie;
+  const SodaIcon = SODA_ICONS[soda.id] ?? CupSoda;
+  const sodaPx = sodaIconPx(soda.id);
 
   return {
     menuZone: <CupSoda size={22} strokeWidth={1.6} />,
@@ -79,6 +132,8 @@ export function useSoda() {
           <SugarBoard
             soda={soda}
             food={food}
+            SodaIcon={SodaIcon}
+            sodaIconPx={sodaPx}
             FoodIcon={FoodIcon}
             foodCount={foodPerSoda}
             sodaSugarG={sodaSugarG}
@@ -126,16 +181,42 @@ function ItemPicker({ label, units, value, onChange }: ItemPickerProps) {
 interface SugarBoardProps {
   soda: SugarUnit;
   food: SugarUnit;
+  SodaIcon: LucideIcon;
+  /** Px size for the picked-soda icon; reflects its container fl oz. */
+  sodaIconPx: number;
   FoodIcon: LucideIcon;
   foodCount: number;
   sodaSugarG: number;
 }
 
-function SugarBoard({ soda, food, FoodIcon, foodCount, sodaSugarG }: SugarBoardProps) {
+function SugarBoard({
+  soda,
+  food,
+  SodaIcon,
+  sodaIconPx,
+  FoodIcon,
+  foodCount,
+  sodaSugarG,
+}: SugarBoardProps) {
   return (
     <div className="grid grid-cols-1 gap-4 rounded-md border border-uf-border bg-uf-card p-5 uf-grease-spot sm:grid-cols-[auto_auto_1fr] sm:items-center">
-      <figure className="m-0 flex flex-col items-center gap-2">
-        <CupSoda size={64} strokeWidth={1.4} className="text-uf-accent" aria-hidden />
+      <figure
+        className="m-0 flex flex-col items-center justify-end gap-2"
+        // Reserve a tall slot so the small-can selection (40 px) and the
+        // 2-L bottle (96 px) align at the bottom rather than the center;
+        // the icon then visibly "grows up" out of the same baseline.
+        style={{ minHeight: 110 }}
+      >
+        <SodaIcon
+          size={sodaIconPx}
+          strokeWidth={1.4}
+          className="text-uf-accent"
+          style={{
+            transition:
+              'width 320ms cubic-bezier(0.22,1,0.36,1), height 320ms cubic-bezier(0.22,1,0.36,1)',
+          }}
+          aria-hidden
+        />
         <figcaption className="text-center">
           <div className="mono text-sm text-uf-fg">{soda.label}</div>
           <div className="mono text-[10px] uppercase tracking-wider text-uf-muted">

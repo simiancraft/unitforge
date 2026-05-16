@@ -63,6 +63,26 @@ export const redBullCan = /*#__PURE__*/ defineUnit({
   fromBase: (g) => g / 27,
 });
 
+// 2-liter bottles. 2 L = 67.628 US fl oz; sugar values from the labels
+// (Coke at 110 g per 1000 mL, Mountain Dew at 130 g per 1000 mL → ×2).
+export const coke2L = /*#__PURE__*/ defineUnit({
+  id: 'coke-2l',
+  label: 'Coca-Cola, 2 L bottle',
+  symbol: 'Coke 2 L',
+  dimension: SUGAR,
+  toBase: (n) => n * 220,
+  fromBase: (g) => g / 220,
+});
+
+export const mtnDew2L = /*#__PURE__*/ defineUnit({
+  id: 'mtn-dew-2l',
+  label: 'Mountain Dew, 2 L bottle',
+  symbol: 'Mtn Dew 2 L',
+  dimension: SUGAR,
+  toBase: (n) => n * 260,
+  fromBase: (g) => g / 260,
+});
+
 // ─── Foods (one unit = one item as eaten) ────────────────────────────
 
 export const sugarCube = /*#__PURE__*/ defineUnit({
@@ -119,7 +139,29 @@ export const snickersBar = /*#__PURE__*/ defineUnit({
   fromBase: (g) => g / 27,
 });
 
-export const SODAS = [cokeCan, cokeBottle, mtnDewCan, spriteCan, redBullCan] as const;
+export const SODAS = [
+  redBullCan,
+  cokeCan,
+  mtnDewCan,
+  spriteCan,
+  cokeBottle,
+  coke2L,
+  mtnDew2L,
+] as const;
+
+/** Container volume in US fl oz per soda. Used by the visualizer to
+ *  scale the picked container's icon in proportion to its capacity
+ *  (Red Bull 8.4 oz reads small, 2 L bottle reads big). Not part of
+ *  the forge() call; the sugar dimension carries grams, not volume. */
+export const SODA_FL_OZ: Record<string, number> = {
+  'red-bull-can': 8.4,
+  'coke-can': 12,
+  'mtn-dew-can': 12,
+  'sprite-can': 12,
+  'coke-bottle': 20,
+  'coke-2l': 67.628,
+  'mtn-dew-2l': 67.628,
+};
 
 export const FOODS = [
   sugarCube,
