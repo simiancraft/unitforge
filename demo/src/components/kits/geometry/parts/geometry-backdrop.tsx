@@ -91,13 +91,13 @@ export function GeometryBackdrop({
       last = t;
       phaseFrom += dt * GRID_FROM_BASE_SPEED_PX_S;
       phaseTo += dt * toSpeedRef.current;
-      // The two grids scroll diagonally (both axes) so the parallax
-      // reads in two directions at once; modulo the coarse cell so the
-      // numeric value stays bounded and the pattern tiles seamlessly.
+      // Scroll along x only; the parallax reads as a single-axis
+      // marquee rather than a diagonal slide. Modulo keeps the numeric
+      // phase bounded so the pattern tiles seamlessly.
       const fp = phaseFrom % 1024;
       const tp = phaseTo % 1024;
-      const fromXf = `translate(${fp} ${fp})`;
-      const toXf = `translate(${tp} ${tp})`;
+      const fromXf = `translate(${fp} 0)`;
+      const toXf = `translate(${tp} 0)`;
       fineFromRef.current?.setAttribute('patternTransform', fromXf);
       coarseFromRef.current?.setAttribute('patternTransform', fromXf);
       fineToRef.current?.setAttribute('patternTransform', toXf);
