@@ -8,6 +8,12 @@
   </a>
 </p>
 
+<p align="center">
+  <a href="https://simiancraft.github.io/unitforge/">
+    <img src="./.github/assets/unitforge-tour-960.gif" alt="unitforge demo tour: home, geometry shape machine, throughput-machine, coordinate-machine, data-storage volume-machine" width="800" />
+  </a>
+</p>
+
 [![npm version](https://img.shields.io/npm/v/unitforge?color=cb3837&logo=npm)](https://www.npmjs.com/package/unitforge)
 [![Types: included](https://img.shields.io/npm/types/unitforge?color=3178c6&logo=typescript)](https://www.npmjs.com/package/unitforge)
 [![CI](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml/badge.svg)](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml)
