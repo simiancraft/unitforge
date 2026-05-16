@@ -8,6 +8,8 @@ dist/
 .env.*.local
 coverage/
 .cache/
+.stryker-tmp/
+reports/
 .claude/
 .aider*
 .cursor/

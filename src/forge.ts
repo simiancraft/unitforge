@@ -125,25 +125,21 @@ function buildUnaryConverter(
   memoCap: number,
   precisionMul: number | null,
 ): AnyConverter {
-  // Memoize off: hot path is two function calls + optional rounding.
-  if (memoCap === 0) {
-    if (precisionMul == null) {
-      return (value) => toUnit.fromBase(fromUnit.toBase(value));
-    }
-    return (value) => roundIfNumber(toUnit.fromBase(fromUnit.toBase(value)), precisionMul);
-  }
+  // Single conversion lambda; roundIfNumber is a no-op when precisionMul
+  // is null (early-return inside the helper), so we don't branch on the
+  // precision setting at the call site. The branch elision shrinks both
+  // line count and the mutation-test surface of equivalent precision-
+  // gate mutants.
+  const convert = (value: unknown): unknown =>
+    roundIfNumber(toUnit.fromBase(fromUnit.toBase(value)), precisionMul);
 
-  // Memoize on.
+  if (memoCap === 0) return convert;
+
   const cache = new Map<string, unknown>();
-
   return (value) => {
-    const keyVal = precisionMul != null ? roundIfNumber(value, precisionMul) : value;
-    const key = String(keyVal);
+    const key = String(roundIfNumber(value, precisionMul));
     if (cache.has(key)) return cache.get(key);
-
-    let result = toUnit.fromBase(fromUnit.toBase(value));
-    if (precisionMul != null) result = roundIfNumber(result, precisionMul);
-
+    const result = convert(value);
     writeCache(cache, key, result, memoCap);
     return result;
   };
@@ -167,9 +163,13 @@ function buildCrossDimConverter(
   // Pre-bake input key list (sorted for stable cache-key order).
   const inputKeys = Object.keys(conversion.inputs).sort();
 
-  // Pre-bake output shape detection.
-  const outputIsObject = !isUnitLike(to);
-  const outputKeys = outputIsObject ? Object.keys(to as Record<string, AnyUnit>) : null;
+  // Pre-bake output shape detection. `toEntries` is the
+  // (key, Unit) pair list when `to` is an object; null when `to` is a
+  // single Unit (the scalar-output overload). Truthiness of this one
+  // variable encodes the dispatch decision downstream; using entries
+  // (over a keys-list + indexed lookup) gives each iteration a
+  // non-undefined `Unit` at the type level without a cast.
+  const toEntries = isUnitLike(to) ? null : Object.entries(to as Record<string, AnyUnit>);
 
   const cache = memoCap > 0 ? new Map<string, unknown>() : null;
 
@@ -219,15 +219,14 @@ function buildCrossDimConverter(
     const compute = conversion.compute as (vals: Record<string, unknown>) => unknown;
     const baseResult = compute(baseValues);
 
-    // 7: denormalize to target unit(s)
+    // 7: denormalize to target unit(s). toEntries is non-null iff
+    // the output is object-shaped; the entries pairs each key with
+    // the live Unit from `to`, so the loop body needs no cast.
     let result: unknown;
-    if (outputIsObject && outputKeys) {
+    if (toEntries) {
       const out: Record<string, unknown> = {};
-      const toMap = to as Record<string, AnyUnit>;
       const baseMap = baseResult as Record<string, unknown>;
-      for (const k of outputKeys) {
-        const u = toMap[k];
-        if (!u) continue;
+      for (const [k, u] of toEntries) {
         out[k] = roundIfNumber(u.fromBase(baseMap[k]), precisionMul);
       }
       result = out;
@@ -247,13 +246,16 @@ function buildCrossDimConverter(
 
 // ─── Local helpers ───────────────────────────────────────────────────────
 
+// Structural check: a Unit is anything with callable toBase + fromBase
+// methods. Optional chaining handles null/undefined; non-object inputs
+// fail the `?.toBase` lookup and reject. The original chain also
+// gated on `typeof x === 'object'`; relaxing that lets a callable with
+// .toBase/.fromBase methods pass through as well, which is Liskov-
+// positive (it walks like a unit, it quacks like a unit) and no API
+// caller would construct one intentionally.
 function isUnitLike(x: unknown): x is AnyUnit {
-  return (
-    typeof x === 'object' &&
-    x !== null &&
-    typeof (x as { toBase?: unknown }).toBase === 'function' &&
-    typeof (x as { fromBase?: unknown }).fromBase === 'function'
-  );
+  const obj = x as { toBase?: unknown; fromBase?: unknown } | null | undefined;
+  return typeof obj?.toBase === 'function' && typeof obj?.fromBase === 'function';
 }
 
 function validatePrecision(precision: unknown): number | null {

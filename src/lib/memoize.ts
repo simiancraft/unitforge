@@ -53,8 +53,9 @@ export function validateMemoCap(memoize: unknown): number {
  * Builds a deterministic cache key from a record of input values. Sorted
  * key order (passed in as `keys`, pre-sorted at forge-build) plus
  * `CACHE_KEY_SEP` between fields prevents `{a:'1', b:'2'}` colliding with
- * `{a:'12', b:''}` or similar. Each value is stringified with `String(v)`
- * after optional precision rounding.
+ * `{a:'12', b:''}` or similar. Each value is passed through
+ * `roundIfNumber` (a no-op when `precisionMul` is null) and then
+ * stringified.
  */
 export function buildCacheKey(
   input: Record<string, unknown>,
@@ -63,8 +64,7 @@ export function buildCacheKey(
 ): string {
   const parts: string[] = [];
   for (const k of keys) {
-    const v = input[k];
-    parts.push(String(precisionMul != null ? roundIfNumber(v, precisionMul) : v));
+    parts.push(String(roundIfNumber(input[k], precisionMul)));
   }
   return parts.join(CACHE_KEY_SEP);
 }
@@ -73,7 +73,9 @@ export function buildCacheKey(
  * Inserts `(key, value)` into the cache. If at capacity, evicts the
  * oldest-INSERTED entry first (FIFO). Map iteration order is insertion
  * order per the ECMAScript spec, so `cache.keys().next().value` is the
- * oldest insertion.
+ * oldest insertion. Only called when `cap >= 1` (validateMemoCap
+ * gates the converter on memoize > 0 before this path runs), so the
+ * eviction path's `oldest` is always defined when reached.
  */
 export function writeCache(
   cache: Map<string, unknown>,
@@ -82,15 +84,15 @@ export function writeCache(
   cap: number,
 ): void {
   if (cache.size >= cap) {
-    const oldest = cache.keys().next().value;
-    if (oldest !== undefined) cache.delete(oldest);
+    cache.delete(cache.keys().next().value as string);
   }
   cache.set(key, value);
 }
 
-/** Rounds `v` if it is a finite number; otherwise returns `v` unchanged. */
+/** Rounds `v` if it is a finite number; otherwise returns `v` unchanged.
+ *  The explicit `typeof === 'number'` check gives TypeScript a free
+ *  narrow into the math line below, avoiding a cast there. */
 export function roundIfNumber(v: unknown, mul: number | null): unknown {
-  if (mul == null) return v;
-  if (typeof v !== 'number' || !Number.isFinite(v)) return v;
+  if (mul == null || typeof v !== 'number' || !Number.isFinite(v)) return v;
   return Math.round(v * mul) / mul;
 }

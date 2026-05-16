@@ -8,6 +8,12 @@
   </a>
 </p>
 
+<p align="center">
+  <a href="https://simiancraft.github.io/unitforge/">
+    <img src="./.github/assets/unitforge-tour-960.gif" alt="unitforge demo tour: home, geometry shape machine, throughput-machine, coordinate-machine, data-storage volume-machine" width="800" />
+  </a>
+</p>
+
 [![npm version](https://img.shields.io/npm/v/unitforge?color=cb3837&logo=npm)](https://www.npmjs.com/package/unitforge)
 [![Types: included](https://img.shields.io/npm/types/unitforge?color=3178c6&logo=typescript)](https://www.npmjs.com/package/unitforge)
 [![CI](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml/badge.svg)](https://github.com/simiancraft/unitforge/actions/workflows/ci.yml)
@@ -176,6 +182,16 @@ bun install && bun run check
 ```
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table (test, typecheck, lint, build, packaging, knip).
+
+## Testing
+
+Three layers, all gated on every CI build:
+
+- **Example-based tests** (`bun test`): 422 tests across 14 files, 18,448 `expect()` assertions, covering `forge`, `defineUnit`, `defineConversion`, dimensions, the kits, and the `lib/` primitives. 100.00% line coverage; 98.77% function coverage (the gap is in `kits/geometry/units.ts`; all other files 100 / 100), tracked via Codecov.
+- **Property-based fuzz tests** via [`fast-check`](https://github.com/dubzzz/fast-check) in `test/fuzz/` (6 files): within-dim round-trip + composition, cross-dim monotonicity, precision-0 integer output, `ValidationError` invariants, memoize cap-invariance, and `defineUnit` prototype-pollution hygiene. Also satisfies the [OpenSSF Scorecard](https://github.com/ossf/scorecard) Fuzzing check.
+- **Mutation testing** via [Stryker](https://stryker-mutator.io/) (`bun run mutation`) over the `forge` core, the `define` API (`defineUnit` + `defineConversion`), and four `lib/` primitives (`math`, `memoize`, `safeCopy`, `validation`). CI break threshold: 75%. Current score: 96.36% — 238 mutants killed, 9 classified equivalent under the public API, 0 timeouts, 0 errors. Per file: math / define / safeCopy / validation 100%, memoize 95.74%, forge 92.55%. Coverage measures whether the suite *ran* a line of code; mutation measures whether it *asserted hard enough to catch a behavioral change*. The two are complementary: high coverage with weak assertions passes the first check and fails the second.
+
+The 9 mutation survivors are classified equivalent in the iteration commits that introduced them (memoize cache wrapping is opaque from the public API; `sort()` is per-conversion-stable; optional-chain null guards are redundant with downstream `TypeError`s). No [`// Stryker disable`](https://stryker-mutator.io/docs/stryker-js/disable-mutants/) comments currently live in source — each classification rides on its commit. If a future PR drops the score below the gate, CI blocks the merge until the surviving mutants are killed or explicitly classified with a Stryker-disable comment explaining why.
 
 ## Community
 
