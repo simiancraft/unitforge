@@ -14,7 +14,7 @@ import { findById } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
-import { gridCellPxForUnit, gridOffsetPxFor } from './parts/backdrop-scales.js';
+import { gridCellPxForUnit, gridSpeedPxPerSecFor } from './parts/backdrop-scales.js';
 import { GeometryBackdrop } from './parts/geometry-backdrop.js';
 import { TwoDShapeMachine } from './sections/2d-shape-machine/index.js';
 import { ThreeDShapeMachine } from './sections/3d-shape-machine/index.js';
@@ -39,12 +39,21 @@ export function GeometryScreen() {
   const toUnit = findById(LENGTH_UNITS, bench.toId);
   const cellSize = gridCellPxForUnit(fromUnit);
   const cellSizeTo = gridCellPxForUnit(toUnit);
-  const offsetPx = gridOffsetPxFor(fromUnit, bench.value, GEOMETRY_BENCH_MIN, GEOMETRY_BENCH_MAX);
+  const speedPxPerSec = gridSpeedPxPerSecFor(
+    fromUnit,
+    bench.value,
+    GEOMETRY_BENCH_MIN,
+    GEOMETRY_BENCH_MAX,
+  );
 
   return (
     <KitLayout
       backdropZone={
-        <GeometryBackdrop cellSize={cellSize} cellSizeTo={cellSizeTo} offsetPx={offsetPx} />
+        <GeometryBackdrop
+          cellSize={cellSize}
+          cellSizeTo={cellSizeTo}
+          speedPxPerSec={speedPxPerSec}
+        />
       }
       headerZone={
         <header className="flex flex-col gap-2">

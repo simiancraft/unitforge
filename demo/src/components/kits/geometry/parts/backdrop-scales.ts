@@ -60,58 +60,67 @@ export function gridCellPxForUnit(unit: Unit<'length', number>): number {
   return forge({ length: unit }, pxGridCell, { via: gridCellFromLength })({ length: 1 });
 }
 
-// ─── Phase offset (slider-driven, runtime-bounded) ───────────────────────
+// ─── To-grid scroll speed (slider-driven, runtime-bounded) ───────────────
 //
-// The to-grid sits on top of the from-grid; the bench slider lerps
-// their phase offset so dragging visibly slides the second grid
-// against the first. Like the data-storage gap conversion, this takes
-// the bench's full runtime range as additional inputs so the slider's
-// full travel always produces visible variation regardless of which
-// fromUnit is picked.
+// Both grids translate continuously via patternTransform; the from-grid
+// has a fixed base speed (slow, "background") and the to-grid scrolls
+// at a slider-driven speed (fast, "foreground"). The DIFFERENTIAL
+// between the two layer speeds is the parallax depth the eye reads:
+// when both are equal they appear locked together (no depth); when
+// they diverge the to-grid passes "in front of" the from-grid.
+//
+// Lerped over the bench's UI bounds so the full slider travel always
+// produces visible variation regardless of which fromUnit is picked.
 
-const BG_GRID_OFFSET_DIMENSION = 'bg.grid_offset' as const;
+const BG_GRID_SPEED_DIMENSION = 'bg.grid_speed' as const;
 
-const pxGridOffset = defineUnit({
-  id: 'bg-grid-offset-px',
-  label: 'Background grid offset (px)',
-  symbol: 'px',
-  dimension: BG_GRID_OFFSET_DIMENSION,
+const pxPerSecGridSpeed = defineUnit({
+  id: 'bg-grid-speed-px-per-s',
+  label: 'Background grid speed (px/s)',
+  symbol: 'px/s',
+  dimension: BG_GRID_SPEED_DIMENSION,
   toBase: (v) => v,
   fromBase: (b) => b,
   base: true,
 });
 
-const GRID_OFFSET_MIN_PX = 0;
-// Doubled from 32 so the slider's full travel produces a clearly
-// noticeable phase swing rather than a subtle nudge.
-const GRID_OFFSET_MAX_PX = 64;
+// At slider min the to-grid scrolls slowly (small differential vs the
+// from-grid's base speed; reads as "almost no depth"); at slider max it
+// scrolls 4x faster than the base, producing strong parallax.
+const GRID_SPEED_MIN_PX_S = 4;
+const GRID_SPEED_MAX_PX_S = 64;
 
-const gridOffsetFromLength = defineConversion({
+const gridSpeedFromLength = defineConversion({
   inputs: {
     length: 'length' as const,
     minLength: 'length' as const,
     maxLength: 'length' as const,
   },
-  output: BG_GRID_OFFSET_DIMENSION,
+  output: BG_GRID_SPEED_DIMENSION,
   compute: ({ length, minLength, maxLength }) => {
     const range = maxLength - minLength;
     const t = range > 0 ? clamp((length - minLength) / range, 0, 1) : 0;
-    return GRID_OFFSET_MIN_PX + t * (GRID_OFFSET_MAX_PX - GRID_OFFSET_MIN_PX);
+    return GRID_SPEED_MIN_PX_S + t * (GRID_SPEED_MAX_PX_S - GRID_SPEED_MIN_PX_S);
   },
 });
 
 /**
- * Returns the phase-offset px for the bench slider's current position,
- * lerped over the bench's UI bounds so the full slider travel always
- * uses the full offset range regardless of the picked fromUnit.
+ * Returns the to-grid scroll speed in px/sec for the bench slider's
+ * current position, lerped over the bench's UI bounds so the full
+ * slider travel always uses the full speed range regardless of the
+ * picked fromUnit.
  */
-export function gridOffsetPxFor(
+export function gridSpeedPxPerSecFor(
   fromUnit: Unit<'length', number>,
   amount: number,
   minAmount: number,
   maxAmount: number,
 ): number {
-  return forge({ length: fromUnit, minLength: fromUnit, maxLength: fromUnit }, pxGridOffset, {
-    via: gridOffsetFromLength,
+  return forge({ length: fromUnit, minLength: fromUnit, maxLength: fromUnit }, pxPerSecGridSpeed, {
+    via: gridSpeedFromLength,
   })({ length: amount, minLength: minAmount, maxLength: maxAmount });
 }
+
+/** Fixed scroll speed in px/sec for the from-grid (the "background"
+ *  layer; the to-grid is parallaxed against this baseline). */
+export const GRID_FROM_BASE_SPEED_PX_S = 12;
