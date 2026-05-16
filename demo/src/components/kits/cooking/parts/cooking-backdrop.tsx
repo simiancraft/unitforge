@@ -1,19 +1,36 @@
-// Recipe-card background for the cooking theme. Faint horizontal ruled
-// lines (recipe-card stationery), a margin rule down the left, and a
-// scattered field of Lucide food icons stamped at low opacity so the
-// page reads as "a stained, marked-up index card from a working
-// kitchen" rather than a styled SVG silhouette. Two slow vertical
-// drip lanes animate continuously, quiet enough to live as ambient
-// page texture.
+// Recipe-card background for the cooking theme. Three load-bearing
+// layers, all ambient:
+//
+//   1. Horizontal scan lines (the recipe-card ruling) slowly drift
+//      upward via patternTransform driven by a single rAF loop. Very
+//      slow — meant to read as page-texture breath, not a marquee.
+//
+//   2. Two pools of Lucide food icons (FROM_POOL + TO_POOL) stamped at
+//      hand-picked positions. The bench's from-unit deterministically
+//      activates 4 of the 8 from-pool slots; the to-unit deterministically
+//      activates 4 of the 8 to-pool slots. So at any time ~8 of 16
+//      slots are visible. A unit swap fades the old slots out and the
+//      new ones in via CSS opacity transition.
+//
+//   3. Slider drives a multiplicative scale on every visible glyph
+//      (0.6 → 1.4) through a forge() call in ./backdrop-scales.ts. CSS
+//      transition on transform so the size change rides smoothly with
+//      the slider drag.
+//
+// prefers-reduced-motion short-circuits the scan-line rAF; the glyph
+// fades and scale change still apply (they're discrete user actions,
+// not ambient motion).
 
 import {
+  Apple,
+  Beef,
   Cake,
+  CakeSlice,
   Candy,
   Coffee,
   Cookie,
   CookingPot,
   Croissant,
-  CupSoda,
   Donut,
   IceCream,
   type LucideIcon,
@@ -22,67 +39,112 @@ import {
   Sandwich,
   Soup,
   Utensils,
-  Wine,
 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { glyphSubsetIndices, SCAN_LINE_SPEED_PX_S } from './backdrop-scales.js';
 
 interface CookingBackdropProps {
   inline?: boolean;
+  /** Bench's from-unit id; selects which from-pool glyphs are active. */
+  fromUnitId?: string;
+  /** Bench's to-unit id; selects which to-pool glyphs are active. */
+  toUnitId?: string;
+  /** Slider-driven multiplicative scale on every visible glyph. */
+  glyphScale?: number;
 }
 
-// Hand-picked positions so the stamps feel scattered rather than
-// gridded. Coordinates are percentages of the backdrop's bounding box,
-// resolution-independent. Mix of food categories so the page reads as
-// the whole kitchen (baking + drinks + sides + main course).
-interface Stamp {
+interface Slot {
   Icon: LucideIcon;
+  /** % of backdrop width. */
   x: number;
+  /** % of backdrop height. */
   y: number;
+  /** Base px size before glyphScale is applied. */
   size: number;
+  /** Base rotation in degrees. */
   rotate: number;
 }
 
-const STAMPS: ReadonlyArray<Stamp> = [
-  { Icon: Cookie, x: 6, y: 8, size: 56, rotate: -8 },
-  { Icon: Donut, x: 78, y: 6, size: 64, rotate: 5 },
-  { Icon: Pizza, x: 18, y: 28, size: 72, rotate: 12 },
-  { Icon: CupSoda, x: 88, y: 22, size: 60, rotate: -4 },
-  { Icon: CookingPot, x: 40, y: 10, size: 64, rotate: -3 },
-  { Icon: Cake, x: 62, y: 30, size: 56, rotate: 8 },
-  { Icon: Croissant, x: 12, y: 52, size: 60, rotate: -10 },
-  { Icon: Salad, x: 70, y: 50, size: 64, rotate: 4 },
-  { Icon: Wine, x: 36, y: 42, size: 48, rotate: -6 },
-  { Icon: IceCream, x: 90, y: 60, size: 56, rotate: 10 },
-  { Icon: Coffee, x: 8, y: 76, size: 56, rotate: 6 },
-  { Icon: Sandwich, x: 26, y: 84, size: 64, rotate: -8 },
-  { Icon: Candy, x: 58, y: 74, size: 48, rotate: 12 },
-  { Icon: Soup, x: 82, y: 86, size: 60, rotate: -5 },
-  { Icon: Utensils, x: 48, y: 92, size: 56, rotate: 3 },
+// FROM pool: savories + drinks + working tools. 8 slots.
+const FROM_POOL: ReadonlyArray<Slot> = [
+  { Icon: CookingPot, x: 8, y: 12, size: 64, rotate: -3 },
+  { Icon: Pizza, x: 22, y: 30, size: 72, rotate: 12 },
+  { Icon: Soup, x: 14, y: 56, size: 60, rotate: -5 },
+  { Icon: Sandwich, x: 28, y: 80, size: 60, rotate: -8 },
+  { Icon: Beef, x: 38, y: 18, size: 56, rotate: 4 },
+  { Icon: Salad, x: 40, y: 48, size: 60, rotate: -6 },
+  { Icon: Utensils, x: 48, y: 88, size: 52, rotate: 3 },
+  { Icon: Coffee, x: 4, y: 78, size: 56, rotate: 6 },
 ];
 
-export function CookingBackdrop({ inline }: CookingBackdropProps) {
+// TO pool: sweet + dessert + fruit. 8 slots, placed on the right side
+// of the page so the two pools occupy roughly disjoint screen halves
+// (helps the eye read "from-cluster on the left, to-cluster on the
+// right"). Mixed sizes / rotations for hand-drawn feel.
+const TO_POOL: ReadonlyArray<Slot> = [
+  { Icon: Cookie, x: 60, y: 10, size: 56, rotate: -8 },
+  { Icon: Donut, x: 78, y: 8, size: 64, rotate: 5 },
+  { Icon: Cake, x: 64, y: 32, size: 56, rotate: 8 },
+  { Icon: CakeSlice, x: 90, y: 24, size: 52, rotate: -4 },
+  { Icon: Croissant, x: 56, y: 58, size: 60, rotate: -10 },
+  { Icon: IceCream, x: 88, y: 56, size: 56, rotate: 10 },
+  { Icon: Candy, x: 62, y: 78, size: 48, rotate: 12 },
+  { Icon: Apple, x: 84, y: 84, size: 60, rotate: -5 },
+];
+
+const PREFERS_REDUCED_MOTION_QUERY =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+
+function prefersReducedMotion(): boolean {
+  return PREFERS_REDUCED_MOTION_QUERY?.matches ?? false;
+}
+
+export function CookingBackdrop({
+  inline,
+  fromUnitId,
+  toUnitId,
+  glyphScale = 1,
+}: CookingBackdropProps) {
   const className = inline
     ? 'absolute inset-0 pointer-events-none overflow-hidden'
     : 'fixed inset-0 pointer-events-none -z-10 overflow-hidden';
 
+  // Subset selection: deterministic per unit id. Falls back to "all 4
+  // lowest-indexed slots" on kit-card previews where no bench is in
+  // scope (fromUnitId / toUnitId undefined).
+  const fromActive = fromUnitId
+    ? glyphSubsetIndices(fromUnitId, FROM_POOL.length, 4)
+    : new Set([0, 1, 2, 3]);
+  const toActive = toUnitId
+    ? glyphSubsetIndices(toUnitId, TO_POOL.length, 4)
+    : new Set([0, 1, 2, 3]);
+
+  // rAF-driven scan-line scroll. patternTransform written directly via
+  // setAttribute so the React tree does not re-render per frame.
+  const scanRef = useRef<SVGPatternElement>(null);
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+    let raf = 0;
+    let last = performance.now();
+    let phase = 0;
+    const tick = (t: number) => {
+      const dt = (t - last) / 1000;
+      last = t;
+      // Scroll upward → translate y NEGATIVE; modulo the pattern's
+      // height (36 px) so the numeric phase stays bounded and the
+      // lines tile seamlessly.
+      phase = (phase + dt * SCAN_LINE_SPEED_PX_S) % 36;
+      scanRef.current?.setAttribute('patternTransform', `translate(0 ${-phase})`);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   return (
     <div aria-hidden className={className} style={{ zIndex: inline ? 0 : -1 }}>
-      <style>{`
-        @media (prefers-reduced-motion: no-preference) {
-          .uf-drip {
-            stroke: var(--uf-grid);
-            stroke-dasharray: 4 24;
-            animation: uf-drip-flow 4.5s linear infinite;
-            opacity: 0.45;
-          }
-          @keyframes uf-drip-flow {
-            0%   { stroke-dashoffset: 28; }
-            100% { stroke-dashoffset: 0; }
-          }
-        }
-      `}</style>
-
-      {/* Ruled-paper + margin underlay rendered as SVG so it scales to
-          fill the backdrop without per-resolution math. */}
       <svg
         width="100%"
         height="100%"
@@ -93,54 +155,68 @@ export function CookingBackdrop({ inline }: CookingBackdropProps) {
         className="absolute inset-0"
       >
         <defs>
-          <pattern id="uf-recipe-card" width="800" height="36" patternUnits="userSpaceOnUse">
+          <pattern
+            ref={scanRef}
+            id="uf-recipe-card"
+            width="800"
+            height="36"
+            patternUnits="userSpaceOnUse"
+          >
             <line x1="0" y1="35" x2="800" y2="35" stroke="var(--uf-grid-faint)" strokeWidth="1" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#uf-recipe-card)" />
-        <line
-          x1="60"
-          y1="0"
-          x2="60"
-          y2="600"
-          stroke="var(--uf-accent)"
-          strokeWidth="1"
-          opacity="0.18"
-        />
-        <g>
-          <line x1="120" y1="60" x2="120" y2="540" strokeWidth="1.5" className="uf-drip" />
-          <line
-            x1="540"
-            y1="40"
-            x2="540"
-            y2="520"
-            strokeWidth="1.5"
-            className="uf-drip"
-            style={{ animationDelay: '1.2s' } as React.CSSProperties}
-          />
-        </g>
       </svg>
 
-      {/* Lucide stamps positioned percentage-wise. text-uf-grid-faint
-          paints them in the kit's accent color at very low opacity so
-          they read as recipe-card doodles rather than UI chrome. */}
+      {/* Glyph stamps: render every slot in both pools; opacity gates
+          visibility so a unit swap cross-fades without re-keying the
+          DOM. transform combines centering, scale, and rotation. */}
       <div className="absolute inset-0">
-        {STAMPS.map((s, i) => (
-          <s.Icon
-            // biome-ignore lint/suspicious/noArrayIndexKey: stamps are a static module-scope array
-            key={i}
-            size={s.size}
-            strokeWidth={1.2}
-            className="absolute text-uf-grid"
-            style={{
-              left: `${s.x}%`,
-              top: `${s.y}%`,
-              transform: `translate(-50%, -50%) rotate(${s.rotate}deg)`,
-              opacity: 0.08,
-            }}
+        {FROM_POOL.map((s, i) => (
+          <Glyph
+            // biome-ignore lint/suspicious/noArrayIndexKey: stable per-pool index
+            key={`from-${i}`}
+            slot={s}
+            active={fromActive.has(i)}
+            scale={glyphScale}
+          />
+        ))}
+        {TO_POOL.map((s, i) => (
+          <Glyph
+            // biome-ignore lint/suspicious/noArrayIndexKey: stable per-pool index
+            key={`to-${i}`}
+            slot={s}
+            active={toActive.has(i)}
+            scale={glyphScale}
           />
         ))}
       </div>
     </div>
+  );
+}
+
+interface GlyphProps {
+  slot: Slot;
+  active: boolean;
+  scale: number;
+}
+
+function Glyph({ slot, active, scale }: GlyphProps) {
+  const Icon = slot.Icon;
+  return (
+    <Icon
+      size={slot.size}
+      strokeWidth={1.2}
+      className="absolute text-uf-grid"
+      style={{
+        left: `${slot.x}%`,
+        top: `${slot.y}%`,
+        transform: `translate(-50%, -50%) scale(${scale}) rotate(${slot.rotate}deg)`,
+        transformOrigin: 'center',
+        opacity: active ? 0.12 : 0,
+        transition:
+          'opacity 600ms cubic-bezier(0.22,1,0.36,1), transform 320ms cubic-bezier(0.22,1,0.36,1)',
+      }}
+    />
   );
 }

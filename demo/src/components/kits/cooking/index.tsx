@@ -13,6 +13,7 @@ import { findById } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
+import { glyphScaleFor } from './parts/backdrop-scales.js';
 import { CookingBackdrop } from './parts/cooking-backdrop.js';
 import { ComparisonMachine } from './sections/comparison-machine/index.js';
 import { HelloCooking } from './sections/hello-cooking.js';
@@ -27,6 +28,8 @@ export function CookingScreen() {
     value: 1,
   });
   const benchBounds = cookingBoundsFor(bench.fromId);
+  const fromUnit = findById(COOKING_ALL_UNITS, bench.fromId);
+  const glyphScale = glyphScaleFor(fromUnit, bench.value, benchBounds.min, benchBounds.max);
 
   // Bench owns no per-unit bounds awareness; intercept its `onChange`
   // so a from-unit swap also snaps `value` to that unit's pedagogical
@@ -45,7 +48,9 @@ export function CookingScreen() {
 
   return (
     <KitLayout
-      backdropZone={<CookingBackdrop />}
+      backdropZone={
+        <CookingBackdrop fromUnitId={bench.fromId} toUnitId={bench.toId} glyphScale={glyphScale} />
+      }
       headerZone={
         <header className="relative flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 03</p>
