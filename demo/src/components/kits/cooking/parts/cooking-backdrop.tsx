@@ -41,6 +41,7 @@ import {
   Utensils,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { EASE_OUT_EXPO } from '~/lib/use-animated-number.js';
 import { SCAN_LINE_SPEED_PX_S } from './backdrop-scales.js';
 import { glyphSubsetIndices } from './glyph-pool.js';
 
@@ -96,6 +97,16 @@ const TO_POOL: ReadonlyArray<Slot> = [
   { Icon: Apple, x: 84, y: 84, size: 240, rotate: -5 },
 ];
 
+/** Number of slots from each 8-slot pool that are active at any time
+ *  (so ~8 of 16 glyphs visible). Half the pool by design; lifting to
+ *  a constant keeps the four call sites + the JSDoc-line in sync. */
+const ACTIVE_PER_POOL = 4;
+
+/** Default active-set for the kit-card preview path (no bench in
+ *  scope). The lowest N indices of each pool; derived from
+ *  ACTIVE_PER_POOL so a bump there does not orphan this fallback. */
+const PREVIEW_ACTIVE = new Set(Array.from({ length: ACTIVE_PER_POOL }, (_, i) => i));
+
 const PREFERS_REDUCED_MOTION_QUERY =
   typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -115,15 +126,15 @@ export function CookingBackdrop({
     ? 'absolute inset-0 pointer-events-none overflow-hidden'
     : 'fixed inset-0 pointer-events-none -z-10 overflow-hidden';
 
-  // Subset selection: deterministic per unit id. Falls back to "all 4
-  // lowest-indexed slots" on kit-card previews where no bench is in
-  // scope (fromUnitId / toUnitId undefined).
+  // Subset selection: deterministic per unit id. Falls back to the
+  // lowest-indexed slots (PREVIEW_ACTIVE) on kit-card previews where
+  // no bench is in scope (fromUnitId / toUnitId undefined).
   const fromActive = fromUnitId
-    ? glyphSubsetIndices(fromUnitId, FROM_POOL.length, 4)
-    : new Set([0, 1, 2, 3]);
+    ? glyphSubsetIndices(fromUnitId, FROM_POOL.length, ACTIVE_PER_POOL)
+    : PREVIEW_ACTIVE;
   const toActive = toUnitId
-    ? glyphSubsetIndices(toUnitId, TO_POOL.length, 4)
-    : new Set([0, 1, 2, 3]);
+    ? glyphSubsetIndices(toUnitId, TO_POOL.length, ACTIVE_PER_POOL)
+    : PREVIEW_ACTIVE;
 
   // rAF-driven scan-line scroll. patternTransform written directly via
   // setAttribute so the React tree does not re-render per frame.
@@ -264,8 +275,7 @@ function Glyph({ slot, active, scale }: GlyphProps) {
         top: `${slot.y}%`,
         transform: `translate(-50%, -50%) translateX(${translateX}px)`,
         opacity: active ? 0.12 : 0,
-        transition:
-          'opacity 1800ms cubic-bezier(0.22,1,0.36,1), transform 1800ms cubic-bezier(0.22,1,0.36,1)',
+        transition: `opacity 1800ms ${EASE_OUT_EXPO}, transform 1800ms ${EASE_OUT_EXPO}`,
       }}
     >
       <Icon
@@ -274,7 +284,7 @@ function Glyph({ slot, active, scale }: GlyphProps) {
         style={{
           transform: `scale(${scale}) rotate(${slot.rotate}deg)`,
           transformOrigin: 'center',
-          transition: 'transform 320ms cubic-bezier(0.22,1,0.36,1)',
+          transition: `transform 320ms ${EASE_OUT_EXPO}`,
         }}
       />
     </div>

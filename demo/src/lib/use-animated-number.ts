@@ -9,6 +9,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+/** Shared ease-out-expo cubic-bezier for CSS transitions across the
+ *  demo (backdrops, glyph swap, pour-pair settle, soda icon resize).
+ *  Hoisted so all four uses agree on the curve; compose your own
+ *  locally if you want different ease per axis. */
+export const EASE_OUT_EXPO = 'cubic-bezier(0.22,1,0.36,1)';
+
 const PREFERS_REDUCED_MOTION_QUERY =
   typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)')

@@ -66,14 +66,17 @@
   --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #76b8e3;
   --uf-grid-faint: #76b8e333;
-  /* Secondary grid: steel-blue for the to-unit layer. Earlier #1a3d6e
-   * was too dark; at the faint variant's 53% alpha it sat at 1.25:1
-   * against the bg, well below the primary faint's 1.48:1, so the
-   * parallax layer disappeared in bright ambient light. #2e5a8e lifts
-   * the faint tier to ~1.55:1, parity with the primary, while keeping
-   * the lightness split so the two blue grids stay distinguishable. */
-  --uf-grid-secondary: #2e5a8e;
-  --uf-grid-secondary-faint: #2e5a8e88;
+  /* Secondary grid: steel-blue for the to-unit layer. Iteration log:
+   *   - #1a3d6e (deep slate): too dark; faint composite 1.25:1.
+   *   - #2e5a8e: faint composite 1.57:1; still below 3:1 non-text.
+   *   - #5a8cc4 at 0xCC alpha: composite ~3.72:1; clears WCAG 3:1.
+   * Kept under the primary's brightness (#76b8e3 ≈ 8:1) so the
+   * lightness split still reads "primary in front, secondary behind."
+   * Faint alpha bumped from 0x88 (53%) to 0xCC (80%) since the
+   * starting brightness is now low enough that the lower alpha would
+   * disappear into the bg. */
+  --uf-grid-secondary: #5a8cc4;
+  --uf-grid-secondary-faint: #5a8cc4cc;
 }
 
 /* Subtle paper-grain dot texture on `.uf-paper` surfaces (both variants;

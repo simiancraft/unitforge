@@ -10,6 +10,8 @@
 // making is structurally identical: a name shared between US and UK
 // that doesn't correspond to the same volume.
 
+import { EASE_OUT_EXPO } from '~/lib/use-animated-number.js';
+
 interface PourPairProps {
   count: number;
   usMl: number;
@@ -69,7 +71,7 @@ function Glass({ label, sublabel, fillPct, ml, accentVar }: GlassProps) {
             height: `${fillPct}%`,
             background: `var(${accentVar})`,
             opacity: 0.8,
-            transition: 'height 220ms cubic-bezier(0.22,1,0.36,1)',
+            transition: `height 220ms ${EASE_OUT_EXPO}`,
           }}
         />
         {/* Tick marks at 25 / 50 / 75 % */}

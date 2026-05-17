@@ -52,6 +52,43 @@ export function lerpLog10(opts: {
 }
 
 /**
+ * Define a unit-driven backdrop axis: kit-local output dimension, base
+ * unit on it, conversion from `{ amount }` (in the input dimension) to
+ * a scalar in the output dimension. The returned wrapper invokes
+ * forge with `(fromUnit, 1)` so callers read `axis(fromUnit)`; this
+ * captures "the natural magnitude of one of this unit, mapped to a
+ * px / s / ratio." Sister of `defineRuntimeBoundedAxis`; pick this
+ * one when the axis varies with unit choice rather than with slider
+ * position.
+ */
+export function defineUnitDrivenAxis<D extends Dimension>(opts: {
+  axisId: string;
+  axisSymbol: string;
+  axisLabel: string;
+  inputDimension: D;
+  compute: (inputs: { amount: number }) => number;
+}): (fromUnit: Unit<D, number>) => number {
+  const outputDimension = opts.axisId as Dimension;
+  const baseUnit = defineUnit({
+    id: `${opts.axisId}-base`,
+    label: opts.axisLabel,
+    symbol: opts.axisSymbol,
+    dimension: outputDimension,
+    toBase: (v) => v,
+    fromBase: (b) => b,
+    base: true,
+  });
+
+  const conversion = defineConversion({
+    inputs: { amount: opts.inputDimension },
+    output: outputDimension,
+    compute: opts.compute,
+  });
+
+  return (fromUnit) => forge({ amount: fromUnit }, baseUnit, { via: conversion })({ amount: 1 });
+}
+
+/**
  * Define a runtime-bounded backdrop axis: kit-local output dimension,
  * base unit on it, conversion from `{ amount, minAmount, maxAmount }`
  * (all in the input dimension) to a scalar in the output dimension.
@@ -59,9 +96,9 @@ export function lerpLog10(opts: {
  * callers read `axis(fromUnit, value, min, max)` instead of building
  * the forge call site themselves.
  *
- * Three kits (geometry, data-storage, cooking) shared this exact
- * shape one declaration at a time; lifting collapses each new axis
- * to two arguments (id + compute closure).
+ * Three kits (geometry, data-storage, cooking) share this shape; the
+ * helper lifts the boilerplate so each new axis is a one-call
+ * declaration.
  */
 export function defineRuntimeBoundedAxis<D extends Dimension>(opts: {
   /** Stable id used both as the kit-local output dimension and as the

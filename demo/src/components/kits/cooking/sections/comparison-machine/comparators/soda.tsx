@@ -24,6 +24,7 @@ import { useState } from 'react';
 import { forge } from 'unitforge';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
+import { EASE_OUT_EXPO } from '~/lib/use-animated-number.js';
 import { ControlPanel } from '../../../control-panel.js';
 import { MarchingIcons } from '../parts/marching-icons.js';
 import {
@@ -228,8 +229,7 @@ function SugarBoard({
           strokeWidth={1.4}
           className="text-uf-accent"
           style={{
-            transition:
-              'width 320ms cubic-bezier(0.22,1,0.36,1), height 320ms cubic-bezier(0.22,1,0.36,1)',
+            transition: `width 320ms ${EASE_OUT_EXPO}, height 320ms ${EASE_OUT_EXPO}`,
           }}
           aria-hidden
         />
