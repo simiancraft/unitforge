@@ -1,3 +1,15 @@
+## [3.2.1](https://github.com/simiancraft/unitforge/compare/v3.2.0...v3.2.1) (2026-05-17)
+
+
+### Bug Fixes
+
+* **demo:** tighten cooking-kit prose; shrink soda food icons; drop em dash ([e954622](https://github.com/simiancraft/unitforge/commit/e954622eeab400191ef493ba21cb0f2a80ba67ec)), closes [#33](https://github.com/simiancraft/unitforge/issues/33)
+
+
+### Features
+
+* **demo:** reorder forge home page; namespace ArPeeGee dimensions; bump shop sliders ([80a0632](https://github.com/simiancraft/unitforge/commit/80a063253898979cca00a7084ac942ed5fc66f05)), closes [#33](https://github.com/simiancraft/unitforge/issues/33)
+
 # [3.2.0](https://github.com/simiancraft/unitforge/compare/v3.1.1...v3.2.0) (2026-05-17)
 
 
