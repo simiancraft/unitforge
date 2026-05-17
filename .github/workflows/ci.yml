@@ -42,6 +42,15 @@ jobs:
       - name: Build
         run: bun run build
 
+      # Demo install populates demo/node_modules so that demo files
+      # imported transitively from test/demo-invariants.test.ts can
+      # resolve `unitforge` via Node's module resolution. Skipped on
+      # `--no-frozen-lockfile` to match deploy-demo.yml (demo has no
+      # checked-in lockfile).
+      - name: Install (demo)
+        working-directory: ./demo
+        run: bun install --no-frozen-lockfile
+
       - name: Typecheck (tsgo)
         run: bun run typecheck
 
