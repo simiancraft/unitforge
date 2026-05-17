@@ -62,10 +62,21 @@ export function lerpLog10(opts: {
  * position.
  */
 export function defineUnitDrivenAxis<D extends Dimension>(opts: {
+  /** Stable id used both as the kit-local output dimension and as the
+   *  base unit's id. Must be unique across all axes the demo declares
+   *  (collisions would alias dimension namespaces). */
   axisId: string;
+  /** Display unit symbol for the output (e.g. 'px', 's', '×'). */
   axisSymbol: string;
+  /** Display label. */
   axisLabel: string;
+  /** Input dimension (matches the unit family the kit drives this
+   *  axis from: 'volume', 'length', 'data', etc.). */
   inputDimension: D;
+  /** Pure compute over `{ amount }`. The helper passes 1 of the
+   *  chosen `fromUnit` through forge into base units of the input
+   *  dimension; `compute({ amount })` receives that value. The
+   *  `lerpLog10` helper covers the wide-range case. */
   compute: (inputs: { amount: number }) => number;
 }): (fromUnit: Unit<D, number>) => number {
   const outputDimension = opts.axisId as Dimension;

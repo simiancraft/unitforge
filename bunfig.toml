@@ -1,7 +1,16 @@
 [test]
 # The subpathExports test suite imports from dist/ to prove published subpath
 # resolution works. Exclude dist/ from coverage so reports show src/ accuracy.
-coveragePathIgnorePatterns = ["**/dist/**", "dist/**", "**/dist/*"]
+# Also exclude demo/** because demo is not the library; its test/demo-invariants.test.ts
+# imports demo source files, which would otherwise drag demo into the
+# coverage aggregate and dilute the library's reported coverage.
+coveragePathIgnorePatterns = [
+  "**/dist/**",
+  "dist/**",
+  "**/dist/*",
+  "**/demo/**",
+  "demo/**",
+]
 coverageSkipTestFiles = true
 # Note: bun's `coverageThreshold` setting is silently inert in 1.3.x (verified
 # empirically: setting it to 0.99 against 97.7% actual coverage exits 0). We

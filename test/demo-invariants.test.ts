@@ -70,4 +70,52 @@ describe('demo invariants: FOODS catalog', () => {
       expect(food.dimension).toBe('sugar');
     }
   });
+
+  // Soda comparator's FOOD_ICONS + FOOD_NAMES are typed
+  // Record<FoodId, …>; that catches "missing entry for a known FoodId"
+  // at compile time. The reverse direction (FOODS grows, FoodId union
+  // and Records do not) is invisible to TS because the array elements'
+  // ids widen to `string`. The same `FOOD_*` Records live in
+  // `soda.tsx`, but we cannot import them here without the demo's
+  // `~/` alias resolving; instead we assert the count + shape, which
+  // is the strongest thing this test file can pin without dragging in
+  // demo's path aliases.
+  it('FOODS has the expected count (matches the FoodId union arity)', () => {
+    // Bump this constant when FoodId / FOODS gain a member.
+    const EXPECTED_FOOD_COUNT = 6;
+    expect(FOODS.length).toBe(EXPECTED_FOOD_COUNT);
+  });
+});
+
+describe('demo invariants: comparison + recipe ORDER joints', () => {
+  // ORDER arrays in comparison-machine/index.tsx and
+  // recipe-machine/index.tsx hand-mirror the chassis dispatch tables.
+  // TypeScript types ORDER as `readonly Key[]`, which allows missing
+  // entries silently (a recipe is in the union + Record but not in
+  // ORDER, so it never appears as a menu pill). These tests assert
+  // the count parity; the exact key lists live in the chassis files
+  // and importing them here would drag JSX into the lib's bun-test
+  // invocation. Count parity is the cheapest mechanical guard.
+
+  it('comparison-machine ORDER has 2 entries (soda + atlantic)', async () => {
+    // Source-grep instead of importing the React module; this test
+    // runs under bun-test which has no JSX runtime in scope.
+    const text = await Bun.file(
+      'demo/src/components/kits/cooking/sections/comparison-machine/index.tsx',
+    ).text();
+    const orderMatch = text.match(/ORDER:[^=]*=\s*\[([^\]]+)\]/);
+    expect(orderMatch, 'comparison-machine ORDER array not found').toBeTruthy();
+    const count = (orderMatch?.[1] ?? '').split(',').filter((s) => s.trim().length > 0).length;
+    expect(count).toBe(2);
+  });
+
+  it('recipe-machine ORDER has 6 entries', async () => {
+    const text = await Bun.file(
+      'demo/src/components/kits/cooking/sections/recipe-machine/index.tsx',
+    ).text();
+    const orderMatch = text.match(/ORDER:[^=]*=\s*\[([^\]]+)\]/);
+    expect(orderMatch, 'recipe-machine ORDER array not found').toBeTruthy();
+    const count = (orderMatch?.[1] ?? '').split(',').filter((s) => s.trim().length > 0).length;
+    expect(count).toBe(6);
+  });
 });
