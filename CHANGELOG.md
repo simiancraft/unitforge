@@ -1,3 +1,46 @@
+# [3.2.0](https://github.com/simiancraft/unitforge/compare/v3.1.1...v3.2.0) (2026-05-17)
+
+
+### Bug Fixes
+
+* **ci:** exclude demo/ from root tsconfigs ([bffda46](https://github.com/simiancraft/unitforge/commit/bffda4674354b2918f399dc69226dc1701444063))
+* **cooking-demo:** R1 review-cycle bundle ([4c00efc](https://github.com/simiancraft/unitforge/commit/4c00efc2f05ed5f2516ea680e588d335aa7d4a64)), closes [#9a6f10](https://github.com/simiancraft/unitforge/issues/9a6f10) [#8a6310](https://github.com/simiancraft/unitforge/issues/8a6310) [#1a3d6e](https://github.com/simiancraft/unitforge/issues/1a3d6e) [#2e5a8e](https://github.com/simiancraft/unitforge/issues/2e5a8e)
+* **cooking:** tighten kit docs and cross-kit interop test ([639521a](https://github.com/simiancraft/unitforge/commit/639521a95ce6a49a5c49a7ec9f50831f6383e866))
+* **demo:** cake hint says single-layer; tighten stakan citation ([0552a37](https://github.com/simiancraft/unitforge/commit/0552a37d01962bb4c2ed076b28d1d48add92d8bb)), closes [#32](https://github.com/simiancraft/unitforge/issues/32)
+* **demo:** clear typecheck errors CI surfaced on 69f6062 ([6d97227](https://github.com/simiancraft/unitforge/commit/6d9722779aabd290b6d4a024430b4b0407880bb6))
+* **demo:** cooking glyphs 4x instead of 5x; triple the fade duration ([5053656](https://github.com/simiancraft/unitforge/commit/50536560f9426f32789d4a3e7d17ae854671a3c7))
+* **demo:** kill verbose hero-text wraps; rework international as A/B picker ([758026c](https://github.com/simiancraft/unitforge/commit/758026c8dd8946c559a6527a619b8d472e4a0a2e))
+* **demo:** log-linear dash length so byte through YB step visibly ([3cc391b](https://github.com/simiancraft/unitforge/commit/3cc391bf50081886367357b9ce294e43389ccd34))
+* **demo:** make cooking-kit recipes edible (gastronomist review) ([25c22e1](https://github.com/simiancraft/unitforge/commit/25c22e18fe11a3e110b802c096bcdb605b8ca21a))
+* **demo:** parallax grids scroll x-axis only ([531a315](https://github.com/simiancraft/unitforge/commit/531a315f6d9f8d648b6d2cdff9af8618e54554e3))
+* **demo:** R3 review-cycle bundle ([590c511](https://github.com/simiancraft/unitforge/commit/590c5115cc9c9d786ddd9de74536c1b1438a2c8d)), closes [#2e5a8e](https://github.com/simiancraft/unitforge/issues/2e5a8e) [#5a8cc4](https://github.com/simiancraft/unitforge/issues/5a8cc4)
+* **demo:** R5 review-cycle bundle ([d405b2e](https://github.com/simiancraft/unitforge/commit/d405b2e6b20a97f83b0a38abc796ec29cd5b8ac6))
+* **demo:** R7 review-cycle bundle ([69f6062](https://github.com/simiancraft/unitforge/commit/69f606215cd87bc1febf76483c1439a7c0d07b35))
+* **demo:** reserve scrollbar gutter to stop Windows page jostle ([b6d8802](https://github.com/simiancraft/unitforge/commit/b6d8802ce314638db58de5bef5bb348950e95a7e))
+* **demo:** scale cooking backdrop glyphs ~5x larger ([4dbc282](https://github.com/simiancraft/unitforge/commit/4dbc2820e5505692c5d1adf7752689356c9af870))
+* **demo:** UnitPicker uses modal=false to skip Radix scroll-lock ([2203db3](https://github.com/simiancraft/unitforge/commit/2203db37d7f68633957b94be921bf68ca5794c61))
+
+
+### Features
+
+* **demo:** add cooking kit demo pages ([d9426f0](https://github.com/simiancraft/unitforge/commit/d9426f017cce0a8e8b412df42a29f55b4dc3e643)), closes [#9a6f10](https://github.com/simiancraft/unitforge/issues/9a6f10) [#d94584](https://github.com/simiancraft/unitforge/issues/d94584)
+* **demo:** add international comparator section (7 cup variants side-by-side) ([ab290e0](https://github.com/simiancraft/unitforge/commit/ab290e07b478a1983a39a717d629f96a6eec6ad8))
+* **demo:** drive data-storage trace pulses via forge calls ([e600378](https://github.com/simiancraft/unitforge/commit/e600378d3a5d86f0253580717fcc2f25aac65e0d))
+* **demo:** drive geometry grid cell via forge call ([4da8995](https://github.com/simiancraft/unitforge/commit/4da89953a49859c15a207689a78ea21e7e028019))
+* **demo:** geometry to-grid uses complementary hue per theme; 2x offset ([b4262d6](https://github.com/simiancraft/unitforge/commit/b4262d61966e832bf6167b609587436b60a894c9)), closes [#b8552c](https://github.com/simiancraft/unitforge/issues/b8552c) [#3a6b9b](https://github.com/simiancraft/unitforge/issues/3a6b9b) [#1a3d6e](https://github.com/simiancraft/unitforge/issues/1a3d6e)
+* **demo:** glyph slide-in/out; atlantic hero text shrinks to fit ([91949d9](https://github.com/simiancraft/unitforge/commit/91949d9fabaeb9d6d9352273aea5ac29bb8b6d72))
+* **demo:** halve parallax speeds; slider also scales to-grid cells ([e921b43](https://github.com/simiancraft/unitforge/commit/e921b43fef10d9ca9a8834348f11715f2b77c057))
+* **demo:** juice cooking backdrop; from/to swap glyph pools, slider scales them ([7a3b45a](https://github.com/simiancraft/unitforge/commit/7a3b45a129a06ede72e36762b58c7183b544d7e0))
+* **demo:** parallax geometry grids; slider controls depth ([a5da7b8](https://github.com/simiancraft/unitforge/commit/a5da7b8a01a7252953c08b432f85756ea8221435))
+* **demo:** redesign cooking demo per design review ([bfe922d](https://github.com/simiancraft/unitforge/commit/bfe922d854079131899e27356ee4232f390189c8))
+* **demo:** soda comparator picks container icon + size by fl oz ([fb33645](https://github.com/simiancraft/unitforge/commit/fb33645a20929c0fc2c12063504e4ec0a2ff1d55))
+* **demo:** superimpose to-grid on geometry backdrop; slider drives phase ([4b8b0ec](https://github.com/simiancraft/unitforge/commit/4b8b0ece2e2c0ad80bc988a10b8429275f6b877d))
+* **kits/cooking:** add butterBlockEu250g (EU 250 g butter block) ([74508b8](https://github.com/simiancraft/unitforge/commit/74508b87a7da2ee79f476c50ebe641cfc152e46e))
+* **kits/cooking:** add international cup units (Japanese gō, JP general, Russian stakan) ([c925f25](https://github.com/simiancraft/unitforge/commit/c925f2511a27c3c345b769718e76751a833555fa))
+* **kits/cooking:** ship 5 international units; document volume-only scope ([65d09e7](https://github.com/simiancraft/unitforge/commit/65d09e731ac5c3138cb3661732312dc6bd6a6e8e))
+* **kits:** add cooking kit (US/UK volume split) + custom-dimension prefix doc ([f3fbb9c](https://github.com/simiancraft/unitforge/commit/f3fbb9c8c6d390f95ab1a048bddc84b3bf29f0e5)), closes [#5](https://github.com/simiancraft/unitforge/issues/5) [#8](https://github.com/simiancraft/unitforge/issues/8)
+* **kits:** add liter to cooking kit ([47e86c4](https://github.com/simiancraft/unitforge/commit/47e86c4965ad0af9d32ed0be97d59def2cbfea11))
+
 ## [3.1.1](https://github.com/simiancraft/unitforge/compare/v3.1.0...v3.1.1) (2026-05-16)
 
 
