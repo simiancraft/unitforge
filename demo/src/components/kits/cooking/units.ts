@@ -14,7 +14,10 @@
 import type { Unit } from 'unitforge';
 import {
   butterBlockEu250g,
+  cupJapaneseGeneral,
+  cupJapaneseRice,
   cupMetric250,
+  cupRussianStakan,
   cupUk,
   cupUs,
   cupUsLegal240,
@@ -57,6 +60,17 @@ export const COOKING_METRIC_UNITS = [
  *  it belongs rather than padding the metric column. */
 export const COOKING_AU_UNITS = [tablespoonAu] as const;
 
+/** Common international cup variants outside the US/UK/metric/AU
+ *  cores: Japanese rice (gō, 180.39 mL, ships with every Japanese
+ *  rice cooker), Japanese general (200 mL, JIS S 2052 cookware
+ *  standard), Russian stakan (250 mL modern; iconic faceted glass).
+ *  Demo's international comparator section reads from this family. */
+export const COOKING_INTERNATIONAL_UNITS = [
+  cupJapaneseRice,
+  cupJapaneseGeneral,
+  cupRussianStakan,
+] as const;
+
 export const COOKING_TRADITION_UNITS = [pinch, dash, stickOfButter, butterBlockEu250g] as const;
 
 export const COOKING_ALL_UNITS = [
@@ -64,6 +78,7 @@ export const COOKING_ALL_UNITS = [
   ...COOKING_US_UNITS,
   ...COOKING_UK_UNITS,
   ...COOKING_AU_UNITS,
+  ...COOKING_INTERNATIONAL_UNITS,
   ...COOKING_TRADITION_UNITS,
 ] as const;
 
@@ -92,6 +107,9 @@ export const COOKING_UNIT_IDS = [
   'cup-us-legal-240',
   'cup-uk',
   'cup-metric-250',
+  'cup-japanese-rice',
+  'cup-japanese-general',
+  'cup-russian-stakan',
   'stick-of-butter',
   'butter-block-eu-250g',
   'dash',
@@ -130,6 +148,9 @@ export const COOKING_BOUNDS: Record<CookingUnitId, SliderBounds> = {
   'cup-us-legal-240': { min: 0.25, max: 8, step: 0.25, init: 1 },
   'cup-uk': { min: 0.25, max: 8, step: 0.25, init: 1 },
   'cup-metric-250': { min: 0.25, max: 8, step: 0.25, init: 1 },
+  'cup-japanese-rice': { min: 0.25, max: 8, step: 0.25, init: 1 },
+  'cup-japanese-general': { min: 0.25, max: 8, step: 0.25, init: 1 },
+  'cup-russian-stakan': { min: 0.25, max: 8, step: 0.25, init: 1 },
   'stick-of-butter': { min: 0.25, max: 8, step: 0.25, init: 1 },
   'butter-block-eu-250g': { min: 0.25, max: 4, step: 0.25, init: 1 },
   dash: { min: 1, max: 24, step: 1, init: 4 },
