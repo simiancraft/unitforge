@@ -35,6 +35,14 @@
   --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #3e7fa6;
   --uf-grid-faint: #3e7fa666;
+  /* Secondary grid: dim burnt-orange for the to-unit layer. The cream
+   * paper already carries teal-blue from the primary grid; a faint
+   * complementary orange gives the two layers a real hue contrast
+   * (not just two shades of the same blue) without breaking the
+   * blueprint identity. Kept low-saturation so it reads as a marked-up
+   * second pass on the same sheet, not a second UI. */
+  --uf-grid-secondary: #b8552c;
+  --uf-grid-secondary-faint: #b8552c55;
 }
 
 /* Blueprint-night: deep navy bg, pale ink, electric-cyan accent, lighter
@@ -58,6 +66,17 @@
   --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #76b8e3;
   --uf-grid-faint: #76b8e333;
+  /* Secondary grid: steel-blue for the to-unit layer. Iteration log:
+   *   - #1a3d6e (deep slate): too dark; faint composite 1.25:1.
+   *   - #2e5a8e: faint composite 1.57:1; still below 3:1 non-text.
+   *   - #5a8cc4 at 0xCC alpha: composite ~3.62:1; clears WCAG 3:1.
+   * Kept under the primary's brightness (#76b8e3 ≈ 8:1) so the
+   * lightness split still reads "primary in front, secondary behind."
+   * Faint alpha bumped from 0x88 (53%) to 0xCC (80%) since the
+   * starting brightness is now low enough that the lower alpha would
+   * disappear into the bg. */
+  --uf-grid-secondary: #5a8cc4;
+  --uf-grid-secondary-faint: #5a8cc4cc;
 }
 
 /* Subtle paper-grain dot texture on `.uf-paper` surfaces (both variants;

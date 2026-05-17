@@ -47,6 +47,15 @@ body,
   height: 100%;
 }
 
+/* Always reserve the scrollbar gutter so opening a Radix Select (which
+ * scroll-locks the body and momentarily pulls the scrollbar away) does
+ * not reflow the page by ~16 px on Windows. Modern browsers; falls back
+ * to "the scrollbar is always present" on engines that ignore the
+ * property, which is the desired behavior anyway. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   background: var(--uf-bg);

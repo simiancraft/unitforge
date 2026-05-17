@@ -35,9 +35,22 @@ export function DataStorageScreen() {
     value: 500,
   });
 
+  const fromUnit = findById(DATA_ALL_UNITS, bench.fromId);
+  const toUnit = findById(DATA_ALL_UNITS, bench.toId);
+
   return (
     <KitLayout
-      backdropZone={<DataStorageBackdrop />}
+      backdropZone={
+        <DataStorageBackdrop
+          bench={{
+            fromUnit,
+            toUnit,
+            value: bench.value,
+            min: DATA_STORAGE_BENCH_MIN,
+            max: DATA_STORAGE_BENCH_MAX,
+          }}
+        />
+      }
       headerZone={
         <header className="relative uf-scanlines flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 02</p>

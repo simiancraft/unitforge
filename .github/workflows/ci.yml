@@ -32,13 +32,27 @@ jobs:
       - name: Biome check
         run: bun run lint
 
-      - name: Typecheck (tsgo)
-        run: bun run typecheck
-
-      # Build before test so test/subpathExports.test.ts can verify the
-      # package.json 'exports' map against actual emitted dist/ files.
+      # Build before typecheck and test:
+      #   - test/demo-invariants.test.ts imports from `../demo/src/...`;
+      #     tsgo follows the import and pulls those demo files in, which
+      #     in turn require `unitforge` (the root package) to resolve via
+      #     dist/. Without dist/ first, typecheck reports demo errors.
+      #   - test/subpathExports.test.ts verifies the package.json `exports`
+      #     map against actual emitted dist/ files at runtime.
       - name: Build
         run: bun run build
+
+      # Demo install populates demo/node_modules so that demo files
+      # imported transitively from test/demo-invariants.test.ts can
+      # resolve `unitforge` via Node's module resolution. Skipped on
+      # `--no-frozen-lockfile` to match deploy-demo.yml (demo has no
+      # checked-in lockfile).
+      - name: Install (demo)
+        working-directory: ./demo
+        run: bun install --no-frozen-lockfile
+
+      - name: Typecheck (tsgo)
+        run: bun run typecheck
 
       - name: Package hygiene (publint + attw)
         run: bun run check:package

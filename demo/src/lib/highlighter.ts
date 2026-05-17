@@ -18,10 +18,18 @@ const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   'vitesse-dark': () => import('shiki/themes/vitesse-dark.mjs'),
   'synthwave-84': () => import('shiki/themes/synthwave-84.mjs'),
   'light-plus': () => import('shiki/themes/light-plus.mjs'),
+  'rose-pine-dawn': () => import('shiki/themes/rose-pine-dawn.mjs'),
+  monokai: () => import('shiki/themes/monokai.mjs'),
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;
 const loadedThemes = new Set<string>();
+// Bounded so a long session of slider drags can't accumulate ~MB of
+// stale rendered HTML. JS Map preserves insertion order, so popping the
+// first key on overflow gives a cheap FIFO with no extra bookkeeping.
+// 500 covers every kit's bench drag range × every theme × the live
+// code templates with headroom.
+const HTML_CACHE_MAX = 500;
 const htmlCache = new Map<string, string>();
 
 function getHighlighter(): Promise<Highlighter> {
@@ -71,6 +79,10 @@ export async function highlight(
   await ensureTheme(theme);
   const h = await getHighlighter();
   const rendered = h.codeToHtml(code, { lang, theme });
+  if (htmlCache.size >= HTML_CACHE_MAX) {
+    const oldest = htmlCache.keys().next().value;
+    if (oldest !== undefined) htmlCache.delete(oldest);
+  }
   htmlCache.set(key, rendered);
   return rendered;
 }

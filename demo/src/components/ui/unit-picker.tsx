@@ -63,6 +63,9 @@ export function UnitPicker({
       <span id={labelId} className={cn('uf-eyebrow', labelHidden && 'sr-only')}>
         {label}
       </span>
+      {/* Body scroll-jostle on open is suppressed by `scrollbar-gutter:
+          stable` on `html` in index.css; Radix Select itself has no
+          `modal` prop. */}
       <Select.Root value={value} onValueChange={onChange}>
         <Select.Trigger
           aria-labelledby={labelId}
