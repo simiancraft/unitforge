@@ -40,7 +40,7 @@ import {
   Soup,
   Utensils,
 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { glyphSubsetIndices, SCAN_LINE_SPEED_PX_S } from './backdrop-scales.js';
 
 interface CookingBackdropProps {
@@ -204,22 +204,72 @@ interface GlyphProps {
   scale: number;
 }
 
+// Slide distance (px) for the swap-in / swap-out animation. Active
+// glyphs come in from the LEFT (start at -GLYPH_SLIDE_PX, settle at 0);
+// inactive glyphs leave to the RIGHT (start at 0, settle at +GLYPH_SLIDE_PX).
+// Combined with the 1800 ms opacity transition this reads as "old ones
+// fade and fly off to the right, new ones fade in and fly in from the
+// left."
+const GLYPH_SLIDE_PX = 80;
+
 function Glyph({ slot, active, scale }: GlyphProps) {
   const Icon = slot.Icon;
+
+  // translateX for the wrapper is direction-aware: a newly-active glyph
+  // pops to -SLIDE then transitions to 0 (slide in from left); a
+  // newly-inactive glyph transitions from 0 to +SLIDE (fly off right).
+  // We need a separate effect that runs the "pre-position to -SLIDE,
+  // then on next frame settle to 0" sequence for the entering case so
+  // the transition has somewhere to animate from.
+  const [translateX, setTranslateX] = useState(active ? 0 : GLYPH_SLIDE_PX);
+  const wasActiveRef = useRef(active);
+
+  useEffect(() => {
+    const wasActive = wasActiveRef.current;
+    wasActiveRef.current = active;
+    if (active && !wasActive) {
+      // Entering: prime at -SLIDE without transition, then on the next
+      // frame transition to 0. requestAnimationFrame x2 ensures the
+      // browser paints the primed position before the transition begins.
+      setTranslateX(-GLYPH_SLIDE_PX);
+      const raf1 = requestAnimationFrame(() => {
+        const raf2 = requestAnimationFrame(() => setTranslateX(0));
+        return () => cancelAnimationFrame(raf2);
+      });
+      return () => cancelAnimationFrame(raf1);
+    }
+    if (!active && wasActive) {
+      // Exiting: simply transition to +SLIDE; opacity goes to 0 in
+      // parallel.
+      setTranslateX(GLYPH_SLIDE_PX);
+    }
+  }, [active]);
+
+  // Wrapper owns position + the slow translateX (1800 ms) so the swap
+  // animation reads as a long fade-and-slide. Inner Icon owns scale
+  // and rotate with a snappy 320 ms transition so the slider's scale
+  // change still feels responsive.
   return (
-    <Icon
-      size={slot.size}
-      strokeWidth={1.2}
+    <div
       className="absolute text-uf-grid"
       style={{
         left: `${slot.x}%`,
         top: `${slot.y}%`,
-        transform: `translate(-50%, -50%) scale(${scale}) rotate(${slot.rotate}deg)`,
-        transformOrigin: 'center',
+        transform: `translate(-50%, -50%) translateX(${translateX}px)`,
         opacity: active ? 0.12 : 0,
         transition:
-          'opacity 1800ms cubic-bezier(0.22,1,0.36,1), transform 320ms cubic-bezier(0.22,1,0.36,1)',
+          'opacity 1800ms cubic-bezier(0.22,1,0.36,1), transform 1800ms cubic-bezier(0.22,1,0.36,1)',
       }}
-    />
+    >
+      <Icon
+        size={slot.size}
+        strokeWidth={1.2}
+        style={{
+          transform: `scale(${scale}) rotate(${slot.rotate}deg)`,
+          transformOrigin: 'center',
+          transition: 'transform 320ms cubic-bezier(0.22,1,0.36,1)',
+        }}
+      />
+    </div>
   );
 }

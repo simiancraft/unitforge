@@ -145,6 +145,10 @@ export function useAtlantic() {
             label={`${count} ${def.unitWord} · ${ukIsLarger ? 'UK − US' : 'US − UK'} gap`}
             value={`${Math.abs(gapMl).toFixed(2)} mL (≈ ${gapAbsPct.toFixed(1)}% larger ${ukIsLarger ? 'UK' : 'US'})`}
             variant="hero"
+            // hero default text-2xl wraps the value at common bench widths
+            // because the string carries unit + percent + direction; drop
+            // to text-xl (~20 px) so the whole sentence fits one line.
+            valueClassName="text-xl"
           />
         }
       />
