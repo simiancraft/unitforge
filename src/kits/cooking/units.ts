@@ -318,14 +318,16 @@ export const cupJapaneseGeneral = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 200e-6,
 });
 
-/** Russian stakan (стакан); 250 mL modern standard. The Soviet-era
- *  graneny stakan (faceted glass) is the iconic Russian measuring
- *  vessel: 250 mL when filled to the rim, 200 mL when filled to the
- *  lower facet (the "small stakan" of Tsarist-era teacup tradition,
- *  still found in babushka recipe books). Modern Russian cookbooks
- *  use the 250 mL convention; this ships that value. For pre-Soviet
- *  recipes that use the 200 mL "small stakan," substitute
- *  `cupJapaneseGeneral` (numerically identical) or define your own. */
+/** Russian stakan (стакан); 250 mL modern standard, formalized by
+ *  GOST 7176-77 (the Soviet/Russian state standard for the graneny
+ *  faceted drinking glass). The graneny stakan is the iconic Russian
+ *  measuring vessel: 250 mL when filled to the rim, 200 mL when
+ *  filled to the lower facet (the "small stakan" of Tsarist-era
+ *  teacup tradition, still found in babushka recipe books). Modern
+ *  Russian cookbooks use the 250 mL convention; this ships that
+ *  value. For pre-Soviet recipes that use the 200 mL "small stakan,"
+ *  substitute `cupJapaneseGeneral` (numerically identical) or define
+ *  your own. */
 export const cupRussianStakan = /*#__PURE__*/ defineUnit({
   id: 'cup-russian-stakan',
   label: 'Russian Stakan (250 mL)',

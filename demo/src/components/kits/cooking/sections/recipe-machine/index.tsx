@@ -52,7 +52,7 @@ const ORDER: readonly RecipeKey[] = [
 const RECIPE_META: Record<RecipeKey, RecipeMeta> = {
   chocolateChipCookies: { label: 'cookies', hint: '24 per batch; sticks + cups' },
   glazedDonuts: { label: 'glazed donuts', hint: "baker's dozen per batch" },
-  chocolateCake: { label: 'chocolate cake', hint: '8 slices per layer' },
+  chocolateCake: { label: 'chocolate cake', hint: '8 slices, single 9-inch round' },
   pizzaDough: { label: 'pizza', hint: '12-inch, 8 slices' },
   simpleSyrup: { label: 'simple syrup', hint: '1:1 by volume; cocktails per batch' },
   vinaigrette: { label: 'vinaigrette', hint: 'dresses 6 salads per batch' },
