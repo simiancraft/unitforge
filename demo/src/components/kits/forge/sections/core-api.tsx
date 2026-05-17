@@ -20,7 +20,7 @@ const inSqFt = forge(
   squareFoot,
   { via: areaFromRectangle },
 );
-inSqFt({ length: 12, width: 8 });  // 57.067`;
+inSqFt({ length: 12, width: 8 });  // 57.066`;
 
 const DEFINE_UNIT_CODE = `import { defineUnit } from 'unitforge';
 
@@ -76,8 +76,8 @@ export function CoreApi() {
         </h2>
       </header>
       <p className="max-w-2xl text-sm leading-relaxed text-uf-muted">
-        That's the whole surface. The Arpy Gee Shop demo above stitched all three together. Kits are
-        values built from the same primitives; you can use the kits, build your own, or both.
+        Three primitives is the whole surface. The Arpy Gee Shop demo below stitches them together.
+        Kits are values built from the same primitives; use the kits, build your own, or both.
       </p>
       <div className="grid gap-4 md:grid-cols-3">
         {CARDS.map((c) => (

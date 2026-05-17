@@ -56,12 +56,9 @@ export function CookingScreen() {
           <p className="uf-eyebrow">kit · 03</p>
           <h1 className="display text-4xl font-bold tracking-tight md:text-5xl">cooking</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-uf-muted">
-            Culinary volumes: US customary (cup, tablespoon, teaspoon, fluid ounce), UK imperial
-            (same names, different volumes), metric (milliliter), and tradition (stick of butter,
-            dash, pinch). Where "1 cup" gets weird: a US cup and a UK cup differ by ~20%; US fluid
-            ounces are LARGER than UK ones even though US cups are SMALLER; cookbook rounding ("1
-            tbsp ≈ 15 mL") drifts from the exact NIST factor. Every readout below is a real forge
-            call against the built package.
+            Culinary volumes across US, UK, metric, Australian, and Japanese / Russian variants,
+            plus tradition (stick of butter, dash, pinch). The US/UK split is the trap: same names,
+            different volumes. Every readout below is a real forge call against the built package.
           </p>
         </header>
       }
@@ -94,7 +91,7 @@ export const meta: KitMeta = {
   id: 'cooking',
   label: 'cooking',
   blurb:
-    'culinary volumes; US/UK split for cup, tablespoon, teaspoon, and fluid ounce; stick of butter, dash, pinch; system + recipe machines.',
+    'teaspoons, teacups, the usual suspects, but also international units, sugar comparisons, and more.',
   defaultThemeId: 'cooking-light',
   icon: ChefHat,
   previewBg: () => <CookingBackdrop inline />,

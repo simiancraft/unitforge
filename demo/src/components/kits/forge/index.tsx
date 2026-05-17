@@ -83,8 +83,8 @@ export function ForgeScreen() {
               onPress={onTilePress}
               onClick={onTileClick}
             />
-            <ArpyGeeShop />
             <CoreApi />
+            <ArpyGeeShop />
           </>
         }
       />
