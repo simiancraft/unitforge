@@ -71,7 +71,7 @@ export function useSimpleSyrup() {
         resultsZone={
           <Result
             label="yield"
-            value={`${Math.round(COCKTAILS_PER_BATCH * scale)} cocktails (one barspoon each)`}
+            value={`${Math.round(COCKTAILS_PER_BATCH * scale)} cocktails (½ fl oz each)`}
             variant="hero"
           />
         }
@@ -81,9 +81,11 @@ export function useSimpleSyrup() {
   };
 }
 
-// 1 batch ≈ 1.5 cups of syrup; the average mixed drink takes ~1 tsp
-// of simple syrup, and 1.5 cups holds ~72 tsp. Round down for headroom.
-const COCKTAILS_PER_BATCH = 48;
+// 1 batch ≈ 1.5 cups of syrup (= 12 US fl oz). Standard cocktail
+// spec is ½ fl oz of simple syrup per drink (one jigger-half), so a
+// batch yields 12 / 0.5 = 24 cocktails. The barspoon (~5 mL) is for
+// stirring, not for measuring simple syrup.
+const COCKTAILS_PER_BATCH = 24;
 
 function buildCode(scale: number): string {
   const usCups = scale.toFixed(2);

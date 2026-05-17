@@ -24,7 +24,7 @@ import { type Ingredient, RecipeCard } from '../parts/recipe-card.js';
 const INGREDIENTS: ReadonlyArray<Ingredient> = [
   {
     id: 'flour',
-    name: 'flour, AP or bread',
+    name: 'flour, AP or bread (scoop & sweep)',
     amount: 2.5,
     sourceUnit: cupUs,
     ukUnit: cupUk,
@@ -66,6 +66,17 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
     id: 'sauce',
     name: 'crushed tomatoes',
     amount: 0.75,
+    sourceUnit: cupUs,
+    ukUnit: cupUk,
+    metricUnit: milliliter,
+  },
+  {
+    // 1 cup shredded low-moisture mozzarella for a 12-inch pie is the
+    // standard US pizzeria amount; less and the cheese doesn't cover,
+    // more and it pools.
+    id: 'mozzarella',
+    name: 'mozzarella, shredded',
+    amount: 1,
     sourceUnit: cupUs,
     ukUnit: cupUk,
     metricUnit: milliliter,
@@ -116,8 +127,9 @@ export function usePizzaDough() {
         code={`import { forge } from 'unitforge';
 import { cupUs, cupUk, milliliter } from 'unitforge/kits/cooking';
 
-// Pizza dough is hydration-driven; 2.5 cups flour to 1 cup water = 64%
-// hydration, a beginner-friendly home-oven dough.
+// Pizza dough is hydration-driven; at scoop-and-sweep (~150 g/cup),
+// 2.5 cups flour to 1 cup water = ~64% hydration, a beginner-friendly
+// home-oven dough.
 forge(cupUs, milliliter)(${(2.5 * scale).toFixed(2)}); // ${(2.5 * scale * 236.5882365).toFixed(2)}
 `}
       />

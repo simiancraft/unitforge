@@ -25,7 +25,7 @@ import { type Ingredient, RecipeCard } from '../parts/recipe-card.js';
 const INGREDIENTS: ReadonlyArray<Ingredient> = [
   {
     id: 'butter',
-    name: 'butter',
+    name: 'butter (room temp)',
     amount: 2,
     sourceUnit: stickOfButter,
     ukUnit: cupUk,
@@ -43,6 +43,16 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
     id: 'brown-sugar',
     name: 'brown sugar',
     amount: 0.75,
+    sourceUnit: cupUs,
+    ukUnit: cupUk,
+    metricUnit: milliliter,
+  },
+  {
+    // 2 large eggs by volume; the standard cookbook conversion is
+    // ~1/4 cup beaten whole egg per large egg, so 2 eggs ≈ 1/2 cup.
+    id: 'eggs',
+    name: 'eggs (2 large)',
+    amount: 0.5,
     sourceUnit: cupUs,
     ukUnit: cupUk,
     metricUnit: milliliter,
@@ -66,6 +76,14 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
   {
     id: 'baking-soda',
     name: 'baking soda',
+    amount: 1,
+    sourceUnit: teaspoonUs,
+    ukUnit: teaspoonUk,
+    metricUnit: milliliter,
+  },
+  {
+    id: 'salt',
+    name: 'salt',
     amount: 1,
     sourceUnit: teaspoonUs,
     ukUnit: teaspoonUk,

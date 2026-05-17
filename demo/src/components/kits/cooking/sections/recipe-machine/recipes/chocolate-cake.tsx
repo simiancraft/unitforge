@@ -1,6 +1,8 @@
-// Chocolate cake. Classic American 9-inch layer cake. One batch yields
-// 8 slices. Heavy on sugar and cocoa by volume; mixes the cup ladder
-// with tablespoons of cocoa and teaspoons of leavener.
+// Chocolate cake. Classic American 9-inch round, single layer (scale
+// the batch slider 2× to bake two layers and stack with frosting).
+// One batch yields 8 slices. Heavy on sugar and cocoa by volume;
+// mixes the cup ladder with tablespoons of cocoa and teaspoons of
+// leavener.
 
 import { CakeSlice } from 'lucide-react';
 import { useState } from 'react';
@@ -23,7 +25,7 @@ import { type Ingredient, RecipeCard } from '../parts/recipe-card.js';
 const INGREDIENTS: ReadonlyArray<Ingredient> = [
   {
     id: 'butter',
-    name: 'butter',
+    name: 'butter (room temp)',
     amount: 2,
     sourceUnit: stickOfButter,
     ukUnit: cupUk,
@@ -39,16 +41,19 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
   },
   {
     id: 'flour',
-    name: 'flour',
+    name: 'flour (scoop & sweep)',
     amount: 1.75,
     sourceUnit: cupUs,
     ukUnit: cupUk,
     metricUnit: milliliter,
   },
   {
+    // 1/2 cup cocoa (= 8 tbsp ≈ 42 g) is the lower bound of a real
+    // chocolate cake; less than this and you have a vanilla cake
+    // that's seen a photograph of a chocolate cake.
     id: 'cocoa',
     name: 'cocoa powder',
-    amount: 6,
+    amount: 8,
     sourceUnit: tablespoonUs,
     ukUnit: tablespoonUk,
     metricUnit: milliliter,
@@ -76,6 +81,14 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
     id: 'baking-soda',
     name: 'baking soda',
     amount: 1.5,
+    sourceUnit: teaspoonUs,
+    ukUnit: teaspoonUk,
+    metricUnit: milliliter,
+  },
+  {
+    id: 'salt',
+    name: 'salt',
+    amount: 0.5,
     sourceUnit: teaspoonUs,
     ukUnit: teaspoonUk,
     metricUnit: milliliter,
@@ -123,7 +136,7 @@ export function useChocolateCake() {
         resultsZone={
           <Result
             label="yield"
-            value={`${Math.round(ITEMS_PER_BATCH * scale)} slices (one 9-inch layer cake)`}
+            value={`${Math.round(ITEMS_PER_BATCH * scale)} slices (one 9-inch round, single layer)`}
             variant="hero"
           />
         }

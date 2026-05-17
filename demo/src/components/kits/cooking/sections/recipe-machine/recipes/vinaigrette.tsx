@@ -57,9 +57,13 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
     metricUnit: milliliter,
   },
   {
+    // 8 pinches = ½ US teaspoon by volume ≈ 2.8 g salt by mass for
+    // a ~270 g vinaigrette ≈ 1% salinity, the standard cookbook
+    // baseline for a balanced dressing. The pinch unit is the kit
+    // demo's point; the amount is the cookbook's.
     id: 'salt',
     name: 'salt',
-    amount: 2,
+    amount: 8,
     sourceUnit: pinch,
     ukUnit: pinch,
     metricUnit: milliliter,
@@ -110,15 +114,15 @@ export function useVinaigrette() {
 }
 
 function buildCode(scale: number): string {
-  const pinchCount = (2 * scale).toFixed(0);
-  const pinchMl = (2 * scale * (29.5735295625 / 6 / 16)).toFixed(3);
+  const pinchCount = (8 * scale).toFixed(0);
+  const pinchMl = (8 * scale * (29.5735295625 / 6 / 16)).toFixed(3);
   return `import { forge } from 'unitforge';
 import { pinch, teaspoonUs, milliliter } from 'unitforge/kits/cooking';
 
 // Pinch is a real unit in this kit (1/16 US teaspoon ≈ 0.31 mL).
 // It forges against everything else in the VOLUME dimension.
 const saltMl = forge(pinch, milliliter)(${pinchCount}); // ${pinchMl}
-const saltTsp = forge(pinch, teaspoonUs)(${pinchCount}); // ${((2 * scale) / 16).toFixed(3)}
+const saltTsp = forge(pinch, teaspoonUs)(${pinchCount}); // ${((8 * scale) / 16).toFixed(3)}
 
 // Two pinches make one dash (kitchen tradition; exact in this kit):
 forge(pinch, teaspoonUs)(2); // ${(2 / 16).toFixed(3)} (= 1/8 tsp = 1 dash)

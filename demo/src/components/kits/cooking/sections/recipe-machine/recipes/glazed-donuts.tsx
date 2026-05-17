@@ -1,12 +1,22 @@
 // Glazed donuts. Classic yeast-raised, US-style ring donut. One batch
 // yields a baker's dozen (13 donuts; one extra for the baker). Uses
-// cups of flour and milk plus eggs and sugar by volume; honey in the
-// glaze. The teaspoon ladder shows up for yeast, salt, and nutmeg.
+// cups of flour and milk plus eggs, butter, and sugar by volume;
+// powdered sugar thinned with milk for the glaze. The teaspoon ladder
+// shows up for yeast, salt, and nutmeg.
 
 import { Donut } from 'lucide-react';
 import { useState } from 'react';
 import { forge } from 'unitforge';
-import { cupUk, cupUs, milliliter, teaspoonUk, teaspoonUs } from 'unitforge/kits/cooking';
+import {
+  cupUk,
+  cupUs,
+  milliliter,
+  stickOfButter,
+  tablespoonUk,
+  tablespoonUs,
+  teaspoonUk,
+  teaspoonUs,
+} from 'unitforge/kits/cooking';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
@@ -16,7 +26,7 @@ import { type Ingredient, RecipeCard } from '../parts/recipe-card.js';
 const INGREDIENTS: ReadonlyArray<Ingredient> = [
   {
     id: 'flour',
-    name: 'flour',
+    name: 'flour (scoop & sweep)',
     amount: 3.5,
     sourceUnit: cupUs,
     ukUnit: cupUk,
@@ -39,6 +49,27 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
     metricUnit: milliliter,
   },
   {
+    // 2 large eggs ≈ 1/2 cup beaten. Enriched yeast dough needs eggs
+    // for tenderness and color; without them you have a dinner roll
+    // fried in oil.
+    id: 'eggs',
+    name: 'eggs (2 large)',
+    amount: 0.5,
+    sourceUnit: cupUs,
+    ukUnit: cupUk,
+    metricUnit: milliliter,
+  },
+  {
+    // 1/2 stick (1/4 cup) softened butter is the fat that makes a
+    // donut a donut. Without it the crumb is bread, not cake-donut.
+    id: 'butter',
+    name: 'butter (softened)',
+    amount: 0.5,
+    sourceUnit: stickOfButter,
+    ukUnit: cupUk,
+    metricUnit: milliliter,
+  },
+  {
     id: 'yeast',
     name: 'active dry yeast',
     amount: 2.25,
@@ -55,11 +86,29 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
     metricUnit: milliliter,
   },
   {
+    id: 'nutmeg',
+    name: 'nutmeg, grated',
+    amount: 0.25,
+    sourceUnit: teaspoonUs,
+    ukUnit: teaspoonUk,
+    metricUnit: milliliter,
+  },
+  {
     id: 'glaze-sugar',
     name: 'glaze: powdered sugar',
     amount: 1.5,
     sourceUnit: cupUs,
     ukUnit: cupUk,
+    metricUnit: milliliter,
+  },
+  {
+    // Glaze liquid: powdered sugar alone is not glaze. 2 tbsp milk
+    // (or water) makes a pourable opaque coat at typical room temp.
+    id: 'glaze-milk',
+    name: 'glaze: milk',
+    amount: 2,
+    sourceUnit: tablespoonUs,
+    ukUnit: tablespoonUk,
     metricUnit: milliliter,
   },
 ];
