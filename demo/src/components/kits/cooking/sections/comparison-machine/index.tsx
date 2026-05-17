@@ -24,6 +24,10 @@ interface ComparatorMeta {
   hint: string;
 }
 
+// Keep this as a flat array literal; test/demo-invariants.test.ts
+// source-greps it to assert ORDER stays in sync with the recipes
+// Record. Refactoring to `[...BASE, 'newKey']` or `concat()` would
+// silently bypass the count check.
 const ORDER: readonly ComparatorKey[] = ['soda', 'atlantic'];
 
 const COMPARATOR_META: Record<ComparatorKey, ComparatorMeta> = {
