@@ -24,15 +24,15 @@
 
 # unitforge
 
-**Forge anything measurable. Not just physics.** Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
+**One Coke ≈ 9.75 sugar cubes.** A units library that does cross-dimensional conversion and catches dimension mismatches at compile time. Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
 
 ## Kits
 
-Ships with kits across multiple domains; define your own for anything else (game state, finance, lab assays, inventory, factions). See this in action with the [Settlers of Crouton demo](https://simiancraft.github.io/unitforge/#crouton): a custom dimension, three units, and a recipe that turns wheat + ore into cities. Each link below runs the kit live against the built package:
+Three kits ship today; build your own for anything else (game state, finance, lab assays, factions). Each link below runs the kit live against the built package.
 
 - [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume; metric and imperial; rectangle, circle, sphere, and cylinder derivations.
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; covers GB-vs-GiB and Gbit-vs-MB.
-- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): culinary volumes; US/UK split for cup, tablespoon, teaspoon, and fluid ounce (mixing them ruins the dish). Plus a flagship comparison machine that picks a soda and a food and shows how many of the food carry the soda's sugar load, built on a userland `'sugar'` dimension declared in app code (Settlers-of-Crouton, applied to something everyone recognizes on sight).
+- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): teaspoons, teacups, the usual suspects, but also international units, sugar comparisons, live recipe scaling, and more.
 
 ## Quick start
 
@@ -60,19 +60,13 @@ const sugarCube = defineUnit({ id: 'sugar-cube', dimension: 'sugar', toBase: (n)
 forge(cokeCan, sugarCube)(1); // ≈ 9.75; one 12 oz Coke equals 9.75 sugar cubes
 ```
 
-## What this isn't
+## Scope
 
-Three functions, deliberately. Not three hundred kits.
+Library only. ESM only. Node 22+. No CJS build; no peer dependencies. Three functions, deliberately; not three hundred kits.
 
-- **Not a million-function API.** The whole library is `defineUnit`, `defineConversion`, `forge`. If you can read those three signatures you can read all of unitforge.
-- **Not a units database.** Kits ship a curated set; you add what you need. Same shape userland does, no plugin protocol, no registry.
-- **Not a physics engine.** No vectors, integrators, or dimensional algebra solver. unitforge converts values; it does not simulate.
-- **Not a currency-rate fetcher.** `usd → eur` is a value you define against a rate you provide, not a live feed.
-- **Not a CLI.** Library only.
+## vs. `convert-units`
 
-### vs. `convert-units`
-
-`convert-units` is the incumbent ([~185k weekly downloads](https://www.npmjs.com/package/convert-units)); same problem space, different philosophy. This table compares against the version `npm install convert-units` actually installs today (`2.3.4`, published 2018-01-12, CJS-only). Where the in-development `3.0.0-beta` changes a row, it's flagged.
+`convert-units` is the incumbent ([~185k weekly downloads](https://www.npmjs.com/package/convert-units)); same problem space, different philosophy. The table compares the installed `2.3.4` (CJS-only, 2018) and the in-development `3.0.0-beta`.
 
 | | `convert-units` 2.3.4 | `convert-units` 3.0.0-beta | **unitforge** |
 | --- | --- | --- | --- |
@@ -83,11 +77,11 @@ Three functions, deliberately. Not three hundred kits.
 | Dimension mismatch caught at | runtime | runtime | **compile time** (`NoInfer` on the `to` side) |
 | Tree-shaking model | barrel; pass measures to `configureMeasurements` | same | **per-export subpath** (`unitforge/kits/<name>`) |
 
-The differentiators that matter for the "not just physics" thesis are **cross-dimensional recipes** (the entire Crouton story is one of these) and **compile-time dimension safety**. Module format and bundled types are parity moves the 3.x beta is making; once 3.x ships as `latest`, those rows stop being differentiators.
+Differentiators that survive once `3.x` ships as `latest`: cross-dimensional recipes and compile-time dimension safety.
 
 ## Tree-shaking
 
-Atomic by design: your import graph is the runtime graph. Every unit and every conversion is an independent named export, annotated `/*#__PURE__*/`; each spec inlines its math, with no global registry and no lookup table to drag in. Fluent APIs like `convert(5).from('m').to('ft')` can't tree-shake to zero; the chain dispatches against a registry, and the registry stays in the bundle.
+Atomic by design: your import graph is the runtime graph. Every unit and conversion is an independent named export annotated `/*#__PURE__*/`; each spec inlines its math, with no global registry and no lookup table to drag in.
 
 Production bundles pay only for what you actually import. Measured with `esbuild --bundle --minify --tree-shaking=true`:
 
@@ -99,7 +93,7 @@ Production bundles pay only for what you actually import. Measured with `esbuild
 | `import * as g from 'unitforge/kits/geometry'` + everything from main barrel | 7.4 kB | **2.7 kB** |
 | `import { VERSION } from 'unitforge/version'` (opt-in, inlines `package.json`) | 2.2 kB | **1.0 kB** |
 
-**Tarball:** `npm pack` produces ≈ 52 kB packed / 230 kB unpacked (64 files; `dist/` plus `LICENSE`, `NOTICE.md`, `README.md`, `package.json`).
+**Tarball:** `npm pack` produces ≈ 52 kB packed / 230 kB unpacked (64 files).
 
 ## Install
 
@@ -110,60 +104,73 @@ yarn add unitforge
 npm install unitforge
 ```
 
-Requires Node 22+, ESM-only (`"type": "module"`), TypeScript `moduleResolution: "node16" | "nodenext" | "bundler"`. No CJS build; no peer dependencies.
+Requires Node 22+, ESM-only (`"type": "module"`), TypeScript `moduleResolution: "node16" | "nodenext" | "bundler"`.
 
 ## Build your own
 
-Three functions; three steps. The library's own kits use the same shape userland does.
+Three primitives. Here's each one; the [ArPeeGee shop demo](https://simiancraft.github.io/unitforge/) stitches them together.
 
-1. `defineUnit` declares each unit value in a dimension you invent.
-2. `defineConversion` declares the recipe (within a dimension or across dimensions).
-3. `forge` returns the typed converter.
+### 1. `defineUnit`
+
+Declare a unit value in any dimension you want.
 
 ```ts
-import { defineUnit, defineConversion, forge } from 'unitforge';
+import { defineUnit } from 'unitforge';
 
-const COUNT = 'count' as const;
-const wheat = defineUnit({ id: 'wheat', label: 'Wheat', symbol: '🌾', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b, base: true });
-const ore   = defineUnit({ id: 'ore',   label: 'Ore',   symbol: '🪨', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
-const city  = defineUnit({ id: 'city',  label: 'City',  symbol: '🏰', dimension: COUNT, toBase: (v) => v, fromBase: (b) => b });
-
-const buildCities = defineConversion({
-  inputs: { wheat: COUNT, ore: COUNT },
-  output: COUNT,
-  compute: ({ wheat, ore }) => Math.floor(Math.min(wheat / 2, ore / 3)),
+const handspan = defineUnit({
+  id: 'handspan',
+  label: 'Handspan',
+  symbol: 'hsp',
+  dimension: 'length',
+  toBase: (v) => v * 0.235,
+  fromBase: (b) => b / 0.235,
 });
-
-const cities = forge({ wheat, ore }, city, { via: buildCities });
-cities({ wheat: 6, ore: 9 }); // 3
 ```
 
-**Drag the sliders and watch cities accumulate:** [Settlers of Crouton demo](https://simiancraft.github.io/unitforge/#crouton). Same code, live.
+### 2. `defineConversion`
 
-> **Custom-dimension prefix convention.** When you ship a kit publicly (your own package, an org-wide one, anything other-people-might-install-alongside), prefix the dimension string with your package or namespace name to avoid silent collisions with other third-party kits. Two kits both exporting `MANA = 'mana'` would forge against each other unintentionally; `MANA = '@mycorp/mana'` or `'mycorp/mana'` keeps them isolated. The library does not enforce this — dimension strings are trusted opaque values — so the discipline lives at the kit-author tier. The `COUNT` example above uses the bare string for readability; production-shipping kits should namespace.
-
-For multiplicative units (handspans, pints, miles), the exported `linear(scale)` helper builds the `{ toBase, fromBase }` pair so you can compose alongside imports from a kit:
+Cross-dimensional recipes; inputs in, output out.
 
 ```ts
-import { defineUnit, forge, linear } from 'unitforge';
-import { LENGTH } from 'unitforge/dimensions';
-import { foot } from 'unitforge/kits/geometry';
+import { defineConversion } from 'unitforge';
 
-const handspan = defineUnit({ id: 'handspan', label: 'Handspan', symbol: 'hsp', dimension: LENGTH, ...linear(0.235) });
-forge(handspan, foot)(4); // ≈ 3.084
+const areaFromRectangle = defineConversion({
+  inputs: { length: 'length', width: 'length' },
+  output: 'area',
+  compute: ({ length, width }) => length * width,
+});
 ```
 
-> Inside kit-shipped unit definitions, inline the `toBase`/`fromBase` closures rather than spreading `linear(scale)`; the spread defeats per-export tree-shaking. The helper is for ad-hoc userland use where bundle size does not matter.
+### 3. `forge`
+
+The converter is born. Forge it once; call it forever.
+
+```ts
+import { forge } from 'unitforge';
+import { foot, squareFoot } from 'unitforge/kits/geometry';
+
+// Within-dimension: handspan from above to foot.
+const inFeet = forge(handspan, foot);
+inFeet(12);  // 9.252
+
+// Cross-dimensional: two handspans piped through areaFromRectangle.
+const inSqFt = forge(
+  { length: handspan, width: handspan },
+  squareFoot,
+  { via: areaFromRectangle },
+);
+inSqFt({ length: 12, width: 8 });  // 57.067
+```
+
+**See all three composed:** the [ArPeeGee shop demo](https://simiancraft.github.io/unitforge/) runs two coin units in one dimension, a goods dimension, and one cross-dim forge from coins to shields. Same code, live; demonstrates the namespaced-dimension convention you'd use when shipping a kit publicly.
 
 ## API
 
-Three primitives. One consumer (`forge`); two factories (`defineUnit`, `defineConversion`). Full type signatures live in `dist/index.d.ts`; the [`llms.txt`](./llms.txt) walks an agent through every overload.
+Three primitives. One consumer (`forge`); two factories (`defineUnit`, `defineConversion`). Full type signatures live in `dist/index.d.ts`.
 
 ### `forge(from, to, config?)`
 
-Returns a converter function. Within-dimension forges take a scalar and return a scalar; cross-dimensional forges take an object input and require `via:` in the config. `NoInfer<D>` on the `to` side makes wrong-dimension calls (`forge(meter, squareMeter)`) a compile error.
-
-Cross-dim pipeline: defensive copy of input, cache check (if `memoize` is on), run every validator and aggregate failures, throw `ValidationError` if any failed, normalize inputs to base units, run `compute`, denormalize outputs, write to cache, return.
+Returns a converter function. Within-dimension forges take a scalar and return a scalar; cross-dimensional forges take an object input and require `via:` in the config. `NoInfer<D>` on the `to` side makes wrong-dimension calls a compile error.
 
 **Config options** (same name = same effect across overloads):
 
@@ -171,22 +178,20 @@ Cross-dim pipeline: defensive copy of input, cache check (if `memoize` is on), r
 | --- | --- | --- |
 | `via` | `Conversion<I, O, T>` | **Required** for cross-dim. Carries the input shape, validator map, and `compute`. |
 | `validate` | `ValidatorMap<I, T>` | Call-site validators, additive on top of the conversion's own. |
-| `precision` | `number` (non-negative integer) | Rounds output AND cache key to this many decimal places. |
-| `memoize` | `number` (0 to `MEMO_CAP_MAX = 1_048_576`) | FIFO bounded cache. `0` or absent = off. `DEFAULT_MEMO_CAP = 1024`. |
+| `precision` | `number` | Rounds output and cache key to this many decimal places. |
+| `memoize` | `number` | FIFO bounded cache. `0` or absent = off. Default cap `1024`; max `1_048_576`. |
 
 ### `defineUnit(spec)`
 
-A unit value: `name`, `dimension`, `toBase`/`fromBase` functions, optional `base: true` for the canonical base of a dimension. See [Build your own](#build-your-own) for the call shape.
+A unit value: `id`, `label`, `symbol`, `dimension`, `toBase`/`fromBase`, optional `base: true`. See [Build your own](#build-your-own).
 
 ### `defineConversion(spec)`
 
-A conversion value: input shape (field name to dimension), output (single dimension or a record of dimensions), optional validators, a `compute` function written in base units. The library normalizes inputs from whatever unit the call site uses before invoking `compute`, then denormalizes the result.
-
-Validators may return `true`/`undefined` to pass, a string to reject with that message, or throw (the original error is preserved on `failure.cause`). All validators run on every call; failures aggregate into a single `ValidationError`.
+A conversion value: input shape (field name to dimension), output (single dimension or record), optional validators, a `compute` function in base units. Inputs normalize before `compute`; outputs denormalize after. Pipeline details and validator contract: see [`llms.txt`](./llms.txt).
 
 ## Types
 
-Re-exported from the root barrel: `Unit`, `Conversion`, `Dimension`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, `ValidationFailure`. `Dimension` uses the `(string & {})` brand so user-defined dimensions (`'gold' as const`) are accepted without collapsing the union, while built-ins still surface in autocomplete. See [`llms.txt`](./llms.txt) for the full type surface.
+Re-exported from the root barrel: `Unit`, `Conversion`, `Dimension`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, `ValidationFailure`. Full type surface in [`llms.txt`](./llms.txt).
 
 ## Development
 
@@ -194,17 +199,17 @@ Re-exported from the root barrel: `Unit`, `Conversion`, `Dimension`, `ForgeInput
 bun install && bun run check
 ```
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table (test, typecheck, lint, build, packaging, knip).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table.
 
 ## Testing
 
 Three layers, all gated on every CI build:
 
-- **Example-based tests** (`bun test`): 470+ tests across 16 files, ~18.5k `expect()` assertions (the property-based fuzz tests in `test/fuzz/` randomize on each run, so the exact count drifts; the rest is also kept growing as kits add invariants), covering `forge`, `defineUnit`, `defineConversion`, dimensions, the kits, the `lib/` primitives, and demo-side cross-file invariants. 100.00% line coverage; 98.42% function coverage (the gap is unit-definition function objects in `kits/geometry/units.ts` and `kits/cooking/units.ts` whose factor closures are exercised through `forge` rather than directly), tracked via Codecov.
-- **Property-based fuzz tests** via [`fast-check`](https://github.com/dubzzz/fast-check) in `test/fuzz/` (6 files): within-dim round-trip + composition, cross-dim monotonicity, precision-0 integer output, `ValidationError` invariants, memoize cap-invariance, and `defineUnit` prototype-pollution hygiene. Also satisfies the [OpenSSF Scorecard](https://github.com/ossf/scorecard) Fuzzing check.
-- **Mutation testing** via [Stryker](https://stryker-mutator.io/) (`bun run mutation`) over the `forge` core, the `define` API (`defineUnit` + `defineConversion`), and four `lib/` primitives (`math`, `memoize`, `safeCopy`, `validation`). CI break threshold: 75%. Current score: 96.36% — 238 mutants killed, 9 classified equivalent under the public API, 0 timeouts, 0 errors. Per file: math / define / safeCopy / validation 100%, memoize 95.74%, forge 92.55%. Coverage measures whether the suite *ran* a line of code; mutation measures whether it *asserted hard enough to catch a behavioral change*. The two are complementary: high coverage with weak assertions passes the first check and fails the second.
+- **Unit tests** (`bun test`): 470+ tests; **100.00% line coverage**. Tracked via Codecov.
+- **Property-based fuzz** via [fast-check](https://github.com/dubzzz/fast-check) in `test/fuzz/`. Also satisfies the [OpenSSF Scorecard](https://github.com/ossf/scorecard) Fuzzing check.
+- **Mutation testing** via [Stryker](https://stryker-mutator.io/) (`bun run mutation`): **96.36%** score; CI break threshold 75%.
 
-The 9 mutation survivors are classified equivalent in the iteration commits that introduced them (memoize cache wrapping is opaque from the public API; `sort()` is per-conversion-stable; optional-chain null guards are redundant with downstream `TypeError`s). No [`// Stryker disable`](https://stryker-mutator.io/docs/stryker-js/disable-mutants/) comments currently live in source — each classification rides on its commit. If a future PR drops the score below the gate, CI blocks the merge until the surviving mutants are killed or explicitly classified with a Stryker-disable comment explaining why.
+Per-file mutation breakdown and survivor-classification policy: see [`llms.txt`](./llms.txt).
 
 ## Community
 
@@ -214,11 +219,11 @@ The 9 mutation survivors are classified equivalent in the iteration commits that
 
 ## Extending
 
-Adding a kit, adding a section to an existing kit, or adding a dimension: see [EXTENDING.md](./EXTENDING.md). It documents the lib-side ritual, the demo-side three-file registration, and the tree-shake foot-gun on `defineUnit` spec literals.
+Adding a kit: see [EXTENDING.md](./EXTENDING.md).
 
 ## For agents
 
-Read [`llms.txt`](./llms.txt) first. It is the canonical orientation document for this package, written for LLM ingestion: architecture, API surface, subpath exports, tree-shake implementation, and key files. The README is for humans evaluating the library; `llms.txt` is the same scope in a denser, more parseable shape.
+Read [`llms.txt`](./llms.txt). Same scope as this README in a denser, more parseable shape.
 
 ## License
 
