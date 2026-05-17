@@ -8,8 +8,32 @@
 // declaration so a kit adding a new axis writes only the compute
 // closure.
 
-import { type Dimension, defineConversion, defineUnit, forge, type Unit } from 'unitforge';
+import {
+  type Conversion,
+  type Dimension,
+  defineConversion,
+  defineUnit,
+  forge,
+  type Unit,
+  type UnitMap,
+} from 'unitforge';
 import { clamp } from '~/lib/math.js';
+
+// Cross-dim forge wrapper. Forge overload 2's `Inputs extends Record<string,
+// Dimension>` constraint resolves fine at concrete call sites but stays
+// stuck on a conditional-type branch when invoked from inside a function
+// generic over `D extends Dimension` (TS can't prove `{ amount: D } extends
+// Record<string, Dimension>` for a generic D). The runtime contract is
+// unchanged; this wrapper isolates the cast to one line so the public
+// helpers below stay fully typed.
+function forgeCrossDim<I extends Record<string, Dimension>, O extends Dimension>(
+  from: UnitMap<I, number>,
+  to: Unit<O, number>,
+  via: Conversion<I, O, number>,
+): (input: { [K in keyof I]: number }) => number {
+  // biome-ignore lint/suspicious/noExplicitAny: see comment above
+  return (forge as any)(from, to, { via });
+}
 
 /**
  * Linear lerp from a value within (minAmount, maxAmount) to (outMin,
@@ -96,7 +120,14 @@ export function defineUnitDrivenAxis<D extends Dimension>(opts: {
     compute: opts.compute,
   });
 
-  return (fromUnit) => forge({ amount: fromUnit }, baseUnit, { via: conversion })({ amount: 1 });
+  return (fromUnit) =>
+    forgeCrossDim<{ amount: D }, Dimension>(
+      { amount: fromUnit },
+      baseUnit,
+      conversion,
+    )({
+      amount: 1,
+    });
 }
 
 /**
@@ -148,7 +179,9 @@ export function defineRuntimeBoundedAxis<D extends Dimension>(opts: {
   });
 
   return (fromUnit, amount, minAmount, maxAmount) =>
-    forge({ amount: fromUnit, minAmount: fromUnit, maxAmount: fromUnit }, baseUnit, {
-      via: conversion,
-    })({ amount, minAmount, maxAmount });
+    forgeCrossDim<{ amount: D; minAmount: D; maxAmount: D }, Dimension>(
+      { amount: fromUnit, minAmount: fromUnit, maxAmount: fromUnit },
+      baseUnit,
+      conversion,
+    )({ amount, minAmount, maxAmount });
 }

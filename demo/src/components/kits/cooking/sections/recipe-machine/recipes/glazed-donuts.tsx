@@ -68,7 +68,11 @@ const ITEMS_PER_BATCH = 13;
 
 export function useGlazedDonuts() {
   const [scale, setScale] = useState(1);
-  const flourCups = INGREDIENTS[0].amount * scale;
+  // INGREDIENTS is a literal-defined non-empty array; index 0 is always
+  // `flour` (the row the yield row inflates). The `!` clears
+  // noUncheckedIndexedAccess; runtime safety is enforced by the file
+  // shape itself.
+  const flourCups = INGREDIENTS[0]!.amount * scale;
   const flourMl = forge(cupUs, milliliter)(flourCups);
 
   return {
