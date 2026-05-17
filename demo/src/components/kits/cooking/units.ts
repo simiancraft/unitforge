@@ -13,8 +13,10 @@
 
 import type { Unit } from 'unitforge';
 import {
+  cupMetric250,
   cupUk,
   cupUs,
+  cupUsLegal240,
   dash,
   fluidOunceUk,
   fluidOunceUs,
@@ -22,17 +24,37 @@ import {
   milliliter,
   pinch,
   stickOfButter,
+  tablespoonAu,
+  tablespoonMetric,
   tablespoonUk,
   tablespoonUs,
+  teaspoonMetric,
   teaspoonUk,
   teaspoonUs,
 } from 'unitforge/kits/cooking';
 
-export const COOKING_US_UNITS = [teaspoonUs, tablespoonUs, fluidOunceUs, cupUs] as const;
+export const COOKING_US_UNITS = [
+  teaspoonUs,
+  tablespoonUs,
+  fluidOunceUs,
+  cupUs,
+  cupUsLegal240,
+] as const;
 
 export const COOKING_UK_UNITS = [teaspoonUk, tablespoonUk, fluidOunceUk, cupUk] as const;
 
-export const COOKING_METRIC_UNITS = [milliliter, liter] as const;
+export const COOKING_METRIC_UNITS = [
+  milliliter,
+  liter,
+  teaspoonMetric,
+  tablespoonMetric,
+  cupMetric250,
+] as const;
+
+/** Australia ships its own tablespoon (20 mL exact, AS 1349); kept in
+ *  its own family so the readout matrix and picker can group it where
+ *  it belongs rather than padding the metric column. */
+export const COOKING_AU_UNITS = [tablespoonAu] as const;
 
 export const COOKING_TRADITION_UNITS = [pinch, dash, stickOfButter] as const;
 
@@ -40,6 +62,7 @@ export const COOKING_ALL_UNITS = [
   ...COOKING_METRIC_UNITS,
   ...COOKING_US_UNITS,
   ...COOKING_UK_UNITS,
+  ...COOKING_AU_UNITS,
   ...COOKING_TRADITION_UNITS,
 ] as const;
 
@@ -57,12 +80,17 @@ export const COOKING_UNIT_IDS = [
   'liter',
   'teaspoon-us',
   'teaspoon-uk',
+  'teaspoon-metric',
   'tablespoon-us',
   'tablespoon-uk',
+  'tablespoon-metric',
+  'tablespoon-au',
   'fluid-ounce-us',
   'fluid-ounce-uk',
   'cup-us',
+  'cup-us-legal-240',
   'cup-uk',
+  'cup-metric-250',
   'stick-of-butter',
   'dash',
   'pinch',
@@ -89,12 +117,17 @@ export const COOKING_BOUNDS: Record<CookingUnitId, SliderBounds> = {
   liter: { min: 0.25, max: 8, step: 0.25, init: 1 },
   'teaspoon-us': { min: 0.25, max: 24, step: 0.25, init: 1 },
   'teaspoon-uk': { min: 0.25, max: 24, step: 0.25, init: 1 },
+  'teaspoon-metric': { min: 0.25, max: 24, step: 0.25, init: 1 },
   'tablespoon-us': { min: 0.25, max: 16, step: 0.25, init: 1 },
   'tablespoon-uk': { min: 0.25, max: 16, step: 0.25, init: 1 },
+  'tablespoon-metric': { min: 0.25, max: 16, step: 0.25, init: 1 },
+  'tablespoon-au': { min: 0.25, max: 16, step: 0.25, init: 1 },
   'fluid-ounce-us': { min: 0.5, max: 16, step: 0.5, init: 1 },
   'fluid-ounce-uk': { min: 0.5, max: 16, step: 0.5, init: 1 },
   'cup-us': { min: 0.25, max: 8, step: 0.25, init: 1 },
+  'cup-us-legal-240': { min: 0.25, max: 8, step: 0.25, init: 1 },
   'cup-uk': { min: 0.25, max: 8, step: 0.25, init: 1 },
+  'cup-metric-250': { min: 0.25, max: 8, step: 0.25, init: 1 },
   'stick-of-butter': { min: 0.25, max: 8, step: 0.25, init: 1 },
   dash: { min: 1, max: 24, step: 1, init: 4 },
   pinch: { min: 1, max: 32, step: 1, init: 4 },

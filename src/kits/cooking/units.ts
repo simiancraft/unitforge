@@ -59,6 +59,27 @@
  * veterinary calculations. If you are reaching for this kit from a
  * clinically-adjacent project, define your own `clinicalTeaspoon` at
  * exactly 5e-6 m³ via `defineUnit` rather than importing `teaspoonUs`.
+ *
+ * **This is a volume kit, not a baking kit.** Every unit here is in
+ * the `VOLUME` dimension; the kit ships zero mass units. Professional
+ * and serious-home baking uses mass (grams) for dry ingredients because
+ * a US cup of all-purpose flour ranges from ~120 g (sifted, spooned,
+ * leveled) to ~160 g (scoop-and-sweep into the bag) — same cup,
+ * different cook, 33% range. King Arthur, Cook's Illustrated, every
+ * UK/EU cookbook since ~1990, and Modernist Cuisine all weigh their
+ * dry ingredients for this reason. For reproducible baking, pair this
+ * kit with a mass-based companion (define your own `gram` /
+ * `kilogram` / `ounce` via `defineUnit`, or use a forthcoming
+ * `unitforge/kits/mass`). The demo recipes in `demo/src/components/
+ * kits/cooking/sections/recipe-machine/recipes/` use volume to
+ * exercise the conversion machinery, not to prescribe reproducible
+ * bakes.
+ *
+ * **Modifier vocabulary** (scant, heaping, rounded, packed, sifted)
+ * is out of scope for this kit. These are recipe-layer concerns:
+ * `scant` ≈ -5%, `heaping` ≈ +10-30%, `packed` doubles brown sugar
+ * mass, `sifted` lowers flour mass by ~25-30%. A cookbook-importing
+ * app must model them at its own recipe layer; this kit will not.
  */
 
 import { defineUnit } from '../../define.js';
@@ -122,7 +143,10 @@ export const teaspoonUs = /*#__PURE__*/ defineUnit({
 });
 
 /** UK teaspoon; 1/8 UK fluid ounce ≈ 3.55 mL.
- *  Common cookbook rounding uses 5 mL even; ship exact, round at call. */
+ *  Common cookbook rounding uses 5 mL even; ship exact, round at call.
+ *  Modern UK cooking has metricated; the imperial teaspoon survives in
+ *  pre-1970 British recipes. For "1 tsp" in a modern international
+ *  cookbook, prefer `teaspoonMetric` (5 mL exact). */
 export const teaspoonUk = /*#__PURE__*/ defineUnit({
   id: 'teaspoon-uk',
   label: 'UK Teaspoon',
@@ -130,6 +154,23 @@ export const teaspoonUk = /*#__PURE__*/ defineUnit({
   dimension: VOLUME,
   toBase: (v) => v * (UK_FL_OZ_M3 / 8),
   fromBase: (b) => b / (UK_FL_OZ_M3 / 8),
+});
+
+/** Metric teaspoon; 5 mL exactly. The EU/Canada/NZ/Australia/modern-UK
+ *  convention and what "1 tsp" means in 90%+ of international cookbooks
+ *  published today. The 1.4% gap from `teaspoonUs` (4.929 mL) is
+ *  dosing-irrelevant in cooking and reproducibility-neutral in baking.
+ *  Reach for this when porting an EU/AU/CA recipe; reach for
+ *  `teaspoonUs` when porting a US Customary recipe; reach for the
+ *  USP-prescribed 5 mL clinical teaspoon (in a future clinical kit)
+ *  for OTC medication dosing. */
+export const teaspoonMetric = /*#__PURE__*/ defineUnit({
+  id: 'teaspoon-metric',
+  label: 'Metric Teaspoon',
+  symbol: 'tsp (metric)',
+  dimension: VOLUME,
+  toBase: (v) => v * 5e-6,
+  fromBase: (b) => b / 5e-6,
 });
 
 /** US tablespoon; 1/2 US fluid ounce = 3 US teaspoons ≈ 14.787 mL. */
@@ -142,9 +183,11 @@ export const tablespoonUs = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / (US_FL_OZ_M3 / 2),
 });
 
-/** UK tablespoon; 5/8 UK fluid ounce ≈ 17.758 mL.
- *  Note: Australian tablespoon is 20 mL (different from both); not
- *  shipped here, define your own kit if you cook southern-hemisphere. */
+/** UK tablespoon; 5/8 UK fluid ounce ≈ 17.758 mL. Modern UK cooking
+ *  has metricated; the imperial tablespoon survives in pre-1970
+ *  British recipes. For "1 tbsp" in a modern international cookbook,
+ *  prefer `tablespoonMetric` (15 mL exact) for EU/CA/NZ/modern UK, or
+ *  `tablespoonAu` (20 mL exact) for Australia. */
 export const tablespoonUk = /*#__PURE__*/ defineUnit({
   id: 'tablespoon-uk',
   label: 'UK Tablespoon',
@@ -154,7 +197,42 @@ export const tablespoonUk = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / ((UK_FL_OZ_M3 * 5) / 8),
 });
 
-/** US cup; 8 US fluid ounces = 236.588 mL. */
+/** Metric tablespoon; 15 mL exactly. The EU/Canada/NZ/modern-UK
+ *  convention and what "1 tbsp" means in most international cookbooks
+ *  today. The 1.4% gap from `tablespoonUs` (14.787 mL) is cooking-
+ *  irrelevant; the 18% gap from `tablespoonUk` (17.758 mL) is recipe-
+ *  breaking for leaveners and salt. Reach for this when porting an
+ *  EU/CA/NZ recipe. */
+export const tablespoonMetric = /*#__PURE__*/ defineUnit({
+  id: 'tablespoon-metric',
+  label: 'Metric Tablespoon',
+  symbol: 'tbsp (metric)',
+  dimension: VOLUME,
+  toBase: (v) => v * 15e-6,
+  fromBase: (b) => b / 15e-6,
+});
+
+/** Australian tablespoon; 20 mL exactly per Standards Australia
+ *  AS 1349 (4 metric teaspoons of 5 mL each). Australia's tablespoon
+ *  is the global outlier: 33% larger than US, 12% larger than UK
+ *  imperial. An Australian recipe that calls for "1 tbsp baking soda"
+ *  is asking for 33% more leavener than a US recipe with the same
+ *  line; conflating them ruins the bake. Ship as a separate unit so
+ *  call sites that target Australian cookery pick it explicitly. */
+export const tablespoonAu = /*#__PURE__*/ defineUnit({
+  id: 'tablespoon-au',
+  label: 'Australian Tablespoon',
+  symbol: 'tbsp (AU)',
+  dimension: VOLUME,
+  toBase: (v) => v * 20e-6,
+  fromBase: (b) => b / 20e-6,
+});
+
+/** US cup (Customary); 8 US fluid ounces = 236.588 mL. The metrologically
+ *  exact value per NIST SP 811. Differs by 1.4% from the FDA legal cup
+ *  (240 mL exact) used on US nutrition-facts panels; reach for
+ *  `cupUsLegal240` if your call site needs to match a US nutrition
+ *  label rather than the historical Customary value. */
 export const cupUs = /*#__PURE__*/ defineUnit({
   id: 'cup-us',
   label: 'US Cup',
@@ -164,9 +242,30 @@ export const cupUs = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / (US_FL_OZ_M3 * 8),
 });
 
+/** US legal cup; 240 mL exactly per FDA 21 CFR 101.9(b)(8) (nutrition
+ *  labeling rule). What appears on the back of every US-published cereal
+ *  box and what most US cookbooks since ~1990 implicitly mean by "1 cup."
+ *  The 1.4% gap from `cupUs` (236.588 mL Customary) matters at baking
+ *  scale (3 cups flour: 720 mL legal vs 709.8 mL Customary, ≈ 10 mL of
+ *  real flour) and matters for any consumer rendering a US nutrition
+ *  label from this kit's values. */
+export const cupUsLegal240 = /*#__PURE__*/ defineUnit({
+  id: 'cup-us-legal-240',
+  label: 'US Legal Cup (FDA, 240 mL)',
+  symbol: 'cup (US legal)',
+  dimension: VOLUME,
+  toBase: (v) => v * 240e-6,
+  fromBase: (b) => b / 240e-6,
+});
+
 /** UK cup; 10 imperial fluid ounces = 284.131 mL. ~20% larger than the
  *  US cup; mixing the two ruins the dish, which is why this kit ships
- *  them as distinct units rather than aliasing. */
+ *  them as distinct units rather than aliasing. Note: modern UK
+ *  cookbooks (since ~1970) have largely metricated to grams + mL; the
+ *  imperial cup survives mainly in pre-metric British recipe
+ *  collections and in Commonwealth cooking that didn't metricate. For
+ *  a "1 cup" reference in a modern UK, EU, AU, NZ, or CA cookbook,
+ *  prefer `cupMetric250` (250 mL). */
 export const cupUk = /*#__PURE__*/ defineUnit({
   id: 'cup-uk',
   label: 'UK Cup',
@@ -176,8 +275,30 @@ export const cupUk = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / (UK_FL_OZ_M3 * 10),
 });
 
+/** Metric cup; 250 mL exactly. The Australian, New Zealand, Canadian,
+ *  South African, and most-of-EU convention. International cookbooks
+ *  targeting an EU/AU audience use this; the 4.2% difference from
+ *  `cupUsLegal240` (240 mL) compounds in baking. Reach for this when
+ *  porting a recipe from outside the US. */
+export const cupMetric250 = /*#__PURE__*/ defineUnit({
+  id: 'cup-metric-250',
+  label: 'Metric Cup (250 mL)',
+  symbol: 'cup (metric)',
+  dimension: VOLUME,
+  toBase: (v) => v * 250e-6,
+  fromBase: (b) => b / 250e-6,
+});
+
 /** Stick of butter; US-only, 1/2 US cup = 4 US fl oz = 8 US tablespoons
- *  ≈ 118.294 mL. UK butter is sold by mass (250 g blocks), not by stick. */
+ *  ≈ 118.294 mL volumetric. US butter is sold in 1-lb (453.6 g) packages
+ *  cut into 4 sticks per 21 CFR 131.111; the mass equivalent of one
+ *  stick is 113.4 g (4 oz mass). The "1 stick = 1/2 cup" volumetric
+ *  equivalent is the cookbook-industry convention; actual butter
+ *  densifies as it firms, so the wrapped stick's volume is a
+ *  paper-and-card artifact. UK and EU butter is sold by mass (250 g
+ *  blocks per EU Regulation 1308/2013), not by stick; a downstream
+ *  consumer cooking from EU recipes should define their own
+ *  `butterBlockEu250g` rather than reuse this unit. */
 export const stickOfButter = /*#__PURE__*/ defineUnit({
   id: 'stick-of-butter',
   label: 'Stick of Butter',
