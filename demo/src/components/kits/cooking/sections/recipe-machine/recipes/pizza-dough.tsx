@@ -116,8 +116,9 @@ export function usePizzaDough() {
         resultsZone={
           <Result
             label="yield"
-            value={`${Math.round(ITEMS_PER_BATCH * scale)} slices${scale === 1 ? ' (one 12-inch pizza)' : ` (${Math.round(scale)} pizzas)`}`}
+            value={`${Math.round(ITEMS_PER_BATCH * scale)} slices (1 × 12-inch pizza)`}
             variant="hero"
+            valueClassName="text-base"
           />
         }
       />

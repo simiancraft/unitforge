@@ -136,8 +136,9 @@ export function useChocolateCake() {
         resultsZone={
           <Result
             label="yield"
-            value={`${Math.round(ITEMS_PER_BATCH * scale)} slices (one 9-inch round, single layer)`}
+            value={`${Math.round(ITEMS_PER_BATCH * scale)} slices (1 × 9-inch round layer)`}
             variant="hero"
+            valueClassName="text-base"
           />
         }
       />

@@ -1,9 +1,10 @@
-// International cup comparator. The word "cup" means at least seven
-// different volumes depending on which country's cookbook you opened.
-// One slider — "how many cups?" — drives a horizontal-bar visualization
-// that shows every cup variant the kit ships, sorted by size. The point
-// is the SPREAD: 1 Japanese rice cup (gō, 180.4 mL) is 36% smaller than
-// 1 UK imperial cup (284.1 mL). Mixing them ruins the dish.
+// International cup comparator. Two-picker design: pick A and B from
+// the seven cup variants the kit ships, see which is larger and by
+// how much. All seven bars stay on screen as context so the spread is
+// visible; A and B get accent + accent-2 coloring, the others fade
+// back. The picker-driven percentage is the live signal (the old
+// static "smallest vs largest" reading never changed with the slider,
+// which made it slop, not signal).
 
 import { Globe } from 'lucide-react';
 import { useState } from 'react';
@@ -22,11 +23,12 @@ import {
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
+import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { EASE_OUT_EXPO } from '~/lib/use-animated-number.js';
 import { ControlPanel } from '../../../control-panel.js';
 
 interface CupVariant {
-  /** Display name (e.g. "Japanese rice (gō)"). */
+  /** Display name (e.g. "Japanese rice (合, gō)"). */
   label: string;
   /** Region tag (e.g. "JP", "US", "UK"). */
   region: string;
@@ -36,8 +38,11 @@ interface CupVariant {
   exportName: string;
 }
 
-// Sorted smallest → largest so the bars read as a clean ramp; the
-// 36% spread between top and bottom is the visualization's point.
+type Role = 'a' | 'b' | 'other';
+
+// Sorted smallest → largest so the bar lineup reads as a clean ramp;
+// the 36-58% spread between the top and bottom rows is what makes
+// the "same word, different volume" lesson visible at a glance.
 const VARIANTS: readonly CupVariant[] = [
   {
     label: 'Japanese rice (合, gō)',
@@ -83,22 +88,48 @@ const VARIANTS: readonly CupVariant[] = [
   },
 ];
 
+const BY_ID: ReadonlyMap<string, CupVariant> = new Map(VARIANTS.map((v) => [v.unit.id, v]));
+
+const PICKER_UNITS = VARIANTS.map((v) => v.unit);
+
 export function useInternational() {
   const [count, setCount] = useState(1);
+  // Default to the kit's most extreme cup pair (gō ↔ UK imperial,
+  // ~58% spread). The picker invites exploration from there.
+  const [aId, setAId] = useState<string>(cupJapaneseRice.id);
+  const [bId, setBId] = useState<string>(cupUk.id);
 
-  // Each variant resolved to mL at the user's chosen count.
-  const rows = VARIANTS.map((v) => ({
+  const a = BY_ID.get(aId) ?? VARIANTS[0]!;
+  const b = BY_ID.get(bId) ?? VARIANTS[6]!;
+
+  const rows = VARIANTS.map((v): CupVariant & { ml: number; role: Role } => ({
     ...v,
     ml: forge(v.unit, milliliter)(count),
+    role: v.unit.id === aId ? 'a' : v.unit.id === bId ? 'b' : 'other',
   }));
   const maxMl = Math.max(...rows.map((r) => r.ml));
-  const minMl = Math.min(...rows.map((r) => r.ml));
-  const spreadPct = ((maxMl - minMl) / minMl) * 100;
+
+  const aMl = forge(a.unit, milliliter)(count);
+  const bMl = forge(b.unit, milliliter)(count);
+  const gap = Math.abs(aMl - bMl);
+  const equal = gap < 0.01;
+  const larger = aMl > bMl ? a : b;
+  const gapPct = !equal ? (gap / Math.min(aMl, bMl)) * 100 : 0;
+
+  const resultValue = equal
+    ? `equal at ${aMl.toFixed(1)} mL`
+    : `${larger.label} larger by ${gapPct.toFixed(0)}% (${gap.toFixed(1)} mL)`;
 
   return {
     menuZone: <Globe size={22} strokeWidth={1.6} />,
     interactivityZone: (
       <ControlPanel
+        pickersZone={
+          <div className="sm:col-span-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <UnitPicker label="compare A" value={aId} units={PICKER_UNITS} onChange={setAId} />
+            <UnitPicker label="compare B" value={bId} units={PICKER_UNITS} onChange={setBId} />
+          </div>
+        }
         visualZone={<CupLineup rows={rows} maxMl={maxMl} count={count} />}
         controlsZone={
           <Slider
@@ -113,21 +144,24 @@ export function useInternational() {
         }
         resultsZone={
           <Result
-            label={`${count.toFixed(2)} cups · smallest → largest gap`}
-            value={`${(maxMl - minMl).toFixed(1)} mL (≈ ${spreadPct.toFixed(0)}% larger UK than gō)`}
+            label={`at ${count.toFixed(2)} cups`}
+            value={resultValue}
             variant="hero"
-            // Same long-string-wrap fix as the atlantic comparator.
-            valueClassName="text-xl"
+            // Result strings vary widely in length depending on picker
+            // selection ("equal at 250.0 mL" vs "Japanese rice (合, gō)
+            // larger by 36% (66.4 mL)"); drop to text-base so the
+            // longest cases stay one line at typical bench widths.
+            valueClassName="text-base"
           />
         }
       />
     ),
-    codeZone: <CodeBlock code={buildCode(count, rows[0]!, rows[rows.length - 1]!)} />,
+    codeZone: <CodeBlock code={buildCode(count, a, b, aMl, bMl)} />,
   };
 }
 
 interface CupLineupProps {
-  rows: ReadonlyArray<CupVariant & { ml: number }>;
+  rows: ReadonlyArray<CupVariant & { ml: number; role: Role }>;
   maxMl: number;
   count: number;
 }
@@ -148,14 +182,28 @@ function CupLineup({ rows, maxMl, count }: CupLineupProps) {
 }
 
 interface CupRowProps {
-  row: CupVariant & { ml: number };
+  row: CupVariant & { ml: number; role: Role };
   maxMl: number;
 }
 
 function CupRow({ row, maxMl }: CupRowProps) {
   const pct = maxMl > 0 ? (row.ml / maxMl) * 100 : 0;
+  // A and B picked rows are color-coded (accent for A, accent-2 for B,
+  // matching the two-channel pattern the geometry kit uses for paired
+  // results); the other five rows fade to a low-opacity neutral so
+  // they read as context, not competition.
+  const barColor =
+    row.role === 'a'
+      ? 'var(--uf-accent)'
+      : row.role === 'b'
+        ? 'var(--uf-accent-2)'
+        : 'var(--uf-fg)';
+  const barOpacity = row.role === 'other' ? 0.18 : 0.75;
+  const labelOpacityClass = row.role === 'other' ? 'opacity-50' : '';
   return (
-    <li className="grid grid-cols-[10rem_1fr_5rem] items-center gap-2 text-xs">
+    <li
+      className={`grid grid-cols-[10rem_1fr_5rem] items-center gap-2 text-xs ${labelOpacityClass}`}
+    >
       <div className="flex flex-col">
         <span className="mono text-uf-fg">{row.label}</span>
         <span className="mono text-[10px] uppercase tracking-wider text-uf-muted">
@@ -167,8 +215,8 @@ function CupRow({ row, maxMl }: CupRowProps) {
           className="absolute inset-y-0 left-0"
           style={{
             width: `${pct}%`,
-            background: 'var(--uf-accent)',
-            opacity: 0.7,
+            background: barColor,
+            opacity: barOpacity,
             transition: `width 220ms ${EASE_OUT_EXPO}`,
           }}
         />
@@ -178,28 +226,24 @@ function CupRow({ row, maxMl }: CupRowProps) {
   );
 }
 
-function buildCode(
-  count: number,
-  smallest: CupVariant & { ml: number },
-  largest: CupVariant & { ml: number },
-): string {
+function buildCode(count: number, a: CupVariant, b: CupVariant, aMl: number, bMl: number): string {
   return `import { forge } from 'unitforge';
 import {
-  ${smallest.exportName},
-  ${largest.exportName},
+  ${a.exportName},
+  ${b.exportName},
   milliliter,
 } from 'unitforge/kits/cooking';
 
-// Smallest (${smallest.label}) at ${count.toFixed(2)} cups:
-const smallMl = forge(${smallest.exportName}, milliliter)(${count.toFixed(2)});
-// → ${smallest.ml.toFixed(2)} mL
+// A: ${a.label} at ${count.toFixed(2)} cups:
+const aMl = forge(${a.exportName}, milliliter)(${count.toFixed(2)});
+// → ${aMl.toFixed(2)} mL
 
-// Largest (${largest.label}) at ${count.toFixed(2)} cups:
-const bigMl = forge(${largest.exportName}, milliliter)(${count.toFixed(2)});
-// → ${largest.ml.toFixed(2)} mL
+// B: ${b.label} at ${count.toFixed(2)} cups:
+const bMl = forge(${b.exportName}, milliliter)(${count.toFixed(2)});
+// → ${bMl.toFixed(2)} mL
 
 // Cross-region cup conversion (a real recipe hazard):
-forge(${largest.exportName}, ${smallest.exportName})(1);
-// → ${forge(largest.unit, smallest.unit)(1).toFixed(4)}
+forge(${a.exportName}, ${b.exportName})(1);
+// → ${forge(a.unit, b.unit)(1).toFixed(4)}
 `;
 }

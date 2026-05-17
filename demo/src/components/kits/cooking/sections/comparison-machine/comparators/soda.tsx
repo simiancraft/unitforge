@@ -159,7 +159,9 @@ export function useSoda() {
         resultsZone={
           <Result
             label={`one ${soda.symbol} ≈`}
-            value={`${foodPerSoda.toFixed(1)} ${food.symbol}${foodPerSoda === 1 ? '' : 's'} of sugar`}
+            value={`${foodPerSoda.toFixed(1)} ${food.symbol}${
+              foodPerSoda === 1 || food.symbol.endsWith('s') ? '' : 's'
+            }`}
             variant="hero"
           />
         }

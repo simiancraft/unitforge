@@ -71,8 +71,9 @@ export function useSimpleSyrup() {
         resultsZone={
           <Result
             label="yield"
-            value={`${Math.round(COCKTAILS_PER_BATCH * scale)} cocktails (½ fl oz each)`}
+            value={`${Math.round(COCKTAILS_PER_BATCH * scale)} cocktails (½ fl oz)`}
             variant="hero"
+            valueClassName="text-base"
           />
         }
       />
