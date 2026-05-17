@@ -20,7 +20,7 @@ const inSqFt = forge(
   squareFoot,
   { via: areaFromRectangle },
 );
-inSqFt({ length: 12, width: 8 });  // 57.067`;
+inSqFt({ length: 12, width: 8 });  // 57.066`;
 
 const DEFINE_UNIT_CODE = `import { defineUnit } from 'unitforge';
 

@@ -66,7 +66,7 @@ Library only. ESM only. Node 22+. No CJS build; no peer dependencies. Three func
 
 ## vs. `convert-units`
 
-`convert-units` is the incumbent ([~185k weekly downloads](https://www.npmjs.com/package/convert-units)); same problem space, different philosophy. The table compares the installed `2.3.4` (CJS-only, 2018) and the in-development `3.0.0-beta`.
+`convert-units` is the incumbent ([~185k weekly downloads](https://www.npmjs.com/package/convert-units)); same problem space, different philosophy. **unitforge catches dimension mismatches at compile time and ships cross-dimensional recipes; `convert-units` does neither, today or in `3.x`.**
 
 | | `convert-units` 2.3.4 | `convert-units` 3.0.0-beta | **unitforge** |
 | --- | --- | --- | --- |
@@ -77,7 +77,7 @@ Library only. ESM only. Node 22+. No CJS build; no peer dependencies. Three func
 | Dimension mismatch caught at | runtime | runtime | **compile time** (`NoInfer` on the `to` side) |
 | Tree-shaking model | barrel; pass measures to `configureMeasurements` | same | **per-export subpath** (`unitforge/kits/<name>`) |
 
-Differentiators that survive once `3.x` ships as `latest`: cross-dimensional recipes and compile-time dimension safety.
+<sub>Table compares the installed `convert-units@2.3.4` (CJS-only, 2018) and the in-development `3.0.0-beta`.</sub>
 
 ## Tree-shaking
 
@@ -93,7 +93,7 @@ Production bundles pay only for what you actually import. Measured with `esbuild
 | `import * as g from 'unitforge/kits/geometry'` + everything from main barrel | 7.4 kB | **2.7 kB** |
 | `import { VERSION } from 'unitforge/version'` (opt-in, inlines `package.json`) | 2.2 kB | **1.0 kB** |
 
-**Tarball:** `npm pack` produces ≈ 52 kB packed / 230 kB unpacked (64 files).
+**Tarball:** **≈ 52 kB packed** / 230 kB unpacked / 64 files (`npm pack`).
 
 ## Install
 
@@ -108,7 +108,7 @@ Requires Node 22+, ESM-only (`"type": "module"`), TypeScript `moduleResolution: 
 
 ## Build your own
 
-Three primitives. Here's each one; the [ArPeeGee shop demo](https://simiancraft.github.io/unitforge/) stitches them together.
+Three primitives. Here's each one. The integrated version is the [ArPeeGee shop](https://simiancraft.github.io/unitforge/) (RPG shop with coins, goods, and a coins-to-shields forge) at the bottom of this page.
 
 ### 1. `defineUnit`
 
@@ -159,10 +159,10 @@ const inSqFt = forge(
   squareFoot,
   { via: areaFromRectangle },
 );
-inSqFt({ length: 12, width: 8 });  // 57.067
+inSqFt({ length: 12, width: 8 });  // 57.066
 ```
 
-**See all three composed:** the [ArPeeGee shop demo](https://simiancraft.github.io/unitforge/) runs two coin units in one dimension, a goods dimension, and one cross-dim forge from coins to shields. Same code, live; demonstrates the namespaced-dimension convention you'd use when shipping a kit publicly.
+**See all three composed:** the [ArPeeGee shop demo](https://simiancraft.github.io/unitforge/) runs two coin units in one dimension, a goods dimension, and one cross-dim forge from coins to shields. Same code, live.
 
 ## API
 
@@ -221,9 +221,9 @@ Per-file mutation breakdown and survivor-classification policy: see [`llms.txt`]
 
 Adding a kit: see [EXTENDING.md](./EXTENDING.md).
 
-## For agents
+## For LLMs and agents
 
-Read [`llms.txt`](./llms.txt). Same scope as this README in a denser, more parseable shape.
+Feeding this repo into Claude / Cursor / Copilot? Read [`llms.txt`](./llms.txt) first. Same scope as this README in a denser, more parseable shape.
 
 ## License
 
