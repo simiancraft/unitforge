@@ -31,7 +31,7 @@ Every cross-dim `forge(...)` invocation runs this ordering:
 
 1. Defensive copy of input via `safeCopy` (rejects prototype-pollution keys `__proto__`, `constructor`, `prototype`).
 2. Cache check if `memoize > 0`. Cache key includes precision-rounded input values when `precision` is set.
-3. Run every validator: per-property validators from `via.validate` and the call-site `validate?` config, plus the optional `_all` validator that runs on the destructured input object as a whole. Failures accumulate.
+3. Run every validator on the RAW input (as the caller supplied it, in the caller's chosen units; NOT base-normalized): per-property validators from `via.validate` and the call-site `validate?` config, plus the optional `_all` validator that runs on the destructured raw-input object as a whole. Failures accumulate.
 4. Throw `ValidationError` if any validator failed. Each `ValidationFailure` includes the original `Error` (if a validator threw) on `failure.cause`.
 5. Normalize each input from its passed-in unit to base units via the unit's `toBase`.
 6. Run `compute` in base units.
@@ -44,7 +44,7 @@ Within-dim forges skip the conversion lookup, the validator gauntlet, and the in
 
 ## Validator contract
 
-A validator receives the already-normalized-to-base-units value for its key (per-property) or the destructured input object (for `_all`). Return convention:
+A validator receives the input value AS THE CALLER SUPPLIED IT (in the caller's chosen unit, not base-normalized) for its key (per-property), or the destructured raw-input object for `_all`. Return convention:
 
 - `true` or `undefined`: pass.
 - `string`: reject with that string as the failure message.
@@ -98,9 +98,9 @@ The `arpy-gee-shop` demo (`demo/src/components/kits/forge/sections/arpy-gee-shop
 
 Three categories of kit; each has different authoring rules. Decide which a new kit is before opening the directory.
 
-1. **Foundational**: canonical units in a well-known dimension. Today: `geometry` (LENGTH + AREA + VOLUME units + 2D shape derivations), `solid-geometry` (3D shape derivations; imports units from `geometry`), `data-storage` (DATA). Future: `mass`, `time`, `thermodynamics`, `electromagnetism`, `force-and-energy`, `velocity`, `currency`. Must be canon-correct (NIST / IEC / ISO / BIPM / IEEE values), comprehensive within the dimension, and JSDoc-cite the standard. Reviewer pairing: domain expert (geometer / pharmacist / data-hoarder / mrp-planner / astrometrist / antiquary / color-scientist) plus architect for surface coherence.
+1. **Foundational**: canonical units in a well-known dimension. Today: `geometry` (LENGTH + AREA + VOLUME units + 2D and 3D shape derivations), `data-storage` (DATA), `cooking` (VOLUME). Future: `mass`, `time`, `temperature`, `thermodynamics`, `electromagnetism`, `force-and-energy`, `velocity`, `currency`. Must be canon-correct (NIST / IEC / ISO / BIPM / IEEE values), comprehensive within the dimension, and JSDoc-cite the standard. Reviewer pairing: domain expert (geometer / pharmacist / data-hoarder / mrp-planner / astrometrist / antiquary / color-scientist / gastronomist) plus architect for surface coherence.
 2. **Composition**: curated barrel for a working domain. Re-exports atomic units from one or more foundational kits, adds 3-10 domain-specific units and conversions. Examples (proposed): `home-improvement` (contractor subset of geometry + mass + light electrical + finance + `boardFoot`, `drywallSheet`), `kitchen-baking`, `sewing`, `real-estate`. **The re-exported `Unit` instance is the same JS object as the foundational source**; `forge(comp.foot, geom.foot)` is identity. Never redefine a unit a foundational kit already ships. NOT required to be canonically complete in any one dimension; that is the foundational kit's job. Reviewer pairing: working-profession expert plus architect.
-3. **In-universe**: invented dimensions, mostly self-contained. Examples: `battletech` (TONNAGE / DAMAGE / HEAT / MP / BV / C-BILLS), the bundled crouton teaching demo (COUNT with wheat/ore/city). Future: `dnd-currency`, `sci-fi-power-levels`, `magic-mana`. Prefix dimension names with the universe to avoid collision (`battletech-heat`, not `heat`). Cite source material (rulebook edition, record sheets). Reviewer pairing: genre lens (e.g., battletech-grognard).
+3. **In-universe**: invented dimensions, mostly self-contained. Example: the ArPeeGee shop demo (`demo/src/components/kits/forge/sections/arpy-gee-shop.tsx`) ships `arpygee/coin` and `arpygee/goods` dimensions with silver / gold / shield units. Future: `battletech` (TONNAGE / DAMAGE / HEAT / MP / BV / C-BILLS), `dnd-currency`, `sci-fi-power-levels`, `magic-mana`. Prefix dimension names with the universe to avoid collision (`battletech/heat`, not `heat`). Cite source material (rulebook edition, record sheets). Reviewer pairing: genre lens (e.g., battletech-grognard).
 
 Cross-kit imports between foundational and composition kits are explicitly blessed and tree-shake-correct. Every export is `/*#__PURE__*/` and named, so a composition kit's barrel pays the byte cost only of the exports it actually re-exports. Domain composition is a curation problem, not an engineering one.
 

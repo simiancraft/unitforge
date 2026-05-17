@@ -24,14 +24,14 @@ Trademarks named below appear only as nominative references in the demo to descr
 
 The library itself (`unitforge` on npm) has zero runtime dependencies. The demo site at `demo/` bundles the following open-source packages; their licenses are reproduced in their respective package directories:
 
-- **React** (MIT) — UI library.
-- **Babylon.js** (Apache-2.0) — 3D engine used by the geometry kit's shape machines and the data-storage volume machine.
-- **Radix UI** (MIT) — `@radix-ui/react-select` for the unit pickers.
-- **Lucide** (ISC) — icon set; used for menu glyphs, food stamps, and section icons across every kit's demo page.
-- **Shiki** (MIT) — code-block syntax highlighting.
-- **Tailwind CSS** (MIT) — utility-class styling.
-- **class-variance-authority** (Apache-2.0), **clsx** (MIT), **tailwind-merge** (MIT) — Tailwind class composition.
-- **Vite** + **Rolldown** (both MIT) — demo build tooling.
+- **React** (MIT): UI library.
+- **Babylon.js** (Apache-2.0): 3D engine used by the geometry kit's shape machines and the data-storage volume machine.
+- **Radix UI** (MIT): `@radix-ui/react-select` for the unit pickers.
+- **Lucide** (ISC): icon set; used for menu glyphs, food stamps, and section icons across every kit's demo page.
+- **Shiki** (MIT): code-block syntax highlighting.
+- **Tailwind CSS** (MIT): utility-class styling.
+- **class-variance-authority** (Apache-2.0), **clsx** (MIT), **tailwind-merge** (MIT): Tailwind class composition.
+- **Vite** + **Rolldown** (both MIT): demo build tooling.
 
 ## Standing discipline for new kits and demos
 
