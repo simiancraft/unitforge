@@ -38,7 +38,7 @@ const COMPARATOR_META: Record<ComparatorKey, ComparatorMeta> = {
   atlantic: { label: 'US vs UK', hint: 'same word, two different volumes' },
   international: {
     label: 'international cups',
-    hint: 'one cup is many cups — 36% spread across regions',
+    hint: 'one cup is many cups; 36% spread across regions',
   },
 };
 
@@ -66,15 +66,7 @@ export function ComparisonMachine() {
           iconZone={<Scale size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
-      introZone={
-        <>
-          Two things share a dimension; one forge call makes the comparison legible. The soda
-          comparator picks a beverage and a food, both defined in a userland custom "sugar"
-          dimension, and shows you how many of the food carry the soda's sugar load. The Atlantic
-          comparator takes the same culinary tool word ("cup", "tablespoon", "teaspoon", "fluid
-          ounce") in US and UK measurement systems and pours both at once so the gap is visible.
-        </>
-      }
+      introZone={<>Two things share a dimension; one forge call makes the comparison legible.</>}
       menuZone={ORDER.map((key) => {
         const meta = COMPARATOR_META[key];
         return (

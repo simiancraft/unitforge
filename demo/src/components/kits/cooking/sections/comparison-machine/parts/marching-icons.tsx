@@ -37,7 +37,7 @@ export function MarchingIcons({
   const overflow = whole - rendered;
 
   return (
-    <div role="img" aria-label={ariaLabel} className="flex flex-wrap items-center gap-1.5">
+    <div role="img" aria-label={ariaLabel} className="flex flex-wrap items-center gap-1">
       {Array.from({ length: rendered }, (_, i) => (
         <Icon
           // biome-ignore lint/suspicious/noArrayIndexKey: stateless decorative repeats; reorder is impossible

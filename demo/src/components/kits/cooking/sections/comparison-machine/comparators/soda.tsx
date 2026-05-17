@@ -252,7 +252,7 @@ function SugarBoard({
         <MarchingIcons
           count={foodCount}
           Icon={FoodIcon}
-          iconClassName="h-7 w-7"
+          iconClassName="h-4 w-4"
           colorClassName="text-uf-accent-2"
           ariaLabel={`${foodCount.toFixed(1)} ${food.symbol} icons representing the sugar in one ${soda.symbol}`}
         />
