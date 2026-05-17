@@ -21,8 +21,12 @@ import { cn } from '~/lib/cn.js';
 import { formatMagnitude } from '~/lib/format.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 
-const COIN = 'coin' as const;
-const GOODS = 'goods' as const;
+// Namespaced dimension strings. When a kit ships publicly, prefix the
+// dimension with your package or namespace so two third-party kits with
+// the same nominal dimension don't silently forge against each other.
+// The demo shows the convention by example; the README points here.
+const COIN = 'arpygee/coin' as const;
+const GOODS = 'arpygee/goods' as const;
 
 const silverUnit = defineUnit({
   id: 'silver',
@@ -70,9 +74,11 @@ const shieldsFor = forge({ silver: silverUnit, gold: goldUnit }, shieldUnit, {
 
 // Slider maxes + the stable glyph-slot pool below. SILVER_MAX bounds
 // the pool because it's the larger of the two; gold piles always fit
-// inside it.
-const SILVER_MAX = 30;
-const GOLD_MAX = 6;
+// inside it. Set roomy enough that the cross-dim compute can reach
+// double-digit shields, which is when the conversion's leverage feels
+// real to the slider-scrubber.
+const SILVER_MAX = 45;
+const GOLD_MAX = 45;
 
 // Pile glyph: coin accumulation. Font size shrinks as count grows so
 // the row stays a single line up to slider max.
@@ -164,7 +170,7 @@ function ShopWidget({ silver, gold, shields, onSilverChange, onGoldChange }: Sho
 // glyph rides on `unit.symbol`, the SR-readable label on `unit.label`.
 // No parallel glyph/label props; the unit IS the metadata.
 interface CoinSliderProps {
-  unit: Unit<'coin', number>;
+  unit: Unit<typeof COIN, number>;
   value: number;
   max: number;
   onChange: (n: number) => void;
@@ -191,7 +197,7 @@ function CoinSlider({ unit, value, max, onChange }: CoinSliderProps) {
 }
 
 interface PileGlyphProps {
-  unit: Unit<'coin', number>;
+  unit: Unit<typeof COIN, number>;
   count: number;
 }
 
@@ -218,7 +224,7 @@ function PileGlyph({ unit, count }: PileGlyphProps) {
 }
 
 interface HeroGlyphProps {
-  unit: Unit<'goods', number>;
+  unit: Unit<typeof GOODS, number>;
   count: number;
 }
 
@@ -241,9 +247,9 @@ function HeroGlyph({ unit, count }: HeroGlyphProps) {
 function buildCode(silver: number, gold: number, shields: number): string {
   return `import { defineUnit, defineConversion, forge } from 'unitforge';
 
-// Two units in one dimension; the 10:1 rate lives in gold.toBase.
-const COIN  = 'coin'  as const;
-const GOODS = 'goods' as const;
+// Namespace your dimension strings when shipping a kit.
+const COIN  = 'arpygee/coin'  as const;
+const GOODS = 'arpygee/goods' as const;
 
 const silver = defineUnit({ id: 'silver', label: 'Silver', symbol: '🥈', dimension: COIN,  toBase: (v) => v,      fromBase: (b) => b,      base: true });
 const gold   = defineUnit({ id: 'gold',   label: 'Gold',   symbol: '🥇', dimension: COIN,  toBase: (v) => v * 10, fromBase: (b) => b / 10 });
