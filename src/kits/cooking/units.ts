@@ -296,9 +296,8 @@ export const cupMetric250 = /*#__PURE__*/ defineUnit({
  *  equivalent is the cookbook-industry convention; actual butter
  *  densifies as it firms, so the wrapped stick's volume is a
  *  paper-and-card artifact. UK and EU butter is sold by mass (250 g
- *  blocks per EU Regulation 1308/2013), not by stick; a downstream
- *  consumer cooking from EU recipes should define their own
- *  `butterBlockEu250g` rather than reuse this unit. */
+ *  blocks per EU Regulation 1308/2013), not by stick; reach for
+ *  `butterBlockEu250g` when porting from EU recipes. */
 export const stickOfButter = /*#__PURE__*/ defineUnit({
   id: 'stick-of-butter',
   label: 'Stick of Butter',
@@ -306,6 +305,24 @@ export const stickOfButter = /*#__PURE__*/ defineUnit({
   dimension: VOLUME,
   toBase: (v) => v * (US_FL_OZ_M3 * 4),
   fromBase: (b) => b / (US_FL_OZ_M3 * 4),
+});
+
+/** EU butter block; 250 g per EU Regulation 1308/2013, the standard
+ *  block size sold across the UK and EU. Shipped as a VOLUME unit
+ *  (this kit is volume-only); the volumetric equivalent ≈ 260.85 mL
+ *  is derived under the same cookbook convention `stickOfButter`
+ *  uses: 1 US stick (113.4 g per 21 CFR 131.111) ≡ 1/2 US cup
+ *  volumetric, so 1 EU block (250 g) ≡ (250 / 113.4) × 1/2 US cup
+ *  ≈ 2.20 sticks ≈ 1.10 US cups. The convention ignores butter
+ *  density (which varies with temperature anyway). For fully-honest
+ *  mass-based butter math, await the forthcoming mass kit. */
+export const butterBlockEu250g = /*#__PURE__*/ defineUnit({
+  id: 'butter-block-eu-250g',
+  label: 'EU Butter Block (250 g)',
+  symbol: 'block (EU)',
+  dimension: VOLUME,
+  toBase: (v) => v * (US_FL_OZ_M3 * 4 * (250 / 113.4)),
+  fromBase: (b) => b / (US_FL_OZ_M3 * 4 * (250 / 113.4)),
 });
 
 /** Dash; 1/8 US teaspoon ≈ 0.616 mL. Bar/kitchen tradition; not a legal

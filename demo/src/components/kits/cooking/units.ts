@@ -13,6 +13,7 @@
 
 import type { Unit } from 'unitforge';
 import {
+  butterBlockEu250g,
   cupMetric250,
   cupUk,
   cupUs,
@@ -56,7 +57,7 @@ export const COOKING_METRIC_UNITS = [
  *  it belongs rather than padding the metric column. */
 export const COOKING_AU_UNITS = [tablespoonAu] as const;
 
-export const COOKING_TRADITION_UNITS = [pinch, dash, stickOfButter] as const;
+export const COOKING_TRADITION_UNITS = [pinch, dash, stickOfButter, butterBlockEu250g] as const;
 
 export const COOKING_ALL_UNITS = [
   ...COOKING_METRIC_UNITS,
@@ -92,6 +93,7 @@ export const COOKING_UNIT_IDS = [
   'cup-uk',
   'cup-metric-250',
   'stick-of-butter',
+  'butter-block-eu-250g',
   'dash',
   'pinch',
 ] as const;
@@ -129,6 +131,7 @@ export const COOKING_BOUNDS: Record<CookingUnitId, SliderBounds> = {
   'cup-uk': { min: 0.25, max: 8, step: 0.25, init: 1 },
   'cup-metric-250': { min: 0.25, max: 8, step: 0.25, init: 1 },
   'stick-of-butter': { min: 0.25, max: 8, step: 0.25, init: 1 },
+  'butter-block-eu-250g': { min: 0.25, max: 4, step: 0.25, init: 1 },
   dash: { min: 1, max: 24, step: 1, init: 4 },
   pinch: { min: 1, max: 32, step: 1, init: 4 },
 };
