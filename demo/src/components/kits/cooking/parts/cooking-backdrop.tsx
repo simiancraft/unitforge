@@ -3,7 +3,7 @@
 //
 //   1. Horizontal scan lines (the recipe-card ruling) slowly drift
 //      upward via patternTransform driven by a single rAF loop. Very
-//      slow — meant to read as page-texture breath, not a marquee.
+//      slow; meant to read as page-texture breath, not a marquee.
 //
 //   2. Two pools of Lucide food icons (FROM_POOL + TO_POOL) stamped at
 //      hand-picked positions. The bench's from-unit deterministically
@@ -41,7 +41,8 @@ import {
   Utensils,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { glyphSubsetIndices, SCAN_LINE_SPEED_PX_S } from './backdrop-scales.js';
+import { SCAN_LINE_SPEED_PX_S } from './backdrop-scales.js';
+import { glyphSubsetIndices } from './glyph-pool.js';
 
 interface CookingBackdropProps {
   inline?: boolean;
@@ -229,14 +230,20 @@ function Glyph({ slot, active, scale }: GlyphProps) {
     wasActiveRef.current = active;
     if (active && !wasActive) {
       // Entering: prime at -SLIDE without transition, then on the next
-      // frame transition to 0. requestAnimationFrame x2 ensures the
-      // browser paints the primed position before the transition begins.
+      // frame transition to 0. Two nested requestAnimationFrames make
+      // sure the browser paints the primed position before the
+      // transition begins. Both ids hoisted to outer scope so the
+      // single cleanup function below can cancel either one; the
+      // callback's own return value is ignored by rAF.
       setTranslateX(-GLYPH_SLIDE_PX);
+      let raf2 = 0;
       const raf1 = requestAnimationFrame(() => {
-        const raf2 = requestAnimationFrame(() => setTranslateX(0));
-        return () => cancelAnimationFrame(raf2);
+        raf2 = requestAnimationFrame(() => setTranslateX(0));
       });
-      return () => cancelAnimationFrame(raf1);
+      return () => {
+        cancelAnimationFrame(raf1);
+        cancelAnimationFrame(raf2);
+      };
     }
     if (!active && wasActive) {
       // Exiting: simply transition to +SLIDE; opacity goes to 0 in

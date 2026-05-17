@@ -1,6 +1,6 @@
 // Kit-local custom dimension for the soda comparator: "sugar mass per
-// item". Demonstrates the Settlers-of-Crouton pattern — a user-defined
-// dimension declared in app code, not the library — by using it for a
+// item". Demonstrates the Settlers-of-Crouton pattern (a user-defined
+// dimension declared in app code, not the library) by using it for a
 // recognizable culinary question ("how many doughnuts have the same
 // sugar as a can of Coke?"). Each `defineUnit` here measures one
 // serving (one can, one bottle, one cookie); `toBase` returns grams of
@@ -149,11 +149,27 @@ export const SODAS = [
   mtnDew2L,
 ] as const;
 
+/** Literal union of soda ids the kit ships. Hand-declared (parallel to
+ *  the SODAS array) because `Unit.id` is `string` in the core library,
+ *  so deriving from `(typeof SODAS)[number]['id']` would widen to
+ *  `string` and Records keyed on it would silently accept stale keys.
+ *  Must stay in sync with SODAS above. */
+export type SodaId =
+  | 'red-bull-can'
+  | 'coke-can'
+  | 'mtn-dew-can'
+  | 'sprite-can'
+  | 'coke-bottle'
+  | 'coke-2l'
+  | 'mtn-dew-2l';
+
 /** Container volume in US fl oz per soda. Used by the visualizer to
  *  scale the picked container's icon in proportion to its capacity
  *  (Red Bull 8.4 oz reads small, 2 L bottle reads big). Not part of
- *  the forge() call; the sugar dimension carries grams, not volume. */
-export const SODA_FL_OZ: Record<string, number> = {
+ *  the forge() call; the sugar dimension carries grams, not volume.
+ *  Typed against `SodaId` so adding a soda without an fl-oz entry is
+ *  a compile error, not a silent ?? 12 fallback. */
+export const SODA_FL_OZ: Record<SodaId, number> = {
   'red-bull-can': 8.4,
   'coke-can': 12,
   'mtn-dew-can': 12,
@@ -171,3 +187,13 @@ export const FOODS = [
   cakeSlice,
   snickersBar,
 ] as const;
+
+/** Literal union of food ids the kit ships. Parallel to FOODS; same
+ *  reasoning as SodaId. */
+export type FoodId =
+  | 'sugar-cube'
+  | 'oreo-cookie'
+  | 'glazed-donut'
+  | 'ice-cream-scoop'
+  | 'cake-slice'
+  | 'snickers-bar';

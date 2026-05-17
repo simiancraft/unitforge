@@ -54,6 +54,17 @@ const INGREDIENTS: ReadonlyArray<Ingredient> = [
     metricUnit: milliliter,
   },
   {
+    // 3 large eggs by volume; ~1/4 cup of beaten whole egg per large
+    // egg is the standard cookbook conversion. Listing as volume keeps
+    // the table consistent with the kit's volume-only scope.
+    id: 'eggs',
+    name: 'eggs (3 large)',
+    amount: 0.75,
+    sourceUnit: cupUs,
+    ukUnit: cupUk,
+    metricUnit: milliliter,
+  },
+  {
     id: 'milk',
     name: 'buttermilk',
     amount: 1,

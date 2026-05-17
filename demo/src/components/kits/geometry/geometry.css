@@ -66,14 +66,14 @@
   --uf-display: "Caveat", "Georgia", cursive;
   --uf-grid: #76b8e3;
   --uf-grid-faint: #76b8e333;
-  /* Secondary grid: deep slate-navy for the to-unit layer, pushed much
-   * darker than the primary so the contrast against the cyan-bright
-   * primary reads clearly even at low opacity. Previous #3a6b9b was
-   * too close to the primary's lightness; this drops it further into
-   * the bg's value range so the two layers stop blending into a single
-   * teal haze. Same blue family, sharper lightness split. */
-  --uf-grid-secondary: #1a3d6e;
-  --uf-grid-secondary-faint: #1a3d6e88;
+  /* Secondary grid: steel-blue for the to-unit layer. Earlier #1a3d6e
+   * was too dark; at the faint variant's 53% alpha it sat at 1.25:1
+   * against the bg, well below the primary faint's 1.48:1, so the
+   * parallax layer disappeared in bright ambient light. #2e5a8e lifts
+   * the faint tier to ~1.55:1, parity with the primary, while keeping
+   * the lightness split so the two blue grids stay distinguishable. */
+  --uf-grid-secondary: #2e5a8e;
+  --uf-grid-secondary-faint: #2e5a8e88;
 }
 
 /* Subtle paper-grain dot texture on `.uf-paper` surfaces (both variants;

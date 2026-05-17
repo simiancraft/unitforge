@@ -32,7 +32,7 @@ Ships with kits across multiple domains; define your own for anything else (game
 
 - [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume; metric and imperial; rectangle, circle, sphere, and cylinder derivations.
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; covers GB-vs-GiB and Gbit-vs-MB.
-- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): culinary volumes; US/UK split for cup, tablespoon, teaspoon, and fluid ounce (mixing them ruins the dish); stick of butter, dash, pinch.
+- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): culinary volumes; US/UK split for cup, tablespoon, teaspoon, and fluid ounce (mixing them ruins the dish). Plus a flagship comparison machine that picks a soda and a food and shows how many of the food carry the soda's sugar load, built on a userland `'sugar'` dimension declared in app code (Settlers-of-Crouton, applied to something everyone recognizes on sight).
 
 ## Quick start
 
@@ -40,21 +40,24 @@ Ships with kits across multiple domains; define your own for anything else (game
 import { forge } from 'unitforge';
 import { meter, foot } from 'unitforge/kits/geometry';
 
-forge(meter, foot)(5); // 16.4042
+forge(meter, foot)(5); // ≈ 16.4042
 ```
 
 ```ts
 import { forge } from 'unitforge';
 import { gigabyte, gibibyte } from 'unitforge/kits/data-storage';
 
-forge(gigabyte, gibibyte)(500); // 465.66; the 500 GB drive Windows reports as 465 GB
+forge(gigabyte, gibibyte)(500); // ≈ 465.66; the 500 GB drive Windows reports as 465 GB
 ```
 
 ```ts
-import { forge } from 'unitforge';
-import { cupUs, cupUk } from 'unitforge/kits/cooking';
+import { defineUnit, forge } from 'unitforge';
 
-forge(cupUs, cupUk)(1); // 0.8327; one US cup is ~17% short of a UK cup
+// Userland custom dimension; nothing comes from a kit.
+const cokeCan   = defineUnit({ id: 'coke-can',   dimension: 'sugar', toBase: (n) => n * 39, fromBase: (g) => g / 39 });
+const sugarCube = defineUnit({ id: 'sugar-cube', dimension: 'sugar', toBase: (n) => n * 4,  fromBase: (g) => g / 4  });
+
+forge(cokeCan, sugarCube)(1); // ≈ 9.75; one 12 oz Coke equals 9.75 sugar cubes
 ```
 
 ## What this isn't
@@ -76,7 +79,7 @@ Three functions, deliberately. Not three hundred kits.
 | Module format | CJS | ESM + CJS + UMD | **ESM only** |
 | Bundled TypeScript types | ❌ (via `@types/convert-units`) | ✅ | **✅** |
 | Custom measures / dimensions | ✅ `customMeasure` | ✅ `customMeasure` | **✅ `defineUnit`** |
-| Cross-dimensional conversions (wheat + ore → cities) | ❌ | ❌ | **✅ `defineConversion`** |
+| Cross-dimensional conversions (one Coke ≈ N donuts of sugar) | ❌ | ❌ | **✅ `defineConversion`** |
 | Dimension mismatch caught at | runtime | runtime | **compile time** (`NoInfer` on the `to` side) |
 | Tree-shaking model | barrel; pass measures to `configureMeasurements` | same | **per-export subpath** (`unitforge/kits/<name>`) |
 
@@ -147,7 +150,7 @@ import { LENGTH } from 'unitforge/dimensions';
 import { foot } from 'unitforge/kits/geometry';
 
 const handspan = defineUnit({ id: 'handspan', label: 'Handspan', symbol: 'hsp', dimension: LENGTH, ...linear(0.235) });
-forge(handspan, foot)(4); // 3.084
+forge(handspan, foot)(4); // ≈ 3.084
 ```
 
 > Inside kit-shipped unit definitions, inline the `toBase`/`fromBase` closures rather than spreading `linear(scale)`; the spread defeats per-export tree-shaking. The helper is for ad-hoc userland use where bundle size does not matter.
@@ -197,7 +200,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table (te
 
 Three layers, all gated on every CI build:
 
-- **Example-based tests** (`bun test`): 422 tests across 14 files, 18,448 `expect()` assertions, covering `forge`, `defineUnit`, `defineConversion`, dimensions, the kits, and the `lib/` primitives. 100.00% line coverage; 98.77% function coverage (the gap is in `kits/geometry/units.ts`; all other files 100 / 100), tracked via Codecov.
+- **Example-based tests** (`bun test`): 469 tests across 15 files, 18,461 `expect()` assertions, covering `forge`, `defineUnit`, `defineConversion`, dimensions, the kits, and the `lib/` primitives. 100.00% line coverage; 98.42% function coverage (the gap is in `kits/geometry/units.ts`; all other files 100 / 100), tracked via Codecov.
 - **Property-based fuzz tests** via [`fast-check`](https://github.com/dubzzz/fast-check) in `test/fuzz/` (6 files): within-dim round-trip + composition, cross-dim monotonicity, precision-0 integer output, `ValidationError` invariants, memoize cap-invariance, and `defineUnit` prototype-pollution hygiene. Also satisfies the [OpenSSF Scorecard](https://github.com/ossf/scorecard) Fuzzing check.
 - **Mutation testing** via [Stryker](https://stryker-mutator.io/) (`bun run mutation`) over the `forge` core, the `define` API (`defineUnit` + `defineConversion`), and four `lib/` primitives (`math`, `memoize`, `safeCopy`, `validation`). CI break threshold: 75%. Current score: 96.36% — 238 mutants killed, 9 classified equivalent under the public API, 0 timeouts, 0 errors. Per file: math / define / safeCopy / validation 100%, memoize 95.74%, forge 92.55%. Coverage measures whether the suite *ran* a line of code; mutation measures whether it *asserted hard enough to catch a behavioral change*. The two are complementary: high coverage with weak assertions passes the first check and fails the second.
 

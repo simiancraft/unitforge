@@ -45,10 +45,30 @@ export const COOKING_ALL_UNITS = [
 
 export type CookingUnit = Unit<'volume', number>;
 
-/** Cooking-unit ids as a string-literal union. Lets registries keyed on
- *  unit id type-error on stale keys instead of silently falling through
- *  to a default. */
-export type CookingUnitId = (typeof COOKING_ALL_UNITS)[number]['id'];
+/** Parallel as-const array of kit-shipped cooking ids. The core `Unit`
+ *  type declares `id: string`, so deriving `CookingUnitId` from
+ *  `(typeof COOKING_ALL_UNITS)[number]['id']` would widen to `string`
+ *  and a Record keyed on it would silently accept stale keys. Hand-
+ *  declaring the literal tuple here is the cheapest way to get a real
+ *  string-literal union without touching the core library types. Must
+ *  stay in sync with the kit's exports — caught by the test below. */
+export const COOKING_UNIT_IDS = [
+  'milliliter',
+  'liter',
+  'teaspoon-us',
+  'teaspoon-uk',
+  'tablespoon-us',
+  'tablespoon-uk',
+  'fluid-ounce-us',
+  'fluid-ounce-uk',
+  'cup-us',
+  'cup-uk',
+  'stick-of-butter',
+  'dash',
+  'pinch',
+] as const;
+
+export type CookingUnitId = (typeof COOKING_UNIT_IDS)[number];
 
 export interface SliderBounds {
   min: number;
@@ -80,12 +100,19 @@ export const COOKING_BOUNDS: Record<CookingUnitId, SliderBounds> = {
   pinch: { min: 1, max: 32, step: 1, init: 4 },
 };
 
-/** Returns the slider bounds for a given unit id, with a string-typed
- *  signature so callers driven by runtime state (bench picker, slider
- *  range table) don't have to cast. The typed COOKING_BOUNDS above is
- *  the source of truth; this wrapper is the consumer surface. */
+/** Returns the slider bounds for a given cooking unit id. Parameter
+ *  is `string` because callers (bench picker, slider range table)
+ *  drive from runtime state where the id originates as a generic
+ *  `BenchState.fromId: string`. The `in` check narrows to
+ *  `CookingUnitId` before indexing the typed Record, so the lookup
+ *  side is type-safe; only the parameter side is loose, by necessity.
+ *  Unknown ids fall back to `cup-us` so a future kit id rename does
+ *  not crash the page before the consumer migrates. */
 export function cookingBoundsFor(id: string): SliderBounds {
-  return (COOKING_BOUNDS as Record<string, SliderBounds>)[id] ?? COOKING_BOUNDS['cup-us'];
+  if (id in COOKING_BOUNDS) {
+    return COOKING_BOUNDS[id as CookingUnitId];
+  }
+  return COOKING_BOUNDS['cup-us'];
 }
 
 /** US / UK pairs for the customary column. Each row in the cooking

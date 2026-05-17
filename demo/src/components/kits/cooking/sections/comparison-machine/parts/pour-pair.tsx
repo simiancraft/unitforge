@@ -1,5 +1,5 @@
 // Shared visualizer for the system-machine tiers. Two side-by-side
-// "pour" silhouettes — a US glass and a UK glass — filled to the
+// "pour" silhouettes (a US glass and a UK glass) filled to the
 // milliliter quantity each represents at the user's chosen count of
 // the tier's unit. The fill heights are derived from a shared maxMl so
 // the two glasses are always to-scale against each other; the labels

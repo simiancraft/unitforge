@@ -1,6 +1,6 @@
 // Simple syrup. The bartender's 1:1 by volume of sugar and water,
-// dissolved by gentle heat. The recipe is unit-agnostic — what matters
-// is the RATIO — but you still need to pick a unit and scale it. This
+// dissolved by gentle heat. The recipe is unit-agnostic; what matters
+// is the RATIO. You still need to pick a unit and scale it. The
 // recipe demonstrates the conversion ladder from cup down to teaspoon
 // for a tiny "I just need a few drinks" batch.
 

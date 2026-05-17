@@ -14,6 +14,24 @@
 
 import type { ReactNode } from 'react';
 
+/**
+ * Standard return shape for a "machine child" hook (one comparator,
+ * one recipe, one tier inside a section's dispatch chassis). The
+ * three zones plug directly into a MenuPill + WidgetLayout pair: the
+ * menu slot holds the dispatch glyph, the interactivity slot holds
+ * the live widget, the code slot holds the templated forge snippet.
+ *
+ * Constraining hook returns to this interface lets the dispatch
+ * chassis type its lookup table as `Record<Key, SectionMachineChild>`
+ * instead of `Record<Key, ReturnType<typeof useFirst>>`, which
+ * trades a load-bearing-by-accident shape for an explicit contract.
+ */
+export interface SectionMachineChild {
+  menuZone: ReactNode;
+  interactivityZone: ReactNode;
+  codeZone: ReactNode;
+}
+
 interface SectionLayoutProps {
   /**
    * Section title bar. Conventionally a `<SectionHeader>` carrying

@@ -10,7 +10,12 @@
 import { ChefHat } from 'lucide-react';
 import { useState } from 'react';
 import { MenuPill } from '~/components/kits/menu-pill.js';
-import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
+import {
+  SectionHeader,
+  SectionLayout,
+  type SectionMachineChild,
+  WidgetLayout,
+} from '~/components/kits/section-layout.js';
 import { useChocolateCake } from './recipes/chocolate-cake.js';
 import { useChocolateChipCookies } from './recipes/chocolate-chip-cookies.js';
 import { useGlazedDonuts } from './recipes/glazed-donuts.js';
@@ -57,7 +62,7 @@ export function RecipeMachine() {
   const simpleSyrup = useSimpleSyrup();
   const vinaigrette = useVinaigrette();
 
-  const recipes: Record<RecipeKey, ReturnType<typeof useChocolateChipCookies>> = {
+  const recipes: Record<RecipeKey, SectionMachineChild> = {
     chocolateChipCookies,
     glazedDonuts,
     chocolateCake,

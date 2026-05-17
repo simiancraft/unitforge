@@ -29,14 +29,18 @@ import { MarchingIcons } from '../parts/marching-icons.js';
 import {
   cokeCan,
   FOODS,
+  type FoodId,
   SODA_FL_OZ,
   SODAS,
+  type SodaId,
   type SugarUnit,
   sugarCube,
 } from '../parts/sugar-units.js';
 
 // Lucide icon per food id; chosen for instant visual recognition.
-const FOOD_ICONS: Record<string, LucideIcon> = {
+// Typed `Record<FoodId, …>` so adding a food without an icon entry
+// is a compile error instead of a silent ?? Cookie fallback.
+const FOOD_ICONS: Record<FoodId, LucideIcon> = {
   'sugar-cube': Square,
   'oreo-cookie': Cookie,
   'glazed-donut': Donut,
@@ -46,12 +50,13 @@ const FOOD_ICONS: Record<string, LucideIcon> = {
 };
 
 // Lucide icon per soda id; chosen so the container shape reads at a
-// glance — small Coffee cup for the 8.4 oz Red Bull, CupSoda for the
+// glance: small Coffee cup for the 8.4 oz Red Bull, CupSoda for the
 // 12 oz cans, Wine glass for the 20 oz bottle, Beer stein for the
 // hulking 2 L bottle. Plus the rendered size is fl-oz-driven (see
 // `sodaIconPx`) so the picker has visible size variation across the
-// container ladder.
-const SODA_ICONS: Record<string, LucideIcon> = {
+// container ladder. Typed `Record<SodaId, …>` for the same reason as
+// FOOD_ICONS.
+const SODA_ICONS: Record<SodaId, LucideIcon> = {
   'red-bull-can': Coffee,
   'coke-can': CupSoda,
   'mtn-dew-can': CupSoda,
@@ -61,7 +66,7 @@ const SODA_ICONS: Record<string, LucideIcon> = {
   'mtn-dew-2l': Beer,
 };
 
-const SODA_NAMES: Record<string, string> = {
+const SODA_NAMES: Record<SodaId, string> = {
   'coke-can': 'cokeCan',
   'coke-bottle': 'cokeBottle',
   'mtn-dew-can': 'mtnDewCan',
@@ -80,13 +85,13 @@ const SODA_PX_MAX = 96;
 const SODA_FL_OZ_MIN = 8;
 const SODA_FL_OZ_MAX = 68;
 
-function sodaIconPx(sodaId: string): number {
-  const flOz = SODA_FL_OZ[sodaId] ?? 12;
+function sodaIconPx(sodaId: SodaId): number {
+  const flOz = SODA_FL_OZ[sodaId];
   const t = Math.max(0, Math.min(1, (flOz - SODA_FL_OZ_MIN) / (SODA_FL_OZ_MAX - SODA_FL_OZ_MIN)));
   return SODA_PX_MIN + t * (SODA_PX_MAX - SODA_PX_MIN);
 }
 
-const FOOD_NAMES: Record<string, string> = {
+const FOOD_NAMES: Record<FoodId, string> = {
   'sugar-cube': 'sugarCube',
   'oreo-cookie': 'oreoCookie',
   'glazed-donut': 'glazedDonut',
@@ -96,8 +101,8 @@ const FOOD_NAMES: Record<string, string> = {
 };
 
 export function useSoda() {
-  const [sodaId, setSodaId] = useState<string>(cokeCan.id);
-  const [foodId, setFoodId] = useState<string>(sugarCube.id);
+  const [sodaId, setSodaId] = useState<SodaId>('coke-can');
+  const [foodId, setFoodId] = useState<FoodId>('sugar-cube');
 
   const soda = findSoda(sodaId);
   const food = findFood(foodId);
@@ -106,9 +111,11 @@ export function useSoda() {
   // sides resolve to grams-of-sugar at base; the ratio falls out.
   const foodPerSoda = forge(soda, food)(1);
   const sodaSugarG = soda.toBase(1);
-  const FoodIcon = FOOD_ICONS[food.id] ?? Cookie;
-  const SodaIcon = SODA_ICONS[soda.id] ?? CupSoda;
-  const sodaPx = sodaIconPx(soda.id);
+  // Indexed off the typed state ids (not the runtime `.id` strings)
+  // so the lookups are total over their respective unions.
+  const FoodIcon = FOOD_ICONS[foodId];
+  const SodaIcon = SODA_ICONS[sodaId];
+  const sodaPx = sodaIconPx(sodaId);
 
   return {
     menuZone: <CupSoda size={22} strokeWidth={1.6} />,
@@ -116,7 +123,16 @@ export function useSoda() {
       <ControlPanel
         pickersZone={
           <>
-            <ItemPicker label="one of these…" units={SODAS} value={sodaId} onChange={setSodaId} />
+            {/* The select's onChange surfaces `string`; cast at this
+                boundary because SODAS / FOODS are the source of truth
+                for the union and any value the picker emits is one of
+                those ids. */}
+            <ItemPicker
+              label="one of these…"
+              units={SODAS}
+              value={sodaId}
+              onChange={(v) => setSodaId(v as SodaId)}
+            />
             <span className="hidden self-end justify-self-center text-sm uppercase tracking-wider text-uf-muted sm:block">
               has the sugar of
             </span>
@@ -124,7 +140,7 @@ export function useSoda() {
               label="…this many of these"
               units={FOODS}
               value={foodId}
-              onChange={setFoodId}
+              onChange={(v) => setFoodId(v as FoodId)}
             />
           </>
         }
@@ -148,7 +164,7 @@ export function useSoda() {
         }
       />
     ),
-    codeZone: <CodeBlock code={buildCode(soda, food, foodPerSoda)} />,
+    codeZone: <CodeBlock code={buildCode(sodaId, soda, foodId, food, foodPerSoda)} />,
   };
 }
 
@@ -251,9 +267,15 @@ function findFood(id: string): SugarUnit {
   return FOODS.find((f) => f.id === id) ?? sugarCube;
 }
 
-function buildCode(soda: SugarUnit, food: SugarUnit, count: number): string {
-  const sodaName = SODA_NAMES[soda.id] ?? 'cokeCan';
-  const foodName = FOOD_NAMES[food.id] ?? 'sugarCube';
+function buildCode(
+  sodaId: SodaId,
+  soda: SugarUnit,
+  foodId: FoodId,
+  food: SugarUnit,
+  count: number,
+): string {
+  const sodaName = SODA_NAMES[sodaId];
+  const foodName = FOOD_NAMES[foodId];
   return `import { defineUnit, forge } from 'unitforge';
 
 // Userland custom dimension; nothing comes from a kit.

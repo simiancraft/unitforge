@@ -10,16 +10,17 @@
 
 [data-theme="cooking-light"] {
   /* Recipe-card warmth. Cream paper, espresso ink, tomato accent.
-   * Contrast-tuned per WCAG AA: accent #a8362a (4.62:1 on bg), accent-2
-   * #9a6f10 (4.55:1) so US/UK readout columns each clear AA body text. */
+   * Contrast measured against cream bg (#f6ecd9): accent #a8362a is
+   * 5.55:1 (pass AA body); accent-2 #8a6310 is 4.61:1 (pass AA body).
+   * Both US and UK readout columns clear AA body text. */
   --uf-bg: #f6ecd9;
   --uf-fg: #2a1e10;
   --uf-muted: #6b5536;
   --uf-accent: #a8362a;
-  /* Darker amber secondary; previous #d49a1a butter yellow was 2.13:1
-   * on the card (WCAG fail). #9a6f10 preserves the recipe-card warmth
-   * while clearing AA body for the UK readout column. */
-  --uf-accent-2: #9a6f10;
+  /* Darker amber secondary. Previous #9a6f10 measured 3.85:1 against
+   * bg (AA body fail); #8a6310 clears 4.61:1 while keeping the
+   * recipe-card warmth for the UK readout column. */
+  --uf-accent-2: #8a6310;
   --uf-card: #fdf6e6;
   --uf-border: #c0a878;
   --uf-code-bg: #efe2c4;

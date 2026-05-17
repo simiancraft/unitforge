@@ -1,5 +1,5 @@
 // Comparison machine chassis. Two comparators today: soda (the
-// flagship — pick a soda on the left, a food on the right, see how
+// flagship: pick a soda on the left, a food on the right, see how
 // many of the food carry the same sugar load) and atlantic (the
 // US/UK volume split for the four culinary tools where the same
 // English word means two different volumes). Each comparator owns
@@ -8,7 +8,12 @@
 import { Scale } from 'lucide-react';
 import { useState } from 'react';
 import { MenuPill } from '~/components/kits/menu-pill.js';
-import { SectionHeader, SectionLayout, WidgetLayout } from '~/components/kits/section-layout.js';
+import {
+  SectionHeader,
+  SectionLayout,
+  type SectionMachineChild,
+  WidgetLayout,
+} from '~/components/kits/section-layout.js';
 import { useAtlantic } from './comparators/atlantic.js';
 import { useSoda } from './comparators/soda.js';
 
@@ -30,7 +35,7 @@ export function ComparisonMachine() {
   const soda = useSoda();
   const atlantic = useAtlantic();
 
-  const comparators: Record<ComparatorKey, ReturnType<typeof useSoda>> = {
+  const comparators: Record<ComparatorKey, SectionMachineChild> = {
     soda,
     atlantic,
   };
