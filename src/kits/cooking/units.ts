@@ -289,6 +289,52 @@ export const cupMetric250 = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 250e-6,
 });
 
+/** Japanese rice cup; 1 gō (合) = 180.39 mL exactly. The shō (升) was
+ *  fixed at 1.8039 L by Toyotomi Hideyoshi's 1582-98 land survey; 1 gō
+ *  is 1/10 shō, the unit a rice cooker measures when you pour "1 rice
+ *  cup" of dry rice. Every Japanese rice cooker ships with a 180 mL
+ *  measuring cup marked "1 合" / "1 cup." Use this for rice-cooker
+ *  recipes; for general Japanese cooking measurements, prefer
+ *  `cupJapaneseGeneral` (200 mL). */
+export const cupJapaneseRice = /*#__PURE__*/ defineUnit({
+  id: 'cup-japanese-rice',
+  label: 'Japanese Rice Cup (合, gō)',
+  symbol: 'gō',
+  dimension: VOLUME,
+  toBase: (v) => v * 180.39e-6,
+  fromBase: (b) => b / 180.39e-6,
+});
+
+/** Japanese general-cooking cup; 200 mL exactly per Japanese Industrial
+ *  Standards JIS S 2052 (kitchen measuring tools). The everyday cup
+ *  for non-rice ingredients in Japanese cookbooks. Rice cookery uses
+ *  the 180.39 mL `cupJapaneseRice` instead. */
+export const cupJapaneseGeneral = /*#__PURE__*/ defineUnit({
+  id: 'cup-japanese-general',
+  label: 'Japanese Cooking Cup (200 mL)',
+  symbol: 'cup (JP)',
+  dimension: VOLUME,
+  toBase: (v) => v * 200e-6,
+  fromBase: (b) => b / 200e-6,
+});
+
+/** Russian stakan (стакан); 250 mL modern standard. The Soviet-era
+ *  graneny stakan (faceted glass) is the iconic Russian measuring
+ *  vessel: 250 mL when filled to the rim, 200 mL when filled to the
+ *  lower facet (the "small stakan" of Tsarist-era teacup tradition,
+ *  still found in babushka recipe books). Modern Russian cookbooks
+ *  use the 250 mL convention; this ships that value. For pre-Soviet
+ *  recipes that use the 200 mL "small stakan," substitute
+ *  `cupJapaneseGeneral` (numerically identical) or define your own. */
+export const cupRussianStakan = /*#__PURE__*/ defineUnit({
+  id: 'cup-russian-stakan',
+  label: 'Russian Stakan (250 mL)',
+  symbol: 'stakan',
+  dimension: VOLUME,
+  toBase: (v) => v * 250e-6,
+  fromBase: (b) => b / 250e-6,
+});
+
 /** Stick of butter; US-only, 1/2 US cup = 4 US fl oz = 8 US tablespoons
  *  ≈ 118.294 mL volumetric. US butter is sold in 1-lb (453.6 g) packages
  *  cut into 4 sticks per 21 CFR 131.111; the mass equivalent of one
