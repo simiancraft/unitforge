@@ -67,7 +67,7 @@ All validators run on every call; failures aggregate into a single `ValidationEr
 
 `Dimension` is declared as `(typeof DIMENSIONS)[number] | (string & {})`. The `(string & {})` half is a known TypeScript trick: it's structurally identical to `string` but the union doesn't collapse to plain `string` during inference. Practical effect:
 
-- Built-in dimensions (`'length'`, `'area'`, `'volume'`, `'data'`, `'angle'`) surface in autocomplete.
+- Built-in dimensions (`'length'`, `'area'`, `'volume'`, `'data'`, `'angle'`, `'mass'`, `'temperature'`) surface in autocomplete.
 - User-defined dimensions (`'gold' as const`, `'arpygee/coin' as const`, etc.) are accepted without TypeScript complaining about a missing union member.
 - A passed string literal that doesn't match a built-in name is treated as a user-defined dimension, not an error.
 
@@ -92,7 +92,7 @@ The `arpy-gee-shop` demo (`demo/src/components/kits/forge/sections/arpy-gee-shop
 | Subpath | Exports |
 | --- | --- |
 | `unitforge` | API barrel: `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, `DEFAULT_MEMO_CAP`, `MEMO_CAP_MAX`, plus types |
-| `unitforge/dimensions` | `LENGTH`, `AREA`, `VOLUME`, `DATA`, `ANGLE`, `DIMENSIONS` tuple, `Dimension` type |
+| `unitforge/dimensions` | `LENGTH`, `AREA`, `VOLUME`, `DATA`, `ANGLE`, `MASS`, `TEMPERATURE`, `DIMENSIONS` tuple, `Dimension` type |
 | `unitforge/kits/<kit>` | every unit and conversion shipped by `<kit>` |
 | `unitforge/validation` | `ValidationError`, `ValidationFailure` type |
 | `unitforge/version` | `VERSION: string` (read from `package.json` at runtime; on its own subpath because the JSON import would inline `package.json` into every consumer bundle) |
@@ -146,7 +146,7 @@ EXTENDING.md is canonical. Distilled rules below; check the doc for worked examp
 
 Three layers, every layer gated on every CI build.
 
-**Example-based tests** (`bun test`): 470+ tests across 16 files; ~18.5k `expect()` assertions (the fast-check fuzz tests randomize their assertion count per run, so this number drifts). Covers `forge`, `defineUnit`, `defineConversion`, dimensions, every shipped kit, the `lib/` primitives (`math`, `memoize`, `safeCopy`, `validation`), and demo-side cross-file invariants (see `test/demo-invariants.test.ts`). 100.00% line coverage; 98.42% function coverage (the gap is unit-definition factor closures in `kits/geometry/units.ts` and `kits/cooking/units.ts` exercised transitively through `forge` rather than directly). Tracked via Codecov.
+**Example-based tests** (`bun test`): 560+ tests across 21 files; ~18.6k `expect()` assertions (the fast-check fuzz tests randomize their assertion count per run, so this number drifts). Covers `forge`, `defineUnit`, `defineConversion`, dimensions, every shipped kit, the `lib/` primitives (`math`, `memoize`, `safeCopy`, `validation`), and demo-side cross-file invariants (see `test/demo-invariants.test.ts`). 100.00% line coverage; ~95% function coverage (the gap is `fromBase` closures on foundational-kit units exercised transitively through `forge` round-trips rather than direct invocation). Tracked via Codecov.
 
 **Property-based fuzz** (`test/fuzz/`, 6 files, fast-check): within-dim round-trip + composition, cross-dim monotonicity, precision-0 integer output guarantee, `ValidationError` invariants, memoize cap-invariance, and `defineUnit` prototype-pollution hygiene. Also satisfies the OpenSSF Scorecard Fuzzing check.
 
