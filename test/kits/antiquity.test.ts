@@ -31,12 +31,17 @@ import {
   douHan,
   drachmaAttic,
   ephahHebrew,
+  firkinAleEnglish,
+  gallonAleEnglish,
+  gallonWineEnglish,
   goHideyoshi,
   gurMesopotamia,
   handbreadthHebrew,
   heqatEgypt,
   hinEgypt,
   hinHebrew,
+  hogsheadBeerEnglish,
+  hogsheadWineEnglish,
   joJapan,
   kenJapan,
   korHebrew,
@@ -79,11 +84,15 @@ import {
   spanHebrew,
   stadionAttic,
   stadionOlympic,
+  stoneButcher,
+  stoneCheese,
+  stoneWool,
   sunJapan,
   talentAttic,
   talentBabylonian,
   talentHebrew,
   tetradrachmAttic,
+  tunWineEnglish,
   unciaLengthRomanus,
   unciaMassRomana,
   ushMesopotamia,
@@ -466,6 +475,74 @@ describe('kits/antiquity: Hebrew — reference values', () => {
     expect(forge(seahHebrew, liter)(3)).toBeCloseTo(22, 6);
     expect(forge(korHebrew, liter)(1)).toBeCloseTo(220, 4);
   });
+});
+
+describe('kits/antiquity: English-historical — reference values', () => {
+  it('wool stone = 14 lb (sole legal stone since 1835)', () => {
+    expect(forge(stoneWool, kilogram)(1)).toBeCloseTo(0.45359237 * 14, 12);
+  });
+
+  it("butcher's stone = 8 lb; cheese stone (Suffolk) = 16 lb", () => {
+    expect(forge(stoneButcher, kilogram)(1)).toBeCloseTo(0.45359237 * 8, 12);
+    expect(forge(stoneCheese, kilogram)(1)).toBeCloseTo(0.45359237 * 16, 12);
+  });
+
+  it('wool stone is exactly the modern statutory stone (post-1835)', () => {
+    // Sanity: wool stone IS 14 lb, same as the modern stone in
+    // kits/mass. Shipping it here is for historical-context
+    // disambiguation against the 8 lb butcher's and 16 lb cheese
+    // variants.
+    const woolKg = forge(stoneWool, kilogram)(1);
+    expect(woolKg).toBeCloseTo(6.35029318, 9);
+  });
+
+  it('wine gallon (Queen Anne) = 231 in³ ≈ 3.7854 L', () => {
+    expect(forge(gallonWineEnglish, liter)(1)).toBeCloseTo(3.7854, 4);
+  });
+
+  it('ale gallon = 282 in³ ≈ 4.621 L (~22% larger than wine gallon)', () => {
+    expect(forge(gallonAleEnglish, liter)(1)).toBeCloseTo(4.621, 3);
+    const ratio = forge(gallonAleEnglish, liter)(1) / forge(gallonWineEnglish, liter)(1);
+    expect(ratio).toBeCloseTo(282 / 231, 6);
+  });
+
+  it('wine hogshead = 63 wine gallons; beer hogshead = 54 ale gallons', () => {
+    expect(forge(hogsheadWineEnglish, liter)(1)).toBeCloseTo(238.48, 1);
+    expect(forge(hogsheadBeerEnglish, liter)(1)).toBeCloseTo(249.55, 1);
+  });
+
+  it('ale firkin = 9 ale gallons ≈ 41.6 L', () => {
+    expect(forge(firkinAleEnglish, liter)(1)).toBeCloseTo(41.6, 1);
+  });
+
+  it('wine tun = 252 wine gallons = 4 wine hogsheads ≈ 953.9 L', () => {
+    const tunL = forge(tunWineEnglish, liter)(1);
+    expect(tunL).toBeCloseTo(953.9, 1);
+    const fourHogsheadsL = forge(hogsheadWineEnglish, liter)(4);
+    expect(fourHogsheadsL).toBeCloseTo(tunL, 6);
+  });
+});
+
+describe('kits/antiquity: English-historical — round-trip', () => {
+  const all = [
+    stoneWool,
+    stoneButcher,
+    stoneCheese,
+    gallonWineEnglish,
+    gallonAleEnglish,
+    hogsheadWineEnglish,
+    hogsheadBeerEnglish,
+    firkinAleEnglish,
+    tunWineEnglish,
+  ];
+
+  for (const u of all) {
+    it(`${u.id} round-trips via its canonical base`, () => {
+      const value = 8.4;
+      const out = u.fromBase(u.toBase(value));
+      expect(out).toBeCloseTo(value, 10);
+    });
+  }
 });
 
 describe('kits/antiquity: Japan-historical — reference values', () => {
