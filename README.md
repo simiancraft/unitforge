@@ -28,11 +28,19 @@
 
 ## Kits
 
-Three kits ship today; build your own for anything else (game state, finance, lab assays, factions). Each link below runs the kit live against the built package.
+Build your own for anything else (game state, finance, lab assays, factions). Each link below runs the kit live against the built package.
 
-- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume, angle; metric and imperial; 40+ derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment, perimeters, point coordinates).
-- [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; covers GB-vs-GiB and Gbit-vs-MB.
-- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): teaspoons, cups, the usual suspects, plus the Japanese gō, the Australian 20 mL tablespoon, sugar-comparison forges, and live recipe scaling.
+**Foundational (canonical atoms, one dimension each):**
+- **`length`**: SI + customary + astronomical (au, ly, parsec) + nautical (nmi) + crystallographic (Å).
+- **`volume`**: SI cubic + liter family + cubic imperial + fl oz US/UK + spoons + every cup variant a cookbook author has named.
+- **`mass`**: SI + US customary + Asian regional (jin PRC 500 g, jin HK 600 g, Singapore catty 604.79 g).
+- **`temperature`**: Kelvin + Celsius + Fahrenheit + Rankine.
+- **`data-storage`**: bytes (decimal and IEC binary), bits.
+
+**Composition / domain (re-export atoms + add domain-specific units):**
+- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): LENGTH + VOLUME re-exports + AREA + ANGLE atoms + 40+ shape derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment).
+- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): VOLUME + MASS + TEMPERATURE re-exports + cooking-tradition packaging (stick of butter, EU butter block, dash, pinch) + heat descriptors (low through high heat). Demo includes the soda-vs-sugar comparator and live recipe scaling.
+- **`antiquity`**: Units of Antiquity. ~60 atoms across 8 civilizations (Egyptian, Mesopotamian, Greek, Roman, Hebrew, Chinese, Japanese, English-historical). For historical research, classics translation, and numismatic / archaeological analysis. Not for clinical or commercial use.
 
 ## Quick start
 

@@ -256,6 +256,28 @@ describe('kits/antiquity: Egypt · round-trip', () => {
   }
 });
 
+describe('kits/antiquity: Mesopotamia · round-trip', () => {
+  const all = [
+    shusiMesopotamia,
+    kushMesopotamia,
+    nindanMesopotamia,
+    ushMesopotamia,
+    shekelBabylonian,
+    minaBabylonian,
+    talentBabylonian,
+    silaMesopotamia,
+    gurMesopotamia,
+  ];
+
+  for (const u of all) {
+    it(`${u.id} round-trips via its canonical base`, () => {
+      const value = 6.28;
+      const out = u.fromBase(u.toBase(value));
+      expect(out).toBeCloseTo(value, 10);
+    });
+  }
+});
+
 describe('kits/antiquity: Mesopotamia · reference values', () => {
   it('1 shusi ≈ 16.62 mm (Powell 1987 anchor)', () => {
     expect(forge(shusiMesopotamia, meter)(1)).toBeCloseTo(0.01662, 9);
@@ -570,6 +592,24 @@ describe('kits/antiquity: English-historical · reference values', () => {
     expect(tunL).toBeCloseTo(953.9, 1);
     const fourHogsheadsL = forge(hogsheadWineEnglish, liter)(4);
     expect(fourHogsheadsL).toBeCloseTo(tunL, 6);
+  });
+});
+
+describe('kits/antiquity: benchmark re-exports are exercised', () => {
+  // The barrel re-exports foot, inch, pound, meter, statuteMile,
+  // kilogram, and liter for JSDoc benchmarking phrases. Exercise
+  // each at least once so coverage tracks the re-export surface
+  // rather than treating it as dead code.
+  it('1 wool stone = 14 pounds (re-exported pound)', () => {
+    expect(forge(stoneWool, antiquity.pound)(1)).toBeCloseTo(14, 9);
+  });
+
+  it('1 royal cubit ≈ 20.62 inches (re-exported inch)', () => {
+    expect(forge(royalCubitEgypt, antiquity.inch)(1)).toBeCloseTo(20.614, 3);
+  });
+
+  it('1 ken ≈ 5.965 feet (re-exported foot)', () => {
+    expect(forge(kenJapan, antiquity.foot)(1)).toBeCloseTo(5.965, 3);
   });
 });
 
