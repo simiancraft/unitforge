@@ -1,12 +1,12 @@
 # unitforge
 
-> A units-of-measure library for arbitrary domains. Three primitives (`forge`, `defineUnit`, `defineConversion`) work against any dimension and unit a consumer (or kit author) declares. First-class custom dimensions for non-physical domains (game state, business metrics, simulation, packaging, factions); per-unit tree-shake; not just a physics library.
+> A units-of-measure library for arbitrary domains. Three primitives (`forge`, `defineUnit`, `defineConversion`) work against any dimension and unit a consumer (or kit author) declares. First-class custom dimensions for non-physical domains (game state, business metrics, simulation, packaging, factions); per-unit tree-shake; works as well for one Coke = N donuts as for SI units.
 
 unitforge is a TypeScript unit conversion library built around atomic named exports. It has no global registry, no bundled lookup table, and no fluent string-dispatch API. Your import graph is your runtime conversion graph, so production bundles include only the units and conversions you import.
 
 ## Status
 
-Published to npm. Public API is stable. The shipped surface is `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, plus the `Dimension`, `Unit`, `Conversion`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, and `ValidationFailure` types.
+Published to npm. Public API is stable. The shipped runtime surface is `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, `DEFAULT_MEMO_CAP`, and `MEMO_CAP_MAX`; types are `Dimension`, `Unit`, `Conversion`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, and `ValidationFailure`.
 
 ## Thesis
 
@@ -21,7 +21,7 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 
 ## Kits
 
-- `unitforge/kits/geometry`: LENGTH, AREA, VOLUME units (metric + imperial); cross-dim conversions for rectangle, square, circle area and box, cube, sphere, cylinder volume.
+- `unitforge/kits/geometry`: LENGTH, AREA, VOLUME, ANGLE units (metric + imperial; angle units cite BIPM SI Brochure 9th ed. and ISO 80000-3:2019); 20+ cross-dim derivations including rectangle, square, triangle (base+height, Heron's, equilateral), trapezoid, parallelogram, rhombus, kite, ellipse, annulus, sector, segment, regular polygon, cuboid, cube, sphere, cylinder area / volume / perimeter, plus polar↔cartesian and midpoint point-coordinate conversions.
 - `unitforge/kits/data-storage`: DATA units; decimal bytes (kilobyte through petabyte, ×1000), binary bytes (kibibyte through pebibyte, ×1024 per IEC 80000-13), bits (bit through gigabit, 1 bit = 1/8 byte).
 - `unitforge/kits/cooking`: VOLUME units across regional conventions (US customary, UK imperial, metric 250 mL, Australian 20 mL tablespoon, Japanese gō 180.39 mL / general 200 mL, Russian stakan 250 mL) plus US-tradition packaging (stick of butter, EU butter block 250 g volumetric, dash, pinch). Demo includes a soda-vs-food sugar comparator using a userland custom `'sugar'` dimension (one Coke ≈ 9.75 sugar cubes; one Coke ≈ 3.9 glazed donuts).
 
@@ -31,7 +31,7 @@ Every cross-dim `forge(...)` invocation runs this ordering:
 
 1. Defensive copy of input via `safeCopy` (rejects prototype-pollution keys `__proto__`, `constructor`, `prototype`).
 2. Cache check if `memoize > 0`. Cache key includes precision-rounded input values when `precision` is set.
-3. Run every validator on the RAW input (as the caller supplied it, in the caller's chosen units; NOT base-normalized): per-property validators from `via.validate` and the call-site `validate?` config, plus the optional `_all` validator that runs on the destructured raw-input object as a whole. Failures accumulate.
+3. Run every validator on the RAW input (as the caller supplied it, in the caller's chosen units; NOT base-normalized): per-property validators from `via.validate` and the call-site `validate?` config, plus the optional `_all` validator that runs on the destructured raw-input object as a whole. `_all` runs regardless of per-property outcomes; failures accumulate into a single `ValidationError`.
 4. Throw `ValidationError` if any validator failed. Each `ValidationFailure` includes the original `Error` (if a validator threw) on `failure.cause`.
 5. Normalize each input from its passed-in unit to base units via the unit's `toBase`.
 6. Run `compute` in base units.
@@ -56,7 +56,7 @@ All validators run on every call; failures aggregate into a single `ValidationEr
 
 `Dimension` is declared as `(typeof DIMENSIONS)[number] | (string & {})`. The `(string & {})` half is a known TypeScript trick: it's structurally identical to `string` but the union doesn't collapse to plain `string` during inference. Practical effect:
 
-- Built-in dimensions (`'length'`, `'area'`, `'volume'`, `'data'`) surface in autocomplete.
+- Built-in dimensions (`'length'`, `'area'`, `'volume'`, `'data'`, `'angle'`) surface in autocomplete.
 - User-defined dimensions (`'gold' as const`, `'arpygee/coin' as const`, etc.) are accepted without TypeScript complaining about a missing union member.
 - A passed string literal that doesn't match a built-in name is treated as a user-defined dimension, not an error.
 
@@ -81,7 +81,7 @@ The `arpy-gee-shop` demo (`demo/src/components/kits/forge/sections/arpy-gee-shop
 | Subpath | Exports |
 | --- | --- |
 | `unitforge` | API barrel: `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, `DEFAULT_MEMO_CAP`, `MEMO_CAP_MAX`, plus types |
-| `unitforge/dimensions` | `LENGTH`, `AREA`, `VOLUME`, `DATA`, `DIMENSIONS` tuple, `Dimension` type |
+| `unitforge/dimensions` | `LENGTH`, `AREA`, `VOLUME`, `DATA`, `ANGLE`, `DIMENSIONS` tuple, `Dimension` type |
 | `unitforge/kits/<kit>` | every unit and conversion shipped by `<kit>` |
 | `unitforge/validation` | `ValidationError`, `ValidationFailure` type |
 | `unitforge/version` | `VERSION: string` (read from `package.json` at runtime; on its own subpath because the JSON import would inline `package.json` into every consumer bundle) |

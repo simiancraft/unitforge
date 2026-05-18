@@ -30,7 +30,7 @@
 
 Three kits ship today; build your own for anything else (game state, finance, lab assays, factions). Each link below runs the kit live against the built package.
 
-- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume; metric and imperial; rectangle, circle, sphere, and cylinder derivations.
+- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume, angle; metric and imperial; 20+ derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment, perimeters, point coordinates).
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; covers GB-vs-GiB and Gbit-vs-MB.
 - [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): teaspoons, cups, the usual suspects, plus the Japanese gō, the Australian 20 mL tablespoon, sugar-comparison forges, and live recipe scaling.
 
@@ -58,6 +58,15 @@ const cokeCan   = defineUnit({ id: 'coke-can',   dimension: 'sugar', toBase: (n)
 const sugarCube = defineUnit({ id: 'sugar-cube', dimension: 'sugar', toBase: (n) => n * 4,  fromBase: (g) => g / 4  });
 
 forge(cokeCan, sugarCube)(1); // ≈ 9.75; one 12 oz Coke equals 9.75 sugar cubes
+```
+
+```ts
+import { forge } from 'unitforge';
+import { meter } from 'unitforge/kits/geometry';
+import { gigabyte } from 'unitforge/kits/data-storage';
+
+// @ts-expect-error: meter is length, gigabyte is data; mismatch caught at compile time.
+forge(meter, gigabyte)(5);
 ```
 
 ## Install
@@ -104,7 +113,7 @@ Production bundles pay only for what you actually import. Measured with `esbuild
 | `import * as g from 'unitforge/kits/geometry'` + everything from main barrel | 7.4 kB | **2.7 kB** |
 | `import { VERSION } from 'unitforge/version'` (opt-in, inlines `package.json`) | 2.2 kB | **1.0 kB** |
 
-**Tarball:** **≈ 118 kB packed** / 489 kB unpacked / 72 files (`npm pack`).
+**Tarball:** ≈ 118 kB packed / ≈ 490 kB unpacked / 72 files (`npm pack`); you pay for what you import, not what's on disk.
 
 ## Build your own
 
@@ -129,25 +138,29 @@ const handspan = defineUnit({
 
 ### 2. `defineConversion`
 
-Cross-dimensional recipes; inputs in, output out. Per-property validators and a cross-property `_all` validator both ship as first-class fields.
+Cross-dimensional recipes; inputs in, output out. Per-property validators run on one input at a time; the optional `_all` validator runs on the destructured object and is the only place to enforce relationships between inputs (e.g., the triangle inequality).
 
 ```ts
 import { defineConversion } from 'unitforge';
 
-const areaFromRectangle = defineConversion({
-  inputs: { length: 'length', width: 'length' },
+const triangleAreaFromSides = defineConversion({
+  inputs: { a: 'length', b: 'length', c: 'length' },
   output: 'area',
   validate: {
-    length: (v) => v > 0 || 'length must be positive',
-    width: (v) => v > 0 || 'width must be positive',
-    _all: ({ length, width }) =>
-      length / width < 100 || 'aspect ratio > 100:1 is probably a typo',
+    a: (v) => v > 0 || 'a must be positive',
+    b: (v) => v > 0 || 'b must be positive',
+    c: (v) => v > 0 || 'c must be positive',
+    _all: ({ a, b, c }) =>
+      (a + b > c && b + c > a && a + c > b) || 'sides violate the triangle inequality',
   },
-  compute: ({ length, width }) => length * width,
+  compute: ({ a, b, c }) => {
+    const s = (a + b + c) / 2; // Heron's
+    return Math.sqrt(s * (s - a) * (s - b) * (s - c));
+  },
 });
 ```
 
-The `output` field can also be an object (`{ length: 'length', width: 'length' }`) to forge to multiple values at once; useful for 2D scaling, RGBA decomposition, or any input-shape-equals-output-shape transformation.
+The `output` field can also be an object so one forge returns multiple values; the shipped `cartesianFromPolar` (`{ radius: 'length', angle: 'angle' } → { x: 'length', y: 'length' }`) is the canonical example.
 
 ### 3. `forge`
 
@@ -155,17 +168,17 @@ The converter is born. Forge it once; call it forever.
 
 ```ts
 import { forge } from 'unitforge';
-import { foot, squareFoot } from 'unitforge/kits/geometry';
+import { foot, squareFoot, areaFromRectangleLengthAndWidth } from 'unitforge/kits/geometry';
 
 // Within-dimension: handspan from above to foot.
 const inFeet = forge(handspan, foot);
 inFeet(12);  // 9.252
 
-// Cross-dimensional: two handspans piped through areaFromRectangle.
+// Cross-dimensional: two handspans piped through the kit's rectangle conversion.
 const inSqFt = forge(
   { length: handspan, width: handspan },
   squareFoot,
-  { via: areaFromRectangle },
+  { via: areaFromRectangleLengthAndWidth },
 );
 inSqFt({ length: 12, width: 8 });  // 57.066
 ```

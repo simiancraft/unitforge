@@ -8,6 +8,8 @@ This is the canonical location for attributions. New kits, demo dependencies, fo
 
 - **NIST SP 811:** SI / customary unit conversion factors (US fluid ounce = 29.5735295625 mL exactly; US gallon = 3.785411784 L exactly; etc.). Cited inline in `src/kits/cooking/units.ts` and the geometry kit.
 - **UK Weights and Measures Act 1985:** imperial gallon = 4.54609 L exactly; imperial fluid ounce = 1/160 imperial gallon. Cited inline in `src/kits/cooking/units.ts`.
+- **BIPM SI Brochure (9th ed.), Tables 4 and 8:** radian as the SI-coherent unit of plane angle; non-SI units accepted for use with the SI (degree, arcminute, arcsecond). Cited inline in `src/kits/geometry/units.ts` for the ANGLE units.
+- **ISO 80000-3:2019 §3-5:** plane angle (gradian, turn). Cited inline in `src/kits/geometry/units.ts`.
 - **USP General Chapter <17> (Prescription Container Labeling):** clinical 5 mL teaspoon convention. Cited in the cooking kit's module docstring as the carve-out for clinical-adjacent use.
 - **ISMP List of Error-Prone Abbreviations, Symbols, and Dose Designations:** referenced in the cooking kit's `dash` and `pinch` JSDocs as the reason those units are not safe for medication dosing.
 
