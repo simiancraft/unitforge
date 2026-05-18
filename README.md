@@ -172,7 +172,7 @@ import { foot, squareFoot, areaFromRectangleLengthAndWidth } from 'unitforge/kit
 
 // Within-dimension: handspan from above to foot.
 const inFeet = forge(handspan, foot);
-inFeet(12);  // 9.252
+inFeet(12);  // ≈ 9.252
 
 // Cross-dimensional: two handspans piped through the kit's rectangle conversion.
 const inSqFt = forge(
@@ -180,7 +180,7 @@ const inSqFt = forge(
   squareFoot,
   { via: areaFromRectangleLengthAndWidth },
 );
-inSqFt({ length: 12, width: 8 });  // 57.066
+inSqFt({ length: 12, width: 8 });  // ≈ 57.066
 ```
 
 See all three composed: the [ArPeeGee shop demo](https://simiancraft.github.io/unitforge/) runs two coin units in one dimension, a goods dimension, and one cross-dim forge from coins to shields. Same primitives, live.
@@ -214,7 +214,7 @@ A conversion value: input shape (field name to dimension), output (single dimens
 
 ## Types
 
-Re-exported from the root barrel: `Unit`, `Conversion`, `Dimension`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, `ValidationFailure`. Full type surface in [`llms.txt`](./llms.txt).
+Re-exported types from the root barrel: `Unit`, `Conversion`, `Dimension`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, `ValidationFailure`. Re-exported runtime values: `linear` (the helper), `ValidationError` (thrown when validators fail; aggregates a `ValidationFailure[]`), `DEFAULT_MEMO_CAP` (`1024`), `MEMO_CAP_MAX` (`1_048_576`). Full type surface in [`llms.txt`](./llms.txt).
 
 ## Development
 

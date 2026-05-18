@@ -21,7 +21,7 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 
 ## Kits
 
-- `unitforge/kits/geometry`: LENGTH, AREA, VOLUME, ANGLE units (metric + imperial; angle units cite BIPM SI Brochure 9th ed. and ISO 80000-3:2019); 20+ cross-dim derivations including rectangle, square, triangle (base+height, Heron's, equilateral), trapezoid, parallelogram, rhombus, kite, ellipse, annulus, sector, segment, regular polygon, cuboid, cube, sphere, cylinder area / volume / perimeter, plus polar↔cartesian and midpoint point-coordinate conversions.
+- `unitforge/kits/geometry`: LENGTH, AREA, VOLUME, ANGLE units (metric + imperial; angle units cite BIPM SI Brochure 9th ed. and ISO 80000-3:2019); 40+ derivations including rectangle, square, triangle (base+height, Heron's, equilateral), trapezoid, parallelogram, rhombus, kite, ellipse, annulus, sector, segment, regular polygon, cuboid, cube, sphere, cylinder area / volume / perimeter, plus `cartesianFromPolar` / `polarFromCartesian` (cross-dim point coordinates) and `midpointBetweenPoints` (within-dim).
 - `unitforge/kits/data-storage`: DATA units; decimal bytes (kilobyte through petabyte, ×1000), binary bytes (kibibyte through pebibyte, ×1024 per IEC 80000-13), bits (bit through gigabit, 1 bit = 1/8 byte).
 - `unitforge/kits/cooking`: VOLUME units across regional conventions (US customary, UK imperial, metric 250 mL, Australian 20 mL tablespoon, Japanese gō 180.39 mL / general 200 mL, Russian stakan 250 mL) plus US-tradition packaging (stick of butter, EU butter block 250 g volumetric, dash, pinch). Demo includes a soda-vs-food sugar comparator using a userland custom `'sugar'` dimension (one Coke ≈ 9.75 sugar cubes; one Coke ≈ 3.9 glazed donuts).
 
