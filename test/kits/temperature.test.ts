@@ -113,3 +113,50 @@ describe('kits/temperature: cooking-relevant oven temperatures', () => {
     expect(forge(fahrenheit, celsius)(500)).toBeCloseTo(260, 4);
   });
 });
+
+describe('kits/temperature: metrological + reference anchors', () => {
+  it('273.16 K (triple point of water) = 0.01 °C exactly', () => {
+    // The pre-2019 kelvin was defined by 1/273.16 of the thermodynamic
+    // temperature of the triple point of water; ITS-90 still uses it as
+    // a fixed point. Pin it so a future contributor can't "fix" 273.15
+    // to 273.16 in a moment of confusion.
+    expect(forge(kelvin, celsius)(273.16)).toBeCloseTo(0.01, 12);
+  });
+
+  it('293.15 K = 20 °C = 68 °F (NIST standard room temperature)', () => {
+    expect(forge(kelvin, celsius)(293.15)).toBeCloseTo(20, 12);
+    expect(forge(kelvin, fahrenheit)(293.15)).toBeCloseTo(68, 9);
+  });
+
+  it('298.15 K = 25 °C = 77 °F (standard ambient temperature)', () => {
+    expect(forge(kelvin, celsius)(298.15)).toBeCloseTo(25, 12);
+    expect(forge(kelvin, fahrenheit)(298.15)).toBeCloseTo(77, 9);
+  });
+
+  it('310.15 K = 37 °C = 98.6 °F (standard human body temperature)', () => {
+    expect(forge(kelvin, celsius)(310.15)).toBeCloseTo(37, 12);
+    expect(forge(kelvin, fahrenheit)(310.15)).toBeCloseTo(98.6, 6);
+  });
+});
+
+describe('kits/temperature: Rankine direct conversions (not via kelvin)', () => {
+  it('491.67 °R = 32 °F (direct; water freezing)', () => {
+    // Rankine ↔ Fahrenheit is an offset: °F = °R − 459.67. If a
+    // refactor doubled the 5/9 factor anywhere in the closure pair,
+    // this assertion would catch it where the kelvin-routed tests
+    // would not.
+    expect(forge(rankine, fahrenheit)(491.67)).toBeCloseTo(32, 9);
+  });
+
+  it('671.67 °R = 212 °F (direct; water boiling)', () => {
+    expect(forge(rankine, fahrenheit)(671.67)).toBeCloseTo(212, 9);
+  });
+
+  it('0 °R = -459.67 °F (direct; absolute zero)', () => {
+    expect(forge(rankine, fahrenheit)(0)).toBeCloseTo(-459.67, 9);
+  });
+
+  it('491.67 °R = 0 °C (direct; water freezing)', () => {
+    expect(forge(rankine, celsius)(491.67)).toBeCloseTo(0, 9);
+  });
+});
