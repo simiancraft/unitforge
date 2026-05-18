@@ -1,3 +1,10 @@
+## [3.2.2](https://github.com/simiancraft/unitforge/compare/v3.2.1...v3.2.2) (2026-05-18)
+
+
+### Features
+
+* **demo:** rename "forge a shield" → "The ArPeeGee Shop"; add crossed-swords + shield icon ([5caa33d](https://github.com/simiancraft/unitforge/commit/5caa33d4f6ccfd7f7ad05899b168aefa3b4c2dbf))
+
 ## [3.2.1](https://github.com/simiancraft/unitforge/compare/v3.2.0...v3.2.1) (2026-05-17)
 
 
