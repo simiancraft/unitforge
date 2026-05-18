@@ -326,9 +326,11 @@ export const cupJapaneseRice = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 180.39e-6,
 });
 
-/** Japanese general-cooking cup; 200 mL exactly per Japanese Industrial
- *  Standards JIS S 2052. The everyday cup for non-rice ingredients in
- *  Japanese cookbooks. */
+/** Japanese general-cooking cup; 200 mL exactly. The everyday Japanese
+ *  cookbook measure for non-rice ingredients, distinct from the 180.39
+ *  mL `cupJapaneseRice` (gō). 200 mL is the modern convention across
+ *  Japanese culinary publications; the unit is not formally defined by
+ *  a JIS standard so far as the kit author can verify. */
 export const cupJapaneseGeneral = /*#__PURE__*/ defineUnit({
   id: 'cup-japanese-general',
   label: 'Japanese Cooking Cup (200 mL)',

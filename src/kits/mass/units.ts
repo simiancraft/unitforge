@@ -19,11 +19,14 @@
 //     14 lb. Each derives from the lb factor for canonical exactness.
 //
 // Regional disambiguation for Chinese catty:
-//   - 1 jin PRC = 500 g exactly (GB/T 17710-1999, the modern PRC
-//     standard).
-//   - 1 jin HK / Taiwan / Singapore (historical Imperial Chinese
-//     catty) = 600 g exactly. Conflating the two ruins a recipe or a
-//     wholesale order; ship them as separate units, never aliased.
+//   - 1 jin PRC (市斤, shìjīn) = 500 g exactly, by PRC metrology
+//     convention (the "market jin" derived from the kilogram = 公斤).
+//   - 1 jin HK / Taiwan (historical Imperial Chinese catty, 司馬斤) =
+//     600 g exactly.
+//   - 1 catty Singapore / Malaysia = 604.79 g (statutory; 1⅓ lb
+//     avoirdupois exactly). Not the same as the 600 g HK catty.
+// Conflating any of the three ruins a recipe or a wholesale order;
+// ship them as separate units, never aliased.
 
 import { defineUnit } from '../../define.js';
 import { MASS } from '../../dimensions.js';
@@ -154,8 +157,10 @@ export const longTon = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / (LB_KG * 2240),
 });
 
-/** Jin (PRC mainland); 1 jin = 500 g exactly per GB/T 17710-1999. The
- *  modern PRC standard catty. */
+/** Jin (PRC mainland; 市斤, shìjīn); 1 jin = 500 g exactly. The modern
+ *  PRC "market jin," defined by post-1959 PRC metrology reform as
+ *  exactly 0.5 kg (= 1/2 公斤 / kilogram). Subdivided into 10 liǎng
+ *  (taels) of 50 g, not the historical 16. */
 export const jinPrc = /*#__PURE__*/ defineUnit({
   id: 'jin-prc',
   label: 'Jin (PRC, 500 g)',
@@ -165,15 +170,30 @@ export const jinPrc = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 0.5,
 });
 
-/** Jin / catty (HK, Taiwan, Singapore); 1 jin = 600 g exactly. The
- *  historical Imperial Chinese catty preserved in HK / Taiwan /
- *  Singapore markets. 20% larger than the PRC jin; conflating them on
- *  a wholesale produce order costs real money. */
+/** Jin / catty (HK, Taiwan; 司馬斤, sī mǎ jīn); 1 jin = 600 g exactly.
+ *  The historical Imperial Chinese catty preserved in HK and Taiwan
+ *  markets. 20% larger than the PRC jin; conflating them on a
+ *  wholesale produce order costs real money. NOT the Singapore /
+ *  Malaysia statutory catty (604.79 g); see `cattySg`. */
 export const jinHk = /*#__PURE__*/ defineUnit({
   id: 'jin-hk',
-  label: 'Jin / Catty (HK, Taiwan, Singapore; 600 g)',
+  label: 'Jin / Catty (HK, Taiwan; 600 g)',
   symbol: '斤 (HK)',
   dimension: MASS,
   toBase: (v) => v * 0.6,
   fromBase: (b) => b / 0.6,
+});
+
+/** Catty (Singapore / Malaysia); 1 catty = 604.79 g exactly. Singapore
+ *  Weights and Measures Act statutory derivation: 1⅓ lb avoirdupois =
+ *  4/3 × 0.45359237 kg ≈ 0.60479 kg. Used in Singapore and Malaysian
+ *  wet markets. The 0.8% gap from `jinHk` (600 g) and the 21% gap from
+ *  `jinPrc` (500 g) both bite if conflated. */
+export const cattySg = /*#__PURE__*/ defineUnit({
+  id: 'catty-sg',
+  label: 'Catty (Singapore / Malaysia, 604.79 g)',
+  symbol: 'catty (SG)',
+  dimension: MASS,
+  toBase: (v) => v * ((LB_KG * 4) / 3),
+  fromBase: (b) => b / ((LB_KG * 4) / 3),
 });

@@ -57,7 +57,7 @@ export const kilometer = /*#__PURE__*/ defineUnit({
  * 1 in = 0.0254 m (exact via the 1959 international yard and pound
  * agreement). The kit does not ship a US survey inch; the US survey
  * foot / inch series was deprecated by NIST on 2023-01-01
- * (Federal Register Vol. 84, No. 184).
+ * (84 FR 55562, October 17, 2019; Federal Register doc. 2019-22414).
  */
 export const inch = /*#__PURE__*/ defineUnit({
   id: 'inch',
@@ -71,8 +71,8 @@ export const inch = /*#__PURE__*/ defineUnit({
 /**
  * 1 ft = 0.3048 m (= 12 × 0.0254; exact via the 1959 international yard
  * and pound agreement). The US survey foot (0.30480 060 96... m) is not
- * shipped here; NIST deprecated it as of 2023-01-01 per Federal Register
- * Vol. 84, No. 184.
+ * shipped here; NIST deprecated it as of 2023-01-01 (84 FR 55562,
+ * October 17, 2019).
  */
 export const foot = /*#__PURE__*/ defineUnit({
   id: 'foot',
@@ -100,7 +100,7 @@ export const yard = /*#__PURE__*/ defineUnit({
  * The international (statute) mile. Disambiguated from `nauticalMile`
  * (1852 m exactly per the IHO 1929 convention); confusing them is a
  * 15.1% error. The kit does NOT ship the US survey mile (deprecated by
- * NIST on 2023-01-01 per Federal Register Vol. 84, No. 184).
+ * NIST on 2023-01-01; 84 FR 55562, October 17, 2019).
  */
 export const statuteMile = /*#__PURE__*/ defineUnit({
   id: 'statute-mile',

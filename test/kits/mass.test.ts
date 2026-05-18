@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { forge } from '../../src/index.js';
 import {
+  cattySg,
   gram,
   jinHk,
   jinPrc,
@@ -29,6 +30,7 @@ describe('kits/mass: per-unit shape', () => {
     longTon,
     jinPrc,
     jinHk,
+    cattySg,
   ];
 
   for (const u of all) {
@@ -107,6 +109,17 @@ describe('kits/mass: conversion factors', () => {
     const prcInKg = forge(jinPrc, kilogram)(1);
     const hkInKg = forge(jinHk, kilogram)(1);
     expect(hkInKg / prcInKg).toBeCloseTo(1.2, 12);
+  });
+
+  it('1 Singapore catty = 1⅓ lb avoirdupois = 0.60479 kg', () => {
+    expect(forge(cattySg, kilogram)(1)).toBeCloseTo(0.60479, 4);
+    expect(forge(cattySg, pound)(1)).toBeCloseTo(4 / 3, 12);
+  });
+
+  it('Singapore catty and jin HK differ by ~0.8%', () => {
+    const sgInKg = forge(cattySg, kilogram)(1);
+    const hkInKg = forge(jinHk, kilogram)(1);
+    expect(sgInKg / hkInKg).toBeCloseTo(1.008, 3);
   });
 });
 
