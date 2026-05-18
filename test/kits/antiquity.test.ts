@@ -10,6 +10,15 @@ import {
   amphoraRomana,
   aureusAugustan,
   bathHebrew,
+  cattyHan,
+  cattyQingKuping,
+  chiHan,
+  chiMing,
+  chiQingHaiguan,
+  chiQingYingzao,
+  chiSong,
+  chiTangLarge,
+  chiTangSmall,
   choenixAttic,
   chousAttic,
   commonCubitHebrew,
@@ -19,6 +28,7 @@ import {
   denariusAugustan,
   digitEgypt,
   digitusRomanus,
+  douHan,
   drachmaAttic,
   ephahHebrew,
   gurMesopotamia,
@@ -54,6 +64,7 @@ import {
   shekelBabylonian,
   shekelHebrewCommon,
   shekelTyrian,
+  shengHan,
   shortCubitEgypt,
   shusiMesopotamia,
   silaMesopotamia,
@@ -447,6 +458,65 @@ describe('kits/antiquity: Hebrew — reference values', () => {
     expect(forge(seahHebrew, liter)(3)).toBeCloseTo(22, 6);
     expect(forge(korHebrew, liter)(1)).toBeCloseTo(220, 4);
   });
+});
+
+describe('kits/antiquity: China-historical — reference values', () => {
+  it('Han chi = 0.231 m (Qin Shi Huang 221 BCE standardization)', () => {
+    expect(forge(chiHan, meter)(1)).toBe(0.231);
+  });
+
+  it('Tang small chi 0.247 m vs Tang large chi 0.296 m (5:6 ratio)', () => {
+    expect(forge(chiTangSmall, meter)(1)).toBe(0.247);
+    expect(forge(chiTangLarge, meter)(1)).toBe(0.296);
+    const ratio = forge(chiTangLarge, meter)(1) / forge(chiTangSmall, meter)(1);
+    expect(ratio).toBeCloseTo(1.198, 2); // ≈ 6/5
+  });
+
+  it('chi monotonically drifts upward through dynasties (Han < Song < Ming < Qing yingzao)', () => {
+    expect(forge(chiHan, meter)(1)).toBeLessThan(forge(chiSong, meter)(1));
+    expect(forge(chiSong, meter)(1)).toBeLessThan(forge(chiMing, meter)(1));
+    expect(forge(chiMing, meter)(1)).toBeLessThan(forge(chiQingYingzao, meter)(1));
+  });
+
+  it('Qing customs chi (0.358 m) is ~12% larger than Qing yingzao chi', () => {
+    expect(forge(chiQingHaiguan, meter)(1)).toBe(0.358);
+    const ratio = forge(chiQingHaiguan, meter)(1) / forge(chiQingYingzao, meter)(1);
+    expect(ratio).toBeCloseTo(1.119, 2);
+  });
+
+  it('Han catty ≈ 0.25 kg; Qing kuping catty ≈ 0.59682 kg', () => {
+    expect(forge(cattyHan, kilogram)(1)).toBe(0.25);
+    expect(forge(cattyQingKuping, kilogram)(1)).toBe(0.59682);
+  });
+
+  it('Han sheng = 0.2 L; Han dou = 10 sheng', () => {
+    expect(forge(shengHan, liter)(1)).toBeCloseTo(0.2, 9);
+    expect(forge(douHan, liter)(1)).toBeCloseTo(2, 9);
+  });
+});
+
+describe('kits/antiquity: China-historical — round-trip', () => {
+  const all = [
+    chiHan,
+    chiTangSmall,
+    chiTangLarge,
+    chiSong,
+    chiMing,
+    chiQingYingzao,
+    chiQingHaiguan,
+    cattyHan,
+    cattyQingKuping,
+    shengHan,
+    douHan,
+  ];
+
+  for (const u of all) {
+    it(`${u.id} round-trips via its canonical base`, () => {
+      const value = 4.2;
+      const out = u.fromBase(u.toBase(value));
+      expect(out).toBeCloseTo(value, 10);
+    });
+  }
 });
 
 describe('kits/antiquity: Hebrew — round-trip', () => {
