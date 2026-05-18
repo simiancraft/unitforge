@@ -29,5 +29,6 @@ export { kilogram, pound } from '../mass/units.js';
 export { liter } from '../volume/units.js';
 export * from './egypt.js';
 export * from './greece.js';
+export * from './hebrew.js';
 export * from './mesopotamia.js';
 export * from './rome.js';

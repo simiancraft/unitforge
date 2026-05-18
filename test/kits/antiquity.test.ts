@@ -9,8 +9,10 @@ import {
   actusRomanus,
   amphoraRomana,
   aureusAugustan,
+  bathHebrew,
   choenixAttic,
   chousAttic,
+  commonCubitHebrew,
   congiusRomanus,
   cubitusRomanus,
   debenEgypt,
@@ -18,9 +20,13 @@ import {
   digitEgypt,
   digitusRomanus,
   drachmaAttic,
+  ephahHebrew,
   gurMesopotamia,
+  handbreadthHebrew,
   heqatEgypt,
   hinEgypt,
+  hinHebrew,
+  korHebrew,
   kushMesopotamia,
   libraRomana,
   medimnosAttic,
@@ -30,6 +36,7 @@ import {
   minaBabylonian,
   modiusRomanus,
   nindanMesopotamia,
+  omerHebrew,
   orgyiaAttic,
   palmEgypt,
   palmusRomanus,
@@ -41,16 +48,22 @@ import {
   pousOlympic,
   qedetEgypt,
   royalCubitEgypt,
+  royalCubitHebrew,
+  seahHebrew,
   sextariusRomanus,
   shekelBabylonian,
+  shekelHebrewCommon,
+  shekelTyrian,
   shortCubitEgypt,
   shusiMesopotamia,
   silaMesopotamia,
   solidusConstantinian,
+  spanHebrew,
   stadionAttic,
   stadionOlympic,
   talentAttic,
   talentBabylonian,
+  talentHebrew,
   tetradrachmAttic,
   unciaLengthRomanus,
   unciaMassRomana,
@@ -379,6 +392,83 @@ describe('kits/antiquity: Rome — round-trip', () => {
   for (const u of all) {
     it(`${u.id} round-trips via its canonical base`, () => {
       const value = 2.71828;
+      const out = u.fromBase(u.toBase(value));
+      expect(out).toBeCloseTo(value, 10);
+    });
+  }
+});
+
+describe('kits/antiquity: Hebrew — reference values', () => {
+  it('1 common cubit ≈ 0.444 m (Hezekiah Tunnel reconstruction)', () => {
+    expect(forge(commonCubitHebrew, meter)(1)).toBeCloseTo(0.444, 9);
+  });
+
+  it('1 royal cubit ≈ 0.518 m (Ezek. 40:5 great cubit)', () => {
+    expect(forge(royalCubitHebrew, meter)(1)).toBeCloseTo(0.518, 9);
+  });
+
+  it('1 handbreadth = 1/6 common cubit; 1 span = 1/2 common cubit', () => {
+    const cubitM = forge(commonCubitHebrew, meter)(1);
+    expect(forge(handbreadthHebrew, meter)(6)).toBeCloseTo(cubitM, 12);
+    expect(forge(spanHebrew, meter)(2)).toBeCloseTo(cubitM, 12);
+  });
+
+  it('1 common shekel ≈ 11.4 g', () => {
+    expect(forge(shekelHebrewCommon, kilogram)(1)).toBeCloseTo(11.4e-3, 12);
+  });
+
+  it('1 Tyrian shekel ≈ 14.4 g silver (NT temple-tax coin)', () => {
+    expect(forge(shekelTyrian, kilogram)(1)).toBeCloseTo(14.4e-3, 12);
+  });
+
+  it('1 talent (kikkar) = 3000 common shekels ≈ 34.2 kg (Ex. 38:25-26)', () => {
+    expect(forge(talentHebrew, kilogram)(1)).toBeCloseTo(0.0114 * 3000, 9);
+    const talentInKg = forge(talentHebrew, kilogram)(1);
+    const threeThousandShekelsInKg = forge(shekelHebrewCommon, kilogram)(3000);
+    expect(talentInKg).toBeCloseTo(threeThousandShekelsInKg, 9);
+  });
+
+  it('Hebrew talent (34.2 kg) > Babylonian talent (30 kg) > Attic talent (25.86 kg)', () => {
+    const hebrew = forge(talentHebrew, kilogram)(1);
+    const babylonian = forge(talentBabylonian, kilogram)(1);
+    const attic = forge(talentAttic, kilogram)(1);
+    expect(hebrew).toBeGreaterThan(babylonian);
+    expect(babylonian).toBeGreaterThan(attic);
+  });
+
+  it('bath = ephah (Ezek. 45:11)', () => {
+    expect(forge(bathHebrew, liter)(1)).toBeCloseTo(forge(ephahHebrew, liter)(1), 12);
+  });
+
+  it('1 bath ≈ 22 L; 1 hin = 1/6 bath; 1 omer = 1/10 ephah; 1 seah = 1/3 ephah; 1 kor = 10 ephah', () => {
+    expect(forge(bathHebrew, liter)(1)).toBeCloseTo(22, 6);
+    expect(forge(hinHebrew, liter)(6)).toBeCloseTo(22, 6);
+    expect(forge(omerHebrew, liter)(10)).toBeCloseTo(22, 6);
+    expect(forge(seahHebrew, liter)(3)).toBeCloseTo(22, 6);
+    expect(forge(korHebrew, liter)(1)).toBeCloseTo(220, 4);
+  });
+});
+
+describe('kits/antiquity: Hebrew — round-trip', () => {
+  const all = [
+    commonCubitHebrew,
+    royalCubitHebrew,
+    handbreadthHebrew,
+    spanHebrew,
+    shekelHebrewCommon,
+    shekelTyrian,
+    talentHebrew,
+    bathHebrew,
+    ephahHebrew,
+    hinHebrew,
+    omerHebrew,
+    seahHebrew,
+    korHebrew,
+  ];
+
+  for (const u of all) {
+    it(`${u.id} round-trips via its canonical base`, () => {
+      const value = 1.618;
       const out = u.fromBase(u.toBase(value));
       expect(out).toBeCloseTo(value, 10);
     });
