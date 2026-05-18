@@ -120,7 +120,10 @@ export const squareFoot = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 0.09290304,
 });
 
-/** 1 acre = 4046.8564224 m² (= 4840 yd²; exact). */
+/** 1 acre = 4046.8564224 m² (= 4840 yd²; exact via the international
+ *  yard). The kit does NOT ship the US survey acre (≈ 4046.872 m²);
+ *  the US survey foot / acre series was deprecated by NIST on
+ *  2023-01-01 (84 FR 55562, October 17, 2019). */
 export const acre = /*#__PURE__*/ defineUnit({
   id: 'acre',
   label: 'Acre',

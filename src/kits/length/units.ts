@@ -141,7 +141,13 @@ export const nanometer = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1e-9,
 });
 
-/** 1 Å = 1e-10 m (exact). IUPAC Gold Book; non-SI, accepted for crystallography. */
+/**
+ * 1 Å = 1e-10 m (exact). Non-SI; BIPM removed the ångström from SI
+ * Brochure Table 8 in the 8th edition (2006) and the 9th edition
+ * (2019) does not list it. Still in active use in crystallography
+ * and X-ray spectroscopy (IUPAC Gold Book continues to define it);
+ * ship for that domain, not as a recommended SI-adjacent unit.
+ */
 export const angstrom = /*#__PURE__*/ defineUnit({
   id: 'angstrom',
   label: 'Ångström',
@@ -168,8 +174,10 @@ export const mil = /*#__PURE__*/ defineUnit({
 });
 
 /**
- * 1 nmi = 1852 m (exact). International Hydrographic Organization, 1929
- * (Monaco); BIPM SI Brochure 9th ed. Table 8.
+ * 1 nmi = 1852 m (exact). International Hydrographic Bureau (now IHO),
+ * 1929 (Monaco); BIPM SI Brochure 9th ed. Table 8. US and international
+ * nautical mile have been identical since 1954 (the US adopted the
+ * 1852 m value, replacing 1853.248 m); no separate US variant ships.
  *
  * Distinct from the statute mile (`mile` = 1609.344 m). Ship both because
  * marine and aviation specifications are in nautical miles; survey and
@@ -219,8 +227,10 @@ export const astronomicalUnit = /*#__PURE__*/ defineUnit({
  * (365.25 days) times c (299 792 458 m/s).
  *
  * Distinct from the Gregorian light-year (≈ 9.461 × 10¹⁵ m, derived from
- * the 365.2425-day Gregorian year); the Julian form is the astronomical
- * convention and the value shipped here.
+ * the 365.2425-day Gregorian year) and the tropical-year light-year
+ * (~365.24219 days at J2000.0, the more common confusion in published
+ * ephemerides; 6-25 ppm gap from the Julian form). The Julian form is
+ * the IAU Style Manual convention and the value shipped here.
  */
 export const lightYear = /*#__PURE__*/ defineUnit({
   id: 'light-year',

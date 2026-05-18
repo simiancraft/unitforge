@@ -72,6 +72,7 @@ export {
   cupJapaneseRice,
   cupMetric250,
   cupRussianStakan,
+  cupRussianStakanSmall,
   cupUk,
   cupUs,
   cupUsLegal240,

@@ -302,8 +302,12 @@ export const cupUk = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / (UK_FL_OZ_M3 * 10),
 });
 
-/** Metric cup; 250 mL exactly. AU/NZ/CA/EU convention. 4.2% larger
- *  than `cupUsLegal240` (240 mL); compounds in baking. */
+/** Metric cup; 250 mL exactly. AU/NZ/CA/EU convention. Named
+ *  traditions resolving to this value: Australian metric cup
+ *  (Standards Australia AS 1349), Canadian cup (Metric Commission
+ *  Canada 1976), modern UK metric cup, Mexican taza, most modern EU
+ *  cookbooks. 4.2% larger than `cupUsLegal240` (240 mL); compounds
+ *  in baking. */
 export const cupMetric250 = /*#__PURE__*/ defineUnit({
   id: 'cup-metric-250',
   label: 'Metric Cup (250 mL)',
@@ -313,10 +317,13 @@ export const cupMetric250 = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 250e-6,
 });
 
-/** Japanese rice cup; 1 gō (合) = 180.39 mL exactly. 1/10 shō per
- *  Toyotomi Hideyoshi's 1582-98 land survey; the unit a rice cooker
- *  measures when you pour "1 rice cup" of dry rice. Every Japanese
- *  rice cooker ships with a 180 mL measuring cup marked "1 合". */
+/** Japanese rice cup; 1 gō (合) = 180.39 mL exactly. 1/10 shō; shō
+ *  fixed by Japan's Meiji-era Weights and Measures Act 1891 (度量衡法)
+ *  at 2401/1331000 m³ exact, giving gō at exactly 2401/13310000 m³ ≈
+ *  180.39 mL. The earlier Hideyoshi-era kyō-masu shō (Taikō kenchi,
+ *  1582-98) was ~1.74 L; the modern value is Meiji, not Toyotomi.
+ *  Every Japanese rice cooker ships with a 180 mL measuring cup
+ *  marked "1 合". */
 export const cupJapaneseRice = /*#__PURE__*/ defineUnit({
   id: 'cup-japanese-rice',
   label: 'Japanese Rice Cup (合, gō)',
@@ -341,10 +348,9 @@ export const cupJapaneseGeneral = /*#__PURE__*/ defineUnit({
 });
 
 /** Russian stakan (стакан); 250 mL modern standard, formalized by GOST
- *  7176-77 for the graneny faceted glass. 250 mL when filled to the
- *  rim; 200 mL ("small stakan", Tsarist teacup tradition) when filled
- *  to the lower facet. Modern Russian cookbooks use 250 mL; this
- *  ships that value. */
+ *  7176-77 for the граненый стакан (graneny / faceted glass, Vera
+ *  Mukhina design, Gus-Khrustalny 1943). 250 mL when filled to the
+ *  rim. Modern Russian cookbooks use this value. */
 export const cupRussianStakan = /*#__PURE__*/ defineUnit({
   id: 'cup-russian-stakan',
   label: 'Russian Stakan (250 mL)',
@@ -352,4 +358,19 @@ export const cupRussianStakan = /*#__PURE__*/ defineUnit({
   dimension: VOLUME,
   toBase: (v) => v * 250e-6,
   fromBase: (b) => b / 250e-6,
+});
+
+/** Russian small stakan (тонкий стакан, "thin stakan"); 200 mL,
+ *  measured to the lower facet of the graneny glass ("до риски" /
+ *  "to the line"). Soviet-era and modern Russian baking convention
+ *  (Pokhlyobkin, Molokhovets-tradition cookbooks). 20% smaller than
+ *  the rim-measure `cupRussianStakan` (250 mL); the gap is
+ *  recipe-breaking and parallels the US-vs-UK cup pattern. */
+export const cupRussianStakanSmall = /*#__PURE__*/ defineUnit({
+  id: 'cup-russian-stakan-small',
+  label: 'Russian Small Stakan (200 mL, lower-facet measure)',
+  symbol: 'stakan (small)',
+  dimension: VOLUME,
+  toBase: (v) => v * 200e-6,
+  fromBase: (b) => b / 200e-6,
 });

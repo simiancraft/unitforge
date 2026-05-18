@@ -124,7 +124,11 @@ export const pound = /*#__PURE__*/ defineUnit({
 
 /** Stone; 1 st = 14 lb = 6.35029318 kg. UK bodyweight unit; survives
  *  in UK cookery (joint of meat) and in clinical bodyweight reporting
- *  in some Commonwealth contexts. */
+ *  in some Commonwealth contexts. The 14 lb stone is the post-1835
+ *  statutory value (British Weights and Measures Act 1835); historical
+ *  English stones varied by trade (8 lb butcher's, 14 lb wool, 16 lb
+ *  cheese), legislated to a single value by that act. Pre-1835 variants
+ *  live in kits/antiquity. */
 export const stone = /*#__PURE__*/ defineUnit({
   id: 'stone',
   label: 'Stone',
@@ -174,7 +178,12 @@ export const jinPrc = /*#__PURE__*/ defineUnit({
  *  The historical Imperial Chinese catty preserved in HK and Taiwan
  *  markets. 20% larger than the PRC jin; conflating them on a
  *  wholesale produce order costs real money. NOT the Singapore /
- *  Malaysia statutory catty (604.79 g); see `cattySg`. */
+ *  Malaysia statutory catty (604.79 g); see `cattySg`. The modern
+ *  600 g rounding sits on top of Qing-era provincial variance: the
+ *  imperial 庫平 (kùpíng) catty was ~596.8 g at the Beijing court,
+ *  the customs-treaty 海關 (Hǎiguān) catty was ~604.79 g (which
+ *  Singapore inherited via the Straits Settlements). Pre-modern
+ *  variants live in kits/antiquity. */
 export const jinHk = /*#__PURE__*/ defineUnit({
   id: 'jin-hk',
   label: 'Jin / Catty (HK, Taiwan; 600 g)',
