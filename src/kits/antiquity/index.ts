@@ -31,5 +31,6 @@ export * from './china.js';
 export * from './egypt.js';
 export * from './greece.js';
 export * from './hebrew.js';
+export * from './japan.js';
 export * from './mesopotamia.js';
 export * from './rome.js';

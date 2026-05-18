@@ -31,11 +31,14 @@ import {
   douHan,
   drachmaAttic,
   ephahHebrew,
+  goHideyoshi,
   gurMesopotamia,
   handbreadthHebrew,
   heqatEgypt,
   hinEgypt,
   hinHebrew,
+  joJapan,
+  kenJapan,
   korHebrew,
   kushMesopotamia,
   libraRomana,
@@ -57,14 +60,18 @@ import {
   pousDoric,
   pousOlympic,
   qedetEgypt,
+  riJapanEdo,
   royalCubitEgypt,
   royalCubitHebrew,
   seahHebrew,
   sextariusRomanus,
+  shakuKaneJaku,
+  shakuKujiraJaku,
   shekelBabylonian,
   shekelHebrewCommon,
   shekelTyrian,
   shengHan,
+  shoHideyoshi,
   shortCubitEgypt,
   shusiMesopotamia,
   silaMesopotamia,
@@ -72,6 +79,7 @@ import {
   spanHebrew,
   stadionAttic,
   stadionOlympic,
+  sunJapan,
   talentAttic,
   talentBabylonian,
   talentHebrew,
@@ -458,6 +466,68 @@ describe('kits/antiquity: Hebrew — reference values', () => {
     expect(forge(seahHebrew, liter)(3)).toBeCloseTo(22, 6);
     expect(forge(korHebrew, liter)(1)).toBeCloseTo(220, 4);
   });
+});
+
+describe('kits/antiquity: Japan-historical — reference values', () => {
+  it('1 kane-jaku = 10/33 m exactly (Meiji 1875)', () => {
+    expect(forge(shakuKaneJaku, meter)(33)).toBeCloseTo(10, 12);
+  });
+
+  it('1 kujira-jaku = 25/66 m = 5/4 kane-jaku exactly', () => {
+    expect(forge(shakuKujiraJaku, meter)(66)).toBeCloseTo(25, 12);
+    const ratio = forge(shakuKujiraJaku, meter)(1) / forge(shakuKaneJaku, meter)(1);
+    expect(ratio).toBeCloseTo(1.25, 12);
+  });
+
+  it('1 sun = 1/10 shaku; 1 ken = 6 shaku; 1 jō = 10 shaku', () => {
+    const shakuM = forge(shakuKaneJaku, meter)(1);
+    expect(forge(sunJapan, meter)(10)).toBeCloseTo(shakuM, 12);
+    expect(forge(kenJapan, meter)(1)).toBeCloseTo(shakuM * 6, 12);
+    expect(forge(joJapan, meter)(1)).toBeCloseTo(shakuM * 10, 12);
+  });
+
+  it('1 ri Edo ≈ 3927.3 m (36 chō × 60 ken × 6 shaku)', () => {
+    expect(forge(riJapanEdo, meter)(1)).toBeCloseTo(3927.27, 1);
+  });
+
+  it('1 ri Edo ≈ 2.44 statute miles', () => {
+    expect(forge(riJapanEdo, statuteMile)(1)).toBeCloseTo(2.44, 2);
+  });
+
+  it('1 shō Hideyoshi ≈ 1.74 L; ~3.5% smaller than modern Meiji shō', () => {
+    expect(forge(shoHideyoshi, liter)(1)).toBeCloseTo(1.74, 6);
+    const hideyoshiL = forge(shoHideyoshi, liter)(1);
+    const meijiShoL = 1.8039;
+    const gap = (meijiShoL - hideyoshiL) / meijiShoL;
+    expect(gap).toBeCloseTo(0.0354, 3);
+  });
+
+  it('1 gō Hideyoshi = 1/10 shō Hideyoshi', () => {
+    const shoL = forge(shoHideyoshi, liter)(1);
+    const tenGoL = forge(goHideyoshi, liter)(10);
+    expect(tenGoL).toBeCloseTo(shoL, 12);
+  });
+});
+
+describe('kits/antiquity: Japan-historical — round-trip', () => {
+  const all = [
+    shakuKaneJaku,
+    shakuKujiraJaku,
+    sunJapan,
+    kenJapan,
+    joJapan,
+    riJapanEdo,
+    shoHideyoshi,
+    goHideyoshi,
+  ];
+
+  for (const u of all) {
+    it(`${u.id} round-trips via its canonical base`, () => {
+      const value = 5.5;
+      const out = u.fromBase(u.toBase(value));
+      expect(out).toBeCloseTo(value, 10);
+    });
+  }
 });
 
 describe('kits/antiquity: China-historical — reference values', () => {
