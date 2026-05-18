@@ -14,17 +14,29 @@
  *  foundational kits.
  *
  *  Re-exports from foundational kits: the kit selectively re-exports
- *  `meter`, `kilogram`, `pound`, `liter`, and `statuteMile` so that
- *  benchmarking phrases in JSDoc ("1 stadion ≈ 185 m, about 1/8
- *  mile") and consumer code can pull both an ancient unit and a
- *  familiar modern anchor from the same subpath. JS identity is
- *  preserved per the foundational-kit refactor invariant.
+ *  `meter`, `foot`, `inch`, `statuteMile`, `kilogram`, `pound`, and
+ *  `liter` so that benchmarking phrases in JSDoc ("1 stadion ≈ 185
+ *  m, about 1/8 mile") and consumer code can pull both an ancient
+ *  unit and a familiar modern anchor from the same subpath. JS
+ *  identity is preserved per the foundational-kit refactor
+ *  invariant.
+ *
+ *  Out of scope: this kit is NOT for clinical, pharmaceutical, or
+ *  nutritional use. Every antiquity MASS atom (deben, drachma,
+ *  shekel, denarius, libra, talent, etc.) shares `dimension: MASS`
+ *  with the modern kits/mass surface, so the type system allows
+ *  `forge(drachmaAttic, milligram)` without complaint. The atoms
+ *  here are for historical research, classics translation,
+ *  numismatic inventory, and archaeological analysis; reach for
+ *  `kits/mass` (clinical-dosing surface), a future `kits/apothecary`
+ *  (apothecary survivals via troy ounce / scruple / grain), or
+ *  custom dimensions if you need clinical-pathway math.
  */
 
-export { meter, statuteMile } from '../length/units.js';
-
 // Benchmarking anchors from foundational kits (re-exported for
-// consumer convenience; JS identity preserved).
+// consumer convenience; JS identity preserved). The list grows when
+// a new JSDoc benchmarking phrase needs an anchor that isn't here.
+export { foot, inch, meter, statuteMile } from '../length/units.js';
 export { kilogram, pound } from '../mass/units.js';
 export { liter } from '../volume/units.js';
 export * from './china.js';

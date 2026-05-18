@@ -111,9 +111,12 @@ describe('kits/antiquity: kit-level invariants', () => {
   // by name; a silently-overlapping id would still type-check but
   // would break Map<id, Unit> consumers and any serialization round-
   // trip. Collect every Unit re-exported through the barrel and
-  // assert id uniqueness.
+  // assert id uniqueness. The base-true check below excludes
+  // foundational re-exports (meter / kilogram / liter etc. retain
+  // their `base: true` flag; only kit-native units are expected to
+  // be non-base).
   const exported = Object.values(antiquity as Record<string, unknown>);
-  const units = exported.filter(
+  const allUnits = exported.filter(
     (v) =>
       typeof v === 'object' &&
       v !== null &&
@@ -121,20 +124,33 @@ describe('kits/antiquity: kit-level invariants', () => {
       typeof (v as { id: unknown }).id === 'string',
   ) as Array<{ id: string; base?: true }>;
 
+  // Foundational re-exports the antiquity barrel surfaces for
+  // benchmarking; they keep their original `base: true` flag.
+  const FOUNDATIONAL_REEXPORT_IDS = new Set([
+    'meter',
+    'kilogram',
+    'liter',
+    'pound',
+    'statute-mile',
+    'foot',
+    'inch',
+  ]);
+  const nativeUnits = allUnits.filter((u) => !FOUNDATIONAL_REEXPORT_IDS.has(u.id));
+
   it('all antiquity unit ids are globally unique within the kit', () => {
-    const ids = units.map((u) => u.id);
+    const ids = allUnits.map((u) => u.id);
     const uniqueIds = new Set(ids);
     expect(uniqueIds.size).toBe(ids.length);
   });
 
-  it('no antiquity unit claims base: true (no kit-private base dimension)', () => {
-    for (const u of units) {
+  it('no kit-native antiquity unit claims base: true', () => {
+    for (const u of nativeUnits) {
       expect(u.base).toBeUndefined();
     }
   });
 });
 
-describe('kits/antiquity: Egypt — shape', () => {
+describe('kits/antiquity: Egypt · shape', () => {
   const lengthUnits = [royalCubitEgypt, shortCubitEgypt, palmEgypt, digitEgypt];
   const massUnits = [debenEgypt, qedetEgypt];
   const volumeUnits = [heqatEgypt, hinEgypt];
@@ -166,7 +182,7 @@ describe('kits/antiquity: Egypt — shape', () => {
   });
 });
 
-describe('kits/antiquity: Egypt — reference values', () => {
+describe('kits/antiquity: Egypt · reference values', () => {
   it('1 royal cubit ≈ 0.5236 m (mean of surviving rulers)', () => {
     expect(forge(royalCubitEgypt, meter)(1)).toBeCloseTo(0.5236, 9);
   });
@@ -210,7 +226,7 @@ describe('kits/antiquity: Egypt — reference values', () => {
   });
 });
 
-describe('kits/antiquity: Egypt — benchmarking against modern', () => {
+describe('kits/antiquity: Egypt · benchmarking against modern', () => {
   it('Great Pyramid base side (440 cubits) ≈ 230.4 m, about 0.143 statute mile', () => {
     const sideInM = forge(royalCubitEgypt, meter)(440);
     expect(sideInM).toBeCloseTo(230.4, 1);
@@ -219,7 +235,7 @@ describe('kits/antiquity: Egypt — benchmarking against modern', () => {
   });
 });
 
-describe('kits/antiquity: Egypt — round-trip', () => {
+describe('kits/antiquity: Egypt · round-trip', () => {
   const all = [
     royalCubitEgypt,
     shortCubitEgypt,
@@ -240,7 +256,7 @@ describe('kits/antiquity: Egypt — round-trip', () => {
   }
 });
 
-describe('kits/antiquity: Mesopotamia — reference values', () => {
+describe('kits/antiquity: Mesopotamia · reference values', () => {
   it('1 shusi ≈ 16.62 mm (Powell 1987 anchor)', () => {
     expect(forge(shusiMesopotamia, meter)(1)).toBeCloseTo(0.01662, 9);
   });
@@ -294,7 +310,7 @@ describe('kits/antiquity: Mesopotamia vs Greece talent disambiguation', () => {
   });
 });
 
-describe('kits/antiquity: Greece — reference values', () => {
+describe('kits/antiquity: Greece · reference values', () => {
   it('1 Olympic stadion = 192.27 m exactly (measured Olympia track)', () => {
     expect(forge(stadionOlympic, meter)(1)).toBe(192.27);
   });
@@ -357,7 +373,7 @@ describe('kits/antiquity: Greece — reference values', () => {
   });
 });
 
-describe('kits/antiquity: Rome — reference values', () => {
+describe('kits/antiquity: Rome · reference values', () => {
   it('1 pes Romanus ≈ 0.2957 m', () => {
     expect(forge(pesRomanus, meter)(1)).toBeCloseTo(0.2957, 9);
   });
@@ -405,8 +421,9 @@ describe('kits/antiquity: Rome — reference values', () => {
     expect(forge(unciaMassRomana, kilogram)(12)).toBeCloseTo(0.32745, 9);
   });
 
-  it('1 aureus Augustan = 1/40 libra ≈ 7.97 g', () => {
-    expect(forge(aureusAugustan, kilogram)(40)).toBeCloseTo(0.32745, 9);
+  it('1 aureus Augustan = 1/42 libra ≈ 7.80 g (RIC I)', () => {
+    expect(forge(aureusAugustan, kilogram)(42)).toBeCloseTo(0.32745, 9);
+    expect(forge(aureusAugustan, kilogram)(1)).toBeCloseTo(7.796e-3, 5);
   });
 
   it('1 solidus Constantinian = 1/72 libra ≈ 4.55 g', () => {
@@ -428,7 +445,7 @@ describe('kits/antiquity: Rome — reference values', () => {
   });
 });
 
-describe('kits/antiquity: Rome — round-trip', () => {
+describe('kits/antiquity: Rome · round-trip', () => {
   const all = [
     pesRomanus,
     pesDrusianus,
@@ -459,7 +476,7 @@ describe('kits/antiquity: Rome — round-trip', () => {
   }
 });
 
-describe('kits/antiquity: Hebrew — reference values', () => {
+describe('kits/antiquity: Hebrew · reference values', () => {
   it('1 common cubit ≈ 0.444 m (Hezekiah Tunnel reconstruction)', () => {
     expect(forge(commonCubitHebrew, meter)(1)).toBeCloseTo(0.444, 9);
   });
@@ -510,7 +527,7 @@ describe('kits/antiquity: Hebrew — reference values', () => {
   });
 });
 
-describe('kits/antiquity: English-historical — reference values', () => {
+describe('kits/antiquity: English-historical · reference values', () => {
   it('wool stone = 14 lb (sole legal stone since 1835)', () => {
     expect(forge(stoneWool, kilogram)(1)).toBeCloseTo(0.45359237 * 14, 12);
   });
@@ -556,7 +573,7 @@ describe('kits/antiquity: English-historical — reference values', () => {
   });
 });
 
-describe('kits/antiquity: English-historical — round-trip', () => {
+describe('kits/antiquity: English-historical · round-trip', () => {
   const all = [
     stoneWool,
     stoneButcher,
@@ -578,7 +595,7 @@ describe('kits/antiquity: English-historical — round-trip', () => {
   }
 });
 
-describe('kits/antiquity: Japan-historical — reference values', () => {
+describe('kits/antiquity: Japan-historical · reference values', () => {
   it('1 kane-jaku = 10/33 m exactly (Meiji 1875)', () => {
     expect(forge(shakuKaneJaku, meter)(33)).toBeCloseTo(10, 12);
   });
@@ -619,7 +636,7 @@ describe('kits/antiquity: Japan-historical — reference values', () => {
   });
 });
 
-describe('kits/antiquity: Japan-historical — round-trip', () => {
+describe('kits/antiquity: Japan-historical · round-trip', () => {
   const all = [
     shakuKaneJaku,
     shakuKujiraJaku,
@@ -640,7 +657,7 @@ describe('kits/antiquity: Japan-historical — round-trip', () => {
   }
 });
 
-describe('kits/antiquity: China-historical — reference values', () => {
+describe('kits/antiquity: China-historical · reference values', () => {
   it('Han chi = 0.231 m (Qin Shi Huang 221 BCE standardization)', () => {
     expect(forge(chiHan, meter)(1)).toBe(0.231);
   });
@@ -675,7 +692,7 @@ describe('kits/antiquity: China-historical — reference values', () => {
   });
 });
 
-describe('kits/antiquity: China-historical — round-trip', () => {
+describe('kits/antiquity: China-historical · round-trip', () => {
   const all = [
     chiHan,
     chiTangSmall,
@@ -699,7 +716,7 @@ describe('kits/antiquity: China-historical — round-trip', () => {
   }
 });
 
-describe('kits/antiquity: Hebrew — round-trip', () => {
+describe('kits/antiquity: Hebrew · round-trip', () => {
   const all = [
     commonCubitHebrew,
     royalCubitHebrew,
@@ -725,7 +742,7 @@ describe('kits/antiquity: Hebrew — round-trip', () => {
   }
 });
 
-describe('kits/antiquity: Greece — round-trip', () => {
+describe('kits/antiquity: Greece · round-trip', () => {
   const all = [
     pousAttic,
     pousDoric,

@@ -49,7 +49,7 @@ export const royalCubitEgypt = /*#__PURE__*/ defineUnit({
 export const shortCubitEgypt = /*#__PURE__*/ defineUnit({
   id: 'short-cubit-egypt',
   label: 'Egyptian Short Cubit',
-  symbol: 'meh-niwt',
+  symbol: 'mh nḏs',
   dimension: LENGTH,
   toBase: (v) => v * (PALM_M * 6),
   fromBase: (b) => b / (PALM_M * 6),

@@ -28,7 +28,11 @@ import { LENGTH, MASS, VOLUME } from '../../dimensions.js';
 //   Bath/ephah ≈ 22 L (archaeological storage jars + Ezek. 45:11
 //     equivalence).
 const COMMON_CUBIT_M = 0.444;
-const ROYAL_CUBIT_HEBREW_M = 0.518;
+// Ezekiel 40:5 defines the royal cubit as "a cubit and a handbreadth"
+// = 7 handbreadths = 7/6 common cubit. Derive the constant from the
+// common-cubit anchor to keep the documented relationship live in
+// code; the derived value is 0.518 m exact.
+const ROYAL_CUBIT_HEBREW_M = (COMMON_CUBIT_M * 7) / 6;
 const COMMON_SHEKEL_KG = 11.4e-3;
 const BATH_M3 = 22e-3;
 

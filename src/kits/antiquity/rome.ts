@@ -42,7 +42,7 @@ export const pesRomanus = /*#__PURE__*/ defineUnit({
 
 /** Pes Drusianus; ~0.3325 m. The "Drusian foot," a provincial
  *  Roman foot standard used in surveying north of the Alps
- *  (Germania, named for Nero Claudius Drusus). 12.5% larger than
+ *  (Germania, named for Nero Claudius Drusus). ~12% larger than
  *  the standard pes Romanus; appears in Limes-Germanicus
  *  fortification surveys. */
 export const pesDrusianus = /*#__PURE__*/ defineUnit({
@@ -138,9 +138,11 @@ export const actusRomanus = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / (PES_ROMANUS_M * 120),
 });
 
-/** Roman libra (pound); ~327.45 g (Augustan reconstruction from
- *  surviving bronze and lead libra weights). 12 unciae per libra.
- *  The libra mass drifted across Roman history; this is the
+/** Roman libra (pound); 327.45 g per Wilson 2008 reconstruction
+ *  from surviving bronze and lead libra weights; Duncan-Jones 1994
+ *  (*Money and Government in the Roman Empire*) cross-references
+ *  the value via Augustan denarius silver content. 12 unciae per
+ *  libra. The libra drifted across Roman history; this is the
  *  Augustan / Early Imperial standard reference. */
 export const libraRomana = /*#__PURE__*/ defineUnit({
   id: 'libra-romana',
@@ -179,17 +181,19 @@ export const denariusAugustan = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 3.9e-3,
 });
 
-/** Roman aureus (Augustan, gold); 7.97 g = 1/40 libra. The standard
- *  Augustan gold coin; 25 denarii per aureus by official decree
- *  though the silver-to-gold ratio fluctuated with commodity
- *  supply. */
+/** Roman aureus (Augustan, gold); 1/42 libra ≈ 7.80 g per the 23 BCE
+ *  Augustan reform standard (RIC I; Crawford). 25 denarii per aureus
+ *  by official decree though the silver-to-gold ratio fluctuated
+ *  with commodity supply. The Neronian reform of 64 CE shifted the
+ *  aureus to 1/45 libra (~7.27 g); ship that as `aureusNeronian` if
+ *  later-empire numismatic context demands. */
 export const aureusAugustan = /*#__PURE__*/ defineUnit({
   id: 'aureus-augustan',
   label: 'Roman Aureus (Augustan, gold)',
   symbol: 'aureus',
   dimension: MASS,
-  toBase: (v) => v * (LIBRA_KG / 40),
-  fromBase: (b) => b / (LIBRA_KG / 40),
+  toBase: (v) => v * (LIBRA_KG / 42),
+  fromBase: (b) => b / (LIBRA_KG / 42),
 });
 
 /** Roman solidus (Constantinian, gold); 4.55 g = 1/72 libra.
