@@ -30,9 +30,9 @@
 
 Three kits ship today; build your own for anything else (game state, finance, lab assays, factions). Each link below runs the kit live against the built package.
 
-- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume; metric and imperial; rectangle, circle, sphere, and cylinder derivations.
+- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume, angle; metric and imperial; 40+ derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment, perimeters, point coordinates).
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; covers GB-vs-GiB and Gbit-vs-MB.
-- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): teaspoons, teacups, the usual suspects, but also international units, sugar comparisons, live recipe scaling, and more.
+- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): teaspoons, cups, the usual suspects, plus the Japanese gō, the Australian 20 mL tablespoon, sugar-comparison forges, and live recipe scaling.
 
 ## Quick start
 
@@ -60,13 +60,33 @@ const sugarCube = defineUnit({ id: 'sugar-cube', dimension: 'sugar', toBase: (n)
 forge(cokeCan, sugarCube)(1); // ≈ 9.75; one 12 oz Coke equals 9.75 sugar cubes
 ```
 
+```ts
+import { forge } from 'unitforge';
+import { meter } from 'unitforge/kits/geometry';
+import { gigabyte } from 'unitforge/kits/data-storage';
+
+// @ts-expect-error: meter is length, gigabyte is data; mismatch caught at compile time.
+forge(meter, gigabyte)(5);
+```
+
+## Install
+
+```sh
+bun add unitforge
+pnpm add unitforge
+yarn add unitforge
+npm install unitforge
+```
+
+Requires Node 22+, ESM-only (`"type": "module"`), TypeScript `moduleResolution: "node16" | "nodenext" | "bundler"`.
+
 ## Scope
 
-Library only. ESM only. Node 22+. No CJS build; no peer dependencies. Three functions, deliberately; not three hundred kits.
+Library only. ESM only. Node 22+. No CJS build; no peer dependencies. Three primitives, not three hundred kits.
 
 ## vs. `convert-units`
 
-`convert-units` is the incumbent ([~185k weekly downloads](https://www.npmjs.com/package/convert-units)); same problem space, different philosophy. **unitforge catches dimension mismatches at compile time and ships cross-dimensional recipes; `convert-units` does neither, today or in `3.x`.**
+`convert-units` is the incumbent ([over 100k weekly downloads](https://www.npmjs.com/package/convert-units)); same problem space, different philosophy. unitforge catches dimension mismatches at compile time and ships cross-dimensional recipes; `convert-units` does neither, today or in `3.x`.
 
 | | `convert-units` 2.3.4 | `convert-units` 3.0.0-beta | **unitforge** |
 | --- | --- | --- | --- |
@@ -93,22 +113,11 @@ Production bundles pay only for what you actually import. Measured with `esbuild
 | `import * as g from 'unitforge/kits/geometry'` + everything from main barrel | 7.4 kB | **2.7 kB** |
 | `import { VERSION } from 'unitforge/version'` (opt-in, inlines `package.json`) | 2.2 kB | **1.0 kB** |
 
-**Tarball:** **≈ 52 kB packed** / 230 kB unpacked / 64 files (`npm pack`).
-
-## Install
-
-```sh
-bun add unitforge
-pnpm add unitforge
-yarn add unitforge
-npm install unitforge
-```
-
-Requires Node 22+, ESM-only (`"type": "module"`), TypeScript `moduleResolution: "node16" | "nodenext" | "bundler"`.
+**Tarball:** ≈ 118 kB packed / ≈ 490 kB unpacked / 72 files (`npm pack`); you pay for what you import, not what's on disk.
 
 ## Build your own
 
-Three primitives. Here's each one. The integrated version is the [ArPeeGee shop](https://simiancraft.github.io/unitforge/) (RPG shop with coins, goods, and a coins-to-shields forge) at the bottom of this page.
+Three primitives. Here's each one. The integrated version is the [ArPeeGee shop](https://simiancraft.github.io/unitforge/) demo on the live site (RPG shop with coins, goods, and a coins-to-shields forge).
 
 ### 1. `defineUnit`
 
@@ -129,17 +138,29 @@ const handspan = defineUnit({
 
 ### 2. `defineConversion`
 
-Cross-dimensional recipes; inputs in, output out.
+Cross-dimensional recipes; inputs in, output out. Per-property validators run on one input at a time; the optional `_all` validator runs on the destructured object and is the only place to enforce relationships between inputs (e.g., the triangle inequality).
 
 ```ts
 import { defineConversion } from 'unitforge';
 
-const areaFromRectangle = defineConversion({
-  inputs: { length: 'length', width: 'length' },
+const triangleAreaFromSides = defineConversion({
+  inputs: { a: 'length', b: 'length', c: 'length' },
   output: 'area',
-  compute: ({ length, width }) => length * width,
+  validate: {
+    a: (v) => v > 0 || 'a must be positive',
+    b: (v) => v > 0 || 'b must be positive',
+    c: (v) => v > 0 || 'c must be positive',
+    _all: ({ a, b, c }) =>
+      (a + b > c && b + c > a && a + c > b) || 'sides violate the triangle inequality',
+  },
+  compute: ({ a, b, c }) => {
+    const s = (a + b + c) / 2; // Heron's
+    return Math.sqrt(s * (s - a) * (s - b) * (s - c));
+  },
 });
 ```
+
+The `output` field can also be an object so one forge returns multiple values; the shipped `cartesianFromPolar` (`{ radius: 'length', angle: 'angle' } → { x: 'length', y: 'length' }`) is the canonical example.
 
 ### 3. `forge`
 
@@ -147,22 +168,24 @@ The converter is born. Forge it once; call it forever.
 
 ```ts
 import { forge } from 'unitforge';
-import { foot, squareFoot } from 'unitforge/kits/geometry';
+import { foot, squareFoot, areaFromRectangleLengthAndWidth } from 'unitforge/kits/geometry';
 
 // Within-dimension: handspan from above to foot.
 const inFeet = forge(handspan, foot);
-inFeet(12);  // 9.252
+inFeet(12);  // ≈ 9.252
 
-// Cross-dimensional: two handspans piped through areaFromRectangle.
+// Cross-dimensional: two handspans piped through the kit's rectangle conversion.
 const inSqFt = forge(
   { length: handspan, width: handspan },
   squareFoot,
-  { via: areaFromRectangle },
+  { via: areaFromRectangleLengthAndWidth },
 );
-inSqFt({ length: 12, width: 8 });  // 57.066
+inSqFt({ length: 12, width: 8 });  // ≈ 57.066
 ```
 
-**See all three composed:** the [ArPeeGee shop demo](https://simiancraft.github.io/unitforge/) runs two coin units in one dimension, a goods dimension, and one cross-dim forge from coins to shields. Same code, live.
+See all three composed: the [ArPeeGee shop demo](https://simiancraft.github.io/unitforge/) runs two coin units in one dimension, a goods dimension, and one cross-dim forge from coins to shields. Same primitives, live.
+
+For multiplicative units (handspans, pints, miles), the exported `linear(scale)` helper builds the `{ toBase, fromBase }` pair so you can spread it in: `defineUnit({ ...spec, ...linear(0.235) })`. Userland convenience only; kit-shipped units inline closures (the spread defeats per-export tree-shake).
 
 ## API
 
@@ -191,7 +214,7 @@ A conversion value: input shape (field name to dimension), output (single dimens
 
 ## Types
 
-Re-exported from the root barrel: `Unit`, `Conversion`, `Dimension`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, `ValidationFailure`. Full type surface in [`llms.txt`](./llms.txt).
+Re-exported types from the root barrel: `Unit`, `Conversion`, `Dimension`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, `ValidationFailure`. Re-exported runtime values: `linear` (the helper), `ValidationError` (thrown when validators fail; aggregates a `ValidationFailure[]`), `DEFAULT_MEMO_CAP` (`1024`), `MEMO_CAP_MAX` (`1_048_576`). Full type surface in [`llms.txt`](./llms.txt).
 
 ## Development
 

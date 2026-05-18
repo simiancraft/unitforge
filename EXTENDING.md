@@ -15,7 +15,7 @@ Three categories of kit exist; they have different authoring rules. Decide which
 
 ### Foundational kits
 
-Canonical units in a well-known dimension. The base layer; other kits compose from them. Today: `geometry` (LENGTH + AREA + VOLUME units + 2D shape derivations), `solid-geometry` (3D shape derivations; imports units from `geometry`), `data-storage` (DATA). Future scope: `mass`, `time`, `thermodynamics`, `electromagnetism`, `force-and-energy`, `velocity`, `currency`.
+Canonical units in a well-known dimension. The base layer; other kits compose from them. Today: `geometry` (LENGTH + AREA + VOLUME + ANGLE units + 2D and 3D shape derivations and point-coordinate conversions), `data-storage` (DATA), `cooking` (VOLUME). Future scope: `mass`, `time`, `temperature`, `thermodynamics`, `electromagnetism`, `force-and-energy`, `velocity`, `currency`.
 
 Authoring rules:
 - **Canon-correct.** Every `toBase` factor matches an authoritative source (NIST, IEC 80000, ISO, BIPM, IEEE). Wrong values in a foundational kit propagate through every downstream consumer.
@@ -39,11 +39,11 @@ Authoring rules:
 
 Invented dimensions for fictional or in-universe domains. Mostly self-contained; their dimensions do not overlap with foundational kits.
 
-Examples: `battletech` (TONNAGE, DAMAGE, HEAT, MP, BV, C-BILLS), the bundled crouton teaching demo in the forge kit (COUNT with wheat/ore/city). Future possibilities: `dnd-currency` (copper / silver / gold / platinum, 1:10 scaling), `sci-fi-power-levels` (Kardashev scale), `magic-mana`.
+Examples: the ArPeeGee shop demo (`demo/src/components/kits/forge/sections/arpy-gee-shop.tsx`) with `arpygee/coin` and `arpygee/goods` dimensions. Future possibilities: `battletech` (TONNAGE, DAMAGE, HEAT, MP, BV, C-BILLS), `dnd-currency` (copper / silver / gold / platinum, 1:10 scaling), `sci-fi-power-levels` (Kardashev scale), `magic-mana`.
 
 Authoring rules:
 - **Invent dimensions freely.** `defineUnit` and `defineConversion` treat user-defined dimensions as first-class; this is the proof-of-abstraction category.
-- **Prefix dimension names with the universe** to avoid collision (`battletech-heat`, not just `heat`).
+- **Prefix dimension names with the universe** to avoid collision (`battletech/heat`, not just `heat`).
 - **Cite the source material**: rulebook edition, record sheets, canon publication. For BattleTech specifically: edition (3025 / TR&O / TW / TM / ilClan) and tech base (Inner Sphere / Clan) matter; the grognard reviewer is relentless about this.
 - **Reviewer pairing**: the appropriate genre lens (battletech-grognard for BattleTech, antiquary for historical metrology, etc.). The architect is optional here because the kit is not composing from anything.
 
@@ -61,7 +61,7 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
    - Add it to `src/dimensions.ts` as `export const X = 'x' as const;` with a JSDoc canonical-base-unit note.
    - Append it to the `DIMENSIONS` tuple at the bottom of that file. The type union picks it up.
    - Dimensions are part of the public API; do not rename after release.
-   - If you only need existing dimensions (LENGTH, AREA, VOLUME, DATA), skip this step.
+   - If you only need existing dimensions (LENGTH, AREA, VOLUME, DATA, ANGLE), skip this step.
 
 2. **Create the kit directory.** `src/kits/<kit>/` with three files:
    - `units.ts`: every unit as a named export.

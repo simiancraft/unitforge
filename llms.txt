@@ -1,12 +1,12 @@
 # unitforge
 
-> A units-of-measure library for arbitrary domains. Three primitives (`forge`, `defineUnit`, `defineConversion`) work against any dimension and unit a consumer (or kit author) declares. First-class custom dimensions for non-physical domains (game state, business metrics, simulation, packaging, factions); per-unit tree-shake; not just a physics library.
+> A units-of-measure library for arbitrary domains. Three primitives (`forge`, `defineUnit`, `defineConversion`) work against any dimension and unit a consumer (or kit author) declares. First-class custom dimensions for non-physical domains (game state, business metrics, simulation, packaging, factions); per-unit tree-shake; works as well for one Coke = N donuts as for SI units.
 
 unitforge is a TypeScript unit conversion library built around atomic named exports. It has no global registry, no bundled lookup table, and no fluent string-dispatch API. Your import graph is your runtime conversion graph, so production bundles include only the units and conversions you import.
 
 ## Status
 
-Published to npm. Public API is stable. The shipped surface is `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, plus the `Dimension`, `Unit`, `Conversion`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, and `ValidationFailure` types.
+Published to npm. Public API is stable. The shipped runtime surface is `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, `DEFAULT_MEMO_CAP`, and `MEMO_CAP_MAX`; types are `Dimension`, `Unit`, `Conversion`, `ForgeInput`, `ForgeOutput`, `UnitMap`, `ValidatorMap`, and `ValidationFailure`.
 
 ## Thesis
 
@@ -21,7 +21,7 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 
 ## Kits
 
-- `unitforge/kits/geometry`: LENGTH, AREA, VOLUME units (metric + imperial); cross-dim conversions for rectangle, square, circle area and box, cube, sphere, cylinder volume.
+- `unitforge/kits/geometry`: LENGTH, AREA, VOLUME, ANGLE units (metric + imperial; angle units cite BIPM SI Brochure 9th ed. and ISO 80000-3:2019); 40+ derivations including rectangle, square, triangle (base+height, Heron's, equilateral), trapezoid, parallelogram, rhombus, kite, ellipse, annulus, sector, segment, regular polygon, cuboid, cube, sphere, cylinder area / volume / perimeter, plus `cartesianFromPolar` / `polarFromCartesian` (cross-dim point coordinates) and `midpointBetweenPoints` (within-dim).
 - `unitforge/kits/data-storage`: DATA units; decimal bytes (kilobyte through petabyte, ×1000), binary bytes (kibibyte through pebibyte, ×1024 per IEC 80000-13), bits (bit through gigabit, 1 bit = 1/8 byte).
 - `unitforge/kits/cooking`: VOLUME units across regional conventions (US customary, UK imperial, metric 250 mL, Australian 20 mL tablespoon, Japanese gō 180.39 mL / general 200 mL, Russian stakan 250 mL) plus US-tradition packaging (stick of butter, EU butter block 250 g volumetric, dash, pinch). Demo includes a soda-vs-food sugar comparator using a userland custom `'sugar'` dimension (one Coke ≈ 9.75 sugar cubes; one Coke ≈ 3.9 glazed donuts).
 
@@ -31,7 +31,7 @@ Every cross-dim `forge(...)` invocation runs this ordering:
 
 1. Defensive copy of input via `safeCopy` (rejects prototype-pollution keys `__proto__`, `constructor`, `prototype`).
 2. Cache check if `memoize > 0`. Cache key includes precision-rounded input values when `precision` is set.
-3. Run every validator: per-property validators from `via.validate` and the call-site `validate?` config, plus the optional `_all` validator that runs on the destructured input object as a whole. Failures accumulate.
+3. Run every validator on the RAW input (as the caller supplied it, in the caller's chosen units; NOT base-normalized): per-property validators from `via.validate` and the call-site `validate?` config, plus the optional `_all` validator that runs on the destructured raw-input object as a whole. `_all` runs regardless of per-property outcomes; failures accumulate into a single `ValidationError`.
 4. Throw `ValidationError` if any validator failed. Each `ValidationFailure` includes the original `Error` (if a validator threw) on `failure.cause`.
 5. Normalize each input from its passed-in unit to base units via the unit's `toBase`.
 6. Run `compute` in base units.
@@ -44,7 +44,7 @@ Within-dim forges skip the conversion lookup, the validator gauntlet, and the in
 
 ## Validator contract
 
-A validator receives the already-normalized-to-base-units value for its key (per-property) or the destructured input object (for `_all`). Return convention:
+A validator receives the input value AS THE CALLER SUPPLIED IT (in the caller's chosen unit, not base-normalized) for its key (per-property), or the destructured raw-input object for `_all`. Return convention:
 
 - `true` or `undefined`: pass.
 - `string`: reject with that string as the failure message.
@@ -56,7 +56,7 @@ All validators run on every call; failures aggregate into a single `ValidationEr
 
 `Dimension` is declared as `(typeof DIMENSIONS)[number] | (string & {})`. The `(string & {})` half is a known TypeScript trick: it's structurally identical to `string` but the union doesn't collapse to plain `string` during inference. Practical effect:
 
-- Built-in dimensions (`'length'`, `'area'`, `'volume'`, `'data'`) surface in autocomplete.
+- Built-in dimensions (`'length'`, `'area'`, `'volume'`, `'data'`, `'angle'`) surface in autocomplete.
 - User-defined dimensions (`'gold' as const`, `'arpygee/coin' as const`, etc.) are accepted without TypeScript complaining about a missing union member.
 - A passed string literal that doesn't match a built-in name is treated as a user-defined dimension, not an error.
 
@@ -81,7 +81,7 @@ The `arpy-gee-shop` demo (`demo/src/components/kits/forge/sections/arpy-gee-shop
 | Subpath | Exports |
 | --- | --- |
 | `unitforge` | API barrel: `forge`, `defineUnit`, `defineConversion`, `linear`, `ValidationError`, `DEFAULT_MEMO_CAP`, `MEMO_CAP_MAX`, plus types |
-| `unitforge/dimensions` | `LENGTH`, `AREA`, `VOLUME`, `DATA`, `DIMENSIONS` tuple, `Dimension` type |
+| `unitforge/dimensions` | `LENGTH`, `AREA`, `VOLUME`, `DATA`, `ANGLE`, `DIMENSIONS` tuple, `Dimension` type |
 | `unitforge/kits/<kit>` | every unit and conversion shipped by `<kit>` |
 | `unitforge/validation` | `ValidationError`, `ValidationFailure` type |
 | `unitforge/version` | `VERSION: string` (read from `package.json` at runtime; on its own subpath because the JSON import would inline `package.json` into every consumer bundle) |
@@ -98,9 +98,9 @@ The `arpy-gee-shop` demo (`demo/src/components/kits/forge/sections/arpy-gee-shop
 
 Three categories of kit; each has different authoring rules. Decide which a new kit is before opening the directory.
 
-1. **Foundational**: canonical units in a well-known dimension. Today: `geometry` (LENGTH + AREA + VOLUME units + 2D shape derivations), `solid-geometry` (3D shape derivations; imports units from `geometry`), `data-storage` (DATA). Future: `mass`, `time`, `thermodynamics`, `electromagnetism`, `force-and-energy`, `velocity`, `currency`. Must be canon-correct (NIST / IEC / ISO / BIPM / IEEE values), comprehensive within the dimension, and JSDoc-cite the standard. Reviewer pairing: domain expert (geometer / pharmacist / data-hoarder / mrp-planner / astrometrist / antiquary / color-scientist) plus architect for surface coherence.
+1. **Foundational**: canonical units in a well-known dimension. Today: `geometry` (LENGTH + AREA + VOLUME + ANGLE units + 2D and 3D shape derivations and point-coordinate conversions), `data-storage` (DATA), `cooking` (VOLUME). Future: `mass`, `time`, `temperature`, `thermodynamics`, `electromagnetism`, `force-and-energy`, `velocity`, `currency`. Must be canon-correct (NIST / IEC / ISO / BIPM / IEEE values), comprehensive within the dimension, and JSDoc-cite the standard. Reviewer pairing: domain expert (geometer / pharmacist / data-hoarder / mrp-planner / astrometrist / antiquary / color-scientist / gastronomist) plus architect for surface coherence.
 2. **Composition**: curated barrel for a working domain. Re-exports atomic units from one or more foundational kits, adds 3-10 domain-specific units and conversions. Examples (proposed): `home-improvement` (contractor subset of geometry + mass + light electrical + finance + `boardFoot`, `drywallSheet`), `kitchen-baking`, `sewing`, `real-estate`. **The re-exported `Unit` instance is the same JS object as the foundational source**; `forge(comp.foot, geom.foot)` is identity. Never redefine a unit a foundational kit already ships. NOT required to be canonically complete in any one dimension; that is the foundational kit's job. Reviewer pairing: working-profession expert plus architect.
-3. **In-universe**: invented dimensions, mostly self-contained. Examples: `battletech` (TONNAGE / DAMAGE / HEAT / MP / BV / C-BILLS), the bundled crouton teaching demo (COUNT with wheat/ore/city). Future: `dnd-currency`, `sci-fi-power-levels`, `magic-mana`. Prefix dimension names with the universe to avoid collision (`battletech-heat`, not `heat`). Cite source material (rulebook edition, record sheets). Reviewer pairing: genre lens (e.g., battletech-grognard).
+3. **In-universe**: invented dimensions, mostly self-contained. Example: the ArPeeGee shop demo (`demo/src/components/kits/forge/sections/arpy-gee-shop.tsx`) ships `arpygee/coin` and `arpygee/goods` dimensions with silver / gold / shield units. Future: `battletech` (TONNAGE / DAMAGE / HEAT / MP / BV / C-BILLS), `dnd-currency`, `sci-fi-power-levels`, `magic-mana`. Prefix dimension names with the universe to avoid collision (`battletech/heat`, not `heat`). Cite source material (rulebook edition, record sheets). Reviewer pairing: genre lens (e.g., battletech-grognard).
 
 Cross-kit imports between foundational and composition kits are explicitly blessed and tree-shake-correct. Every export is `/*#__PURE__*/` and named, so a composition kit's barrel pays the byte cost only of the exports it actually re-exports. Domain composition is a curation problem, not an engineering one.
 
@@ -168,4 +168,4 @@ Semantic-release filters `(demo)`-scoped commits from release analysis (`.releas
 - [EXTENDING.md](./EXTENDING.md): how to add a kit, add a section to an existing kit, or add a dimension; lib-side and demo-side rituals plus the tree-shake foot-gun
 - [CONTRIBUTING.md](./CONTRIBUTING.md): setup, commands, commit conventions
 - [SECURITY.md](./SECURITY.md): security policy and reporting
-- [NOTICE.md](./NOTICE.md): third-party attributions (currently empty; populated as kits cite external standards)
+- [NOTICE.md](./NOTICE.md): third-party attributions (NIST, BIPM, ISO, USP, ISMP citations; nominative trademark notices; demo-dependency licenses)

@@ -12,6 +12,7 @@
 // Resource glyphs are emoji (lucide lacks silver/gold/shield coverage
 // at this scale), keeping the demo playful and instantly recognizable.
 
+import { Shield, Swords } from 'lucide-react';
 import { useState } from 'react';
 import { defineConversion, defineUnit, forge, type Unit } from 'unitforge';
 import { CodeBlock } from '~/components/ui/code-block.js';
@@ -101,7 +102,18 @@ export function ArpyGeeShop() {
   return (
     <SectionLayout
       id="arpy-gee-shop"
-      headerZone={<SectionHeader eyebrow="build your own kit" title="forge a shield" />}
+      headerZone={
+        <SectionHeader
+          eyebrow="build your own kit"
+          title="The ArPeeGee Shop"
+          iconZone={
+            <span className="flex items-center gap-1 text-uf-accent" aria-hidden>
+              <Swords size={24} strokeWidth={1.5} />
+              <Shield size={24} strokeWidth={1.5} />
+            </span>
+          }
+        />
+      }
       introZone={
         <>
           Two dimensions, two lessons in one converter. <code className="mono">silver</code> and{' '}
