@@ -24,7 +24,7 @@ Units, dimensions, and conversions are values you import. Within-dimension conve
 **Foundational kits** (one dimension each; canonical atoms; domain kits re-export from these):
 
 - `unitforge/kits/length`: LENGTH units. SI (meter base, mm, cm, dm, km, µm, nm) + customary (in, ft, yd, mi, fathom, mil) + nautical (nautical mile) + crystallographic (ångström). Astronomical units (au, ly, parsec, kpc, Mpc, Gpc, light-second/minute/hour) live in `kits/astronomy`, not here.
-- `unitforge/kits/volume`: VOLUME units. SI (cubic meter base, cubic mm/cm/dm/km, mL, cL, dL, L) + cubic-imperial (cubic in/ft/yd) + fluid-ounce variants (US, UK) + spoons (tsp/tbsp in US, UK, metric, AU) + cup variants (US Customary, US Legal FDA, UK Imperial, metric 250 mL, Japanese rice gō 180.39 mL, Japanese general 200 mL, Russian stakan 250 mL).
+- `unitforge/kits/volume`: VOLUME units. SI (cubic meter base, cubic mm/cm/dm/km, mL, cL, dL, L) + cubic-imperial (cubic in/ft/yd) + gallon/quart/pint/fluid-ounce families (US + UK with explicit US/UK split throughout) + spoons (tsp/tbsp/dsp in US, UK, metric, AU) + cup variants (US Customary, US Legal FDA, UK Imperial, metric 250 mL, Japanese rice gō 180.39 mL, Japanese general 200 mL, Russian stakan 250 mL + small 200 mL).
 - `unitforge/kits/mass`: MASS units. SI (kilogram base, gram, milligram, microgram, tonne) + US customary (ounce avoirdupois, pound, stone, short ton, long ton) + Asian regional (jin PRC 500 g via GB/T 17710-1999, jin HK/Taiwan/Singapore 600 g).
 - `unitforge/kits/temperature`: TEMPERATURE units. Kelvin (base, SI) + Celsius + Fahrenheit + Rankine. First kit with AFFINE conversions; the values-vs-deltas posture is values-only for v1 (deltas are consumer concern; see issue #30).
 

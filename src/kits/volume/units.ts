@@ -156,6 +156,80 @@ export const deciliter = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1e-4,
 });
 
+// ─── Gallon / quart / pint family (US + UK) ───────────────────────────
+
+/** US gallon (Queen Anne wine gallon basis); 231 in³ = 3.785411784 L
+ *  exactly (NIST SP 811). 128 US fluid ounces; the workhorse for
+ *  US gasoline, paint, water-rights, and bulk-liquid commerce. */
+export const gallonUs = /*#__PURE__*/ defineUnit({
+  id: 'gallon-us',
+  label: 'US Gallon',
+  symbol: 'gal (US)',
+  dimension: VOLUME,
+  toBase: (v) => v * (US_FL_OZ_M3 * 128),
+  fromBase: (b) => b / (US_FL_OZ_M3 * 128),
+});
+
+/** UK / imperial gallon; 4.54609 L exactly (UK Weights and Measures
+ *  Act 1985). 160 imperial fluid ounces; ~20% larger than the US
+ *  gallon. The fuel-economy gap between "mpg US" and "mpg UK" is
+ *  the canonical consumer-facing confusion. */
+export const gallonUk = /*#__PURE__*/ defineUnit({
+  id: 'gallon-uk',
+  label: 'UK / Imperial Gallon',
+  symbol: 'gal (UK)',
+  dimension: VOLUME,
+  toBase: (v) => v * (UK_FL_OZ_M3 * 160),
+  fromBase: (b) => b / (UK_FL_OZ_M3 * 160),
+});
+
+/** US quart; 1/4 US gallon = 32 US fl oz ≈ 946.353 mL. Ice-cream
+ *  quart, soup quart, milk quart in older US dairy packaging. */
+export const quartUs = /*#__PURE__*/ defineUnit({
+  id: 'quart-us',
+  label: 'US Quart',
+  symbol: 'qt (US)',
+  dimension: VOLUME,
+  toBase: (v) => v * (US_FL_OZ_M3 * 32),
+  fromBase: (b) => b / (US_FL_OZ_M3 * 32),
+});
+
+/** UK / imperial quart; 1/4 imperial gallon = 40 imperial fl oz
+ *  ≈ 1.1365 L. ~20% larger than US quart; gap is recipe-breaking
+ *  and produce-pricing-disrupting at scale. */
+export const quartUk = /*#__PURE__*/ defineUnit({
+  id: 'quart-uk',
+  label: 'UK / Imperial Quart',
+  symbol: 'qt (UK)',
+  dimension: VOLUME,
+  toBase: (v) => v * (UK_FL_OZ_M3 * 40),
+  fromBase: (b) => b / (UK_FL_OZ_M3 * 40),
+});
+
+/** US pint; 1/8 US gallon = 16 US fl oz ≈ 473.176 mL. Ice-cream
+ *  pint, craft-beer pint (in US bars; UK pubs use the UK pint),
+ *  blueberry / strawberry produce pint. */
+export const pintUs = /*#__PURE__*/ defineUnit({
+  id: 'pint-us',
+  label: 'US Pint',
+  symbol: 'pt (US)',
+  dimension: VOLUME,
+  toBase: (v) => v * (US_FL_OZ_M3 * 16),
+  fromBase: (b) => b / (US_FL_OZ_M3 * 16),
+});
+
+/** UK / imperial pint; 1/8 imperial gallon = 20 imperial fl oz
+ *  ≈ 568.261 mL. The pub pint, the milk-delivery pint; ~20%
+ *  larger than the US pint. */
+export const pintUk = /*#__PURE__*/ defineUnit({
+  id: 'pint-uk',
+  label: 'UK / Imperial Pint',
+  symbol: 'pt (UK)',
+  dimension: VOLUME,
+  toBase: (v) => v * (UK_FL_OZ_M3 * 20),
+  fromBase: (b) => b / (UK_FL_OZ_M3 * 20),
+});
+
 // ─── Fluid ounce (US + UK) ────────────────────────────────────────────
 
 /** US customary fluid ounce; 1/128 US gallon. */
@@ -259,6 +333,19 @@ export const tablespoonAu = /*#__PURE__*/ defineUnit({
   dimension: VOLUME,
   toBase: (v) => v * 20e-6,
   fromBase: (b) => b / 20e-6,
+});
+
+/** Dessertspoon; 10 mL exactly = 2 metric teaspoons. UK, Australian,
+ *  and New Zealand recipes reach for "1 dessertspoon" routinely;
+ *  US recipes effectively never. Falls between teaspoon (5 mL) and
+ *  tablespoon (15 mL). */
+export const dessertspoon = /*#__PURE__*/ defineUnit({
+  id: 'dessertspoon',
+  label: 'Dessertspoon (10 mL)',
+  symbol: 'dsp',
+  dimension: VOLUME,
+  toBase: (v) => v * 10e-6,
+  fromBase: (b) => b / 10e-6,
 });
 
 // ─── Cup variants ─────────────────────────────────────────────────────
