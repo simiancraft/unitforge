@@ -30,7 +30,7 @@
 
 Three kits ship today; build your own for anything else (game state, finance, lab assays, factions). Each link below runs the kit live against the built package.
 
-- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume, angle; metric and imperial; 20+ derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment, perimeters, point coordinates).
+- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): length, area, volume, angle; metric and imperial; 40+ derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment, perimeters, point coordinates).
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; covers GB-vs-GiB and Gbit-vs-MB.
 - [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): teaspoons, cups, the usual suspects, plus the Japanese gō, the Australian 20 mL tablespoon, sugar-comparison forges, and live recipe scaling.
 
