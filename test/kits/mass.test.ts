@@ -97,6 +97,12 @@ describe('kits/mass: conversion factors', () => {
     expect(forge(longTon, pound)(1)).toBeCloseTo(2240, 9);
   });
 
+  it('long ton and short ton differ by ~12% (pin the freight-invoice gap)', () => {
+    const shortInKg = forge(shortTon, kilogram)(1);
+    const longInKg = forge(longTon, kilogram)(1);
+    expect(longInKg / shortInKg).toBeCloseTo(1.12, 4);
+  });
+
   it('1 jin PRC = 500 g', () => {
     expect(forge(jinPrc, gram)(1)).toBeCloseTo(500, 12);
   });
