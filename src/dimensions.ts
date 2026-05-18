@@ -67,6 +67,39 @@ export const DATA = 'data' as const;
 export const ANGLE = 'angle' as const;
 
 /**
+ * Quantity of matter. Canonical SI base unit: **kilogram**.
+ *
+ * Conventional units: gram (the cross-domain workhorse), kilogram, milligram,
+ * microgram, ounce avoirdupois, pound, stone, tonne (metric), short ton (US),
+ * long ton (UK). Regional disambiguation lives in the kit: `jinPrc` (500 g
+ * mainland China) vs `jinHk` (600 g HK / Taiwan / Singapore historical
+ * catty).
+ *
+ * Cross-domain: cooking (gram-based baking precision), pharmacy (mg / mcg
+ * dosing), fitness (kg bodyweight), manufacturing (BOM weights), shipping
+ * (parcel weight tiers).
+ */
+export const MASS = 'mass' as const;
+
+/**
+ * Thermodynamic temperature. Canonical SI base unit: **kelvin**.
+ *
+ * Conventional units: kelvin (base), Celsius, Fahrenheit, Rankine. First
+ * built-in dimension whose unit conversions are AFFINE rather than purely
+ * linear (Celsius and Fahrenheit have non-zero offsets vs the kelvin scale);
+ * `defineUnit`'s `toBase` / `fromBase` closures accept affine math without
+ * special-casing.
+ *
+ * Temperature values vs deltas: this dimension treats every unit as an
+ * absolute temperature value, not a temperature difference. A `delta` of
+ * 10 °F is conceptually different from a value of 10 °F (the delta converts
+ * linearly to 5.56 °C; the value converts affinely to -12.22 °C). Consumers
+ * working with deltas should treat them as a separate concern at their own
+ * call site. See issue #30 for the design discussion.
+ */
+export const TEMPERATURE = 'temperature' as const;
+
+/**
  * The single source of truth for the set of built-in dimensions. The
  * `Dimension` type derives from this tuple, so adding a dimension here is
  * what makes it appear in IDE autocomplete at `defineUnit({ dimension: | })`
@@ -79,7 +112,7 @@ export const ANGLE = 'angle' as const;
  * forgetting the tuple is "no autocomplete for the new dimension"; visible
  * the first time anyone tries to use it.
  */
-export const DIMENSIONS = [LENGTH, AREA, VOLUME, DATA, ANGLE] as const;
+export const DIMENSIONS = [LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE] as const;
 
 /**
  * Dimension identifier. Built-in literals (`LENGTH`, `AREA`, ...) preserve
