@@ -8,12 +8,21 @@ import { forge } from '../../src/index.js';
 import {
   debenEgypt,
   digitEgypt,
+  gurMesopotamia,
   heqatEgypt,
   hinEgypt,
+  kushMesopotamia,
+  minaBabylonian,
+  nindanMesopotamia,
   palmEgypt,
   qedetEgypt,
   royalCubitEgypt,
+  shekelBabylonian,
   shortCubitEgypt,
+  shusiMesopotamia,
+  silaMesopotamia,
+  talentBabylonian,
+  ushMesopotamia,
 } from '../../src/kits/antiquity/index.js';
 import { meter, statuteMile } from '../../src/kits/length/index.js';
 import { kilogram } from '../../src/kits/mass/index.js';
@@ -123,4 +132,58 @@ describe('kits/antiquity: Egypt — round-trip', () => {
       expect(out).toBeCloseTo(value, 10);
     });
   }
+});
+
+describe('kits/antiquity: Mesopotamia — reference values', () => {
+  it('1 shusi ≈ 16.62 mm (Powell 1987 anchor)', () => {
+    expect(forge(shusiMesopotamia, meter)(1)).toBeCloseTo(0.01662, 9);
+  });
+
+  it('1 kuš = 30 shusi exactly', () => {
+    const kushInM = forge(kushMesopotamia, meter)(1);
+    const thirtyShusiInM = forge(shusiMesopotamia, meter)(30);
+    expect(thirtyShusiInM).toBeCloseTo(kushInM, 12);
+  });
+
+  it('1 nindan = 12 kuš exactly', () => {
+    const nindanInM = forge(nindanMesopotamia, meter)(1);
+    const twelveKushInM = forge(kushMesopotamia, meter)(12);
+    expect(twelveKushInM).toBeCloseTo(nindanInM, 12);
+  });
+
+  it('1 uš = 60 nindan exactly', () => {
+    const ushInM = forge(ushMesopotamia, meter)(1);
+    const sixtyNindanInM = forge(nindanMesopotamia, meter)(60);
+    expect(sixtyNindanInM).toBeCloseTo(ushInM, 9);
+  });
+
+  it('1 Babylonian common mina = 500 g (Powell 1987)', () => {
+    expect(forge(minaBabylonian, kilogram)(1)).toBeCloseTo(0.5, 12);
+  });
+
+  it('1 shekel Babylonian = 1/60 mina ≈ 8.33 g', () => {
+    expect(forge(shekelBabylonian, kilogram)(60)).toBeCloseTo(0.5, 12);
+  });
+
+  it('1 talent Babylonian = 60 mina = 30 kg', () => {
+    expect(forge(talentBabylonian, kilogram)(1)).toBeCloseTo(30, 9);
+  });
+
+  it('1 sila ≈ 0.842 L (Ur III)', () => {
+    expect(forge(silaMesopotamia, liter)(1)).toBeCloseTo(0.842, 6);
+  });
+
+  it('1 gur = 300 sila (Ur III)', () => {
+    const gurInL = forge(gurMesopotamia, liter)(1);
+    const threeHundredSilaInL = forge(silaMesopotamia, liter)(300);
+    expect(threeHundredSilaInL).toBeCloseTo(gurInL, 9);
+  });
+});
+
+describe('kits/antiquity: Mesopotamia vs Greece talent disambiguation', () => {
+  it('Babylonian talent (30 kg) is larger than Attic talent will be', () => {
+    // Attic talent ships in greece.ts at ~25.86 kg; documents the
+    // canonical disambiguation a reader of Herodotus must navigate.
+    expect(forge(talentBabylonian, kilogram)(1)).toBeCloseTo(30, 1);
+  });
 });
