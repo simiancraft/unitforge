@@ -25,7 +25,6 @@ import {
   areaFromTrapezoidBasesAndHeight,
   areaFromTriangleBaseAndHeight,
   areaFromTriangleSides,
-  astronomicalUnit,
   cartesianFromPolar,
   centiliter,
   centimeter,
@@ -56,7 +55,6 @@ import {
   inradiusOfTriangleFromSides,
   kilometer,
   legFromHypotenuseAndOtherLeg,
-  lightYear,
   liter,
   meter,
   micrometer,
@@ -66,7 +64,6 @@ import {
   millimeter,
   nanometer,
   nauticalMile,
-  parsec,
   perimeterOfEllipseFromSemiAxes,
   perimeterOfEquilateralTriangleFromSide,
   perimeterOfParallelogramFromBaseAndSide,
@@ -350,44 +347,9 @@ describe('geometry/units: LENGTH', () => {
     });
   });
 
-  describe('astronomicalUnit', () => {
-    it('has the right shape', () => {
-      expect(astronomicalUnit.id).toBe('astronomical-unit');
-      expect(astronomicalUnit.label).toBe('Astronomical Unit');
-      expect(astronomicalUnit.symbol).toBe('au');
-      expect(astronomicalUnit.dimension).toBe(LENGTH);
-    });
-    it('1 au = 149597870700 m (IAU 2012, exact)', () => {
-      expect(astronomicalUnit.toBase(1)).toBe(149597870700);
-    });
-  });
-
-  describe('lightYear', () => {
-    it('has the right shape', () => {
-      expect(lightYear.id).toBe('light-year');
-      expect(lightYear.label).toBe('Light-Year');
-      expect(lightYear.symbol).toBe('ly');
-      expect(lightYear.dimension).toBe(LENGTH);
-    });
-    it('1 ly = 9460730472580800 m (Julian year × c, exact)', () => {
-      expect(lightYear.toBase(1)).toBe(9460730472580800);
-    });
-  });
-
-  describe('parsec', () => {
-    it('has the right shape', () => {
-      expect(parsec.id).toBe('parsec');
-      expect(parsec.label).toBe('Parsec');
-      expect(parsec.symbol).toBe('pc');
-      expect(parsec.dimension).toBe(LENGTH);
-    });
-    it('1 pc ≈ 3.0857e16 m (within Float64)', () => {
-      expect(parsec.toBase(1)).toBeCloseTo(3.0857e16, -12);
-    });
-    it('1 pc ≈ 3.26156 ly (within Float64)', () => {
-      expect(parsec.toBase(1) / lightYear.toBase(1)).toBeCloseTo(3.26156, 4);
-    });
-  });
+  // Astronomical units (astronomicalUnit, lightYear, parsec) moved
+  // to kits/astronomy; their shape and conversion tests live in
+  // test/kits/astronomy.test.ts.
 });
 
 describe('geometry/units: AREA', () => {
