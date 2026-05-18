@@ -1,10 +1,13 @@
 // Units of Antiquity kit tests. Per-civilization `describe` blocks;
 // each block asserts identity-triple shape + dimension + a reference
 // `toBase` value + round-trip via the canonical base unit (meter /
-// kilogram / cubic meter).
+// kilogram / cubic meter). One kit-level test asserts id uniqueness
+// across every civilization to guard against silently-overlapping
+// units that would only surface at runtime.
 
 import { describe, expect, it } from 'bun:test';
 import { forge } from '../../src/index.js';
+import * as antiquity from '../../src/kits/antiquity/index.js';
 import {
   actusRomanus,
   amphoraRomana,
@@ -100,6 +103,36 @@ import {
 import { meter, statuteMile } from '../../src/kits/length/index.js';
 import { kilogram } from '../../src/kits/mass/index.js';
 import { liter, milliliter } from '../../src/kits/volume/index.js';
+
+describe('kits/antiquity: kit-level invariants', () => {
+  // Every unit ID must be unique across the whole kit. The kit
+  // disambiguates `talentBabylonian` / `talentAttic` / `talentHebrew`,
+  // `shekelBabylonian` / `shekelHebrewCommon` / `shekelTyrian`, etc.
+  // by name; a silently-overlapping id would still type-check but
+  // would break Map<id, Unit> consumers and any serialization round-
+  // trip. Collect every Unit re-exported through the barrel and
+  // assert id uniqueness.
+  const exported = Object.values(antiquity as Record<string, unknown>);
+  const units = exported.filter(
+    (v) =>
+      typeof v === 'object' &&
+      v !== null &&
+      'id' in (v as object) &&
+      typeof (v as { id: unknown }).id === 'string',
+  ) as Array<{ id: string; base?: true }>;
+
+  it('all antiquity unit ids are globally unique within the kit', () => {
+    const ids = units.map((u) => u.id);
+    const uniqueIds = new Set(ids);
+    expect(uniqueIds.size).toBe(ids.length);
+  });
+
+  it('no antiquity unit claims base: true (no kit-private base dimension)', () => {
+    for (const u of units) {
+      expect(u.base).toBeUndefined();
+    }
+  });
+});
 
 describe('kits/antiquity: Egypt — shape', () => {
   const lengthUnits = [royalCubitEgypt, shortCubitEgypt, palmEgypt, digitEgypt];
