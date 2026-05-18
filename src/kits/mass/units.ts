@@ -63,14 +63,21 @@ export const milligram = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1e-6,
 });
 
-/** Microgram; 1 μg = 1e-9 kg. Vitamin / mineral nutrition labels,
- *  pharmaceutical trace dosing. ISMP warns against the "mcg"
- *  abbreviation in clinical contexts; the symbol shipped here is the
- *  SI standard `μg`. */
+/** Microgram; 1 µg = 1e-9 kg. Vitamin / mineral nutrition labels,
+ *  pharmaceutical trace dosing.
+ *
+ *  Clinical safety: ISMP's *List of Error-Prone Abbreviations* prescribes
+ *  `mcg` as the clinical surface form because `µg` degrades to `ug` in
+ *  low-ASCII rendering, and `ug` is then misread as `mg`, producing
+ *  1000x overdoses. The symbol shipped here is the SI standard `µg`
+ *  (U+00B5 MICRO SIGN); a future `kits/pharmacy` will REDECLARE this
+ *  unit with `symbol: 'mcg'` for the clinical dosing path, intentionally
+ *  breaking the "domain kits re-export rather than redeclare" rule for
+ *  this single unit. Do not display `µg` in any clinical UI. */
 export const microgram = /*#__PURE__*/ defineUnit({
   id: 'microgram',
   label: 'Microgram',
-  symbol: 'μg',
+  symbol: 'µg',
   dimension: MASS,
   toBase: (v) => v * 1e-9,
   fromBase: (b) => b / 1e-9,

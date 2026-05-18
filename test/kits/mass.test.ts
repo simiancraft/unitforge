@@ -67,7 +67,7 @@ describe('kits/mass: conversion factors', () => {
     expect(forge(milligram, kilogram)(1e6)).toBeCloseTo(1, 12);
   });
 
-  it('1e9 μg = 1 kg', () => {
+  it('1e9 µg = 1 kg', () => {
     expect(forge(microgram, kilogram)(1e9)).toBeCloseTo(1, 6);
   });
 
