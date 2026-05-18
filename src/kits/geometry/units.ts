@@ -21,21 +21,18 @@ import { ANGLE, AREA } from '../../dimensions.js';
 
 export {
   angstrom,
-  astronomicalUnit,
   centimeter,
   decimeter,
   fathom,
   foot,
   inch,
   kilometer,
-  lightYear,
   meter,
   micrometer,
   mil,
   millimeter,
   nanometer,
   nauticalMile,
-  parsec,
   statuteMile,
   yard,
 } from '../length/units.js';

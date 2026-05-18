@@ -31,7 +31,7 @@
 Build your own for anything else (game state, finance, lab assays, factions). Each link below runs the kit live against the built package.
 
 **Foundational (canonical atoms, one dimension each):**
-- **`length`**: SI + customary + astronomical (au, ly, parsec) + nautical (nmi) + crystallographic (Å).
+- **`length`**: SI + customary + nautical (nmi) + crystallographic (Å). Astronomical units live in `kits/astronomy`.
 - **`volume`**: SI cubic + liter family + cubic imperial + fl oz US/UK + spoons + every cup variant a cookbook author has named.
 - **`mass`**: SI + US customary + Asian regional (jin PRC 500 g, jin HK 600 g, Singapore catty 604.79 g).
 - **`temperature`**: Kelvin + Celsius + Fahrenheit + Rankine.
@@ -40,6 +40,7 @@ Build your own for anything else (game state, finance, lab assays, factions). Ea
 **Composition / domain (re-export atoms + add domain-specific units):**
 - [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): LENGTH + VOLUME re-exports + AREA + ANGLE atoms + 40+ shape derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment).
 - [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): VOLUME + MASS + TEMPERATURE re-exports + cooking-tradition packaging (stick of butter, EU butter block, dash, pinch) + heat descriptors (low through high heat). Demo includes the soda-vs-sugar comparator and live recipe scaling.
+- **`astronomy`**: solar-system + stellar + cosmological LENGTH atoms (au, ly, pc, kpc/Mpc/Gpc, light-second/minute/hour) per IAU 2012 / 2015 resolutions.
 - **`antiquity`**: Units of Antiquity. ~60 atoms across 8 civilizations (Egyptian, Mesopotamian, Greek, Roman, Hebrew, Chinese, Japanese, English-historical). For historical research, classics translation, and numismatic / archaeological analysis. Not for clinical or commercial use.
 
 ## Quick start

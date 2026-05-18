@@ -14,6 +14,7 @@
 import { describe, expect, it } from 'bun:test';
 import { forge } from '../../src/index.js';
 
+import * as astronomy from '../../src/kits/astronomy/index.js';
 import * as cooking from '../../src/kits/cooking/index.js';
 import * as geometry from '../../src/kits/geometry/index.js';
 import * as length from '../../src/kits/length/index.js';
@@ -65,6 +66,10 @@ describe('cross-kit JS identity (structural)', () => {
 
   it('geometry re-exports from volume preserve JS identity', () => {
     expectIdentityForSharedKeys('geometry', geometry, 'volume', volume);
+  });
+
+  it('astronomy re-exports from length preserve JS identity', () => {
+    expectIdentityForSharedKeys('astronomy', astronomy, 'length', length);
   });
 
   it('cooking.milliliter === geometry.milliliter (transitive cross-domain)', () => {

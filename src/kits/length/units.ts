@@ -205,52 +205,9 @@ export const fathom = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 1.8288,
 });
 
-/**
- * 1 au = 149597870700 m (exact, by definition). IAU 2012 Resolution B2.
- *
- * The astronomical unit was redefined by the IAU in 2012 from a derived
- * quantity (the orbital radius of a hypothetical massless body) to an
- * exact integer number of meters; this value is canonical and never
- * needs re-derivation.
- */
-export const astronomicalUnit = /*#__PURE__*/ defineUnit({
-  id: 'astronomical-unit',
-  label: 'Astronomical Unit',
-  symbol: 'au',
-  dimension: LENGTH,
-  toBase: (v) => v * 149597870700,
-  fromBase: (b) => b / 149597870700,
-});
-
-/**
- * 1 ly = 9 460 730 472 580 800 m (exact). IAU Style Manual; Julian year
- * (365.25 days) times c (299 792 458 m/s).
- *
- * Distinct from the Gregorian light-year (≈ 9.461 × 10¹⁵ m, derived from
- * the 365.2425-day Gregorian year) and the tropical-year light-year
- * (~365.24219 days at J2000.0, the more common confusion in published
- * ephemerides; 6-25 ppm gap from the Julian form). The Julian form is
- * the IAU Style Manual convention and the value shipped here.
- */
-export const lightYear = /*#__PURE__*/ defineUnit({
-  id: 'light-year',
-  label: 'Light-Year',
-  symbol: 'ly',
-  dimension: LENGTH,
-  toBase: (v) => v * 9460730472580800,
-  fromBase: (b) => b / 9460730472580800,
-});
-
-/**
- * 1 pc = (648000 / π) · au m. IAU 2015 Resolution B2; exact by definition
- * (the 2015 redefinition replaced a small-angle-approximation derivation
- * with an exact integer-coefficient form).
- */
-export const parsec = /*#__PURE__*/ defineUnit({
-  id: 'parsec',
-  label: 'Parsec',
-  symbol: 'pc',
-  dimension: LENGTH,
-  toBase: (v) => v * ((648000 / Math.PI) * 149597870700),
-  fromBase: (b) => b / ((648000 / Math.PI) * 149597870700),
-});
+// Astronomical units (astronomicalUnit, lightYear, parsec) live in
+// `kits/astronomy`, not here. They were extracted on the principle
+// that foundational kits ship broadly-used atoms; astronomy-specific
+// units belong in the domain kit. Light-time units (lightSecond,
+// lightMinute, lightHour) and parsec multiples (kpc, Mpc, Gpc) ship
+// alongside them in `kits/astronomy`.
