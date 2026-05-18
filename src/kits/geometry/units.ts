@@ -1,253 +1,63 @@
-// All units shipped by the geometry kit. Named-export-per-unit; per-export
-// tree-shaking under `sideEffects: false` works because:
-//   1. Each `defineUnit({...})` is annotated `/*#__PURE__*/`, which tells
-//      bundlers (esbuild, rollup, webpack) the call is side-effect-free.
-//   2. The spec object literal contains NO function calls; `toBase` and
-//      `fromBase` are inline arrow closures, not `...linear(scale)` spreads.
-//      A CallExpression inside the literal (even when PURE-marked itself)
-//      defeats per-export tree-shaking because the bundler treats the whole
-//      RHS expression as needed once the variable is referenced.
+// Geometry kit unit catalog. The kit's role is composition: it
+// re-exports the canonical LENGTH and VOLUME atoms from their
+// foundational kits (`kits/length`, `kits/volume`) and defines its own
+// AREA and ANGLE units in-place. AREA and ANGLE units only appear in
+// geometry today; per the "promote when repeated" heuristic they stay
+// here until a second domain kit needs them.
 //
-// Authoring convention for kit units: inline closures here. The `linear`
-// helper exported from the root barrel is for ad-hoc userland use, not for
-// kit unit definitions; using it here would re-introduce the spread and
-// regress per-unit tree-shake.
+// JS identity is preserved across re-exports: `geometry.meter` is the
+// same `Unit` object as `length.meter`, so `forge(geometry.meter,
+// length.meter)` is identity rather than a converter through base.
+//
+// Authoring rules (mirror kits/cooking/units.ts):
+//   1. Each `defineUnit({...})` is annotated `/*#__PURE__*/`.
+//   2. Spec literal contains NO `CallExpression`; `toBase` / `fromBase`
+//      are inline closures.
 
 import { defineUnit } from '../../define.js';
-import { ANGLE, AREA, LENGTH, VOLUME } from '../../dimensions.js';
+import { ANGLE, AREA } from '../../dimensions.js';
 
-/** The base unit of LENGTH. */
-export const meter = /*#__PURE__*/ defineUnit({
-  id: 'meter',
-  label: 'Meter',
-  symbol: 'm',
-  dimension: LENGTH,
-  toBase: (v) => v,
-  fromBase: (b) => b,
-  base: true,
-});
+// ─── LENGTH (re-exported from kits/length; single source of truth) ───
 
-/** 1 mm = 0.001 m. */
-export const millimeter = /*#__PURE__*/ defineUnit({
-  id: 'millimeter',
-  label: 'Millimeter',
-  symbol: 'mm',
-  dimension: LENGTH,
-  toBase: (v) => v * 0.001,
-  fromBase: (b) => b / 0.001,
-});
+export {
+  angstrom,
+  astronomicalUnit,
+  centimeter,
+  decimeter,
+  fathom,
+  foot,
+  inch,
+  kilometer,
+  lightYear,
+  meter,
+  micrometer,
+  mil,
+  millimeter,
+  nanometer,
+  nauticalMile,
+  parsec,
+  statuteMile,
+  yard,
+} from '../length/units.js';
 
-/** 1 cm = 0.01 m. */
-export const centimeter = /*#__PURE__*/ defineUnit({
-  id: 'centimeter',
-  label: 'Centimeter',
-  symbol: 'cm',
-  dimension: LENGTH,
-  toBase: (v) => v * 0.01,
-  fromBase: (b) => b / 0.01,
-});
+// ─── VOLUME (re-exported from kits/volume; single source of truth) ───
 
-/** 1 km = 1000 m. */
-export const kilometer = /*#__PURE__*/ defineUnit({
-  id: 'kilometer',
-  label: 'Kilometer',
-  symbol: 'km',
-  dimension: LENGTH,
-  toBase: (v) => v * 1000,
-  fromBase: (b) => b / 1000,
-});
+export {
+  centiliter,
+  cubicCentimeter,
+  cubicDecimeter,
+  cubicFoot,
+  cubicInch,
+  cubicKilometer,
+  cubicMeter,
+  cubicMillimeter,
+  cubicYard,
+  deciliter,
+  liter,
+  milliliter,
+} from '../volume/units.js';
 
-/**
- * 1 in = 0.0254 m (exact via the 1959 international yard and pound
- * agreement). The kit does not ship a US survey inch; the US survey
- * foot / inch series was deprecated by NIST on 2023-01-01
- * (Federal Register Vol. 84, No. 184).
- */
-export const inch = /*#__PURE__*/ defineUnit({
-  id: 'inch',
-  label: 'Inch',
-  symbol: 'in',
-  dimension: LENGTH,
-  toBase: (v) => v * 0.0254,
-  fromBase: (b) => b / 0.0254,
-});
-
-/**
- * 1 ft = 0.3048 m (= 12 × 0.0254; exact via the 1959 international yard
- * and pound agreement). The US survey foot (0.30480 060 96... m) is not
- * shipped here; NIST deprecated it as of 2023-01-01 per Federal Register
- * Vol. 84, No. 184.
- */
-export const foot = /*#__PURE__*/ defineUnit({
-  id: 'foot',
-  label: 'Foot',
-  symbol: 'ft',
-  dimension: LENGTH,
-  toBase: (v) => v * 0.3048,
-  fromBase: (b) => b / 0.3048,
-});
-
-/** 1 yd = 0.9144 m (= 3 ft = 36 in; exact). */
-export const yard = /*#__PURE__*/ defineUnit({
-  id: 'yard',
-  label: 'Yard',
-  symbol: 'yd',
-  dimension: LENGTH,
-  toBase: (v) => v * 0.9144,
-  fromBase: (b) => b / 0.9144,
-});
-
-/**
- * 1 mi = 1609.344 m (= 5280 ft = 1760 yd; exact via the international yard
- * and pound agreement of 1959).
- *
- * The international (statute) mile. Disambiguated from `nauticalMile`
- * (1852 m exactly per the IHO 1929 convention); confusing them is a
- * 15.1% error. The kit does NOT ship the US survey mile (deprecated by
- * NIST on 2023-01-01 per Federal Register Vol. 84, No. 184).
- */
-export const statuteMile = /*#__PURE__*/ defineUnit({
-  id: 'statute-mile',
-  label: 'Statute Mile',
-  symbol: 'mi',
-  dimension: LENGTH,
-  toBase: (v) => v * 1609.344,
-  fromBase: (b) => b / 1609.344,
-});
-
-/** 1 dm = 0.1 m (exact). BIPM SI Brochure 9th ed. §3.1. */
-export const decimeter = /*#__PURE__*/ defineUnit({
-  id: 'decimeter',
-  label: 'Decimeter',
-  symbol: 'dm',
-  dimension: LENGTH,
-  toBase: (v) => v * 0.1,
-  fromBase: (b) => b / 0.1,
-});
-
-/** 1 µm = 1e-6 m (exact). BIPM SI Brochure 9th ed. §3.1. */
-export const micrometer = /*#__PURE__*/ defineUnit({
-  id: 'micrometer',
-  label: 'Micrometer',
-  symbol: 'µm',
-  dimension: LENGTH,
-  toBase: (v) => v * 1e-6,
-  fromBase: (b) => b / 1e-6,
-});
-
-/** 1 nm = 1e-9 m (exact). BIPM SI Brochure 9th ed. §3.1. */
-export const nanometer = /*#__PURE__*/ defineUnit({
-  id: 'nanometer',
-  label: 'Nanometer',
-  symbol: 'nm',
-  dimension: LENGTH,
-  toBase: (v) => v * 1e-9,
-  fromBase: (b) => b / 1e-9,
-});
-
-/** 1 Å = 1e-10 m (exact). IUPAC Gold Book; non-SI, accepted for crystallography. */
-export const angstrom = /*#__PURE__*/ defineUnit({
-  id: 'angstrom',
-  label: 'Ångström',
-  symbol: 'Å',
-  dimension: LENGTH,
-  toBase: (v) => v * 1e-10,
-  fromBase: (b) => b / 1e-10,
-});
-
-/**
- * 1 mil (thou) = 0.0000254 m = 0.001 in (exact). ASME Y14.5.
- *
- * Used in PCB fabrication and machining tolerances. The LENGTH `mil` is
- * distinct from the angular "NATO mil" (a unit of ANGLE not shipped by
- * this kit); the symbol collision is a known hazard in technical writing.
- */
-export const mil = /*#__PURE__*/ defineUnit({
-  id: 'mil',
-  label: 'Mil',
-  symbol: 'mil',
-  dimension: LENGTH,
-  toBase: (v) => v * 0.0000254,
-  fromBase: (b) => b / 0.0000254,
-});
-
-/**
- * 1 nmi = 1852 m (exact). International Hydrographic Organization, 1929
- * (Monaco); BIPM SI Brochure 9th ed. Table 8.
- *
- * Distinct from the statute mile (`mile` = 1609.344 m). Ship both because
- * marine and aviation specifications are in nautical miles; survey and
- * road distances are in statute miles. Confusing them is a 15.1% error.
- */
-export const nauticalMile = /*#__PURE__*/ defineUnit({
-  id: 'nautical-mile',
-  label: 'Nautical Mile',
-  symbol: 'nmi',
-  dimension: LENGTH,
-  toBase: (v) => v * 1852,
-  fromBase: (b) => b / 1852,
-});
-
-/**
- * 1 fathom = 6 ft = 1.8288 m (exact via the 1959 international yard
- * and pound agreement; NIST SP 811 App. B Table B.8). Maritime depths.
- */
-export const fathom = /*#__PURE__*/ defineUnit({
-  id: 'fathom',
-  label: 'Fathom',
-  symbol: 'ftm',
-  dimension: LENGTH,
-  toBase: (v) => v * 1.8288,
-  fromBase: (b) => b / 1.8288,
-});
-
-/**
- * 1 au = 149597870700 m (exact, by definition). IAU 2012 Resolution B2.
- *
- * The astronomical unit was redefined by the IAU in 2012 from a derived
- * quantity (the orbital radius of a hypothetical massless body) to an
- * exact integer number of meters; this value is canonical and never
- * needs re-derivation.
- */
-export const astronomicalUnit = /*#__PURE__*/ defineUnit({
-  id: 'astronomical-unit',
-  label: 'Astronomical Unit',
-  symbol: 'au',
-  dimension: LENGTH,
-  toBase: (v) => v * 149597870700,
-  fromBase: (b) => b / 149597870700,
-});
-
-/**
- * 1 ly = 9 460 730 472 580 800 m (exact). IAU Style Manual; Julian year
- * (365.25 days) times c (299 792 458 m/s).
- *
- * Distinct from the Gregorian light-year (≈ 9.461 × 10¹⁵ m, derived from
- * the 365.2425-day Gregorian year); the Julian form is the astronomical
- * convention and the value shipped here.
- */
-export const lightYear = /*#__PURE__*/ defineUnit({
-  id: 'light-year',
-  label: 'Light-Year',
-  symbol: 'ly',
-  dimension: LENGTH,
-  toBase: (v) => v * 9460730472580800,
-  fromBase: (b) => b / 9460730472580800,
-});
-
-/**
- * 1 pc = (648000 / π) · au m. IAU 2015 Resolution B2; exact by definition
- * (the 2015 redefinition replaced a small-angle-approximation derivation
- * with an exact integer-coefficient form).
- */
-export const parsec = /*#__PURE__*/ defineUnit({
-  id: 'parsec',
-  label: 'Parsec',
-  symbol: 'pc',
-  dimension: LENGTH,
-  toBase: (v) => v * ((648000 / Math.PI) * 149597870700),
-  fromBase: (b) => b / ((648000 / Math.PI) * 149597870700),
-});
+// ─── AREA (geometry-owned; not yet promoted to foundational) ─────────
 
 /** The base unit of AREA. */
 export const squareMeter = /*#__PURE__*/ defineUnit({
@@ -364,130 +174,7 @@ export const squareMile = /*#__PURE__*/ defineUnit({
   fromBase: (b) => b / 2_589_988.110336,
 });
 
-// ─── VOLUME ──────────────────────────────────────────────────────────────
-
-/** The base unit of VOLUME. */
-export const cubicMeter = /*#__PURE__*/ defineUnit({
-  id: 'cubic-meter',
-  label: 'Cubic Meter',
-  symbol: 'm³',
-  dimension: VOLUME,
-  toBase: (v) => v,
-  fromBase: (b) => b,
-  base: true,
-});
-
-/** 1 cm³ = 1e-6 m³ (= (1e-2)³). */
-export const cubicCentimeter = /*#__PURE__*/ defineUnit({
-  id: 'cubic-centimeter',
-  label: 'Cubic Centimeter',
-  symbol: 'cm³',
-  dimension: VOLUME,
-  toBase: (v) => v * 1e-6,
-  fromBase: (b) => b / 1e-6,
-});
-
-/** 1 in³ = 0.000016387064 m³ (= 0.0254³; exact). */
-export const cubicInch = /*#__PURE__*/ defineUnit({
-  id: 'cubic-inch',
-  label: 'Cubic Inch',
-  symbol: 'in³',
-  dimension: VOLUME,
-  toBase: (v) => v * 0.000016387064,
-  fromBase: (b) => b / 0.000016387064,
-});
-
-/** 1 ft³ = 0.028316846592 m³ (= 0.3048³ = 1728 in³; exact). */
-export const cubicFoot = /*#__PURE__*/ defineUnit({
-  id: 'cubic-foot',
-  label: 'Cubic Foot',
-  symbol: 'ft³',
-  dimension: VOLUME,
-  toBase: (v) => v * 0.028316846592,
-  fromBase: (b) => b / 0.028316846592,
-});
-
-/** 1 L = 0.001 m³ (= 1 dm³ = 1000 cm³; exact). */
-export const liter = /*#__PURE__*/ defineUnit({
-  id: 'liter',
-  label: 'Liter',
-  symbol: 'L',
-  dimension: VOLUME,
-  toBase: (v) => v * 0.001,
-  fromBase: (b) => b / 0.001,
-});
-
-/** 1 mL = 1e-6 m³ (= 1 cm³; exact). */
-export const milliliter = /*#__PURE__*/ defineUnit({
-  id: 'milliliter',
-  label: 'Milliliter',
-  symbol: 'mL',
-  dimension: VOLUME,
-  toBase: (v) => v * 1e-6,
-  fromBase: (b) => b / 1e-6,
-});
-
-/** 1 mm³ = 1e-9 m³ (= (1e-3)³; exact). Engineering tolerances. */
-export const cubicMillimeter = /*#__PURE__*/ defineUnit({
-  id: 'cubic-millimeter',
-  label: 'Cubic Millimeter',
-  symbol: 'mm³',
-  dimension: VOLUME,
-  toBase: (v) => v * 1e-9,
-  fromBase: (b) => b / 1e-9,
-});
-
-/** 1 dm³ = 0.001 m³ (= 1 L exactly per 1964 CGPM redefinition). */
-export const cubicDecimeter = /*#__PURE__*/ defineUnit({
-  id: 'cubic-decimeter',
-  label: 'Cubic Decimeter',
-  symbol: 'dm³',
-  dimension: VOLUME,
-  toBase: (v) => v * 0.001,
-  fromBase: (b) => b / 0.001,
-});
-
-/** 1 km³ = 1e9 m³ (exact). Hydrology / climatology / atmospheric science. */
-export const cubicKilometer = /*#__PURE__*/ defineUnit({
-  id: 'cubic-kilometer',
-  label: 'Cubic Kilometer',
-  symbol: 'km³',
-  dimension: VOLUME,
-  toBase: (v) => v * 1e9,
-  fromBase: (b) => b / 1e9,
-});
-
-/** 1 yd³ = 0.764554857984 m³ (= 0.9144³ = 27 ft³; exact). Concrete / landscaping. */
-export const cubicYard = /*#__PURE__*/ defineUnit({
-  id: 'cubic-yard',
-  label: 'Cubic Yard',
-  symbol: 'yd³',
-  dimension: VOLUME,
-  toBase: (v) => v * 0.764554857984,
-  fromBase: (b) => b / 0.764554857984,
-});
-
-/** 1 cL = 1e-5 m³ (= 10 mL; exact). BIPM SI Brochure; European recipes. */
-export const centiliter = /*#__PURE__*/ defineUnit({
-  id: 'centiliter',
-  label: 'Centiliter',
-  symbol: 'cL',
-  dimension: VOLUME,
-  toBase: (v) => v * 1e-5,
-  fromBase: (b) => b / 1e-5,
-});
-
-/** 1 dL = 1e-4 m³ (= 100 mL; exact). BIPM SI Brochure; nutrition labeling. */
-export const deciliter = /*#__PURE__*/ defineUnit({
-  id: 'deciliter',
-  label: 'Deciliter',
-  symbol: 'dL',
-  dimension: VOLUME,
-  toBase: (v) => v * 1e-4,
-  fromBase: (b) => b / 1e-4,
-});
-
-// ─── ANGLE units ─────────────────────────────────────────────────────────
+// ─── ANGLE (geometry-owned; not yet promoted to foundational) ─────────
 // Base: radian (SI coherent derived unit per BIPM SI Brochure 9th ed.
 // Table 4). Radian-as-base means each conversion's `compute` body can
 // call Math.sin / cos / tan / atan2 directly with no per-callee unit
