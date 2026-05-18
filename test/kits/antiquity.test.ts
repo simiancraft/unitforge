@@ -6,22 +6,36 @@
 import { describe, expect, it } from 'bun:test';
 import { forge } from '../../src/index.js';
 import {
+  choenixAttic,
+  chousAttic,
   debenEgypt,
   digitEgypt,
+  drachmaAttic,
   gurMesopotamia,
   heqatEgypt,
   hinEgypt,
   kushMesopotamia,
+  medimnosAttic,
+  metretesAttic,
+  minaAttic,
   minaBabylonian,
   nindanMesopotamia,
+  orgyiaAttic,
   palmEgypt,
+  pousAttic,
+  pousDoric,
+  pousOlympic,
   qedetEgypt,
   royalCubitEgypt,
   shekelBabylonian,
   shortCubitEgypt,
   shusiMesopotamia,
   silaMesopotamia,
+  stadionAttic,
+  stadionOlympic,
+  talentAttic,
   talentBabylonian,
+  tetradrachmAttic,
   ushMesopotamia,
 } from '../../src/kits/antiquity/index.js';
 import { meter, statuteMile } from '../../src/kits/length/index.js';
@@ -181,9 +195,99 @@ describe('kits/antiquity: Mesopotamia — reference values', () => {
 });
 
 describe('kits/antiquity: Mesopotamia vs Greece talent disambiguation', () => {
-  it('Babylonian talent (30 kg) is larger than Attic talent will be', () => {
-    // Attic talent ships in greece.ts at ~25.86 kg; documents the
-    // canonical disambiguation a reader of Herodotus must navigate.
+  it('Babylonian talent (30 kg) is larger than Attic talent (25.86 kg)', () => {
     expect(forge(talentBabylonian, kilogram)(1)).toBeCloseTo(30, 1);
+    expect(forge(talentAttic, kilogram)(1)).toBeCloseTo(25.86, 1);
+    expect(forge(talentBabylonian, kilogram)(1)).toBeGreaterThan(forge(talentAttic, kilogram)(1));
   });
+});
+
+describe('kits/antiquity: Greece — reference values', () => {
+  it('1 Olympic stadion = 192.27 m exactly (measured Olympia track)', () => {
+    expect(forge(stadionOlympic, meter)(1)).toBe(192.27);
+  });
+
+  it('1 Attic pous ≈ 0.296 m (Wilson 2008)', () => {
+    expect(forge(pousAttic, meter)(1)).toBeCloseTo(0.296, 9);
+  });
+
+  it('1 Doric pous ≈ 0.327 m (10% larger than Attic)', () => {
+    expect(forge(pousDoric, meter)(1)).toBeCloseTo(0.327, 9);
+    const ratio = forge(pousDoric, meter)(1) / forge(pousAttic, meter)(1);
+    expect(ratio).toBeCloseTo(1.105, 2);
+  });
+
+  it('1 Olympic pous = stadion Olympic / 600', () => {
+    const olympicPous = forge(pousOlympic, meter)(1);
+    expect(olympicPous * 600).toBeCloseTo(192.27, 9);
+  });
+
+  it('1 Attic stadion = 600 Attic pous = 177.6 m', () => {
+    expect(forge(stadionAttic, meter)(1)).toBeCloseTo(177.6, 6);
+  });
+
+  it('1 orgyia Attic = 6 Attic pous', () => {
+    const orgyiaInM = forge(orgyiaAttic, meter)(1);
+    const sixPousInM = forge(pousAttic, meter)(6);
+    expect(orgyiaInM).toBeCloseTo(sixPousInM, 12);
+  });
+
+  it('1 Attic drachma = 4.31 g (silver, post-Solonic)', () => {
+    expect(forge(drachmaAttic, kilogram)(1)).toBeCloseTo(4.31e-3, 12);
+  });
+
+  it('1 tetradrachm = 4 drachma exactly (Athenian owl)', () => {
+    const tetraInKg = forge(tetradrachmAttic, kilogram)(1);
+    const fourDrachmaInKg = forge(drachmaAttic, kilogram)(4);
+    expect(tetraInKg).toBeCloseTo(fourDrachmaInKg, 12);
+  });
+
+  it('1 Attic mina = 100 drachma = 431 g', () => {
+    expect(forge(minaAttic, kilogram)(1)).toBeCloseTo(0.431, 9);
+  });
+
+  it('1 Attic talent = 60 mina = 25.86 kg', () => {
+    expect(forge(talentAttic, kilogram)(1)).toBeCloseTo(25.86, 6);
+  });
+
+  it('1 metretes ≈ 39.4 L; 12 chous = 1 metretes', () => {
+    expect(forge(metretesAttic, liter)(1)).toBeCloseTo(39.4, 6);
+    const metretesL = forge(metretesAttic, liter)(1);
+    const twelveChousL = forge(chousAttic, liter)(12);
+    expect(twelveChousL).toBeCloseTo(metretesL, 9);
+  });
+
+  it('1 medimnos ≈ 52.5 L; 48 choenikes = 1 medimnos', () => {
+    expect(forge(medimnosAttic, liter)(1)).toBeCloseTo(52.5, 6);
+    const medimnosL = forge(medimnosAttic, liter)(1);
+    const fortyEightChoenixL = forge(choenixAttic, liter)(48);
+    expect(fortyEightChoenixL).toBeCloseTo(medimnosL, 9);
+  });
+});
+
+describe('kits/antiquity: Greece — round-trip', () => {
+  const all = [
+    pousAttic,
+    pousDoric,
+    pousOlympic,
+    stadionAttic,
+    stadionOlympic,
+    orgyiaAttic,
+    drachmaAttic,
+    tetradrachmAttic,
+    minaAttic,
+    talentAttic,
+    metretesAttic,
+    chousAttic,
+    medimnosAttic,
+    choenixAttic,
+  ];
+
+  for (const u of all) {
+    it(`${u.id} round-trips via its canonical base`, () => {
+      const value = 3.7;
+      const out = u.fromBase(u.toBase(value));
+      expect(out).toBeCloseTo(value, 10);
+    });
+  }
 });
