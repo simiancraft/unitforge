@@ -20,10 +20,15 @@
 // domain.
 //
 // Citations:
-//   - ITS-90 (International Temperature Scale of 1990, NIST) for the
-//     °C → K offset (273.15 K).
+//   - BIPM SI Brochure 9th ed. §2.3.1 (and CGPM 1967/68 Resolution 3)
+//     for the Celsius scale definition: t/°C = T/K − 273.15.
+//   - BIPM SI Brochure 9th ed. Table 2 for the kelvin definition (fixed
+//     value of the Boltzmann constant, 2019 SI redefinition).
 //   - NIST SP 811 for °F ↔ °C exact factors.
-//   - BIPM SI Brochure 9th ed. Table 2 for the kelvin definition.
+//   - ITS-90 (International Temperature Scale of 1990) is a separate
+//     practical realisation scale used by calibration laboratories; it
+//     is not the anchor for the 273.15 K offset and is referenced only
+//     where a metrological realisation is in scope.
 //
 // Authoring rules per kits/cooking/units.ts §1-3 apply verbatim.
 
@@ -42,7 +47,8 @@ export const kelvin = /*#__PURE__*/ defineUnit({
   base: true,
 });
 
-/** Celsius; affine offset from kelvin. 0 °C = 273.15 K (ITS-90); water
+/** Celsius; affine offset from kelvin. 0 °C = 273.15 K by definition
+ *  (BIPM SI Brochure 9th ed. §2.3.1; CGPM 1967/68 Resolution 3); water
  *  freezes at 0 °C / 273.15 K at standard pressure, boils at 100 °C /
  *  373.15 K. Negative values are physical (down to absolute zero =
  *  -273.15 °C). */
