@@ -30,3 +30,4 @@ export { liter } from '../volume/units.js';
 export * from './egypt.js';
 export * from './greece.js';
 export * from './mesopotamia.js';
+export * from './rome.js';

@@ -6,36 +6,54 @@
 import { describe, expect, it } from 'bun:test';
 import { forge } from '../../src/index.js';
 import {
+  actusRomanus,
+  amphoraRomana,
+  aureusAugustan,
   choenixAttic,
   chousAttic,
+  congiusRomanus,
+  cubitusRomanus,
   debenEgypt,
+  denariusAugustan,
   digitEgypt,
+  digitusRomanus,
   drachmaAttic,
   gurMesopotamia,
   heqatEgypt,
   hinEgypt,
   kushMesopotamia,
+  libraRomana,
   medimnosAttic,
   metretesAttic,
+  millePassusRomanus,
   minaAttic,
   minaBabylonian,
+  modiusRomanus,
   nindanMesopotamia,
   orgyiaAttic,
   palmEgypt,
+  palmusRomanus,
+  passusRomanus,
+  pesDrusianus,
+  pesRomanus,
   pousAttic,
   pousDoric,
   pousOlympic,
   qedetEgypt,
   royalCubitEgypt,
+  sextariusRomanus,
   shekelBabylonian,
   shortCubitEgypt,
   shusiMesopotamia,
   silaMesopotamia,
+  solidusConstantinian,
   stadionAttic,
   stadionOlympic,
   talentAttic,
   talentBabylonian,
   tetradrachmAttic,
+  unciaLengthRomanus,
+  unciaMassRomana,
   ushMesopotamia,
 } from '../../src/kits/antiquity/index.js';
 import { meter, statuteMile } from '../../src/kits/length/index.js';
@@ -263,6 +281,108 @@ describe('kits/antiquity: Greece — reference values', () => {
     const fortyEightChoenixL = forge(choenixAttic, liter)(48);
     expect(fortyEightChoenixL).toBeCloseTo(medimnosL, 9);
   });
+});
+
+describe('kits/antiquity: Rome — reference values', () => {
+  it('1 pes Romanus ≈ 0.2957 m', () => {
+    expect(forge(pesRomanus, meter)(1)).toBeCloseTo(0.2957, 9);
+  });
+
+  it('1 pes Drusianus ≈ 0.3325 m (provincial Drusian foot)', () => {
+    expect(forge(pesDrusianus, meter)(1)).toBeCloseTo(0.3325, 9);
+  });
+
+  it('1 passus = 5 pes; 1 mille passus = 1000 passus', () => {
+    const passusM = forge(passusRomanus, meter)(1);
+    const fivePesM = forge(pesRomanus, meter)(5);
+    expect(passusM).toBeCloseTo(fivePesM, 12);
+    const mileM = forge(millePassusRomanus, meter)(1);
+    expect(mileM).toBeCloseTo(passusM * 1000, 9);
+  });
+
+  it('Roman mile ≈ 1478.6 m (7.6% shorter than statute mile)', () => {
+    expect(forge(millePassusRomanus, meter)(1)).toBeCloseTo(1478.5, 1);
+    const ratio = forge(millePassusRomanus, meter)(1) / forge(statuteMile, meter)(1);
+    expect(ratio).toBeCloseTo(0.919, 2);
+  });
+
+  it('1 digitus = 1/16 pes; 1 uncia (length) = 1/12 pes; 1 palmus = 1/4 pes', () => {
+    const pesM = forge(pesRomanus, meter)(1);
+    expect(forge(digitusRomanus, meter)(16)).toBeCloseTo(pesM, 12);
+    expect(forge(unciaLengthRomanus, meter)(12)).toBeCloseTo(pesM, 12);
+    expect(forge(palmusRomanus, meter)(4)).toBeCloseTo(pesM, 12);
+  });
+
+  it('1 cubitus = 1.5 pes', () => {
+    const cubitusM = forge(cubitusRomanus, meter)(1);
+    const onePointFivePesM = forge(pesRomanus, meter)(1.5);
+    expect(cubitusM).toBeCloseTo(onePointFivePesM, 12);
+  });
+
+  it('1 actus = 120 pes', () => {
+    expect(forge(actusRomanus, meter)(1)).toBeCloseTo(120 * 0.2957, 9);
+  });
+
+  it('1 libra Augustan ≈ 327.45 g', () => {
+    expect(forge(libraRomana, kilogram)(1)).toBeCloseTo(0.32745, 9);
+  });
+
+  it('1 uncia (mass) = 1/12 libra ≈ 27.29 g', () => {
+    expect(forge(unciaMassRomana, kilogram)(12)).toBeCloseTo(0.32745, 9);
+  });
+
+  it('1 aureus Augustan = 1/40 libra ≈ 7.97 g', () => {
+    expect(forge(aureusAugustan, kilogram)(40)).toBeCloseTo(0.32745, 9);
+  });
+
+  it('1 solidus Constantinian = 1/72 libra ≈ 4.55 g', () => {
+    expect(forge(solidusConstantinian, kilogram)(72)).toBeCloseTo(0.32745, 9);
+  });
+
+  it('1 denarius Augustan ≈ 3.9 g (silver)', () => {
+    expect(forge(denariusAugustan, kilogram)(1)).toBeCloseTo(3.9e-3, 12);
+  });
+
+  it('1 sextarius ≈ 0.546 L; 1 congius = 6 sextarii; 1 amphora = 48 sextarii', () => {
+    expect(forge(sextariusRomanus, liter)(1)).toBeCloseTo(0.546, 6);
+    expect(forge(congiusRomanus, liter)(1)).toBeCloseTo(0.546 * 6, 6);
+    expect(forge(amphoraRomana, liter)(1)).toBeCloseTo(0.546 * 48, 3);
+  });
+
+  it('1 modius = 16 sextarii ≈ 8.74 L', () => {
+    expect(forge(modiusRomanus, liter)(1)).toBeCloseTo(0.546 * 16, 3);
+  });
+});
+
+describe('kits/antiquity: Rome — round-trip', () => {
+  const all = [
+    pesRomanus,
+    pesDrusianus,
+    digitusRomanus,
+    unciaLengthRomanus,
+    palmusRomanus,
+    cubitusRomanus,
+    passusRomanus,
+    millePassusRomanus,
+    actusRomanus,
+    libraRomana,
+    unciaMassRomana,
+    denariusAugustan,
+    aureusAugustan,
+    solidusConstantinian,
+    sextariusRomanus,
+    congiusRomanus,
+    amphoraRomana,
+    modiusRomanus,
+  ];
+
+  for (const u of all) {
+    it(`${u.id} round-trips via its canonical base`, () => {
+      const value = 2.71828;
+      const out = u.fromBase(u.toBase(value));
+      expect(out).toBeCloseTo(value, 10);
+    });
+  }
 });
 
 describe('kits/antiquity: Greece — round-trip', () => {
