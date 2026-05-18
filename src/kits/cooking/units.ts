@@ -20,7 +20,7 @@
 /**
  * Cooking-domain unit catalog. The kit ships VOLUME units (re-exported
  * from `kits/volume`), the cooking-tradition tail (stick of butter,
- * EU butter block, dash, pinch — domain-specific packaging and folksy
+ * EU butter block, dash, pinch; domain-specific packaging and folksy
  * measures that only make sense at a kitchen counter), and (Stage 6+)
  * the cooking-tradition temperature surface (gas marks, "low / medium
  * / high heat" descriptors). Mass and temperature scientific atoms
@@ -137,7 +137,13 @@ export const stickOfButter = /*#__PURE__*/ defineUnit({
  *  convention `stickOfButter` uses: 1 US stick (113.4 g per 21 CFR
  *  131.111) ≡ 1/2 US cup volumetric, so 1 EU block (250 g) ≡
  *  (250 / 113.4) × 1/2 US cup ≈ 2.20 sticks ≈ 1.10 US cups. For mass-
- *  based butter math, use `kits/mass` directly (250 g → kilogram). */
+ *  based butter math, use `kits/mass` directly (250 g → kilogram).
+ *
+ *  Architectural debt: this unit is density-bearing (it encodes a
+ *  butter-mass-to-volume conversion factor inside a VOLUME unit). If
+ *  a future kit ships DENSITY as a first-class dimension, reconsider
+ *  whether `butterBlockEu250g` belongs in VOLUME or in a DENSITY-aware
+ *  cooking surface. The same caveat applies to `stickOfButter`. */
 export const butterBlockEu250g = /*#__PURE__*/ defineUnit({
   id: 'butter-block-eu-250g',
   label: 'EU Butter Block (250 g)',
