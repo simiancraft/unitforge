@@ -1,3 +1,30 @@
+# [3.3.0](https://github.com/simiancraft/unitforge/compare/v3.2.2...v3.3.0) (2026-05-19)
+
+
+### Bug Fixes
+
+* **api:** correct °C to K offset citation in temperature kit ([fecafbb](https://github.com/simiancraft/unitforge/commit/fecafbb2a75e3cd826a889b6eb70cf7e912404b0))
+* **api:** correct citations and disambiguate Singapore catty ([a4190d6](https://github.com/simiancraft/unitforge/commit/a4190d6d95e07744c26a74dea9291cd3a1c25f3d))
+* **api:** correct microgram ISMP docstring and unify µ symbol ([77597df](https://github.com/simiancraft/unitforge/commit/77597dfc5337ae21f59edb06ce9e27fa7762a9e0))
+* **api:** land antiquary citation fixes; add cupRussianStakanSmall ([d9d093b](https://github.com/simiancraft/unitforge/commit/d9d093b3d9efdc290103c9a1700f46b7a9a6963e))
+* **api:** land round-two reviewer findings on kits/antiquity ([9d4819d](https://github.com/simiancraft/unitforge/commit/9d4819d299b920e74c61b6ceda4282f4f713e9ff))
+
+
+### Features
+
+* **api:** add Chinese historical units to kits/antiquity ([2b7dc31](https://github.com/simiancraft/unitforge/commit/2b7dc31f8bc28073ec1bb955ae2a95956fba24d1))
+* **api:** add English historical units to kits/antiquity ([f8b7709](https://github.com/simiancraft/unitforge/commit/f8b7709a30447b555d780f9a7b3e57ef3d3a72eb))
+* **api:** add gallon/quart/pint families and dessertspoon to volume ([4ff7539](https://github.com/simiancraft/unitforge/commit/4ff75391d2b69e0cf455b2898012eeff659c66a3))
+* **api:** add Greek units to kits/antiquity ([3e0be5a](https://github.com/simiancraft/unitforge/commit/3e0be5a0a3316f68ed5b59fbc598d5adfd28d4e6))
+* **api:** add Hebrew / biblical units to kits/antiquity ([299c44e](https://github.com/simiancraft/unitforge/commit/299c44efd6287c420bdc438694375d6319b815ed))
+* **api:** add Japanese historical units to kits/antiquity ([7c43a9d](https://github.com/simiancraft/unitforge/commit/7c43a9d0525c47752f5b4f6ee2e38feda05fda34))
+* **api:** add kits/antiquity with Egyptian units ([e1275ac](https://github.com/simiancraft/unitforge/commit/e1275ace1e54a4a9f138f5a67009076999ca7ccb))
+* **api:** add kits/astronomy; move au/ly/parsec out of kits/length ([2a6958a](https://github.com/simiancraft/unitforge/commit/2a6958af99b742c6faccf133121fbc8ff5b4edf7))
+* **api:** add MASS and TEMPERATURE dimensions; foundational-kit skeletons ([346ca82](https://github.com/simiancraft/unitforge/commit/346ca82e6ce9391a9bf1e083f7aef5d81ca265f8)), closes [#124](https://github.com/simiancraft/unitforge/issues/124) [#37](https://github.com/simiancraft/unitforge/issues/37)
+* **api:** add Mesopotamian units to kits/antiquity ([eede8db](https://github.com/simiancraft/unitforge/commit/eede8dbbd8b32b9d33d9ba1f93ae17dd6e9d77aa))
+* **api:** add Roman units to kits/antiquity ([06c61b5](https://github.com/simiancraft/unitforge/commit/06c61b5af0b80636f96a3d6a043bbbc627507eab))
+* **api:** foundational-layer refactor; ship mass + temperature kits ([364e99f](https://github.com/simiancraft/unitforge/commit/364e99f6bfbf91567922562d7151218ff94f2beb)), closes [#37](https://github.com/simiancraft/unitforge/issues/37) [#30](https://github.com/simiancraft/unitforge/issues/30)
+
 ## [3.2.2](https://github.com/simiancraft/unitforge/compare/v3.2.1...v3.2.2) (2026-05-18)
 
 
