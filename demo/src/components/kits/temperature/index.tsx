@@ -15,6 +15,7 @@ import type { KitMeta } from '../registry.js';
 import { TemperatureBackdrop } from './parts/temperature-backdrop.js';
 import { DeltaVsValueMachine } from './sections/delta-vs-value-machine/index.js';
 import { HelloTemperature } from './sections/hello-temperature.js';
+import { ReferencePointsMachine } from './sections/reference-points-machine/index.js';
 import { TEMPERATURE_ALL_UNITS, temperatureBoundsFor } from './units.js';
 import './temperature.css';
 
@@ -75,6 +76,7 @@ export function TemperatureScreen() {
         <>
           <HelloTemperature />
           <DeltaVsValueMachine />
+          <ReferencePointsMachine />
         </>
       }
     />
