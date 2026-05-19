@@ -15,6 +15,7 @@ import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { MassBackdrop } from './parts/mass-backdrop.js';
 import { HelloMass } from './sections/hello-mass.js';
+import { ThreeJinsMachine } from './sections/three-jins-machine/index.js';
 import { MASS_ALL_UNITS, massBoundsFor } from './units.js';
 import './mass.css';
 
@@ -69,6 +70,7 @@ export function MassScreen() {
       sectionsZone={
         <>
           <HelloMass />
+          <ThreeJinsMachine />
         </>
       }
     />
