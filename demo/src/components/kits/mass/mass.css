@@ -74,10 +74,9 @@
 .mass-glow-core {
   /* Bench value scales the glow opacity from 0.55 baseline up to 1.0
    * at slider-max; the gradient itself supplies the radial falloff.
-   * The opacity transition is short enough to feel live under a
-   * slider drag (220 ms eases the change so it doesn't pop). */
+   * Reduced-motion users see the opacity change snap (state-driven);
+   * everyone else gets a 220 ms ease so a slider drag feels live. */
   opacity: calc(0.55 + var(--mass-intensity, 0.5) * 0.45);
-  transition: opacity 220ms ease-out;
 }
 
 /* Inline animation-duration drives per-ring speed; default applied
@@ -97,6 +96,7 @@
   .mass-glow-core {
     animation: mass-pulse 6s ease-in-out infinite;
     transform-origin: 600px 400px;
+    transition: opacity 220ms ease-out;
   }
 }
 

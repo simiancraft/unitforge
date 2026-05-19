@@ -68,9 +68,15 @@ export function MassBackdrop({
   const core = computeCore(toUnit);
   const intensityClamped = clamp01(intensity);
 
+  // zIndex: -1 (non-inline) puts the backdrop behind every flow
+  // sibling, matching cooking + data-storage backdrops. Without it
+  // the rotating SVG corona renders on top of section headers and
+  // intro paragraphs in the middle of the page (where the glow is).
+  // The inline preview uses 0 so it stacks inside its preview card.
   const wrapperStyle: CSSProperties & Record<'--mass-intensity', string> = {
     background: 'var(--uf-bg)',
     '--mass-intensity': String(intensityClamped),
+    zIndex: inline ? 0 : -1,
   };
 
   return (
@@ -194,17 +200,14 @@ function computeRings(fromUnit: Unit<'mass', number> | undefined, intensity: num
   // more, broader. Round to integer so a unit swap moves rings by
   // discrete steps, not fractional.
   const count = 4 + Math.round(t * 4); // 4..8
-  // Innermost radius starts past the bench-card footprint so the
-  // rings stay visible at every from-unit. Smaller unit = the
-  // tightest band sits just outside the card; larger unit = bands
-  // bow outward toward the viewport edges. The 1200x800 viewBox has
-  // its center at (600, 400); the outermost ring lands inside this
-  // bound for every from-unit, but the kilometer-scale arc still
-  // bleeds dramatically off-screen for a cosmic feel.
-  const baseRadius = 200 + t * 80; // 200..280
-  // Spacing between rings: tighter for small units, more open for
-  // large.
-  const spacing = 30 + t * 70; // 30..100
+  // Both ranges interpolate linearly in t (log10 of the unit's kg
+  // value, normalized to 0..1). Smaller from-unit = tighter band
+  // hugging the bench card; larger from-unit = sparse rings reaching
+  // toward the viewport edges. The smallest-unit spacing is half
+  // what it was previously (15 instead of 30) so the microgram-end
+  // composition reads as a denser cluster.
+  const baseRadius = 150 + t * 130; // 150..280
+  const spacing = 15 + t * 85; // 15..100
 
   // Dot count per ring scales with intensity (bench value).
   const baseDots = 3 + Math.round(clamp01(intensity) * 12); // 3..15

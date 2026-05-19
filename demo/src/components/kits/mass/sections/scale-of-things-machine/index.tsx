@@ -43,19 +43,19 @@ interface ScaleThing {
 }
 
 const THINGS: readonly ScaleThing[] = [
-  { id: 'stamp', name: 'postage stamp', kg: 0.0005, hint: 'milligram regime', Icon: Mail },
-  { id: 'apple', name: 'apple', kg: 0.15, hint: 'gram regime', Icon: AppleIcon },
-  { id: 'book', name: 'hardcover book', kg: 1.5, hint: 'kilogram regime', Icon: Book },
-  { id: 'cat', name: 'house cat', kg: 4.5, hint: 'small bodyweight', Icon: Cat },
+  { id: 'stamp', name: 'postage stamp', kg: 0.0005, hint: '~500 mg', Icon: Mail },
+  { id: 'apple', name: 'apple', kg: 0.15, hint: '~150 g / 5.3 oz', Icon: AppleIcon },
+  { id: 'book', name: 'hardcover book', kg: 1.5, hint: '~1.5 kg / 3.3 lb', Icon: Book },
+  { id: 'cat', name: 'house cat', kg: 4.5, hint: '~4.5 kg / 10 lb', Icon: Cat },
   { id: 'person', name: 'average adult', kg: 70, hint: '~11 UK stone', Icon: PersonStanding },
-  { id: 'microwave', name: 'microwave oven', kg: 15, hint: 'appliance scale', Icon: Microwave },
+  { id: 'microwave', name: 'microwave oven', kg: 15, hint: '~15 kg / 33 lb', Icon: Microwave },
   { id: 'fridge', name: 'refrigerator', kg: 100, hint: '~220 lb', Icon: Refrigerator },
   { id: 'car', name: 'sedan', kg: 1500, hint: '~1.65 short ton ≠ 1.5 tonne', Icon: Car },
   {
     id: 'truck',
     name: 'shipping container (full)',
     kg: 30000,
-    hint: 'freight scale',
+    hint: '~30 t / 66,000 lb',
     Icon: Container,
   },
   { id: 'whale', name: 'blue whale', kg: 150000, hint: '~165 short ton', Icon: Fish },
@@ -132,16 +132,21 @@ function ThingTile({
   onPick: (id: string) => void;
 }) {
   if (active) {
-    return <ThingTileActive thing={thing} />;
+    return <ThingTileActive thing={thing} onPick={onPick} />;
   }
   return <ThingTileIdle thing={thing} onPick={onPick} />;
 }
 
-function ThingTileActive({ thing }: { thing: ScaleThing }) {
+// Active tile still takes onPick (idempotent click re-selects the
+// already-selected tile). Without a handler, Tab + Enter on the
+// active button is a keyboard dead-end; the no-op click preserves
+// radio-style semantics while keeping focus + interaction live.
+function ThingTileActive({ thing, onPick }: { thing: ScaleThing; onPick: (id: string) => void }) {
   const Icon = thing.Icon;
   return (
     <button
       type="button"
+      onClick={() => onPick(thing.id)}
       className="flex flex-col items-center gap-1 rounded-lg border border-uf-accent bg-uf-card p-2 text-uf-accent"
       aria-pressed="true"
     >
@@ -178,10 +183,14 @@ function SelectedSummary({ thing }: { thing: ScaleThing }) {
 }
 
 function ReadoutByFamily({ kg }: { kg: number }) {
+  // Chassis decides which family gets the accent column; downstream
+  // leaves are state-named (FamilyColumn / AccentedFamilyColumn),
+  // not flag-driven. The customary column carries the highlight so
+  // the eye sees the ton-vs-tonne-vs-long-ton gap row.
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <FamilyColumn family="SI metric" units={MASS_SI_UNITS} kg={kg} />
-      <FamilyColumn family="customary" units={MASS_CUSTOMARY_UNITS} kg={kg} accent />
+      <AccentedFamilyColumn family="customary" units={MASS_CUSTOMARY_UNITS} kg={kg} />
       <FamilyColumn family="Asian regional" units={MASS_ASIAN_UNITS} kg={kg} />
     </div>
   );
@@ -191,12 +200,9 @@ interface FamilyColumnProps {
   family: string;
   units: ReadonlyArray<Unit<'mass', number>>;
   kg: number;
-  /** When true, the customary column gets the accent-2 highlight so
-   *  the eye sees the ton-vs-tonne-vs-long-ton gap row. */
-  accent?: boolean;
 }
 
-function FamilyColumn({ family, units, kg, accent = false }: FamilyColumnProps) {
+function FamilyColumn({ family, units, kg }: FamilyColumnProps) {
   return (
     <div className="flex flex-col gap-2">
       <span className="uf-eyebrow">{family}</span>
@@ -206,35 +212,57 @@ function FamilyColumn({ family, units, kg, accent = false }: FamilyColumnProps) 
           label={unit.label}
           value={forge(kilogram, unit)(kg)}
           symbol={unit.symbol}
-          accent={accent}
         />
       ))}
     </div>
   );
 }
 
-function ReadoutRow({
+function AccentedFamilyColumn({ family, units, kg }: FamilyColumnProps) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="uf-eyebrow">
+        {family}
+        <span className="sr-only"> (highlighted column)</span>
+      </span>
+      {units.map((unit) => (
+        <AccentedReadoutRow
+          key={unit.id}
+          label={unit.label}
+          value={forge(kilogram, unit)(kg)}
+          symbol={unit.symbol}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ReadoutRow({ label, value, symbol }: { label: string; value: number; symbol: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="mono text-[10px] uppercase tracking-wider text-uf-muted">{label}</span>
+      <span className="mono leading-tight">
+        <span className="text-base text-uf-fg tabular-nums">{formatMagnitude(value)}</span>
+        <span className="ml-1 text-xs text-uf-muted">{symbol}</span>
+      </span>
+    </div>
+  );
+}
+
+function AccentedReadoutRow({
   label,
   value,
   symbol,
-  accent,
 }: {
   label: string;
   value: number;
   symbol: string;
-  accent: boolean;
 }) {
   return (
     <div className="flex flex-col">
       <span className="mono text-[10px] uppercase tracking-wider text-uf-muted">{label}</span>
       <span className="mono leading-tight">
-        <span
-          className={
-            accent ? 'text-base text-uf-accent-2 tabular-nums' : 'text-base text-uf-fg tabular-nums'
-          }
-        >
-          {formatMagnitude(value)}
-        </span>
+        <span className="text-base text-uf-accent-2 tabular-nums">{formatMagnitude(value)}</span>
         <span className="ml-1 text-xs text-uf-muted">{symbol}</span>
       </span>
     </div>

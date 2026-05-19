@@ -65,10 +65,12 @@ export function ThreeJinsMachine() {
 
   // Hero result: the headline gap (HK vs PRC, the canonical 20% case
   // every cross-border buyer knows). A single live readout that
-  // updates with the slider.
+  // updates with the slider. Format matches the cooking international-
+  // comparator cadence ("X larger by N% (Y unit)") with toFixed(0) so
+  // the percent reads as a punch, not a measurement.
   const hkPct = ((hkKg - prcKg) / prcKg) * 100;
   const hkGapKg = hkKg - prcKg;
-  const heroValue = `HK ${hkPct.toFixed(1)}% heavier than PRC (+${formatMagnitude(hkGapKg)} kg)`;
+  const heroValue = `HK heavier than PRC by ${hkPct.toFixed(0)}% (+${formatMagnitude(hkGapKg)} kg)`;
 
   return (
     <SectionLayout

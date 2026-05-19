@@ -44,12 +44,27 @@ export const MASS_CUSTOMARY_UNITS = [ounceAvoirdupois, pound, stone, shortTon, l
  *  disambiguation story this kit ships. */
 export const MASS_ASIAN_UNITS = [jinPrc, jinHk, cattySg] as const;
 
-/** Every kit-shipped mass unit, ordered by family. The bench picker and
- *  hello-mass readout iterate this. */
+/** Every kit-shipped mass unit, sequenced by ascending kilogram
+ *  value (microgram → long ton). The bench picker and hello-mass
+ *  input picker iterate this; the ascending sort makes the dropdown
+ *  read as a sized ladder rather than a family-grouped list, which
+ *  is what a user dialing in a mass actually wants. Family-grouped
+ *  iteration (for the SI / customary / Asian readout columns) uses
+ *  the per-family arrays above. */
 export const MASS_ALL_UNITS = [
-  ...MASS_SI_UNITS,
-  ...MASS_CUSTOMARY_UNITS,
-  ...MASS_ASIAN_UNITS,
+  microgram, // 1e-9 kg
+  milligram, // 1e-6 kg
+  gram, // 1e-3 kg
+  ounceAvoirdupois, // 0.0283 kg
+  pound, // 0.4536 kg
+  jinPrc, // 0.5 kg
+  jinHk, // 0.6 kg
+  cattySg, // 0.6048 kg
+  kilogram, // 1 kg
+  stone, // 6.35 kg
+  shortTon, // 907.18 kg
+  tonne, // 1000 kg
+  longTon, // 1016.05 kg
 ] as const;
 
 export type MassUnit = Unit<'mass', number>;

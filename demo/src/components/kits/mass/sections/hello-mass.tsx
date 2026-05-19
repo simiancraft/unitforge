@@ -179,42 +179,48 @@ function CustomaryColumn({ inKg }: { inKg: number }) {
 function AsianColumn({ inKg }: { inKg: number }) {
   return (
     <div className="flex flex-col gap-2">
-      <span className="uf-eyebrow">Asian regional (斤 / catty)</span>
+      <span className="uf-eyebrow">
+        Asian regional (斤 / catty)
+        <span className="sr-only"> (highlighted column)</span>
+      </span>
       {MASS_ASIAN_UNITS.map((unit) => (
-        <ValueRow
+        <AccentedValueRow
           key={unit.id}
           label={unit.label}
           value={forge(kilogram, unit)(inKg)}
           symbol={unit.symbol}
-          accent
         />
       ))}
     </div>
   );
 }
 
-function ValueRow({
+function ValueRow({ label, value, symbol }: { label: string; value: number; symbol: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="mono text-[10px] uppercase tracking-wider text-uf-muted">{label}</span>
+      <span className="mono leading-tight">
+        <span className="text-base text-uf-fg tabular-nums">{formatMagnitude(value)}</span>
+        <span className="ml-1 text-xs text-uf-muted">{symbol}</span>
+      </span>
+    </div>
+  );
+}
+
+function AccentedValueRow({
   label,
   value,
   symbol,
-  accent = false,
 }: {
   label: string;
   value: number;
   symbol: string;
-  accent?: boolean;
 }) {
   return (
     <div className="flex flex-col">
       <span className="mono text-[10px] uppercase tracking-wider text-uf-muted">{label}</span>
       <span className="mono leading-tight">
-        <span
-          className={
-            accent ? 'text-base text-uf-accent-2 tabular-nums' : 'text-base text-uf-fg tabular-nums'
-          }
-        >
-          {formatMagnitude(value)}
-        </span>
+        <span className="text-base text-uf-accent-2 tabular-nums">{formatMagnitude(value)}</span>
         <span className="ml-1 text-xs text-uf-muted">{symbol}</span>
       </span>
     </div>
