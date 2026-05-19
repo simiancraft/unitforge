@@ -54,38 +54,49 @@
   --uf-grid-faint: #f0b04820;
 }
 
-/* Mass backdrop motion. Two ambient animations carry the theme:
- *   - the gravity-well ring group slowly rotates (~120 s/turn);
- *   - the central glow pulses (~6 s cycle);
- *   - the balance-paper beam silhouette gently sways (~8 s arc).
+/* Mass backdrop motion. Bench-reactive on every axis:
+ *   - bench.fromId → ring count and spacing (state-driven; React
+ *     redraws the ring set);
+ *   - bench.toId → corona size and core diameter (state-driven);
+ *   - bench.value → dots per ring (state-driven) AND swirl speed
+ *     (state-driven via per-ring animation-duration inline style).
  *
- * All three are CSS keyframes guarded by prefers-reduced-motion so an
- * accessibility-conscious user gets the static layout. The bench's
- * slider value drives a CSS custom property `--mass-intensity` (0..1)
- * that the glow opacity reads at the SVG layer; that part stays on
- * even under reduced motion (it's a state change, not ambient drift).
+ * Each ring has its own animation-duration so inner rings spin
+ * faster than outer rings (Kepler intuition). Rings alternate
+ * direction via the mass-ring-reverse class. Core glow pulses and
+ * corona breathes on their own ambient timer.
+ *
+ * All ambient animations are guarded by prefers-reduced-motion so an
+ * accessibility-conscious user gets static rings + static corona.
+ * The size + density changes survive reduced motion (state-driven,
+ * not ambient drift).
  */
 .mass-glow-core {
   /* Bench value scales the glow opacity from 0.55 baseline up to 1.0
-   * at slider-max; the gradient itself supplies the radial falloff. */
+   * at slider-max; the gradient itself supplies the radial falloff.
+   * The opacity transition is short enough to feel live under a
+   * slider drag (220 ms eases the change so it doesn't pop). */
   opacity: calc(0.55 + var(--mass-intensity, 0.5) * 0.45);
   transition: opacity 220ms ease-out;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .mass-rings {
-    animation: mass-rotate 120s linear infinite;
-    transform-origin: 600px 400px;
-  }
+/* Inline animation-duration drives per-ring speed; default applied
+ * here is a safe fallback if a ring renders without inline style. */
+.mass-ring,
+.mass-ring-reverse {
+  transform-origin: 600px 400px;
+}
 
+@media (prefers-reduced-motion: no-preference) {
+  .mass-ring {
+    animation: mass-rotate linear infinite;
+  }
+  .mass-ring-reverse {
+    animation: mass-rotate-reverse linear infinite;
+  }
   .mass-glow-core {
     animation: mass-pulse 6s ease-in-out infinite;
     transform-origin: 600px 400px;
-  }
-
-  .mass-beam {
-    animation: mass-sway 8s ease-in-out infinite;
-    transform-origin: 600px 700px;
   }
 }
 
@@ -95,22 +106,18 @@
   }
 }
 
+@keyframes mass-rotate-reverse {
+  to {
+    transform: rotate(-1turn);
+  }
+}
+
 @keyframes mass-pulse {
   0%,
   100% {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.04);
-  }
-}
-
-@keyframes mass-sway {
-  0%,
-  100% {
-    transform: rotate(-0.6deg);
-  }
-  50% {
-    transform: rotate(0.6deg);
+    transform: scale(1.05);
   }
 }

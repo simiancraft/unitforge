@@ -27,11 +27,13 @@ export function MassScreen() {
     value: 1,
   });
   const benchBounds = massBoundsFor(bench.fromId);
+  const fromUnit = findById(MASS_ALL_UNITS, bench.fromId);
+  const toUnit = findById(MASS_ALL_UNITS, bench.toId);
 
   // Normalized slider position (0..1). Feeds the backdrop's central
-  // glow intensity so the gravity-well brightness rides along with
-  // the user's pick. Falls back to 0.5 if min equals max (would only
-  // happen with a degenerate bounds entry).
+  // glow intensity, dot count, and swirl speed via a single intensity
+  // channel. Falls back to 0.5 if min equals max (would only happen
+  // with a degenerate bounds entry).
   const intensity =
     benchBounds.max > benchBounds.min
       ? (bench.value - benchBounds.min) / (benchBounds.max - benchBounds.min)
@@ -50,7 +52,7 @@ export function MassScreen() {
 
   return (
     <KitLayout
-      backdropZone={<MassBackdrop intensity={intensity} />}
+      backdropZone={<MassBackdrop fromUnit={fromUnit} toUnit={toUnit} intensity={intensity} />}
       headerZone={
         <header className="relative flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 04</p>

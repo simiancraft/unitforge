@@ -74,8 +74,8 @@ export function ScaleOfThingsMachine() {
       headerZone={
         <SectionHeader
           eyebrow="demo 03"
-          title="scale of things"
-          kicker="the kit spans 12 orders of magnitude"
+          title="relative mass"
+          kicker="real things across 12 orders of magnitude"
           iconZone={<Car size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }
