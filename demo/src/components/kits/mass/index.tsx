@@ -28,6 +28,15 @@ export function MassScreen() {
   });
   const benchBounds = massBoundsFor(bench.fromId);
 
+  // Normalized slider position (0..1). Feeds the backdrop's central
+  // glow intensity so the gravity-well brightness rides along with
+  // the user's pick. Falls back to 0.5 if min equals max (would only
+  // happen with a degenerate bounds entry).
+  const intensity =
+    benchBounds.max > benchBounds.min
+      ? (bench.value - benchBounds.min) / (benchBounds.max - benchBounds.min)
+      : 0.5;
+
   // Same intercept pattern the cooking kit uses: a from-unit swap
   // resets value to that unit's pedagogical init so the slider never
   // strands at a position that disagrees with the new unit's range.
@@ -41,7 +50,7 @@ export function MassScreen() {
 
   return (
     <KitLayout
-      backdropZone={<MassBackdrop />}
+      backdropZone={<MassBackdrop intensity={intensity} />}
       headerZone={
         <header className="relative flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 04</p>

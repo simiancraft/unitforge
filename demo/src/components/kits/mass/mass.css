@@ -53,3 +53,64 @@
   --uf-grid: #f0b048;
   --uf-grid-faint: #f0b04820;
 }
+
+/* Mass backdrop motion. Two ambient animations carry the theme:
+ *   - the gravity-well ring group slowly rotates (~120 s/turn);
+ *   - the central glow pulses (~6 s cycle);
+ *   - the balance-paper beam silhouette gently sways (~8 s arc).
+ *
+ * All three are CSS keyframes guarded by prefers-reduced-motion so an
+ * accessibility-conscious user gets the static layout. The bench's
+ * slider value drives a CSS custom property `--mass-intensity` (0..1)
+ * that the glow opacity reads at the SVG layer; that part stays on
+ * even under reduced motion (it's a state change, not ambient drift).
+ */
+.mass-glow-core {
+  /* Bench value scales the glow opacity from 0.55 baseline up to 1.0
+   * at slider-max; the gradient itself supplies the radial falloff. */
+  opacity: calc(0.55 + var(--mass-intensity, 0.5) * 0.45);
+  transition: opacity 220ms ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mass-rings {
+    animation: mass-rotate 120s linear infinite;
+    transform-origin: 600px 400px;
+  }
+
+  .mass-glow-core {
+    animation: mass-pulse 6s ease-in-out infinite;
+    transform-origin: 600px 400px;
+  }
+
+  .mass-beam {
+    animation: mass-sway 8s ease-in-out infinite;
+    transform-origin: 600px 700px;
+  }
+}
+
+@keyframes mass-rotate {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes mass-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes mass-sway {
+  0%,
+  100% {
+    transform: rotate(-0.6deg);
+  }
+  50% {
+    transform: rotate(0.6deg);
+  }
+}
