@@ -1,3 +1,21 @@
+## [3.3.1](https://github.com/simiancraft/unitforge/compare/v3.3.0...v3.3.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* **demo:** mass backdrop spans full viewport, not content column ([c3ca547](https://github.com/simiancraft/unitforge/commit/c3ca547426e226c7171f83a9ac47420d63491154))
+* **demo:** mass section headers + intros covered by backdrop; tighten ring scale; sequence units ([08f0824](https://github.com/simiancraft/unitforge/commit/08f0824432c3d21b5ebaa57d374b41b2ef2d76ec))
+
+
+### Features
+
+* **demo:** add motion + bench-reactive intensity to mass backdrop ([eb2d658](https://github.com/simiancraft/unitforge/commit/eb2d6583e3763258d71fa26f13870b5bf1d6c933))
+* **demo:** add scale-of-things-machine to mass kit ([ea9c499](https://github.com/simiancraft/unitforge/commit/ea9c49966179481854f69fecf7592c34713957bb))
+* **demo:** add three-jins-machine to mass kit ([4f2beea](https://github.com/simiancraft/unitforge/commit/4f2beea30390a158829841b1fec364cc5d1244ce))
+* **demo:** flesh out hello-mass readout matrix ([bed1256](https://github.com/simiancraft/unitforge/commit/bed1256f91151b85d1402e541a1956597a1b1258))
+* **demo:** scaffold kits/mass demo (skeleton) ([4bc03ab](https://github.com/simiancraft/unitforge/commit/4bc03abfc32e6f85fc84cd11390e72f10b6f5660))
+* **demo:** three-jins cards become interactive A/B picker ([057a062](https://github.com/simiancraft/unitforge/commit/057a062268c432ab0fdcf6de4b4daf7a7c86db34))
+
 # [3.3.0](https://github.com/simiancraft/unitforge/compare/v3.2.2...v3.3.0) (2026-05-19)
 
 
