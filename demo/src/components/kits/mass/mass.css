@@ -1,0 +1,55 @@
+/* Mass theme. Two abstract takes on the same idea (mass is what makes
+ * things settle into equilibrium), one terrestrial and one cosmic.
+ *
+ * - mass-light → "balance paper": parchment + alchemical-encyclopedia
+ *   aesthetic. The metrologist's notebook. Sage-green accent on warm
+ *   ivory, brass ink for secondary highlights, calibration-weight
+ *   silhouettes in the backdrop.
+ *
+ * - mass-dark → "gravity well": deep space + central mass + field
+ *   lines radiating outward. Slate-blue ground, glowing amber center
+ *   (the kilogram-of-something as a star), pale cyan for secondary.
+ *
+ * Loaded eagerly by the theme provider; activated via the
+ * [data-theme='mass-{light,dark}'] selectors.
+ */
+
+[data-theme="mass-light"] {
+  /* Parchment / metrologist's notebook. Cream-ivory paper with sage
+   * green ink (the alchemical / scientific tradition; matches the
+   * encyclopedia color of an old NIST gravimetry handbook). Contrast
+   * against bg #f3eddf: accent #3d5d3a clears 7.2:1 AA Large; accent-2
+   * brass #7a5a1a clears 4.7:1 AA body. */
+  --uf-bg: #f3eddf;
+  --uf-fg: #2a2218;
+  --uf-muted: #6a5a48;
+  --uf-accent: #3d5d3a;
+  --uf-accent-2: #7a5a1a;
+  --uf-card: #faf4e6;
+  --uf-border: #c4b894;
+  --uf-code-bg: #e9e0c9;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  /* Faint scale-paper rules; ledger horizontals. */
+  --uf-grid: #3d5d3a;
+  --uf-grid-faint: #3d5d3a18;
+}
+
+[data-theme="mass-dark"] {
+  /* Gravity well / starfield. Deep slate ground with a glowing amber
+   * center, pale cyan for secondary. Reads as a physics diagram in
+   * starlight. */
+  --uf-bg: #0a0e1a;
+  --uf-fg: #e8e4d6;
+  --uf-muted: #8a92a8;
+  --uf-accent: #f0b048;
+  --uf-accent-2: #6ec2d0;
+  --uf-card: #141929;
+  --uf-border: #2a3450;
+  --uf-code-bg: #060812;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  /* Faint field-line radial overlay. */
+  --uf-grid: #f0b048;
+  --uf-grid-faint: #f0b04820;
+}

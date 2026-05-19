@@ -20,6 +20,8 @@ const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   'light-plus': () => import('shiki/themes/light-plus.mjs'),
   'rose-pine-dawn': () => import('shiki/themes/rose-pine-dawn.mjs'),
   monokai: () => import('shiki/themes/monokai.mjs'),
+  'solarized-light': () => import('shiki/themes/solarized-light.mjs'),
+  'tokyo-night': () => import('shiki/themes/tokyo-night.mjs'),
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;
