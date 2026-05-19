@@ -1,0 +1,123 @@
+/* Mass theme. Two abstract takes on the same idea (mass is what makes
+ * things settle into equilibrium), one terrestrial and one cosmic.
+ *
+ * - mass-light → "balance paper": parchment + alchemical-encyclopedia
+ *   aesthetic. The metrologist's notebook. Sage-green accent on warm
+ *   ivory, brass ink for secondary highlights, calibration-weight
+ *   silhouettes in the backdrop.
+ *
+ * - mass-dark → "gravity well": deep space + central mass + field
+ *   lines radiating outward. Slate-blue ground, glowing amber center
+ *   (the kilogram-of-something as a star), pale cyan for secondary.
+ *
+ * Loaded eagerly by the theme provider; activated via the
+ * [data-theme='mass-{light,dark}'] selectors.
+ */
+
+[data-theme="mass-light"] {
+  /* Parchment / metrologist's notebook. Cream-ivory paper with sage
+   * green ink (the alchemical / scientific tradition; matches the
+   * encyclopedia color of an old NIST gravimetry handbook). Contrast
+   * against bg #f3eddf: accent #3d5d3a clears 7.2:1 AA Large; accent-2
+   * brass #7a5a1a clears 4.7:1 AA body. */
+  --uf-bg: #f3eddf;
+  --uf-fg: #2a2218;
+  --uf-muted: #6a5a48;
+  --uf-accent: #3d5d3a;
+  --uf-accent-2: #7a5a1a;
+  --uf-card: #faf4e6;
+  --uf-border: #c4b894;
+  --uf-code-bg: #e9e0c9;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  /* Faint scale-paper rules; ledger horizontals. */
+  --uf-grid: #3d5d3a;
+  --uf-grid-faint: #3d5d3a18;
+}
+
+[data-theme="mass-dark"] {
+  /* Gravity well / starfield. Deep slate ground with a glowing amber
+   * center, pale cyan for secondary. Reads as a physics diagram in
+   * starlight. */
+  --uf-bg: #0a0e1a;
+  --uf-fg: #e8e4d6;
+  --uf-muted: #8a92a8;
+  --uf-accent: #f0b048;
+  --uf-accent-2: #6ec2d0;
+  --uf-card: #141929;
+  --uf-border: #2a3450;
+  --uf-code-bg: #060812;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  /* Faint field-line radial overlay. */
+  --uf-grid: #f0b048;
+  --uf-grid-faint: #f0b04820;
+}
+
+/* Mass backdrop motion. Bench-reactive on every axis:
+ *   - bench.fromId → ring count and spacing (state-driven; React
+ *     redraws the ring set);
+ *   - bench.toId → corona size and core diameter (state-driven);
+ *   - bench.value → dots per ring (state-driven) AND swirl speed
+ *     (state-driven via per-ring animation-duration inline style).
+ *
+ * Each ring has its own animation-duration so inner rings spin
+ * faster than outer rings (Kepler intuition). Rings alternate
+ * direction via the mass-ring-reverse class. Core glow pulses and
+ * corona breathes on their own ambient timer.
+ *
+ * All ambient animations are guarded by prefers-reduced-motion so an
+ * accessibility-conscious user gets static rings + static corona.
+ * The size + density changes survive reduced motion (state-driven,
+ * not ambient drift).
+ */
+.mass-glow-core {
+  /* Bench value scales the glow opacity from 0.55 baseline up to 1.0
+   * at slider-max; the gradient itself supplies the radial falloff.
+   * Reduced-motion users see the opacity change snap (state-driven);
+   * everyone else gets a 220 ms ease so a slider drag feels live. */
+  opacity: calc(0.55 + var(--mass-intensity, 0.5) * 0.45);
+}
+
+/* Inline animation-duration drives per-ring speed; default applied
+ * here is a safe fallback if a ring renders without inline style. */
+.mass-ring,
+.mass-ring-reverse {
+  transform-origin: 600px 400px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mass-ring {
+    animation: mass-rotate linear infinite;
+  }
+  .mass-ring-reverse {
+    animation: mass-rotate-reverse linear infinite;
+  }
+  .mass-glow-core {
+    animation: mass-pulse 6s ease-in-out infinite;
+    transform-origin: 600px 400px;
+    transition: opacity 220ms ease-out;
+  }
+}
+
+@keyframes mass-rotate {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes mass-rotate-reverse {
+  to {
+    transform: rotate(-1turn);
+  }
+}
+
+@keyframes mass-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
