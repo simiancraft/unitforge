@@ -28,22 +28,43 @@
 
 ## Kits
 
-Build your own for anything else (game state, finance, lab assays, factions). Each link below runs the kit live against the built package.
+**Have you ever wanted to:**
 
-**Foundational (canonical atoms, one dimension each):**
-- **`length`**: SI + customary + nautical (nmi) + crystallographic (Å). Astronomical units live in `kits/astronomy`.
-- **`volume`**: SI cubic + liter family + cubic imperial + fl oz US/UK + spoons + every cup variant a cookbook author has named.
+- Convert from ångströms to gigaparsecs without dropping a factor of 1e6 somewhere?
+- Scale a recipe from a US cup (236.6 mL) to a UK cup (284.1 mL) and not ruin the dish?
+- Ship Egyptian royal cubits and Roman pedes in a classics-translation tool?
+- Quote the Hubble constant in km/s/Mpc and have the type system catch the dimension mismatch when you cross it with anything else?
+- Explain to a confused user why their 1 TB drive shows up as 931 GB?
+- Define a `'sugar'` dimension in four lines and convert Coke cans to sugar cubes?
+
+The kits below cover all of those. The API is composable: a unit from one kit converts cleanly against a unit from another because every cross-kit re-export resolves to the same `Unit` instance. Build your own for anything else (game state, lab assays, factions, the in-universe currency of your favorite RPG).
+
+**Domain kits** (each link runs live against the built package):
+
+- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): shape math; 40+ derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment) over LENGTH + VOLUME + AREA + ANGLE.
+- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): recipe scaling across US/UK/metric cup variants; cooking-tradition packaging (stick of butter, EU butter block, dash, pinch); heat descriptors. Demo includes the soda-vs-sugar comparator.
+- [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; the GB-vs-GiB and Gbit-vs-MB confusion you keep explaining.
+- **`astronomy`**: solar-system to cosmological distance (au, ly, pc, kpc/Mpc/Gpc, light-second through light-hour) per IAU 2012 / 2015 resolutions.
+- **`antiquity`**: ~60 atoms across 8 civilizations (Egyptian, Mesopotamian, Greek, Roman, Hebrew, Chinese, Japanese, English-historical). Classics translation, numismatic mass, archaeological analysis. Not for clinical or commercial use; reach for it when you're reading Herodotus.
+
+**Atomic building blocks** (use directly when no domain kit fits, or compose your own kit on top):
+
+- **`length`**: SI + customary + nautical (nmi) + crystallographic (Å).
+- **`volume`**: SI cubic + liter family + cubic imperial + gallon/quart/pint/fl-oz US+UK + spoons + every cup variant a cookbook author has named.
 - **`mass`**: SI + US customary + Asian regional (jin PRC 500 g, jin HK 600 g, Singapore catty 604.79 g).
 - **`temperature`**: Kelvin + Celsius + Fahrenheit + Rankine.
-- **`data-storage`**: bytes (decimal and IEC binary), bits.
-
-**Composition / domain (re-export atoms + add domain-specific units):**
-- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): LENGTH + VOLUME re-exports + AREA + ANGLE atoms + 40+ shape derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment).
-- [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): VOLUME + MASS + TEMPERATURE re-exports + cooking-tradition packaging (stick of butter, EU butter block, dash, pinch) + heat descriptors (low through high heat). Demo includes the soda-vs-sugar comparator and live recipe scaling.
-- **`astronomy`**: solar-system + stellar + cosmological LENGTH atoms (au, ly, pc, kpc/Mpc/Gpc, light-second/minute/hour) per IAU 2012 / 2015 resolutions.
-- **`antiquity`**: Units of Antiquity. ~60 atoms across 8 civilizations (Egyptian, Mesopotamian, Greek, Roman, Hebrew, Chinese, Japanese, English-historical). For historical research, classics translation, and numismatic / archaeological analysis. Not for clinical or commercial use.
 
 ## Quick start
+
+```ts
+import { defineUnit, forge } from 'unitforge';
+
+// Custom dimension in four lines; no kit required.
+const cokeCan   = defineUnit({ id: 'coke-can',   dimension: 'sugar', toBase: (n) => n * 39, fromBase: (g) => g / 39 });
+const sugarCube = defineUnit({ id: 'sugar-cube', dimension: 'sugar', toBase: (n) => n * 4,  fromBase: (g) => g / 4  });
+
+forge(cokeCan, sugarCube)(1); // ≈ 9.75; one 12 oz Coke equals 9.75 sugar cubes
+```
 
 ```ts
 import { forge } from 'unitforge';
@@ -57,16 +78,6 @@ import { forge } from 'unitforge';
 import { gigabyte, gibibyte } from 'unitforge/kits/data-storage';
 
 forge(gigabyte, gibibyte)(500); // ≈ 465.66; the 500 GB drive Windows reports as 465 GB
-```
-
-```ts
-import { defineUnit, forge } from 'unitforge';
-
-// Userland custom dimension; nothing comes from a kit.
-const cokeCan   = defineUnit({ id: 'coke-can',   dimension: 'sugar', toBase: (n) => n * 39, fromBase: (g) => g / 39 });
-const sugarCube = defineUnit({ id: 'sugar-cube', dimension: 'sugar', toBase: (n) => n * 4,  fromBase: (g) => g / 4  });
-
-forge(cokeCan, sugarCube)(1); // ≈ 9.75; one 12 oz Coke equals 9.75 sugar cubes
 ```
 
 ```ts
