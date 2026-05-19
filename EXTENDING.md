@@ -15,23 +15,24 @@ Three categories of kit exist; they have different authoring rules. Decide which
 
 ### Foundational kits
 
-Canonical units in a well-known dimension. The base layer; other kits compose from them. Today: `geometry` (LENGTH + AREA + VOLUME + ANGLE units + 2D and 3D shape derivations and point-coordinate conversions), `data-storage` (DATA), `cooking` (VOLUME). Future scope: `mass`, `time`, `temperature`, `thermodynamics`, `electromagnetism`, `force-and-energy`, `velocity`, `currency`.
+Canonical units in a well-known dimension; one dimension per foundational kit. The base layer; domain kits re-export from these. Today: `length` (LENGTH), `volume` (VOLUME), `mass` (MASS), `temperature` (TEMPERATURE), `data-storage` (DATA). Future scope: `area` and `angle` (currently in geometry; promote when a second domain kit needs them), `time`, `electricity`, `hydro/flow`, `light`, `force-and-energy`, `velocity`, `currency`.
 
 Authoring rules:
+- **Modern, in-practice only.** Foundational kits ship units a working practitioner of 2026 might reach for: SI + customary + currently-traded regional variants (PRC market jin, HK/Taiwan catty, Singapore catty). Historical and obsolete units (pre-1835 English stones, Hideyoshi-era Japanese shō, Han-dynasty chi, Roman pes, Egyptian cubit) live in `kits/antiquity`, not here. The line: if a contemporary statute, standards document, or routinely-issued commercial document uses it, it ships here; if it's strictly archival, it doesn't. Craft-tradition survival (Japanese tea-house carpentry uses kane-jaku; British pubs serve in ale firkins) does not promote a unit to foundational; statutory or commercial-invoice currency does.
 - **Canon-correct.** Every `toBase` factor matches an authoritative source (NIST, IEC 80000, ISO, BIPM, IEEE). Wrong values in a foundational kit propagate through every downstream consumer.
-- **Comprehensive within the dimension.** A foundational LENGTH kit ships every unit a working practitioner reasonably expects; a foundational MASS kit similarly. Coverage gaps in foundationals force composition kits to invent shadow units.
-- **JSDoc cites the standard.** e.g., `/** = 0.3048 m exactly per international yard and pound agreement of 1959. */`.
+- **Comprehensive within the modern surface.** A foundational LENGTH kit ships every modern unit a working practitioner reasonably expects; a foundational MASS kit similarly. Coverage gaps in foundationals force domain kits to invent shadow units.
+- **JSDoc cites the standard.** e.g., `/** = 0.3048 m exactly per international yard and pound agreement of 1959. */`. Include historical variance as a one-sentence aside when the variance is well-known (e.g., the 14 lb stone is post-1835; pre-1835 trade stones varied 8-16 lb).
 - **Reviewer pairing**: a domain expert (geometer, pharmacist, data-hoarder, mrp-planner, astrometrist, antiquary, color-scientist) plus the architect for surface coherence.
 
 ### Composition kits
 
 A curated barrel for a working domain. Re-exports a tightly-scoped subset of atomic units from one or more foundational kits, plus a small number of domain-specific units and conversions. The point is to give a working professional a coherent, scoped surface, not to be canonically complete in any single dimension.
 
-Examples (proposed; none shipped yet): `home-improvement` (contractor subset of geometry + mass + light electrical + light finance + domain units like `boardFoot`, `roofingSquare`, `drywallSheet`), `kitchen-baking` (subset of mass + volume + temperature + time + baker's-percentage math), `sewing` (yard + fat-quarter + seam-allowance), `real-estate` (square foot + lot acreage + price-per-sqft).
+Shipped today: `geometry` (LENGTH + VOLUME re-exports + AREA + ANGLE atoms defined in-place + 40+ shape derivations), `cooking` (VOLUME + MASS + TEMPERATURE re-exports + cooking-tradition packaging units + heat descriptors), `astronomy` (9 LENGTH atoms: au, ly, parsec + kpc/Mpc/Gpc + light-second/minute/hour; re-exports `meter`/`kilometer` for benchmarking), `antiquity` (Units of Antiquity; ancient and pre-modern units by civilization, with selective re-exports from foundational kits for benchmarking). Future scope tracked as issue #37: `home-construction` (the proof-test for the pattern; LENGTH + MASS + VOLUME + TEMPERATURE + future ELECTRICITY + HYDRO + LIGHT). Other proposed surfaces: `sewing` (yard + fat-quarter + seam-allowance), `real-estate` (square foot + lot acreage + price-per-sqft), `pharmacy` (mass with `microgram` redeclared as `mcg` for clinical-dosing surface), `apothecary` (grain / scruple / dram / troy ounce / troy pound; survives in modern jewelry and historical pharmaceutical contexts).
 
 Authoring rules:
 - **Re-export atomic units, do not redefine them.** A composition kit's barrel imports `foot` from `kits/geometry` and re-exports it. The `Unit` instance is the same JS object across both kits; `forge(home.foot, geom.foot)` is identity. Redefining `foot` in two places creates two distinct `Unit` instances that fail at runtime when consumers cross them.
-- **Add 3-10 domain-specific units and conversions.** More than that and you are probably splitting a foundational kit. Fewer than that and the kit is not earning its keep as a curation layer; just import the foundational directly.
+- **Scope the domain-specific surface to the curation theme.** A single-profession kit (cooking, sewing, pharmacy) typically lands 3-10 domain-specific units beyond its re-exports; that's a soft heuristic, not a hard cap. A broad-corpus composition kit (`kits/antiquity` ships ~60 atoms across 8 civilizations) is allowed to grow when the breadth is the curation theme. If you find yourself shipping >20 atoms, justify the breadth in the kit's barrel docblock.
 - **Pedagogy: demos teach the domain, not the dimension.** A `home-improvement` demo shows "how many drywall sheets does this wall need?", not "what is a square foot?".
 - **Reviewer pairing**: a working-profession expert (a contractor, a pharmacist for pharmacy, etc.) plus the architect for surface coherence. The foundational kits the composition borrows from were already canon-checked, so the canon lens is light.
 
@@ -57,11 +58,11 @@ This is the load-bearing architectural claim that makes the composition category
 
 Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and (optionally) cross-dimensional conversions.
 
-1. **Decide on dimensions.** If your kit needs a new one (e.g. `MASS`, `TIME`, `CURRENCY`):
+1. **Decide on dimensions.** If your kit needs a new one (e.g. `TIME`, `CURRENCY`, `ELECTRICITY`):
    - Add it to `src/dimensions.ts` as `export const X = 'x' as const;` with a JSDoc canonical-base-unit note.
    - Append it to the `DIMENSIONS` tuple at the bottom of that file. The type union picks it up.
    - Dimensions are part of the public API; do not rename after release.
-   - If you only need existing dimensions (LENGTH, AREA, VOLUME, DATA, ANGLE), skip this step.
+   - If you only need existing dimensions (LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE), skip this step.
 
 2. **Create the kit directory.** `src/kits/<kit>/` with three files:
    - `units.ts`: every unit as a named export.
@@ -364,4 +365,4 @@ When in doubt: look at what files changed. If `src/` is touched and the scope is
 - [AGENTS.md](./AGENTS.md): orientation for agents and contributors.
 - [CONTRIBUTING.md](./CONTRIBUTING.md): local setup, commands, commit conventions.
 - [llms.txt](./llms.txt): condensed agent reference.
-- Existing kits (`src/kits/geometry/`, `src/kits/data-storage/`, `demo/src/components/kits/geometry/`) are the canonical examples; read them when in doubt.
+- Existing kits (foundational: `src/kits/length/`, `src/kits/volume/`, `src/kits/mass/`, `src/kits/temperature/`, `src/kits/data-storage/`; composition: `src/kits/geometry/`, `src/kits/cooking/`, `src/kits/astronomy/`, `src/kits/antiquity/`; demo surface: `demo/src/components/kits/geometry/`) are the canonical examples; read them when in doubt.

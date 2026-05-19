@@ -12,13 +12,13 @@
 // niche where applicable.
 
 import type { Unit } from 'unitforge';
+import { astronomicalUnit, lightYear, parsec } from 'unitforge/kits/astronomy';
 import {
   acre,
   angstrom,
   arcminute,
   arcsecond,
   are,
-  astronomicalUnit,
   centiliter,
   centimeter,
   cubicCentimeter,
@@ -38,7 +38,6 @@ import {
   hectare,
   inch,
   kilometer,
-  lightYear,
   liter,
   meter,
   micrometer,
@@ -47,7 +46,6 @@ import {
   millimeter,
   nanometer,
   nauticalMile,
-  parsec,
   radian,
   squareCentimeter,
   squareFoot,

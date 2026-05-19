@@ -20,6 +20,7 @@ import { ArpyGeeShop } from './sections/arpy-gee-shop.js';
 import { CoreApi } from './sections/core-api.js';
 import { ForgeBench } from './sections/forge-bench.js';
 import { KitsGrid } from './sections/kits-grid.js';
+import { KitsIntro } from './sections/kits-intro.js';
 import { useForgeStoke } from './use-forge-stoke.js';
 import './forge.css';
 
@@ -77,6 +78,7 @@ export function ForgeScreen() {
         benchZone={<ForgeBench state={bench} onChange={setBench} />}
         sectionsZone={
           <>
+            <KitsIntro />
             <KitsGrid
               currentKitId="forge"
               onActivate={onTileActivate}

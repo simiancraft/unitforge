@@ -105,7 +105,7 @@ describe('forge: cross-dimensional (object input, single output)', () => {
   });
 
   it('handles mixed input units via toBase normalization', () => {
-    // length in cm, width in m — both normalize to meters before compute.
+    // length in cm, width in m; both normalize to meters before compute.
     const toArea = forge({ length: centimeter, width: meter }, squareMeter, {
       via: areaFromRectangleLengthAndWidth,
     });

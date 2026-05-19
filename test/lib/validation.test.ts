@@ -166,7 +166,7 @@ describe('runValidators: non-function validator values', () => {
     const convert = forge({ length: meter }, squareMeter, {
       via: conversion,
       validate: {
-        // null in the validator slot — must be skipped, not invoked.
+        // null in the validator slot; must be skipped, not invoked.
         length: null as unknown as (v: unknown) => string | true,
       },
     }) as (input: Record<string, unknown>) => unknown;
