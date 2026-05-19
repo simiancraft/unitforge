@@ -68,23 +68,25 @@ export function MassBackdrop({
   const core = computeCore(toUnit);
   const intensityClamped = clamp01(intensity);
 
-  // zIndex: -1 (non-inline) puts the backdrop behind every flow
-  // sibling, matching cooking + data-storage backdrops. Without it
-  // the rotating SVG corona renders on top of section headers and
-  // intro paragraphs in the middle of the page (where the glow is).
-  // The inline preview uses 0 so it stacks inside its preview card.
+  // Matches the cooking + data-storage backdrop pattern:
+  //   - non-inline → `fixed inset-0 -z-10`: full viewport, behind
+  //     every flow sibling. `absolute inset-0` (the previous
+  //     mistake) anchored to the nearest positioned ancestor (the
+  //     page-content wrapper), constraining the gravity well to
+  //     the column width.
+  //   - inline → `absolute inset-0`: stacks inside its preview
+  //     card on the kit-grid home.
+  const className = inline
+    ? 'pointer-events-none absolute inset-0 overflow-hidden'
+    : 'pointer-events-none fixed inset-0 -z-10 overflow-hidden';
+
   const wrapperStyle: CSSProperties & Record<'--mass-intensity', string> = {
     background: 'var(--uf-bg)',
     '--mass-intensity': String(intensityClamped),
-    zIndex: inline ? 0 : -1,
   };
 
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-      style={wrapperStyle}
-    >
+    <div aria-hidden className={className} style={wrapperStyle}>
       <GravityWell rings={rings} core={core} inline={inline} />
     </div>
   );
