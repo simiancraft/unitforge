@@ -18,6 +18,7 @@ import { DataStorageScreen, meta as dataStorageMeta } from './data-storage/index
 import { ForgeScreen, meta as forgeMeta } from './forge/index.js';
 import { GeometryScreen, meta as geometryMeta } from './geometry/index.js';
 import { MassScreen, meta as massMeta } from './mass/index.js';
+import { TemperatureScreen, meta as temperatureMeta } from './temperature/index.js';
 
 export interface KitMeta {
   id: KitId;
@@ -54,6 +55,7 @@ export const KITS: readonly [KitEntry, ...KitEntry[]] = [
   { meta: dataStorageMeta, Screen: DataStorageScreen },
   { meta: cookingMeta, Screen: CookingScreen },
   { meta: massMeta, Screen: MassScreen },
+  { meta: temperatureMeta, Screen: TemperatureScreen },
 ];
 
 /** Look up a kit by its id; returns undefined if no match. */

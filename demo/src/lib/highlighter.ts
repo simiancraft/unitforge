@@ -22,6 +22,8 @@ const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   monokai: () => import('shiki/themes/monokai.mjs'),
   'solarized-light': () => import('shiki/themes/solarized-light.mjs'),
   'tokyo-night': () => import('shiki/themes/tokyo-night.mjs'),
+  'min-light': () => import('shiki/themes/min-light.mjs'),
+  dracula: () => import('shiki/themes/dracula.mjs'),
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;

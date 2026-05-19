@@ -32,6 +32,10 @@ import {
 } from '../demo/src/components/kits/cooking/sections/comparison-machine/parts/sugar-units.js';
 import { COOKING_ALL_UNITS, COOKING_UNIT_IDS } from '../demo/src/components/kits/cooking/units.js';
 import { MASS_ALL_UNITS, MASS_UNIT_IDS } from '../demo/src/components/kits/mass/units.js';
+import {
+  TEMPERATURE_ALL_UNITS,
+  TEMPERATURE_UNIT_IDS,
+} from '../demo/src/components/kits/temperature/units.js';
 
 describe('demo invariants: cooking units catalog', () => {
   it('COOKING_UNIT_IDS covers every id in COOKING_ALL_UNITS', () => {
@@ -58,6 +62,21 @@ describe('demo invariants: mass units catalog', () => {
   it('MASS_UNIT_IDS has no extra entries vs MASS_ALL_UNITS', () => {
     const fromArrayIds = MASS_ALL_UNITS.map((u) => u.id);
     for (const id of MASS_UNIT_IDS) {
+      expect(fromArrayIds).toContain(id);
+    }
+  });
+});
+
+describe('demo invariants: temperature units catalog', () => {
+  it('TEMPERATURE_UNIT_IDS covers every id in TEMPERATURE_ALL_UNITS', () => {
+    const fromArray = [...new Set(TEMPERATURE_ALL_UNITS.map((u) => u.id))].sort();
+    const fromUnion = [...new Set<string>(TEMPERATURE_UNIT_IDS)].sort();
+    expect(fromUnion).toEqual(fromArray);
+  });
+
+  it('TEMPERATURE_UNIT_IDS has no extra entries vs TEMPERATURE_ALL_UNITS', () => {
+    const fromArrayIds = TEMPERATURE_ALL_UNITS.map((u) => u.id);
+    for (const id of TEMPERATURE_UNIT_IDS) {
       expect(fromArrayIds).toContain(id);
     }
   });
