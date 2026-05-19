@@ -3,11 +3,14 @@
 // market jin (500 g), HK / Taiwan 司馬斤 (600 g), Singapore / Malaysia
 // statutory catty (604.79 g, 4/3 lb avoirdupois).
 //
-// Layout follows the cooking international-comparator pattern: pick a
-// quantity; three region cards render the kg + lb outcome with delta
-// pills against PRC; a Result hero at the bottom carries the punchy
-// percent gap as a single live readout. No prose blob at the bottom;
-// the educational context lives up in the section intro.
+// Cards are click-to-select. The "last two clicked" form the active
+// pair: clicking a third card drops the older selection (LIFO ring
+// buffer of size 2). The Result hero reads the gap between the
+// active pair, matching the cooking international-comparator cadence
+// ("X heavier than Y by N%"). Per zone-composer §1.5 the three card
+// states are named subcomponents (JinCardPrimary / JinCardSecondary
+// / JinCardIdle) and the parent picks which to render; no role flag
+// relayed to a single leaf.
 
 import { Coins } from 'lucide-react';
 import { useState } from 'react';
@@ -20,57 +23,67 @@ import { formatMagnitude } from '~/lib/format.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../../section-layout.js';
 
 interface JinCard {
+  /** Stable id (the unit's id; used for selection equality). */
+  id: string;
   /** Region label rendered above the value. */
   region: string;
-  /** Native-script label rendered as a chip. */
+  /** Region tag used in the Result hero ("PRC", "HK", "SG"). */
+  shortTag: string;
+  /** Native-script label rendered as a chip under the region. */
   shortLabel: string;
   /** kg value for the current jin quantity. */
   inKg: number;
   /** lb value for the current jin quantity. */
   inLb: number;
-  /** Percentage delta from the PRC baseline. */
-  deltaPct: number;
 }
 
 export function ThreeJinsMachine() {
   const [quantity, setQuantity] = useState(10);
+  // Pair: [aId, bId] where aId is the most recently selected. Initial
+  // pair is PRC + HK (the canonical 20% case the kit ships). Clicking
+  // a third card drops bId; clicking an already-selected card is a
+  // no-op (the pair is preserved).
+  const [pair, setPair] = useState<readonly [string, string]>([jinPrc.id, jinHk.id]);
 
-  const prcKg = forge(jinPrc, kilogram)(quantity);
-  const hkKg = forge(jinHk, kilogram)(quantity);
-  const sgKg = forge(cattySg, kilogram)(quantity);
-
-  const cards: JinCard[] = [
+  const cards: readonly JinCard[] = [
     {
+      id: jinPrc.id,
       region: 'PRC mainland',
+      shortTag: 'PRC',
       shortLabel: '市斤 / shìjīn',
-      inKg: prcKg,
+      inKg: forge(jinPrc, kilogram)(quantity),
       inLb: forge(jinPrc, pound)(quantity),
-      deltaPct: 0,
     },
     {
+      id: jinHk.id,
       region: 'HK / Taiwan',
+      shortTag: 'HK',
       shortLabel: '司馬斤 / sī mǎ jīn',
-      inKg: hkKg,
+      inKg: forge(jinHk, kilogram)(quantity),
       inLb: forge(jinHk, pound)(quantity),
-      deltaPct: ((hkKg - prcKg) / prcKg) * 100,
     },
     {
+      id: cattySg.id,
       region: 'Singapore / Malaysia',
+      shortTag: 'SG',
       shortLabel: 'catty · 4/3 lb',
-      inKg: sgKg,
+      inKg: forge(cattySg, kilogram)(quantity),
       inLb: forge(cattySg, pound)(quantity),
-      deltaPct: ((sgKg - prcKg) / prcKg) * 100,
     },
   ];
 
-  // Hero result: the headline gap (HK vs PRC, the canonical 20% case
-  // every cross-border buyer knows). A single live readout that
-  // updates with the slider. Format matches the cooking international-
-  // comparator cadence ("X larger by N% (Y unit)") with toFixed(0) so
-  // the percent reads as a punch, not a measurement.
-  const hkPct = ((hkKg - prcKg) / prcKg) * 100;
-  const hkGapKg = hkKg - prcKg;
-  const heroValue = `HK heavier than PRC by ${hkPct.toFixed(0)}% (+${formatMagnitude(hkGapKg)} kg)`;
+  const [aId, bId] = pair;
+  const aCard = cards.find((c) => c.id === aId) ?? cards[0];
+  const bCard = cards.find((c) => c.id === bId) ?? cards[1];
+  const heroValue = buildHeroValue(aCard as JinCard, bCard as JinCard);
+
+  // Selection shift: click any card to make it the new A; the old A
+  // becomes the new B; the old B falls off. Clicking an
+  // already-selected card preserves the pair (no-op).
+  const handleSelect = (id: string) => {
+    if (id === aId || id === bId) return;
+    setPair([id, aId]);
+  };
 
   return (
     <SectionLayout
@@ -87,7 +100,7 @@ export function ThreeJinsMachine() {
           斤 is one character with three modern weights: PRC market jin at 500 g (1959 metrology
           reform), HK / Taiwan 司馬斤 at 600 g, and Singapore / Malaysia statutory catty at 604.79 g
           (4/3 lb avoirdupois). Cross-border dried-goods procurement runs on this disambiguation.
-          Pick a quantity; the cards diverge on the kilogram axis.
+          Pick a quantity, then click any two regions to compare.
         </>
       }
       widgetZone={
@@ -97,10 +110,13 @@ export function ThreeJinsMachine() {
               quantity={quantity}
               onQuantityChange={setQuantity}
               cards={cards}
+              aId={aId}
+              bId={bId}
+              onSelect={handleSelect}
               heroValue={heroValue}
             />
           }
-          codeZone={<CodeBlock code={buildCode(quantity, prcKg, hkKg, sgKg)} />}
+          codeZone={<CodeBlock code={buildCode(quantity, aCard as JinCard, bCard as JinCard)} />}
         />
       }
     />
@@ -110,11 +126,22 @@ export function ThreeJinsMachine() {
 interface ThreeJinsWidgetProps {
   quantity: number;
   onQuantityChange: (next: number) => void;
-  cards: JinCard[];
+  cards: readonly JinCard[];
+  aId: string;
+  bId: string;
+  onSelect: (id: string) => void;
   heroValue: string;
 }
 
-function ThreeJinsWidget({ quantity, onQuantityChange, cards, heroValue }: ThreeJinsWidgetProps) {
+function ThreeJinsWidget({
+  quantity,
+  onQuantityChange,
+  cards,
+  aId,
+  bId,
+  onSelect,
+  heroValue,
+}: ThreeJinsWidgetProps) {
   return (
     <div className="flex flex-col gap-5">
       <Slider
@@ -129,7 +156,12 @@ function ThreeJinsWidget({ quantity, onQuantityChange, cards, heroValue }: Three
 
       <div className="grid gap-4 md:grid-cols-3">
         {cards.map((card) => (
-          <JinCardView key={card.shortLabel} card={card} />
+          <JinCardSwap
+            key={card.id}
+            card={card}
+            role={card.id === aId ? 'primary' : card.id === bId ? 'secondary' : 'idle'}
+            onSelect={onSelect}
+          />
         ))}
       </div>
 
@@ -143,46 +175,134 @@ function ThreeJinsWidget({ quantity, onQuantityChange, cards, heroValue }: Three
   );
 }
 
-function JinCardView({ card }: { card: JinCard }) {
+// Mini-chassis: pick the per-state subcomponent. Each leaf is named
+// for its state (primary / secondary / idle); no `selected` boolean
+// flag travels into the rendered JSX.
+function JinCardSwap({
+  card,
+  role,
+  onSelect,
+}: {
+  card: JinCard;
+  role: 'primary' | 'secondary' | 'idle';
+  onSelect: (id: string) => void;
+}) {
+  if (role === 'primary') return <JinCardPrimary card={card} onSelect={onSelect} />;
+  if (role === 'secondary') return <JinCardSecondary card={card} onSelect={onSelect} />;
+  return <JinCardIdle card={card} onSelect={onSelect} />;
+}
+
+function JinCardPrimary({ card, onSelect }: { card: JinCard; onSelect: (id: string) => void }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-uf-border bg-uf-card p-4">
-      <span className="uf-eyebrow">{card.region}</span>
-      <span className="mono text-xs text-uf-muted">{card.shortLabel}</span>
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className="mono text-3xl font-semibold text-uf-fg tabular-nums">
-          {formatMagnitude(card.inKg)}
-        </span>
-        <span className="text-sm text-uf-muted">kg</span>
-      </div>
-      <div className="mono text-sm text-uf-muted tabular-nums">{formatMagnitude(card.inLb)} lb</div>
-      <DeltaPill deltaPct={card.deltaPct} />
-    </div>
+    <button
+      type="button"
+      onClick={() => onSelect(card.id)}
+      aria-pressed="true"
+      className="flex flex-col gap-2 rounded-lg border-2 border-uf-accent bg-uf-card p-4 text-left ring-1 ring-uf-accent transition-colors"
+    >
+      <RolePill label="A" tone="primary" />
+      <JinCardBody card={card} tone="primary" />
+    </button>
   );
 }
 
-function DeltaPill({ deltaPct }: { deltaPct: number }) {
-  if (deltaPct === 0) {
+function JinCardSecondary({ card, onSelect }: { card: JinCard; onSelect: (id: string) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(card.id)}
+      aria-pressed="true"
+      className="flex flex-col gap-2 rounded-lg border-2 border-uf-accent-2 bg-uf-card p-4 text-left ring-1 ring-uf-accent-2 transition-colors"
+    >
+      <RolePill label="B" tone="secondary" />
+      <JinCardBody card={card} tone="secondary" />
+    </button>
+  );
+}
+
+function JinCardIdle({ card, onSelect }: { card: JinCard; onSelect: (id: string) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(card.id)}
+      aria-pressed="false"
+      className="flex flex-col gap-2 rounded-lg border border-uf-border bg-uf-card p-4 text-left transition-colors hover:border-uf-accent"
+    >
+      <RolePill label="click to compare" tone="idle" />
+      <JinCardBody card={card} tone="idle" />
+    </button>
+  );
+}
+
+function JinCardBody({ card, tone }: { card: JinCard; tone: 'primary' | 'secondary' | 'idle' }) {
+  const kgClass =
+    tone === 'primary'
+      ? 'mono text-3xl font-semibold text-uf-accent tabular-nums'
+      : tone === 'secondary'
+        ? 'mono text-3xl font-semibold text-uf-accent-2 tabular-nums'
+        : 'mono text-3xl font-semibold text-uf-fg tabular-nums';
+  return (
+    <>
+      <span className="uf-eyebrow">{card.region}</span>
+      <span className="mono text-xs text-uf-muted">{card.shortLabel}</span>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className={kgClass}>{formatMagnitude(card.inKg)}</span>
+        <span className="text-sm text-uf-muted">kg</span>
+      </div>
+      <div className="mono text-sm text-uf-muted tabular-nums">{formatMagnitude(card.inLb)} lb</div>
+    </>
+  );
+}
+
+function RolePill({ label, tone }: { label: string; tone: 'primary' | 'secondary' | 'idle' }) {
+  if (tone === 'primary') {
     return (
-      <span className="mt-1 inline-block w-fit rounded-full border border-uf-border bg-uf-card px-2 py-0.5 text-[10px] uppercase tracking-wider text-uf-muted">
-        baseline
+      <span className="inline-block w-fit rounded-full bg-uf-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-uf-bg">
+        {label}
       </span>
     );
   }
-  const sign = deltaPct > 0 ? '+' : '';
+  if (tone === 'secondary') {
+    return (
+      <span className="inline-block w-fit rounded-full bg-uf-accent-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-uf-bg">
+        {label}
+      </span>
+    );
+  }
   return (
-    <span className="mt-1 inline-block w-fit rounded-full border border-uf-accent bg-uf-card px-2 py-0.5 text-[10px] font-medium text-uf-accent">
-      {sign}
-      {deltaPct.toFixed(1)}% vs PRC
+    <span className="inline-block w-fit rounded-full border border-uf-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-uf-muted">
+      {label}
     </span>
   );
 }
 
-function buildCode(quantity: number, prcKg: number, hkKg: number, sgKg: number): string {
-  return `import { forge } from 'unitforge';
-import { cattySg, jinHk, jinPrc, kilogram } from 'unitforge/kits/mass';
+function buildHeroValue(a: JinCard, b: JinCard): string {
+  const gap = Math.abs(a.inKg - b.inKg);
+  if (gap < 0.001) {
+    return `equal at ${formatMagnitude(a.inKg)} kg`;
+  }
+  const heavier = a.inKg > b.inKg ? a : b;
+  const lighter = a.inKg > b.inKg ? b : a;
+  const pct = ((heavier.inKg - lighter.inKg) / lighter.inKg) * 100;
+  return `${heavier.shortTag} heavier than ${lighter.shortTag} by ${pct.toFixed(0)}% (+${formatMagnitude(gap)} kg)`;
+}
 
-const prc = forge(jinPrc, kilogram)(${quantity}); // ${formatMagnitude(prcKg)}
-const hk  = forge(jinHk,  kilogram)(${quantity}); // ${formatMagnitude(hkKg)}
-const sg  = forge(cattySg, kilogram)(${quantity}); // ${formatMagnitude(sgKg)}
+function buildCode(quantity: number, a: JinCard, b: JinCard): string {
+  const aImport = importNameFor(a.id);
+  const bImport = importNameFor(b.id);
+  return `import { forge } from 'unitforge';
+import { ${[aImport, bImport, 'kilogram'].sort().join(', ')} } from 'unitforge/kits/mass';
+
+// A: ${a.region} at ${quantity} jin
+const aKg = forge(${aImport}, kilogram)(${quantity}); // ${formatMagnitude(a.inKg)}
+
+// B: ${b.region} at ${quantity} jin
+const bKg = forge(${bImport}, kilogram)(${quantity}); // ${formatMagnitude(b.inKg)}
 `;
+}
+
+function importNameFor(id: string): string {
+  if (id === jinPrc.id) return 'jinPrc';
+  if (id === jinHk.id) return 'jinHk';
+  return 'cattySg';
 }
