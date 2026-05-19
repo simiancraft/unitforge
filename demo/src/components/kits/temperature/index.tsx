@@ -13,6 +13,7 @@ import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { TemperatureBackdrop } from './parts/temperature-backdrop.js';
+import { DeltaVsValueMachine } from './sections/delta-vs-value-machine/index.js';
 import { HelloTemperature } from './sections/hello-temperature.js';
 import { TEMPERATURE_ALL_UNITS, temperatureBoundsFor } from './units.js';
 import './temperature.css';
@@ -73,6 +74,7 @@ export function TemperatureScreen() {
       sectionsZone={
         <>
           <HelloTemperature />
+          <DeltaVsValueMachine />
         </>
       }
     />
