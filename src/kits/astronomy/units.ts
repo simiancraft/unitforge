@@ -136,8 +136,10 @@ export const kiloparsec = /*#__PURE__*/ defineUnit({
 });
 
 /** 1 Mpc = 10⁶ pc. Extragalactic-scale distances; the Hubble
- *  constant is conventionally quoted in km/s/Mpc, and galactic
- *  redshift distances are denominated in Mpc. */
+ *  constant is conventionally quoted in km/s/Mpc, and extragalactic
+ *  redshift distances are denominated in Mpc. (Intra-galactic
+ *  distances are in kpc; the Solar System sits at ~8.18 kpc from
+ *  the galactic center.) */
 export const megaparsec = /*#__PURE__*/ defineUnit({
   id: 'megaparsec',
   label: 'Megaparsec',

@@ -237,7 +237,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full per-task command table.
 
 Three layers, all gated on every CI build:
 
-- **Unit tests** (`bun test`): 470+ tests; **100.00% line coverage**. Tracked via Codecov.
+- **Unit tests** (`bun test`): 770+ tests; **100.00% line coverage**. Tracked via Codecov.
 - **Property-based fuzz** via [fast-check](https://github.com/dubzzz/fast-check) in `test/fuzz/`. Also satisfies the [OpenSSF Scorecard](https://github.com/ossf/scorecard) Fuzzing check.
 - **Mutation testing** via [Stryker](https://stryker-mutator.io/) (`bun run mutation`): **96.36%** score; CI break threshold 75%.
 
