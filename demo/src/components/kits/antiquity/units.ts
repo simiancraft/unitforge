@@ -165,7 +165,11 @@ export function anchorsFor(dimension: Dimension): readonly AntiquityUnit[] {
   }
 }
 
-const LENGTH_ANCHORS: readonly AntiquityUnit[] = [meter, foot, statuteMile];
+// Length translator anchors are meter + foot only; statute-mile reads
+// as ~0 for personal-scale units (a cubit is 0.0003 mi) and adds noise.
+// The bench keeps statute-mile as a from/to option for the distance-
+// scale units that warrant it (stadion, mille passus).
+const LENGTH_ANCHORS: readonly AntiquityUnit[] = [meter, foot];
 const MASS_ANCHORS: readonly AntiquityUnit[] = [kilogram, pound];
 const VOLUME_ANCHORS: readonly AntiquityUnit[] = [liter];
 
