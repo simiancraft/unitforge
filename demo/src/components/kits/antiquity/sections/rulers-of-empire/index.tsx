@@ -17,7 +17,7 @@ import { meter } from 'unitforge/kits/antiquity';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../../section-layout.js';
-import { type RulerEntry, RULERS_CUBIT_CLASS, RULERS_FOOT_CLASS } from '../../units.js';
+import { RULERS_CUBIT_CLASS, RULERS_FOOT_CLASS, type RulerEntry } from '../../units.js';
 
 type ClassId = 'foot' | 'cubit';
 

@@ -45,7 +45,7 @@ The kits below cover all of those. The API is composable: a unit from one kit co
 - [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): recipe scaling across US/UK/metric cup variants; cooking-tradition packaging (stick of butter, EU butter block, dash, pinch); heat descriptors. Demo includes the soda-vs-sugar comparator.
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; the GB-vs-GiB and Gbit-vs-MB confusion you keep explaining.
 - **`astronomy`**: solar-system to cosmological distance (au, ly, pc, kpc/Mpc/Gpc, light-second through light-hour) per IAU 2012 / 2015 resolutions.
-- **`antiquity`**: ~60 atoms across 8 civilizations (Egyptian, Mesopotamian, Greek, Roman, Hebrew, Chinese, Japanese, English-historical). Classics translation, numismatic mass, archaeological analysis. Not for clinical or commercial use; reach for it when you're reading Herodotus.
+- [**`antiquity`**](https://simiancraft.github.io/unitforge/#/antiquity): ~90 atoms across 8 civilizations (Egyptian, Mesopotamian, Greek, Roman, Hebrew, Chinese, Japanese, English-historical). Classics translation, numismatic mass, archaeological analysis. Not for clinical or commercial use; reach for it when you're reading Herodotus. Demo includes the rulers-of-empire length comparator and the coin scale.
 
 **Atomic building blocks** (use directly when no domain kit fits, or compose your own kit on top):
 

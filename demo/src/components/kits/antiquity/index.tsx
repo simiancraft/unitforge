@@ -13,6 +13,7 @@ import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { AntiquityBackdrop } from './parts/antiquity-backdrop.js';
+import { CoinScale } from './sections/coin-scale/index.js';
 import { HelloAntiquity } from './sections/hello-antiquity.js';
 import { RulersOfEmpire } from './sections/rulers-of-empire/index.js';
 import { ANTIQUITY_LENGTH_BENCH, antiquityLengthBoundsFor } from './units.js';
@@ -74,6 +75,7 @@ export function AntiquityScreen() {
         <>
           <HelloAntiquity />
           <RulersOfEmpire />
+          <CoinScale />
         </>
       }
     />
