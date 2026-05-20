@@ -1,0 +1,77 @@
+/* Antiquity theme. Two takes on reading old measurements off old
+ * surfaces:
+ *
+ *   - antiquity-light → "papyrus": warm parchment ground, iron-gall
+ *     ink text, terracotta accent, lapis-blue secondary. The
+ *     scribe's page.
+ *   - antiquity-dark → "lamplit bronze": deep umber ground, aged-gold
+ *     accent, verdigris (patina) secondary. A bronze libra weight
+ *     under museum light.
+ *
+ * Loaded eagerly by the theme provider; activated via the
+ * [data-theme='antiquity-{light,dark}'] selectors.
+ */
+
+[data-theme="antiquity-light"] {
+  /* Papyrus / iron-gall ink. Warm cream ground with a terracotta
+   * accent and lapis secondary. Contrast checked: #9a3b1f accent on
+   * #f1e7d0 ground clears 5.6:1 AA body. */
+  --uf-bg: #f1e7d0;
+  --uf-fg: #2e2113;
+  --uf-muted: #6f5b3e;
+  --uf-accent: #9a3b1f;
+  --uf-accent-2: #2c5d86;
+  --uf-card: #f8f1de;
+  --uf-border: #cdb487;
+  --uf-code-bg: #e9dcbf;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  --uf-grid: #9a3b1f;
+  --uf-grid-faint: #9a3b1f18;
+}
+
+[data-theme="antiquity-dark"] {
+  /* Lamplit bronze. Deep umber-black ground, aged-gold accent,
+   * verdigris secondary so the gold/patina polarity reads in the
+   * SVG without leaning on the card colors. */
+  --uf-bg: #100b06;
+  --uf-fg: #ecd9b4;
+  --uf-muted: #998761;
+  --uf-accent: #c8962f;
+  --uf-accent-2: #4a9d86;
+  --uf-card: #1b140c;
+  --uf-border: #3a2c1a;
+  --uf-code-bg: #0a0703;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  --uf-grid: #c8962f;
+  --uf-grid-faint: #c8962f22;
+}
+
+/* Backdrop motion. The backdrop is a field of inscribed tally marks
+ * (the oldest measurement record). The bench's normalized slider
+ * position feeds `--ant-intensity` (0..1); the tick field's opacity
+ * and a slow drift scale with it, so a larger measured value reads
+ * as a denser inscription.
+ *
+ * State-driven properties (tick opacity, accent glow) survive under
+ * reduced-motion; only the ambient drift keyframe is guarded. */
+@media (prefers-reduced-motion: no-preference) {
+  .ant-drift {
+    animation: ant-drift 28s ease-in-out infinite;
+    transform-origin: 600px 400px;
+  }
+  .ant-glow {
+    transition: opacity 240ms ease-out;
+  }
+}
+
+@keyframes ant-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-14px, 8px);
+  }
+}
