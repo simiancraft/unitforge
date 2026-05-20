@@ -26,6 +26,10 @@
 
 import { describe, expect, it } from 'bun:test';
 import {
+  ANTIQUITY_LENGTH_BENCH,
+  ANTIQUITY_LENGTH_BENCH_IDS,
+} from '../demo/src/components/kits/antiquity/units.js';
+import {
   FOODS,
   SODA_FL_OZ,
   SODAS,
@@ -77,6 +81,21 @@ describe('demo invariants: temperature units catalog', () => {
   it('TEMPERATURE_UNIT_IDS has no extra entries vs TEMPERATURE_ALL_UNITS', () => {
     const fromArrayIds = TEMPERATURE_ALL_UNITS.map((u) => u.id);
     for (const id of TEMPERATURE_UNIT_IDS) {
+      expect(fromArrayIds).toContain(id);
+    }
+  });
+});
+
+describe('demo invariants: antiquity length-bench catalog', () => {
+  it('ANTIQUITY_LENGTH_BENCH_IDS covers every id in ANTIQUITY_LENGTH_BENCH', () => {
+    const fromArray = [...new Set(ANTIQUITY_LENGTH_BENCH.map((u) => u.id))].sort();
+    const fromUnion = [...new Set<string>(ANTIQUITY_LENGTH_BENCH_IDS)].sort();
+    expect(fromUnion).toEqual(fromArray);
+  });
+
+  it('ANTIQUITY_LENGTH_BENCH_IDS has no extra entries vs ANTIQUITY_LENGTH_BENCH', () => {
+    const fromArrayIds = ANTIQUITY_LENGTH_BENCH.map((u) => u.id);
+    for (const id of ANTIQUITY_LENGTH_BENCH_IDS) {
       expect(fromArrayIds).toContain(id);
     }
   });

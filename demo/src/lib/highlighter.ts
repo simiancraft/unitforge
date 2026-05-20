@@ -24,6 +24,8 @@ const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   'tokyo-night': () => import('shiki/themes/tokyo-night.mjs'),
   'min-light': () => import('shiki/themes/min-light.mjs'),
   dracula: () => import('shiki/themes/dracula.mjs'),
+  'gruvbox-light-medium': () => import('shiki/themes/gruvbox-light-medium.mjs'),
+  'gruvbox-dark-medium': () => import('shiki/themes/gruvbox-dark-medium.mjs'),
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;
