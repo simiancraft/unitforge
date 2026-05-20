@@ -1,0 +1,107 @@
+/* Temperature theme. Two takes on the same conceptual axis (heat is
+ * molecular motion / radiated energy), one cosmic and one
+ * instrument-counter:
+ *
+ *   - temperature-dark → "arctic to ember": deep cyan-black abyss
+ *     at the cold edge, glowing amber-red at the hot edge. The
+ *     visual reads as thermal-imaging false-color.
+ *   - temperature-light → "lab paper": pale parchment with a
+ *     mercury-thermometer column. The metrologist's reading.
+ *
+ * Loaded eagerly by the theme provider; activated via the
+ * [data-theme='temperature-{light,dark}'] selectors.
+ */
+
+[data-theme="temperature-light"] {
+  /* Lab parchment / thermometer glass. Pale cream with a crisp red
+   * accent (mercury), pale blue secondary (cold). Contrast checked:
+   * #c4452a accent on #f5efe2 bg clears 5.0:1 AA body. */
+  --uf-bg: #f5efe2;
+  --uf-fg: #2a1e1a;
+  --uf-muted: #6e5a4a;
+  --uf-accent: #c4452a;
+  --uf-accent-2: #2a6e9c;
+  --uf-card: #fbf6e9;
+  --uf-border: #c8b89e;
+  --uf-code-bg: #ece4cf;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  --uf-grid: #c4452a;
+  --uf-grid-faint: #c4452a18;
+}
+
+[data-theme="temperature-dark"] {
+  /* Arctic abyss to ember. Deep navy ground with a warm amber-red
+   * core; pale cyan for the cold-side secondary so the cold/hot
+   * polarity reads in the SVG without leaning on the kit colors. */
+  --uf-bg: #060a14;
+  --uf-fg: #ecdfc8;
+  --uf-muted: #788ba8;
+  --uf-accent: #ef6a3a;
+  --uf-accent-2: #6ec0e0;
+  --uf-card: #0e1626;
+  --uf-border: #25324a;
+  --uf-code-bg: #03060e;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  --uf-grid: #ef6a3a;
+  --uf-grid-faint: #ef6a3a22;
+}
+
+/* Backdrop motion. Particles vibrate faster at higher slider values
+ * (per the molecular-motion picture: temperature IS kinetic energy).
+ * The bench's normalized slider position feeds `--temp-intensity`
+ * (0..1); inline animation-duration scales with that to speed up
+ * particle motion as the slider climbs.
+ *
+ * State-driven properties (gradient hue, particle radius, eye-glow
+ * opacity) survive under reduced-motion preferences; only the
+ * ambient drift keyframes are guarded. */
+.temp-particles,
+.temp-thermometer {
+  /* Defaults applied here are safe fallbacks if the inline duration
+   * style is missing. */
+  transform-origin: 600px 400px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .temp-particle {
+    animation: temp-jitter ease-in-out infinite;
+  }
+  .temp-glow {
+    animation: temp-pulse 5s ease-in-out infinite;
+    transform-origin: 600px 400px;
+    transition: opacity 220ms ease-out;
+  }
+  .temp-thermometer-fill {
+    transition:
+      height 320ms ease-out,
+      background 320ms ease-out;
+  }
+}
+
+@keyframes temp-jitter {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(3px, -2px);
+  }
+  50% {
+    transform: translate(-2px, 3px);
+  }
+  75% {
+    transform: translate(2px, 2px);
+  }
+}
+
+@keyframes temp-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
