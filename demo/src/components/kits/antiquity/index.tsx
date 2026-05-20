@@ -14,6 +14,7 @@ import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { AntiquityBackdrop } from './parts/antiquity-backdrop.js';
 import { HelloAntiquity } from './sections/hello-antiquity.js';
+import { RulersOfEmpire } from './sections/rulers-of-empire/index.js';
 import { ANTIQUITY_LENGTH_BENCH, antiquityLengthBoundsFor } from './units.js';
 import './antiquity.css';
 
@@ -69,7 +70,12 @@ export function AntiquityScreen() {
           label="forge bench · antiquity (length)"
         />
       }
-      sectionsZone={<HelloAntiquity />}
+      sectionsZone={
+        <>
+          <HelloAntiquity />
+          <RulersOfEmpire />
+        </>
+      }
     />
   );
 }

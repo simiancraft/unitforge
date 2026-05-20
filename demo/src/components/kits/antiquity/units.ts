@@ -279,7 +279,6 @@ export const RULERS_FOOT_CLASS: readonly RulerEntry[] = [
   { unit: pesRomanus, civ: 'Rome' },
   { unit: chiHan, civ: 'China (Han)' },
   { unit: shakuKaneJaku, civ: 'Japan (Edo)' },
-  { unit: palmEgypt, civ: 'Egypt (palm)' },
 ];
 
 /** Cubit-class length units: the forearm-length unit, the older and
