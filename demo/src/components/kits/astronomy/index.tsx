@@ -17,6 +17,9 @@ import { DistanceLadder } from './sections/distance-ladder.js';
 import { GenerationsMachine } from './sections/generations-machine/index.js';
 import { HubbleMachine } from './sections/hubble-machine/index.js';
 import { LightDelayMachine } from './sections/light-delay-machine/index.js';
+import { ScaleModelMachine } from './sections/scale-model-machine/index.js';
+import { StandingStillMachine } from './sections/standing-still-machine/index.js';
+import { TelescopeMachine } from './sections/telescope-machine/index.js';
 import { ASTRONOMY_ALL_UNITS, ASTRONOMY_UNIT_IDS, astronomyBoundsFor } from './units.js';
 import './astronomy.css';
 
@@ -74,8 +77,11 @@ export function AstronomyScreen() {
         <>
           <DistanceLadder />
           <LightDelayMachine />
-          <GenerationsMachine />
           <HubbleMachine />
+          <GenerationsMachine />
+          <TelescopeMachine />
+          <ScaleModelMachine />
+          <StandingStillMachine />
         </>
       }
     />

@@ -21,7 +21,7 @@ import { Result } from '~/components/ui/result.js';
 import { formatMagnitude } from '~/lib/format.js';
 import { head } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../../section-layout.js';
-import { type AstronomyUnit } from '../../units.js';
+import type { AstronomyUnit } from '../../units.js';
 
 interface Destination {
   id: string;
@@ -56,14 +56,20 @@ const DESTINATIONS: readonly Destination[] = [
 const SPECIES: readonly Species[] = [
   { id: 'human', name: 'human', plural: 'human generations', lifespan: 73, Icon: PersonStanding },
   { id: 'dog', name: 'dog', plural: 'dog generations', lifespan: 12, Icon: Dog },
-  { id: 'tortoise', name: 'Galápagos tortoise', plural: 'tortoise generations', lifespan: 150, Icon: Turtle },
+  {
+    id: 'tortoise',
+    name: 'Galápagos tortoise',
+    plural: 'tortoise generations',
+    lifespan: 150,
+    Icon: Turtle,
+  },
   { id: 'mayfly', name: 'mayfly', plural: 'mayfly generations', lifespan: 0.0027, Icon: Bug },
 ];
 
 // Voyager 1's heliocentric speed is ~17 km/s; c is 299,792.458 km/s.
 const SPEEDS: readonly Speed[] = [
   { id: 'light', name: 'light speed', fraction: 1 },
-  { id: 'voyager', name: "Voyager 1 (17 km/s)", fraction: 17 / 299792.458 },
+  { id: 'voyager', name: 'Voyager 1 (17 km/s)', fraction: 17 / 299792.458 },
 ];
 
 const FALLBACK_DEST: Destination = head(DESTINATIONS);
@@ -98,8 +104,8 @@ export function GenerationsMachine() {
         <>
           A light-year is the distance light crosses in a year, so forging a distance into
           light-years hands you the one-way travel time at light speed for free. Divide by a real
-          craft's speed and a species' lifespan and you get generations. At Voyager's actual pace, it
-          is roughly 600 million human generations to Andromeda. Pick a trip.
+          craft's speed and a species' lifespan and you get generations. At Voyager's actual pace,
+          it is roughly 600 million human generations to Andromeda. Pick a trip.
         </>
       }
       widgetZone={
@@ -197,16 +203,21 @@ function GenerationsWidget({
 function GenerationsIcons({ species, count }: { species: Species; count: number }) {
   const shown = Math.max(1, Math.min(ICON_CAP, Math.round(count)));
   const Icon = species.Icon;
+  // Stable per-slot keys so the decorative cluster doesn't key on the
+  // raw map index (the icons are identical and never reorder).
+  const slots = Array.from({ length: shown }, (_, i) => `${species.id}-${i}`);
   return (
     <div
       className="flex flex-wrap gap-1.5 rounded-md border border-uf-border bg-uf-card p-3"
       aria-hidden
     >
-      {Array.from({ length: shown }, (_, i) => (
-        <Icon key={i} size={16} strokeWidth={1.5} className="text-uf-accent-2" />
+      {slots.map((slot) => (
+        <Icon key={slot} size={16} strokeWidth={1.5} className="text-uf-accent-2" />
       ))}
       {count > ICON_CAP ? (
-        <span className="self-center text-xs text-uf-muted">+{formatMagnitude(count - shown)} more</span>
+        <span className="self-center text-xs text-uf-muted">
+          +{formatMagnitude(count - shown)} more
+        </span>
       ) : null}
     </div>
   );
@@ -221,7 +232,15 @@ function PillGroup({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function PillActive({ label, id, onPick }: { label: string; id: string; onPick: (id: string) => void }) {
+function PillActive({
+  label,
+  id,
+  onPick,
+}: {
+  label: string;
+  id: string;
+  onPick: (id: string) => void;
+}) {
   return (
     <button
       type="button"
@@ -234,7 +253,15 @@ function PillActive({ label, id, onPick }: { label: string; id: string; onPick: 
   );
 }
 
-function PillIdle({ label, id, onPick }: { label: string; id: string; onPick: (id: string) => void }) {
+function PillIdle({
+  label,
+  id,
+  onPick,
+}: {
+  label: string;
+  id: string;
+  onPick: (id: string) => void;
+}) {
   return (
     <button
       type="button"
