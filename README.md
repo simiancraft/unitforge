@@ -52,7 +52,7 @@ The kits below cover all of those. The API is composable: a unit from one kit co
 - **`length`**: SI + customary + nautical (nmi) + crystallographic (Å).
 - **`volume`**: SI cubic + liter family + cubic imperial + gallon/quart/pint/fl-oz US+UK + spoons + every cup variant a cookbook author has named.
 - [**`mass`**](https://simiancraft.github.io/unitforge/#/mass): SI + US customary + Asian regional (jin PRC 500 g, jin HK 600 g, Singapore catty 604.79 g). Demo includes the three-jins regional comparator and a real-things mass anchor across 12 orders of magnitude.
-- **`temperature`**: Kelvin + Celsius + Fahrenheit + Rankine.
+- [**`temperature`**](https://simiancraft.github.io/unitforge/#/temperature): Kelvin + Celsius + Fahrenheit + Rankine. Demo includes the value-vs-delta machine (10 °F is -12.22 °C as a value, +5.56 °C as a delta) and thermal landmarks from absolute zero to the Sun's photosphere.
 
 ## Quick start
 
