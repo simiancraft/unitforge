@@ -46,7 +46,10 @@ export function LightDelayMachine() {
   const minutes = forge(astronomicalUnit, lightMinute)(dest.au);
   const hours = forge(astronomicalUnit, lightHour)(dest.au);
   // Read in the unit that gives a legible number: hours past 90 min.
-  const delay = minutes >= 90 ? `${formatMagnitude(hours)} light-hours` : `${formatMagnitude(minutes)} light-minutes`;
+  const delay =
+    minutes >= 90
+      ? `${formatMagnitude(hours)} light-hours`
+      : `${formatMagnitude(minutes)} light-minutes`;
   const km = forge(astronomicalUnit, kilometer)(dest.au);
 
   return (
@@ -68,9 +71,7 @@ export function LightDelayMachine() {
       }
       widgetZone={
         <WidgetLayout
-          interactionZone={
-            <DelayWidget dest={dest} delay={delay} km={km} onPick={setId} />
-          }
+          interactionZone={<DelayWidget dest={dest} delay={delay} km={km} onPick={setId} />}
           codeZone={<CodeBlock code={buildCode(dest)} />}
         />
       }

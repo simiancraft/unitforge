@@ -12,11 +12,11 @@ import { findById } from '~/lib/units.js';
 import { Bench, type BenchState } from '../bench.js';
 import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
-import { AstronomyBackdrop } from './parts/astronomy-backdrop.js';
+import { SolarSystemBackdrop } from './parts/solar-system-backdrop.js';
 import { DistanceLadder } from './sections/distance-ladder.js';
 import { HubbleMachine } from './sections/hubble-machine/index.js';
 import { LightDelayMachine } from './sections/light-delay-machine/index.js';
-import { ASTRONOMY_ALL_UNITS, astronomyBoundsFor } from './units.js';
+import { ASTRONOMY_ALL_UNITS, ASTRONOMY_UNIT_IDS, astronomyBoundsFor } from './units.js';
 import './astronomy.css';
 
 export function AstronomyScreen() {
@@ -27,10 +27,11 @@ export function AstronomyScreen() {
   });
   const benchBounds = astronomyBoundsFor(bench.fromId);
 
-  const intensity =
-    benchBounds.max > benchBounds.min
-      ? (bench.value - benchBounds.min) / (benchBounds.max - benchBounds.min)
-      : 0.4;
+  // Backdrop zoom is driven by which unit is selected, not the slider
+  // position: kilometer (index 0) holds the camera tight on the system,
+  // gigaparsec (last) pulls it to deep field. Each unit pick is a step.
+  const unitIndex = ASTRONOMY_UNIT_IDS.indexOf(bench.fromId as (typeof ASTRONOMY_UNIT_IDS)[number]);
+  const zoom = unitIndex < 0 ? 0.35 : unitIndex / (ASTRONOMY_UNIT_IDS.length - 1);
 
   const handleBenchChange = (next: BenchState) => {
     if (next.fromId !== bench.fromId) {
@@ -42,7 +43,7 @@ export function AstronomyScreen() {
 
   return (
     <KitLayout
-      backdropZone={<AstronomyBackdrop intensity={intensity} />}
+      backdropZone={<SolarSystemBackdrop zoom={zoom} />}
       headerZone={
         <header className="relative flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 07</p>
@@ -86,5 +87,5 @@ export const meta: KitMeta = {
     'au, light-year, parsec, and the cosmological ladder up to the gigaparsec. Measure the solar system in light-minutes; turn H0 into the age of the universe.',
   defaultThemeId: 'astronomy-dark',
   icon: Telescope,
-  previewBg: () => <AstronomyBackdrop inline />,
+  previewBg: () => <SolarSystemBackdrop inline />,
 };

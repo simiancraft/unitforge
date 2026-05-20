@@ -46,29 +46,8 @@
   --uf-grid-faint: #6fd3e822;
 }
 
-/* Backdrop motion. The backdrop is a starfield; stars twinkle (opacity
- * pulse) faster as the bench's normalized slider position climbs, the
- * way a longer measured distance reaches deeper into the sky. The
- * bench feeds `--astro-intensity` (0..1); the twinkle period scales
- * with it via inline animation-duration.
- *
- * State-driven properties survive reduced-motion; only the twinkle
- * keyframe is guarded. */
-@media (prefers-reduced-motion: no-preference) {
-  .astro-star {
-    animation: astro-twinkle ease-in-out infinite;
-  }
-  .astro-glow {
-    transition: opacity 240ms ease-out;
-  }
-}
-
-@keyframes astro-twinkle {
-  0%,
-  100% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 1;
-  }
-}
+/* The backdrop is a live BabylonJS scene (see
+ * parts/solar-system-backdrop.tsx); it owns its own motion and
+ * reduced-motion handling on the canvas, so no CSS keyframes live
+ * here. The theme variables above still drive the DOM sections and
+ * the CSS-gradient placeholder shown while the engine boots. */

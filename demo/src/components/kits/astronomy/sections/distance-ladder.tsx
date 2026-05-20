@@ -52,10 +52,10 @@ export function DistanceLadder() {
       }
       introZone={
         <>
-          Pick any distance; read it on every rung of the ladder. Proxima Centauri at 4.2 light-years
-          is 1.3 parsecs is 268,000 au; the same distance is a tidy number on one rung and an
-          unwieldy one on the next. That is the whole reason the ladder exists, and every rung below
-          is a real forge call.
+          Pick any distance; read it on every rung of the ladder. Proxima Centauri at 4.2
+          light-years is 1.3 parsecs is 268,000 au; the same distance is a tidy number on one rung
+          and an unwieldy one on the next. That is the whole reason the ladder exists, and every
+          rung below is a real forge call.
         </>
       }
       widgetZone={
