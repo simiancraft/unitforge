@@ -14,6 +14,7 @@ import { KitLayout } from '../layout.js';
 import type { KitMeta } from '../registry.js';
 import { SolarSystemBackdrop } from './parts/solar-system-backdrop.js';
 import { DistanceLadder } from './sections/distance-ladder.js';
+import { GenerationsMachine } from './sections/generations-machine/index.js';
 import { HubbleMachine } from './sections/hubble-machine/index.js';
 import { LightDelayMachine } from './sections/light-delay-machine/index.js';
 import { ASTRONOMY_ALL_UNITS, ASTRONOMY_UNIT_IDS, astronomyBoundsFor } from './units.js';
@@ -73,6 +74,7 @@ export function AstronomyScreen() {
         <>
           <DistanceLadder />
           <LightDelayMachine />
+          <GenerationsMachine />
           <HubbleMachine />
         </>
       }
