@@ -6,8 +6,8 @@
 // Single dimension (all LENGTH), so the page bench works directly. The
 // sections lean on three story angles: the distance ladder (au → ly →
 // pc ratios), light travel time (the solar system measured in minutes
-// and hours of light), and the Hubble calculator (H0 → the age of the
-// universe).
+// and hours of light), and the Hubble calculator (H0 → the Hubble
+// time, the first-order age of the universe).
 
 import type { Unit } from 'unitforge';
 import {
@@ -85,10 +85,11 @@ export const ASTRONOMY_BOUNDS: Record<AstronomyUnitId, SliderBounds> = {
 /** Returns bench bounds for a given unit id; unknown ids fall back to
  *  the astronomical unit so a kit rename does not crash the page. */
 export function astronomyBoundsFor(id: string): SliderBounds {
-  if (id in ASTRONOMY_BOUNDS) {
-    return ASTRONOMY_BOUNDS[id as AstronomyUnitId];
-  }
-  return ASTRONOMY_BOUNDS['astronomical-unit'];
+  // `in` guards the runtime but does not narrow the indexed read under
+  // noUncheckedIndexedAccess; reach the fallback through `??` so the
+  // result is non-undefined by real narrowing, not an `as` cast.
+  const found = ASTRONOMY_BOUNDS[id as AstronomyUnitId];
+  return found ?? ASTRONOMY_BOUNDS['astronomical-unit'];
 }
 
 /** Rungs of the distance ladder shown by the hello section. One

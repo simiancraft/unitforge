@@ -1,6 +1,7 @@
-// Hubble machine. Turn the Hubble constant into the age of the
-// universe. H0 is conventionally quoted in km/s/Mpc; its reciprocal is
-// the Hubble time, the first-order estimate of the age of the universe.
+// Hubble machine. Turn the Hubble constant into the Hubble time. H0 is
+// conventionally quoted in km/s/Mpc; its reciprocal is the Hubble time,
+// the first-order estimate of the age of the universe (the true age
+// only lands near it because the expansion history roughly cancels).
 // The only conversion that matters is Mpc → km, which is a real forge
 // call; the rest is the reciprocal and a unit-cancelling divide.
 //
@@ -47,7 +48,7 @@ export function HubbleMachine() {
         <SectionHeader
           eyebrow="demo 03"
           title="the Hubble machine"
-          kicker="a constant becomes the age of the universe"
+          kicker="a constant becomes the age of the universe, almost"
           iconZone={<Sparkle size={28} strokeWidth={1.5} className="text-uf-accent" />}
         />
       }

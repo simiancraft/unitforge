@@ -34,7 +34,7 @@ const BODIES: readonly Body[] = [
   { id: 'earth', name: 'Earth', au: 1.0, diameterKm: 12742 },
   { id: 'mars', name: 'Mars', au: 1.524, diameterKm: 6779 },
   { id: 'jupiter', name: 'Jupiter', au: 5.203, diameterKm: 139820 },
-  { id: 'saturn', name: 'Saturn', au: 9.537, diameterKm: 116460 },
+  { id: 'saturn', name: 'Saturn', au: 9.582, diameterKm: 116460 },
   { id: 'neptune', name: 'Neptune', au: 30.07, diameterKm: 49244 },
 ];
 
@@ -128,12 +128,14 @@ function ScaleWidget({ size, scale, earthDistM, earthDiamMm, onPick }: ScaleWidg
         valueClassName="text-base"
       />
 
-      <ul className="flex list-none flex-col gap-2 rounded-md border border-uf-border bg-uf-card p-4">
+      <div className="flex flex-col gap-2 rounded-md border border-uf-border bg-uf-card p-4">
         <span className="uf-eyebrow">the whole model</span>
-        {BODIES.map((b) => (
-          <ScaleRow key={b.id} body={b} scale={scale} />
-        ))}
-      </ul>
+        <ul className="flex list-none flex-col gap-2">
+          {BODIES.map((b) => (
+            <ScaleRow key={b.id} body={b} scale={scale} />
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

@@ -9,8 +9,8 @@
 //   travelYearsAtC = forge(dest.unit, lightYear)(dest.value)
 //   generations    = travelYearsAtC / (v / c) / lifespanYears
 //
-// The payoff is visceral: ~600 million human generations to reach
-// Andromeda at Voyager's actual speed.
+// At Voyager's actual speed, Andromeda is ~600 million human
+// generations away.
 
 import { Bug, Dog, Footprints, type LucideIcon, PersonStanding, Turtle } from 'lucide-react';
 import { useState } from 'react';
@@ -104,8 +104,8 @@ export function GenerationsMachine() {
         <>
           A light-year is the distance light crosses in a year, so forging a distance into
           light-years hands you the one-way travel time at light speed for free. Divide by a real
-          craft's speed and a species' lifespan and you get generations. At Voyager's actual pace,
-          it is roughly 600 million human generations to Andromeda. Pick a trip.
+          craft's speed and a species' lifespan and you get generations: at Voyager's actual pace,
+          roughly 600 million human generations to Andromeda.
         </>
       }
       widgetZone={

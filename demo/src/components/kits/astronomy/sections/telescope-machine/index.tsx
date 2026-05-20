@@ -33,7 +33,7 @@ const OBJECTS: readonly SkyObject[] = [
   {
     id: 'proxima',
     name: 'Proxima Centauri',
-    value: 1.301,
+    value: 1.302,
     unit: parsec,
     era: 'about four years ago; recent enough to feel like now',
   },
@@ -90,7 +90,7 @@ export function TelescopeMachine() {
           Light is fast but not instant, so everything you see in the sky is old news. A distance in
           light-years is also a duration: the years that light spent in transit. Catalogues list
           these distances in parsecs, so the forge into light-years doubles as a clock counting
-          backward. Pick an object; see when its light left.
+          backward; the light from Andromeda left before our species existed.
         </>
       }
       widgetZone={

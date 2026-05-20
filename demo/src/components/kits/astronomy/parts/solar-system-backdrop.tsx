@@ -75,7 +75,7 @@ export function SolarSystemBackdrop({ inline = false, zoom = 0.35 }: SolarSystem
   );
 }
 
-// ─── BabylonJS scene (dynamically imported) ────────────────────────────
+// ─── BabylonJS scene ───────────────────────────────────────────────────
 
 interface PlanetSpec {
   orbit: number;
@@ -135,7 +135,7 @@ float noise(vec3 x){
 }
 float fbm(vec3 p){
   float v = 0.0; float a = 0.5;
-  for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
+  for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
   return v;
 }
 void main(){
@@ -246,7 +246,7 @@ function buildScene(canvas: HTMLCanvasElement, zoomRef: { current: number }): ()
   window.addEventListener('resize', onResize);
 
   let elapsed = 0;
-  engine.runRenderLoop(() => {
+  const renderFrame = () => {
     const dt = engine.getDeltaTime() / 1000;
     elapsed += dt;
 
@@ -288,11 +288,22 @@ function buildScene(canvas: HTMLCanvasElement, zoomRef: { current: number }): ()
     }
 
     scene.render();
-  });
+  };
+  engine.runRenderLoop(renderFrame);
+
+  // Pause the loop while the tab is hidden so a backdrop nobody is
+  // looking at doesn't keep the GPU (glow pass + per-pixel nebula
+  // shader) busy. Resume on return to the tab.
+  const onVisibility = () => {
+    if (document.hidden) engine.stopRenderLoop();
+    else engine.runRenderLoop(renderFrame);
+  };
+  document.addEventListener('visibilitychange', onVisibility);
 
   return () => {
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
+    document.removeEventListener('visibilitychange', onVisibility);
     engine.stopRenderLoop();
     scene.dispose();
     engine.dispose();

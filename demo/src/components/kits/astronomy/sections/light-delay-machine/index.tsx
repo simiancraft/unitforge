@@ -1,9 +1,8 @@
 // Light-delay machine. The solar system measured in how long light
 // takes to cross it. Pick a destination; the distance (heliocentric,
 // in au) forges into light-minutes and light-hours, the units mission
-// controllers actually use for one-way communication delay. The point
-// lands viscerally: a command to Voyager 1 takes the better part of a
-// day to arrive.
+// controllers actually use for one-way communication delay. A command
+// to Voyager 1 takes the better part of a day to arrive.
 
 import { Radio } from 'lucide-react';
 import { useState } from 'react';
@@ -32,7 +31,7 @@ const DESTINATIONS: readonly Destination[] = [
   { id: 'earth', name: 'Earth', au: 1.0, hint: 'the Sun-to-Earth benchmark' },
   { id: 'mars', name: 'Mars', au: 1.524, hint: 'mean orbital radius' },
   { id: 'jupiter', name: 'Jupiter', au: 5.203, hint: 'the gas giant' },
-  { id: 'saturn', name: 'Saturn', au: 9.537, hint: 'the ringed planet' },
+  { id: 'saturn', name: 'Saturn', au: 9.582, hint: 'the ringed planet' },
   { id: 'neptune', name: 'Neptune', au: 30.07, hint: 'outermost planet' },
   { id: 'voyager-1', name: 'Voyager 1', au: 167, hint: 'farthest human-made object (~2026)' },
 ];

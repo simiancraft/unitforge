@@ -1,9 +1,8 @@
 // You are not standing still. You feel motionless, but you are riding a
 // stack of motions: the planet's spin, its orbit, the Sun's lap around
-// the galaxy, and the galaxy's own drift against the cosmic microwave
-// background. The reveal is the speed; the forge is the payoff,
-// converting how far each motion carries you over a span into
-// astronomical units and light-years.
+// the galaxy, and the Local Group's drift against the cosmic microwave
+// background. Each motion is a speed; forge converts how far it carries
+// you over a span into astronomical units and light-years.
 
 import { Orbit } from 'lucide-react';
 import { useState } from 'react';
@@ -31,7 +30,7 @@ const MOTIONS: readonly Motion[] = [
   { id: 'spin', name: "Earth's spin", kms: 0.4651 },
   { id: 'orbit', name: "Earth's orbit", kms: 29.78 },
   { id: 'galaxy', name: 'the Sun around the galaxy', kms: 220 },
-  { id: 'cmb', name: 'the galaxy vs the cosmic background', kms: 630 },
+  { id: 'cmb', name: 'the Local Group vs the cosmic background', kms: 620 },
 ];
 
 interface Span {
@@ -75,10 +74,10 @@ export function StandingStillMachine() {
       }
       introZone={
         <>
-          Sitting perfectly still, you are riding four motions at once. The fastest, the galaxy's
-          drift against the cosmic microwave background, is about 630 km/s, roughly Mach 1,800. Pick
-          a motion and a span; forge turns the distance it carries you into astronomical units and
-          light-years.
+          Sitting perfectly still, you are riding four motions at once: the planet's spin, its
+          orbit, the Sun's lap around the galaxy, and the Local Group's drift against the cosmic
+          microwave background. Pick a motion and a span; forge turns the distance it carries you
+          into astronomical units and light-years.
         </>
       }
       widgetZone={

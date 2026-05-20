@@ -1,8 +1,8 @@
 // "The distance ladder" (hello). Pick any astronomical distance; read
-// it across every scale band at once. The point is the ratios: 1 pc is
-// 3.26 ly is 206,265 au, and the same distance reads as a tidy number
-// on one rung and an unwieldy one on the next. The active rung (the
-// unit you picked) reads in the accent color.
+// it across every scale band at once. The ratios are the lesson: 1 pc
+// is 3.26 ly is 206,265 au, and the same distance reads tidy on one
+// rung and unwieldy on the next. The active rung (the unit you picked)
+// reads in the accent color.
 
 import { Orbit } from 'lucide-react';
 import { useState } from 'react';
@@ -53,9 +53,9 @@ export function DistanceLadder() {
       introZone={
         <>
           Pick any distance; read it on every rung of the ladder. Proxima Centauri at 4.2
-          light-years is 1.3 parsecs is 268,000 au; the same distance is a tidy number on one rung
-          and an unwieldy one on the next. That is the whole reason the ladder exists, and every
-          rung below is a real forge call.
+          light-years is 1.3 parsecs is 266,000 au; the same distance is a tidy number on one rung
+          and an unwieldy one on the next. That is what the ladder is for, and every rung below is a
+          real forge call.
         </>
       }
       widgetZone={
@@ -125,16 +125,18 @@ function LadderWidget({
 // prop surface (inParsec + activeId).
 function LadderMatrix({ inParsec, activeId }: { inParsec: number; activeId: string }) {
   return (
-    <ul className="flex list-none flex-col gap-2 rounded-md border border-uf-border bg-uf-card p-4">
+    <div className="flex flex-col gap-2 rounded-md border border-uf-border bg-uf-card p-4">
       <span className="uf-eyebrow">this distance, on every rung</span>
-      {LADDER_RUNGS.map((rung) =>
-        rung.id === activeId ? (
-          <LadderRowActive key={rung.id} unit={rung} value={forge(parsec, rung)(inParsec)} />
-        ) : (
-          <LadderRowIdle key={rung.id} unit={rung} value={forge(parsec, rung)(inParsec)} />
-        ),
-      )}
-    </ul>
+      <ul className="flex list-none flex-col gap-2">
+        {LADDER_RUNGS.map((rung) =>
+          rung.id === activeId ? (
+            <LadderRowActive key={rung.id} unit={rung} value={forge(parsec, rung)(inParsec)} />
+          ) : (
+            <LadderRowIdle key={rung.id} unit={rung} value={forge(parsec, rung)(inParsec)} />
+          ),
+        )}
+      </ul>
+    </div>
   );
 }
 

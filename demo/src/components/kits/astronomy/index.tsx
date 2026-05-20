@@ -2,8 +2,9 @@
 // (dark). Owns the page bench state; sections live in ./sections/. All
 // nine kit atoms are LENGTH, so the bench is a straight unit-to-unit
 // converter across the astronomical scale ladder. The backdrop is
-// bench-reactive: the slider's normalized position drives the starfield
-// twinkle rate.
+// bench-reactive: the selected unit's place on that ladder drives the
+// BabylonJS camera dolly (kilometer holds tight on the system,
+// gigaparsec pulls back to deep field).
 
 import { Telescope } from 'lucide-react';
 import { useState } from 'react';
