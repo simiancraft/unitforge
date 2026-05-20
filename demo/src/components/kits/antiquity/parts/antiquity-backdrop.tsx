@@ -15,7 +15,7 @@
 // temperature pattern (fixed inset-0 -z-10 non-inline, absolute
 // inset-0 inline).
 
-import type { CSSProperties } from 'react';
+import { type CSSProperties, memo } from 'react';
 
 interface AntiquityBackdropProps {
   inline?: boolean;
@@ -73,14 +73,25 @@ function TallyField({ t }: { t: number }) {
         <circle cx="600" cy="400" r={glowRadius} fill="url(#ant-center-glow)" />
       </g>
 
+      {/* Only `opacity` is intensity-driven; the 240-line tally field
+       *  itself is static, so it's memoized to skip reconciliation on
+       *  every slider tick (the parent re-renders when intensity moves). */}
       <g className="ant-drift" style={{ opacity: tickOpacity }}>
-        {TALLIES.map((group) => (
-          <TallyGroup key={group.key} group={group} />
-        ))}
+        <StaticTallies />
       </g>
     </svg>
   );
 }
+
+const StaticTallies = memo(function StaticTallies() {
+  return (
+    <>
+      {TALLIES.map((group) => (
+        <TallyGroup key={group.key} group={group} />
+      ))}
+    </>
+  );
+});
 
 // One tally group: four uprights and a diagonal slash through them,
 // the universal "five" count. Rendered as a single <g> so the whole

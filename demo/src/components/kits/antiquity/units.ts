@@ -69,7 +69,14 @@ import {
 /** A unit shipped by the antiquity kit, dimension unconstrained. The
  *  curated subsets below mix LENGTH / MASS / VOLUME, so the demo's
  *  shared type widens to `Dimension`; sections that need same-
- *  dimension narrowing (the comparators) re-pin to a literal. */
+ *  dimension narrowing (the comparators) re-pin to a literal.
+ *
+ *  Caveat for the next reader: once a unit is typed `Unit<Dimension>`,
+ *  `forge`'s within-dimension overload infers `D = Dimension` and
+ *  accepts any `to` unit, so `forge(massUnit, lengthAnchor)` type-
+ *  checks. The dimension match in the translator is enforced at
+ *  runtime by `anchorsFor` (it only ever returns same-dimension
+ *  anchors) plus forge's runtime guard, NOT by the type system. */
 export type AntiquityUnit = Unit<Dimension, number>;
 
 export interface Civilization {
@@ -147,6 +154,14 @@ export const CIVILIZATIONS: readonly Civilization[] = [
   },
 ];
 
+// Length translator anchors are meter + foot only; statute-mile reads
+// as ~0 for personal-scale units (a cubit is 0.0003 mi) and adds noise.
+// The bench keeps statute-mile as a from/to option for the distance-
+// scale units that warrant it (stadion, mille passus).
+const LENGTH_ANCHORS: readonly AntiquityUnit[] = [meter, foot];
+const MASS_ANCHORS: readonly AntiquityUnit[] = [kilogram, pound];
+const VOLUME_ANCHORS: readonly AntiquityUnit[] = [liter];
+
 /** Modern anchor units to forge an antiquity unit into, chosen by the
  *  antiquity unit's dimension. The translator maps over these. Returns
  *  same-dimension anchors so `forge(unit, anchor)` is always a valid
@@ -165,18 +180,13 @@ export function anchorsFor(dimension: Dimension): readonly AntiquityUnit[] {
   }
 }
 
-// Length translator anchors are meter + foot only; statute-mile reads
-// as ~0 for personal-scale units (a cubit is 0.0003 mi) and adds noise.
-// The bench keeps statute-mile as a from/to option for the distance-
-// scale units that warrant it (stadion, mille passus).
-const LENGTH_ANCHORS: readonly AntiquityUnit[] = [meter, foot];
-const MASS_ANCHORS: readonly AntiquityUnit[] = [kilogram, pound];
-const VOLUME_ANCHORS: readonly AntiquityUnit[] = [liter];
-
 /** Length units offered by the page bench, across civilizations plus
  *  modern anchors. The bench is generic over a single dimension; length
  *  is the iconic antiquity story (every culture's "foot"), so the bench
- *  is length-only. Ordered by ascending metric size. */
+ *  is length-only. Ordered by ascending metric size. meter and foot
+ *  recur in LENGTH_ANCHORS above, but the two lists do different jobs:
+ *  this is the bench's from/to option set, those are the translator's
+ *  modern-equivalent targets. */
 export const ANTIQUITY_LENGTH_BENCH: readonly Unit<'length', number>[] = [
   palmEgypt,
   pousAttic,
@@ -303,9 +313,10 @@ export interface CoinEntry {
 }
 
 /** Numismatic mass units across civilizations, ascending by gram. Coin
- *  weights are the antiquity kit's killer everyday referent: a denarius
- *  was a day's wage, the Tyrian shekel was the thirty pieces of silver,
- *  the solidus held its weight for 700 years as the Byzantine standard. */
+ *  weights are the kit's most tangible everyday referent: a denarius
+ *  was a day's wage, the Tyrian shekel is conventionally identified with
+ *  the thirty pieces of silver, the solidus held its weight for ~700
+ *  years as the Byzantine standard. */
 export const COIN_SCALE: readonly CoinEntry[] = [
   {
     unit: denariusAugustan,
@@ -328,19 +339,13 @@ export const COIN_SCALE: readonly CoinEntry[] = [
   {
     unit: shekelTyrian,
     civ: 'Tyre / Temple',
-    hook: 'the coin of the Temple tax; thirty of these is the betrayal price',
+    hook: 'the coin of the Temple tax; conventionally identified with the thirty pieces of silver',
     metal: 'silver',
   },
   {
     unit: tetradrachmAttic,
     civ: 'Greece (Attic)',
-    hook: 'the "Athenian owl"; the most-circulated silver coin of the 5th c. BCE',
-    metal: 'silver',
-  },
-  {
-    unit: shekelBabylonian,
-    civ: 'Babylon',
-    hook: 'the sexagesimal anchor: 60 shekels = 1 mina',
+    hook: 'the "Athenian owl"; the dominant trade coin of the 5th-c. BCE Aegean',
     metal: 'silver',
   },
 ];

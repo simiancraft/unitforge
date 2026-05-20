@@ -1,8 +1,8 @@
 // The coin scale. Numismatic mass comparator. Coin weights are the
-// antiquity kit's killer everyday referent: a denarius was a day's
-// wage, the Tyrian shekel was the thirty pieces of silver, the
-// Constantinian solidus held its weight for ~700 years as the
-// Byzantine gold standard.
+// kit's most tangible everyday referent: a denarius was a day's wage,
+// the Tyrian shekel is conventionally identified with the thirty
+// pieces of silver, the Constantinian solidus held its weight for
+// ~700 years as the Byzantine gold standard.
 //
 // The bars forge each coin to grams. Because every antiquity MASS atom
 // shares `dimension: MASS` with kits/mass, the gram anchor is imported
@@ -37,11 +37,11 @@ export function CoinScale() {
       }
       introZone={
         <>
-          A denarius was a laborer's daily wage; thirty Tyrian shekels was the betrayal price; the
-          solidus held its weight for seven centuries. Coin masses are the antiquity kit's most
-          tangible referent. Each bar forges a coin to grams; because these atoms share the MASS
-          dimension with the modern mass kit, the gram anchor comes from kits/mass. Numismatics, not
-          clinical dosing.
+          A denarius was a laborer's daily wage; thirty Tyrian shekels is the sum conventionally
+          identified with the betrayal price; the solidus held its weight for seven centuries. Coin
+          masses are the kit's most tangible referent. Each bar forges a coin to grams; because
+          these atoms share the MASS dimension with the modern mass kit, the gram anchor comes from
+          kits/mass. Numismatics, not clinical dosing.
         </>
       }
       widgetZone={
@@ -61,9 +61,16 @@ function CoinChart() {
   return (
     <div className="flex flex-col gap-4 rounded-md border border-uf-border bg-uf-card p-4">
       <span className="uf-eyebrow">1 coin, in grams</span>
-      {measured.map(({ coin, grams }) => (
-        <CoinBar key={coin.unit.id} coin={coin} grams={grams} widthPct={(grams / maxGrams) * 100} />
-      ))}
+      <ul className="flex list-none flex-col gap-4">
+        {measured.map(({ coin, grams }) => (
+          <CoinBar
+            key={coin.unit.id}
+            coin={coin}
+            grams={grams}
+            widthPct={(grams / maxGrams) * 100}
+          />
+        ))}
+      </ul>
     </div>
   );
 }
@@ -76,8 +83,11 @@ interface CoinBarProps {
 
 function CoinBar({ coin, grams, widthPct }: CoinBarProps) {
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-baseline justify-between gap-2">
+    <li
+      className="flex flex-col gap-1"
+      aria-label={`${coin.unit.label} (${coin.metal}): ${formatMagnitude(grams)} grams. ${coin.civ}: ${coin.hook}`}
+    >
+      <div className="flex items-baseline justify-between gap-2" aria-hidden>
         <span className="flex items-baseline gap-2">
           <span className="mono text-xs uppercase tracking-wider text-uf-fg">
             {coin.unit.label}
@@ -93,17 +103,13 @@ function CoinBar({ coin, grams, widthPct }: CoinBarProps) {
           <span className="ml-1 text-xs text-uf-muted">g</span>
         </span>
       </div>
-      <div className="h-3 w-full overflow-hidden rounded-sm bg-uf-bg">
-        <div
-          className="h-full rounded-sm bg-uf-accent"
-          style={{ width: `${widthPct}%` }}
-          aria-hidden
-        />
+      <div className="h-3 w-full overflow-hidden rounded-sm bg-uf-bg" aria-hidden>
+        <div className="h-full rounded-sm bg-uf-accent" style={{ width: `${widthPct}%` }} />
       </div>
-      <p className="text-[11px] leading-snug text-uf-muted">
+      <p className="text-[11px] leading-snug text-uf-muted" aria-hidden>
         {coin.civ}: {coin.hook}
       </p>
-    </div>
+    </li>
   );
 }
 

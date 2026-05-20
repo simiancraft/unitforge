@@ -3,7 +3,7 @@
 // different magnitudes. Laying them side by side as metric-scaled bars
 // makes the spread legible at a glance: the Attic pous and Roman pes
 // are within a millimeter of each other, the Han chi is visibly
-// shorter, the Edo shaku longer.
+// shorter, the Edo shaku slightly longer.
 //
 // A menu toggle switches the bar set between foot-class (the everyday
 // ~0.3 m foot) and cubit-class (the older forearm-length ~0.5 m
@@ -16,6 +16,7 @@ import { forge } from 'unitforge';
 import { meter } from 'unitforge/kits/antiquity';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
+import { head } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../../section-layout.js';
 import { RULERS_CUBIT_CLASS, RULERS_FOOT_CLASS, type RulerEntry } from '../../units.js';
 
@@ -32,7 +33,7 @@ const CLASSES: readonly RulerClass[] = [
   { id: 'cubit', label: 'cubit-class (~0.5 m)', entries: RULERS_CUBIT_CLASS },
 ];
 
-const FALLBACK_CLASS = CLASSES[0] as RulerClass;
+const FALLBACK_CLASS = head(CLASSES);
 
 export function RulersOfEmpire() {
   const [classId, setClassId] = useState<ClassId>('foot');
@@ -52,15 +53,15 @@ export function RulersOfEmpire() {
         <>
           Every civilization standardized a foot and a cubit; none of them agreed on how long. The
           Attic pous and the Roman pes land within a millimeter of each other, the Han chi is
-          visibly shorter, the Edo shaku longer. Each bar is the unit's length in meters, a real
-          forge call, scaled to the longest in the set.
+          visibly shorter, the Edo shaku slightly longer. Each bar is the unit's length in meters, a
+          real forge call, scaled to the longest in the set.
         </>
       }
       menuZone={
         <>
           {CLASSES.map((c) =>
             c.id === classId ? (
-              <ClassPillActive key={c.id} cls={c} />
+              <ClassPillActive key={c.id} cls={c} onPick={setClassId} />
             ) : (
               <ClassPillIdle key={c.id} cls={c} onPick={setClassId} />
             ),
@@ -77,10 +78,14 @@ export function RulersOfEmpire() {
   );
 }
 
-function ClassPillActive({ cls }: { cls: RulerClass }) {
+// Active pill keeps an idempotent onClick (re-selecting the active
+// class is a no-op) so Tab + Enter isn't a keyboard dead-end; matches
+// the radio-style semantics of the civ tiles in hello-antiquity.
+function ClassPillActive({ cls, onPick }: { cls: RulerClass; onPick: (id: ClassId) => void }) {
   return (
     <button
       type="button"
+      onClick={() => onPick(cls.id)}
       aria-pressed="true"
       className="rounded-full border-2 border-uf-accent bg-uf-card px-3 py-1.5 text-xs font-semibold text-uf-accent"
     >
@@ -111,15 +116,17 @@ function RulerChart({ entries }: { entries: readonly RulerEntry[] }) {
   return (
     <div className="flex flex-col gap-3 rounded-md border border-uf-border bg-uf-card p-4">
       <span className="uf-eyebrow">1 unit, in meters</span>
-      {measured.map(({ entry, meters }) => (
-        <RulerBar
-          key={entry.unit.id}
-          civ={entry.civ}
-          symbol={entry.unit.symbol}
-          meters={meters}
-          widthPct={(meters / maxMeters) * 100}
-        />
-      ))}
+      <ul className="flex list-none flex-col gap-3">
+        {measured.map(({ entry, meters }) => (
+          <RulerBar
+            key={entry.unit.id}
+            civ={entry.civ}
+            symbol={entry.unit.symbol}
+            meters={meters}
+            widthPct={(meters / maxMeters) * 100}
+          />
+        ))}
+      </ul>
     </div>
   );
 }
@@ -133,22 +140,21 @@ interface RulerBarProps {
 
 function RulerBar({ civ, symbol, meters, widthPct }: RulerBarProps) {
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-baseline justify-between">
+    <li
+      className="flex flex-col gap-1"
+      aria-label={`${civ}: ${formatMagnitude(meters)} meters (${symbol})`}
+    >
+      <div className="flex items-baseline justify-between" aria-hidden>
         <span className="mono text-xs uppercase tracking-wider text-uf-muted">{civ}</span>
         <span className="mono text-sm">
           <span className="text-uf-fg tabular-nums">{formatMagnitude(meters)}</span>
           <span className="ml-1 text-xs text-uf-muted">m · {symbol}</span>
         </span>
       </div>
-      <div className="h-3 w-full overflow-hidden rounded-sm bg-uf-bg">
-        <div
-          className="h-full rounded-sm bg-uf-accent"
-          style={{ width: `${widthPct}%` }}
-          aria-hidden
-        />
+      <div className="h-3 w-full overflow-hidden rounded-sm bg-uf-bg" aria-hidden>
+        <div className="h-full rounded-sm bg-uf-accent" style={{ width: `${widthPct}%` }} />
       </div>
-    </div>
+    </li>
   );
 }
 

@@ -52,8 +52,8 @@ export function AntiquityScreen() {
             ~90 pre-modern atoms across eight civilizations: Egyptian, Mesopotamian, Greek, Roman,
             Hebrew, Chinese, Japanese, and pre-1835 English. Every culture invented a "foot" and a
             "cubit" at its own magnitude; the bench converts an ancient length into a modern meter,
-            and the sections below lay the empires' rulers and coins side by side. For classics
-            translation, numismatics, and archaeology; not for clinical or commercial use.
+            and the sections below lay the empires' rulers and coins side by side. Not for clinical
+            or commercial use; reach for it when you're reading Herodotus.
           </p>
         </header>
       }
