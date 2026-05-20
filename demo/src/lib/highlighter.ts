@@ -26,6 +26,8 @@ const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   dracula: () => import('shiki/themes/dracula.mjs'),
   'gruvbox-light-medium': () => import('shiki/themes/gruvbox-light-medium.mjs'),
   'gruvbox-dark-medium': () => import('shiki/themes/gruvbox-dark-medium.mjs'),
+  'catppuccin-latte': () => import('shiki/themes/catppuccin-latte.mjs'),
+  poimandres: () => import('shiki/themes/poimandres.mjs'),
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;
