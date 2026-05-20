@@ -143,18 +143,20 @@ void main(){
   vec3 p = d * 2.5 + vec3(0.0, 0.0, iTime * 0.008);
   float n = fbm(p);
   float n2 = fbm(p * 2.3 + 5.0);
-  vec3 deep    = vec3(0.015, 0.02, 0.07);
-  vec3 blue    = vec3(0.10, 0.22, 0.55);
-  vec3 magenta = vec3(0.55, 0.16, 0.55);
-  vec3 teal    = vec3(0.10, 0.45, 0.45);
-  vec3 gold    = vec3(0.90, 0.60, 0.28);
+  vec3 deep    = vec3(0.02, 0.03, 0.09);
+  vec3 blue    = vec3(0.12, 0.32, 0.78);
+  vec3 magenta = vec3(0.74, 0.20, 0.70);
+  vec3 teal    = vec3(0.12, 0.66, 0.62);
+  vec3 gold    = vec3(1.0, 0.70, 0.34);
   vec3 col = deep;
-  col = mix(col, blue, smoothstep(0.35, 0.78, n));
-  col = mix(col, magenta, smoothstep(0.55, 0.95, n2) * 0.7);
-  col = mix(col, teal, smoothstep(0.50, 0.85, n * n2) * 0.5);
-  col += gold * pow(smoothstep(0.78, 1.0, n * n2), 2.0) * 0.7;
+  col = mix(col, blue, smoothstep(0.30, 0.74, n));
+  col = mix(col, magenta, smoothstep(0.48, 0.92, n2) * 0.88);
+  col = mix(col, teal, smoothstep(0.44, 0.82, n * n2) * 0.72);
+  col += gold * pow(smoothstep(0.72, 1.0, n * n2), 2.0) * 0.95;
+  // a faint dark-lane pass so the bright wisps read as structure
+  col *= 0.7 + 0.5 * smoothstep(0.2, 0.7, n);
   float s = hash(floor(d * 360.0));
-  col += vec3(smoothstep(0.992, 1.0, s));
+  col += vec3(smoothstep(0.991, 1.0, s));
   gl_FragColor = vec4(col, 1.0);
 }`;
 
@@ -198,7 +200,7 @@ function buildScene(canvas: HTMLCanvasElement, zoomRef: { current: number }): ()
   sunLight.diffuse = new Color3(1.0, 0.93, 0.8);
 
   const glow = new GlowLayer('glow', scene);
-  glow.intensity = 1.1;
+  glow.intensity = 1.5;
 
   // Planets + their orbital rings.
   const planets = PLANETS.map((spec, i) => {
@@ -218,9 +220,9 @@ function buildScene(canvas: HTMLCanvasElement, zoomRef: { current: number }): ()
       scene,
     );
     const ringMat = new StandardMaterial(`ringMat${i}`, scene);
-    ringMat.emissiveColor = new Color3(0.35, 0.5, 0.62);
+    ringMat.emissiveColor = new Color3(0.5, 0.66, 0.82);
     ringMat.disableLighting = true;
-    ringMat.alpha = 0.45;
+    ringMat.alpha = 0.6;
     ring.material = ringMat;
     ring.rotation.x = Math.PI / 2 + spec.inclination;
     ring.isPickable = false;
