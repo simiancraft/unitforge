@@ -14,3 +14,14 @@ export function findById<U extends { id: string }>(list: ReadonlyArray<U>, id: s
   if (!found) throw new Error(`Unknown unit id: ${id}`);
   return found;
 }
+
+/**
+ * First element of a catalog known to be non-empty. Throws on an empty
+ * list so a misconfigured catalog fails fast, instead of an `as`-cast
+ * that silently strips `undefined` under `noUncheckedIndexedAccess`.
+ */
+export function head<T>(list: ReadonlyArray<T>): T {
+  const first = list[0];
+  if (first === undefined) throw new Error('Expected a non-empty list');
+  return first;
+}

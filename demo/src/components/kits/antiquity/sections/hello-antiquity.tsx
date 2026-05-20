@@ -1,7 +1,7 @@
 // "Hello, antiquity"; the translator. Browse a civilization, pick one
 // of its units, read it in modern terms. This is the "what was this?"
-// lookup a classicist reaches for: 1 Egyptian royal cubit is 0.5235 m;
-// 1 Roman libra is 327.45 g; 1 Attic metretes is 39.4 L. The modern
+// lookup a classicist reaches for: 1 Egyptian royal cubit is 0.5236 m;
+// 1 Roman libra is about 327 g; 1 Attic medimnos is 52.5 L. The modern
 // anchor set switches on the selected unit's dimension (meter/foot for
 // length, kilogram/pound for mass, liter for volume).
 
@@ -12,7 +12,7 @@ import { CodeBlock } from '~/components/ui/code-block.js';
 import { Slider } from '~/components/ui/slider.js';
 import { UnitPicker } from '~/components/ui/unit-picker.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
-import { findById } from '~/lib/units.js';
+import { findById, head } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import { type AntiquityUnit, anchorsFor, CIVILIZATIONS, type Civilization } from '../units.js';
 
@@ -22,7 +22,7 @@ interface TranslatorState {
   value: number;
 }
 
-const FALLBACK_CIV = CIVILIZATIONS[0] as Civilization;
+const FALLBACK_CIV = head(CIVILIZATIONS);
 
 export function HelloAntiquity() {
   const [state, setState] = useState<TranslatorState>({
@@ -36,7 +36,7 @@ export function HelloAntiquity() {
 
   const handleCivChange = (civId: string) => {
     const nextCiv = CIVILIZATIONS.find((c) => c.id === civId) ?? FALLBACK_CIV;
-    const firstUnit = nextCiv.units[0] as AntiquityUnit;
+    const firstUnit = head(nextCiv.units);
     setState({ civId, unitId: firstUnit.id, value: 1 });
   };
   const handleUnitChange = (unitId: string) => setState((s) => ({ ...s, unitId }));
@@ -55,7 +55,7 @@ export function HelloAntiquity() {
       introZone={
         <>
           Pick a civilization, then one of its units; see it in modern terms. One Egyptian royal
-          cubit is 0.5235 m; one Roman libra is 327.45 g; one Attic metretes is 39.4 L. The kit
+          cubit is 0.5236 m; one Roman libra is about 327 g; one Attic medimnos is 52.5 L. The kit
           values are era-specific (the libra drifted across the Empire), so each civilization is
           tagged with the era its numbers anchor to. Every readout below is a real forge call.
         </>
