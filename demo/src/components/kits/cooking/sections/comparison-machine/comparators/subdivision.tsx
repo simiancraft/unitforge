@@ -87,6 +87,20 @@ export function useSubdivision() {
               active={spoonKey}
               onChange={setSpoonKey}
             />
+            {/* The count slider sits with the spoon picker because the two
+                together are the input; the small-measure picker below is
+                the output side of the comparison. */}
+            <div className="sm:col-span-3">
+              <Slider
+                label={`how many ${spoon.label}s?`}
+                value={spoons}
+                min={1}
+                max={MAX_SPOONS}
+                step={1}
+                onChange={setSpoons}
+                suffix={spoon.label}
+              />
+            </div>
             <MeasureToolbar
               label="…makes how many of these"
               order={SMALL_ORDER}
@@ -97,17 +111,6 @@ export function useSubdivision() {
           </>
         }
         visualZone={<SubdivisionBoard spoon={spoon} small={small} spoons={spoons} count={count} />}
-        controlsZone={
-          <Slider
-            label={`how many ${spoon.label}s?`}
-            value={spoons}
-            min={1}
-            max={MAX_SPOONS}
-            step={1}
-            onChange={setSpoons}
-            suffix={spoon.label}
-          />
-        }
         resultsZone={
           <Result
             label={`${spoons} ${plural} ≈`}
