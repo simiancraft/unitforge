@@ -151,7 +151,7 @@ describe('demo invariants: comparison + recipe ORDER joints', () => {
   // and importing them here would drag JSX into the lib's bun-test
   // invocation. Count parity is the cheapest mechanical guard.
 
-  it('comparison-machine ORDER has 3 entries (soda + atlantic + international)', async () => {
+  it('comparison-machine ORDER has 4 entries (soda + atlantic + international + subdivision)', async () => {
     // Source-grep instead of importing the React module; this test
     // runs under bun-test which has no JSX runtime in scope.
     const text = await Bun.file(
@@ -160,7 +160,7 @@ describe('demo invariants: comparison + recipe ORDER joints', () => {
     const orderMatch = text.match(/ORDER:[^=]*=\s*\[([^\]]+)\]/);
     expect(orderMatch, 'comparison-machine ORDER array not found').toBeTruthy();
     const count = (orderMatch?.[1] ?? '').split(',').filter((s) => s.trim().length > 0).length;
-    expect(count).toBe(3);
+    expect(count).toBe(4);
   });
 
   it('recipe-machine ORDER has 6 entries', async () => {
