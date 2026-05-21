@@ -1,11 +1,13 @@
-// Comparison machine chassis. Three comparators today: soda (the
+// Comparison machine chassis. Four comparators today: soda (the
 // flagship: pick a soda on the left, a food on the right, see how
 // many of the food carry the same sugar load); atlantic (the US/UK
 // volume split for the four culinary tools where the same English
-// word means two different volumes); and international (the same
-// word "cup" stretched across seven regional conventions, JP rice
-// gō through UK imperial, with a 36% spread). Each comparator owns
-// its own dimension or unit-spread; the chassis is dispatch + menu.
+// word means two different volumes); international (the same word
+// "cup" stretched across seven regional conventions, JP rice gō
+// through UK imperial, with a 36% spread); and subdivision (the
+// tradition measures below a teaspoon, where one teaspoon is sixteen
+// pinches or eight dashes). Each comparator owns its own dimension or
+// unit-spread; the chassis is dispatch + menu.
 
 import { Scale } from 'lucide-react';
 import { useState } from 'react';
@@ -19,8 +21,9 @@ import {
 import { useAtlantic } from './comparators/atlantic.js';
 import { useInternational } from './comparators/international.js';
 import { useSoda } from './comparators/soda.js';
+import { useSubdivision } from './comparators/subdivision.js';
 
-type ComparatorKey = 'soda' | 'atlantic' | 'international';
+type ComparatorKey = 'soda' | 'atlantic' | 'international' | 'subdivision';
 
 interface ComparatorMeta {
   label: string;
@@ -31,7 +34,7 @@ interface ComparatorMeta {
 // source-greps it to assert ORDER stays in sync with the recipes
 // Record. Refactoring to `[...BASE, 'newKey']` or `concat()` would
 // silently bypass the count check.
-const ORDER: readonly ComparatorKey[] = ['soda', 'atlantic', 'international'];
+const ORDER: readonly ComparatorKey[] = ['soda', 'atlantic', 'international', 'subdivision'];
 
 const COMPARATOR_META: Record<ComparatorKey, ComparatorMeta> = {
   soda: { label: 'soda vs sugar', hint: 'one Coke equals how many donuts?' },
@@ -40,17 +43,20 @@ const COMPARATOR_META: Record<ComparatorKey, ComparatorMeta> = {
     label: 'international cups',
     hint: 'one cup is many cups; 36% spread across regions',
   },
+  subdivision: { label: 'spoon math', hint: 'one teaspoon is sixteen pinches' },
 };
 
 export function ComparisonMachine() {
   const soda = useSoda();
   const atlantic = useAtlantic();
   const international = useInternational();
+  const subdivision = useSubdivision();
 
   const comparators: Record<ComparatorKey, SectionMachineChild> = {
     soda,
     atlantic,
     international,
+    subdivision,
   };
 
   const [activeKey, setActiveKey] = useState<ComparatorKey>('soda');
