@@ -91,8 +91,11 @@ export function useSubdivision() {
                 together are the input; the small-measure picker below is
                 the output side of the comparison. */}
             <div className="sm:col-span-3">
+              {/* No label: the spoon toggle above is the interactive
+                  label for this count. The readout still shows the
+                  value and unit (e.g. "3.00 teaspoon"). */}
               <Slider
-                label={`how many ${spoon.label}s?`}
+                label=""
                 value={spoons}
                 min={1}
                 max={MAX_SPOONS}
