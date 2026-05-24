@@ -3,7 +3,7 @@
 // and every distance collapses to a walkable scale: a basketball Sun
 // puts Earth a 2 mm bead twenty-six meters down the block, and Neptune
 // most of a kilometer away. Blow the Sun back up to the size of the
-// Earth and the planets spread across millions of kilometres. forge
+// Earth and the planets spread across millions of kilometers. forge
 // supplies the real units (au into meters); a small ladder then renders
 // each length at whatever rung reads cleanly, from microns to AU.
 
@@ -50,7 +50,7 @@ interface ModelSize {
 }
 
 // Smallest to largest. The top rung blows the Sun up to the Earth's true
-// diameter, which spreads the planets across millions of kilometres.
+// diameter, which spreads the planets across millions of kilometers.
 const MODEL_SIZES: readonly ModelSize[] = [
   { id: 'sand', name: 'grain of sand (1 mm)', meters: 0.001 },
   { id: 'marble', name: 'marble (1.5 cm)', meters: 0.015 },

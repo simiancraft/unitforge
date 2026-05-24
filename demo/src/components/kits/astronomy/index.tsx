@@ -105,7 +105,7 @@ export const meta: KitMeta = {
   id: 'astronomy',
   label: 'astronomy',
   blurb:
-    'au, light-year, parsec, and the cosmological ladder up to the gigaparsec. Measure the solar system in light-minutes; turn H0 into the age of the universe.',
+    'au, light-year, parsec, and the cosmological ladder up to the gigaparsec. Measure the solar system in light-minutes; turn H0 into the age of the universe, almost.',
   defaultThemeId: 'astronomy-dark',
   icon: Telescope,
   previewBg: () => <SolarSystemBackdrop inline />,
