@@ -63,9 +63,10 @@ export function LightDelayMachine() {
       }
       introZone={
         <>
-          Light is the speed limit, so distance is also delay. Pick a destination; its heliocentric
-          distance forges into the light-minutes and light-hours mission control plans around. A
-          command to Voyager 1 takes most of a day to land. Sunlight reaches Earth in 8.3 minutes.
+          Type a command to Voyager 1 and it spends most of a day in flight before the spacecraft
+          hears it. Light is the speed limit, so distance is delay; pick a destination and its
+          heliocentric distance forges into the light-minutes and light-hours mission control plans
+          around. Sunlight, for the record, is already 8.3 minutes old when it reaches you.
         </>
       }
       widgetZone={

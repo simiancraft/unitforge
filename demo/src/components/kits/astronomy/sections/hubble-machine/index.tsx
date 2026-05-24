@@ -54,10 +54,10 @@ export function HubbleMachine() {
       }
       introZone={
         <>
+          Flip one expansion-rate number upside down and you get the age of the universe, almost.
           The Hubble constant H0 is quoted in km/s/Mpc; its reciprocal is the Hubble time, the
-          first-order estimate of the age of the universe. The only unit work is Mpc to km, a real
-          forge call; the rest cancels. Nudge H0 (current measurements cluster near 67 to 73) and
-          watch the age move.
+          first-order estimate of cosmic age. The only unit work is Mpc to km, a real forge call;
+          the rest cancels. Nudge H0 (measurements cluster near 67 to 73) and watch the age move.
         </>
       }
       widgetZone={

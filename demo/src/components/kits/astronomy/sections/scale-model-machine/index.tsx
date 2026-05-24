@@ -57,7 +57,7 @@ const MODEL_SIZES: readonly ModelSize[] = [
   { id: 'basketball', name: 'basketball (24 cm)', meters: 0.24 },
   { id: 'car', name: 'car (4.5 m)', meters: 4.5 },
   { id: 'house', name: 'house (15 m)', meters: 15 },
-  { id: 'earth', name: 'the Sun as the Earth (12,742 km)', meters: 12_742_000 },
+  { id: 'earth', name: 'the Earth (12,742 km)', meters: 12_742_000 },
 ];
 
 const FALLBACK_SIZE: ModelSize = head(MODEL_SIZES);
@@ -108,10 +108,10 @@ export function ScaleModelMachine() {
       }
       introZone={
         <>
-          Diagrams lie about scale because the truth does not fit on a page. Shrink the Sun to
-          something you can hold and the planets spread out across a neighborhood, most of them
-          specks. forge supplies the honest units: astronomical units into meters, then each length
-          rendered at whatever rung reads cleanly.
+          Every solar-system diagram you have ever seen is a lie; the real thing does not fit on a
+          page. Shrink the Sun to a basketball and Earth becomes a 2 mm bead twenty-six meters down
+          the block, with Neptune most of a kilometer past that. forge supplies the honest units, au
+          into meters, and renders each length at whatever rung reads cleanly.
         </>
       }
       widgetZone={
@@ -156,7 +156,7 @@ function ScaleWidget({ size, scale, earthDistM, earthDiamM, onPick }: ScaleWidge
       {/* Hero readout, split at the comma: bead on the left, distance
           on the right, so neither half wraps into the other. */}
       <dl className="m-0 flex flex-col gap-0.5 border-t border-uf-border pt-2">
-        <dt className="uf-eyebrow">Sun as a {size.name.split(' (')[0]}</dt>
+        <dt className="uf-eyebrow">Sun = {size.name.split(' (')[0]}</dt>
         <dd className="m-0 mono self-start text-base text-uf-fg">
           Earth is a <span className="tabular-nums text-uf-accent">{formatLength(earthDiamM)}</span>{' '}
           bead
@@ -230,7 +230,7 @@ function buildCode(size: ModelSize, scale: number, earthDistM: number): string {
 import { astronomicalUnit } from 'unitforge/kits/astronomy';
 import { meter } from 'unitforge/kits/length';
 
-// Sun shrunk to a ${size.name.split(' (')[0]}: scale = model / real
+// Sun scaled to ${size.name.split(' (')[0]}: scale = model / real
 const scale = ${size.meters} / (1391000 * 1000); // ${formatMagnitude(scale)}
 const earthDistM = forge(astronomicalUnit, meter)(1) * scale;
 // → ${formatLength(earthDistM)} from the model Sun

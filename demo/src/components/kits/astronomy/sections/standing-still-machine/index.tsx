@@ -73,10 +73,10 @@ export function StandingStillMachine() {
       }
       introZone={
         <>
-          Sitting perfectly still, you are riding four motions at once: the planet's spin, its
-          orbit, the Sun's lap around the galaxy, and the Local Group's drift against the cosmic
-          microwave background. Pick a motion and a span; forge turns the distance it carries you
-          into astronomical units and light-years.
+          You feel motionless right now. You are not: you are riding four motions at once, the
+          planet's spin, its orbit, the Sun's lap around the galaxy, and the Local Group's drift
+          against the cosmic microwave background. Pick a motion and a span; forge turns the
+          distance it carries you into astronomical units and light-years.
         </>
       }
       widgetZone={

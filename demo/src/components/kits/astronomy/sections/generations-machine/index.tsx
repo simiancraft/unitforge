@@ -83,7 +83,7 @@ const DEEP_SKY: readonly Destination[] = [
   { id: 'pillars', name: 'Pillars of Creation', value: 7000, unit: lightYear },
   { id: 'galactic-center', name: 'the galactic center', value: 26000, unit: lightYear },
   { id: 'andromeda', name: 'Andromeda Galaxy', value: 2.5e6, unit: lightYear },
-  { id: 'edge', name: 'edge of the observable universe', value: 4.65e10, unit: lightYear },
+  { id: 'edge', name: "the observable universe's edge", value: 4.65e10, unit: lightYear },
 ];
 
 const DESTINATIONS: readonly Destination[] = [...PLANETS, ...EXOPLANETS, ...DEEP_SKY];
