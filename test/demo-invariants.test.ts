@@ -30,6 +30,10 @@ import {
   ANTIQUITY_LENGTH_BENCH_IDS,
 } from '../demo/src/components/kits/antiquity/units.js';
 import {
+  ASTRONOMY_ALL_UNITS,
+  ASTRONOMY_UNIT_IDS,
+} from '../demo/src/components/kits/astronomy/units.js';
+import {
   FOODS,
   SODA_FL_OZ,
   SODAS,
@@ -96,6 +100,21 @@ describe('demo invariants: antiquity length-bench catalog', () => {
   it('ANTIQUITY_LENGTH_BENCH_IDS has no extra entries vs ANTIQUITY_LENGTH_BENCH', () => {
     const fromArrayIds = ANTIQUITY_LENGTH_BENCH.map((u) => u.id);
     for (const id of ANTIQUITY_LENGTH_BENCH_IDS) {
+      expect(fromArrayIds).toContain(id);
+    }
+  });
+});
+
+describe('demo invariants: astronomy units catalog', () => {
+  it('ASTRONOMY_UNIT_IDS covers every id in ASTRONOMY_ALL_UNITS', () => {
+    const fromArray = [...new Set(ASTRONOMY_ALL_UNITS.map((u) => u.id))].sort();
+    const fromUnion = [...new Set<string>(ASTRONOMY_UNIT_IDS)].sort();
+    expect(fromUnion).toEqual(fromArray);
+  });
+
+  it('ASTRONOMY_UNIT_IDS has no extra entries vs ASTRONOMY_ALL_UNITS', () => {
+    const fromArrayIds = ASTRONOMY_ALL_UNITS.map((u) => u.id);
+    for (const id of ASTRONOMY_UNIT_IDS) {
       expect(fromArrayIds).toContain(id);
     }
   });

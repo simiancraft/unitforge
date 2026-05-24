@@ -15,7 +15,8 @@ export type KitId =
   | 'cooking'
   | 'mass'
   | 'temperature'
-  | 'antiquity';
+  | 'antiquity'
+  | 'astronomy';
 
 export type ThemeVariant = 'dark' | 'light';
 
@@ -122,6 +123,18 @@ export const THEMES: Record<ThemeId, ThemeRecipe> = {
     kit: 'antiquity',
     variant: 'dark',
     shikiTheme: 'gruvbox-dark-medium',
+  },
+  'astronomy-light': {
+    id: 'astronomy-light',
+    kit: 'astronomy',
+    variant: 'light',
+    shikiTheme: 'catppuccin-latte',
+  },
+  'astronomy-dark': {
+    id: 'astronomy-dark',
+    kit: 'astronomy',
+    variant: 'dark',
+    shikiTheme: 'poimandres',
   },
 };
 

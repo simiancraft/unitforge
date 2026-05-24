@@ -14,6 +14,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { ComponentType } from 'react';
 import type { KitId, ThemeId } from '../theme/recipes.js';
 import { AntiquityScreen, meta as antiquityMeta } from './antiquity/index.js';
+import { AstronomyScreen, meta as astronomyMeta } from './astronomy/index.js';
 import { CookingScreen, meta as cookingMeta } from './cooking/index.js';
 import { DataStorageScreen, meta as dataStorageMeta } from './data-storage/index.js';
 import { ForgeScreen, meta as forgeMeta } from './forge/index.js';
@@ -52,6 +53,7 @@ export interface KitEntry {
 // "empty registry" branch becomes unreachable at the type layer.
 export const KITS: readonly [KitEntry, ...KitEntry[]] = [
   { meta: forgeMeta, Screen: ForgeScreen },
+  { meta: astronomyMeta, Screen: AstronomyScreen },
   { meta: geometryMeta, Screen: GeometryScreen },
   { meta: dataStorageMeta, Screen: DataStorageScreen },
   { meta: cookingMeta, Screen: CookingScreen },

@@ -1,0 +1,53 @@
+/* Astronomy theme. Two takes on looking up:
+ *
+ *   - astronomy-dark → "deep space": near-black indigo ground, cool
+ *     starlight-cyan accent, warm redshift-amber secondary. The sky
+ *     through the eyepiece.
+ *   - astronomy-light → "star chart": pale blue-white paper, ink-navy
+ *     text, a deep cobalt accent. The atlas on the desk.
+ *
+ * Loaded eagerly by the theme provider; activated via the
+ * [data-theme='astronomy-{light,dark}'] selectors.
+ */
+
+[data-theme="astronomy-light"] {
+  /* Star-chart paper. Pale cool white with a cobalt accent and a warm
+   * secondary. Contrast checked: #1f4ea8 accent on #eef2f8 ground
+   * clears 6.4:1 AA body. */
+  --uf-bg: #eef2f8;
+  --uf-fg: #161d2e;
+  --uf-muted: #5a6480;
+  --uf-accent: #1f4ea8;
+  --uf-accent-2: #b5642a;
+  --uf-card: #f7f9fc;
+  --uf-border: #c2cbdc;
+  --uf-code-bg: #e3e9f2;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  --uf-grid: #1f4ea8;
+  --uf-grid-faint: #1f4ea818;
+}
+
+[data-theme="astronomy-dark"] {
+  /* Deep space. Near-black indigo ground, starlight-cyan accent,
+   * redshift-amber secondary so the cool/warm polarity (blueshift /
+   * redshift) reads in the SVG without leaning on the card colors. */
+  --uf-bg: #05070f;
+  --uf-fg: #dfe6f5;
+  --uf-muted: #6c7795;
+  --uf-accent: #6fd3e8;
+  --uf-accent-2: #e0913f;
+  --uf-card: #0c1322;
+  --uf-border: #1d2840;
+  --uf-code-bg: #03050c;
+
+  --uf-display: "Cormorant Garamond", "EB Garamond", "Georgia", serif;
+  --uf-grid: #6fd3e8;
+  --uf-grid-faint: #6fd3e822;
+}
+
+/* The backdrop is a live BabylonJS scene (see
+ * parts/solar-system-backdrop.tsx); it owns its own motion and
+ * reduced-motion handling on the canvas, so no CSS keyframes live
+ * here. The theme variables above still drive the DOM sections and
+ * the CSS-gradient placeholder shown while the engine boots. */
