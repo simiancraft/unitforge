@@ -46,7 +46,7 @@ export function HubbleMachine() {
     <SectionLayout
       headerZone={
         <SectionHeader
-          eyebrow="demo 03"
+          eyebrow="demo 04"
           title="the Hubble machine"
           kicker="a constant becomes the age of the universe, almost"
           iconZone={<Sparkle size={28} strokeWidth={1.5} className="text-uf-accent" />}

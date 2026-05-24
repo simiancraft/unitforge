@@ -32,11 +32,23 @@ export function AstronomyScreen() {
   });
   const benchBounds = astronomyBoundsFor(bench.fromId);
 
-  // Backdrop zoom is driven by which unit is selected, not the slider
-  // position: kilometer (index 0) holds the camera tight on the system,
-  // gigaparsec (last) pulls it to deep field. Each unit pick is a step.
-  const unitIndex = ASTRONOMY_UNIT_IDS.indexOf(bench.fromId as (typeof ASTRONOMY_UNIT_IDS)[number]);
-  const zoom = unitIndex < 0 ? 0.35 : unitIndex / (ASTRONOMY_UNIT_IDS.length - 1);
+  // Backdrop zoom is driven by the `from` unit: kilometer (index 0)
+  // holds the camera tight on the system, gigaparsec (last) pulls it to
+  // deep field. Each unit pick is a step.
+  const fromIndex = ASTRONOMY_UNIT_IDS.indexOf(bench.fromId as (typeof ASTRONOMY_UNIT_IDS)[number]);
+  const zoom = fromIndex < 0 ? 0.35 : fromIndex / (ASTRONOMY_UNIT_IDS.length - 1);
+
+  // The `to` unit picks the camera's focus: there is one celestial body
+  // per unit (index 0 = the star, 1..n = the planets), so changing the
+  // target unit flies the camera over to a different body.
+  const toIndex = ASTRONOMY_UNIT_IDS.indexOf(bench.toId as (typeof ASTRONOMY_UNIT_IDS)[number]);
+  const focus = toIndex < 0 ? 0 : toIndex;
+
+  // The bench value slider sweeps the camera's orbit (alpha) around its
+  // focused body: dragging it left to right walks the camera around the
+  // point of interest. Normalize value to 0..1 within the unit's band.
+  const span = benchBounds.max - benchBounds.min;
+  const orbit = span > 0 ? (bench.value - benchBounds.min) / span : 0;
 
   const handleBenchChange = (next: BenchState) => {
     if (next.fromId !== bench.fromId) {
@@ -48,7 +60,7 @@ export function AstronomyScreen() {
 
   return (
     <KitLayout
-      backdropZone={<SolarSystemBackdrop zoom={zoom} />}
+      backdropZone={<SolarSystemBackdrop zoom={zoom} focus={focus} orbit={orbit} />}
       headerZone={
         <header className="relative flex flex-col gap-2">
           <p className="uf-eyebrow">kit · 07</p>
@@ -78,8 +90,8 @@ export function AstronomyScreen() {
         <>
           <DistanceLadder />
           <LightDelayMachine />
-          <HubbleMachine />
           <GenerationsMachine />
+          <HubbleMachine />
           <TelescopeMachine />
           <ScaleModelMachine />
           <StandingStillMachine />

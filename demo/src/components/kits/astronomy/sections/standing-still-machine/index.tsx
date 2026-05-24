@@ -10,7 +10,6 @@ import { forge } from 'unitforge';
 import { astronomicalUnit, lightYear } from 'unitforge/kits/astronomy';
 import { kilometer } from 'unitforge/kits/length';
 import { CodeBlock } from '~/components/ui/code-block.js';
-import { Result } from '~/components/ui/result.js';
 import { formatMagnitude } from '~/lib/format.js';
 import { head } from '~/lib/units.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../../section-layout.js';
@@ -144,12 +143,20 @@ function StillWidget({
         )}
       </PillGroup>
 
-      <Result
-        label={`${motion.name}, over ${span.name}`}
-        value={`${formatMagnitude(inAu)} au · ${formatMagnitude(inLy)} light-years`}
-        variant="hero"
-        valueClassName="text-base"
-      />
+      {/* Label and the two units each get their own line so nothing
+          wraps mid-phrase; the figures are the colored anchors. */}
+      <dl className="m-0 flex flex-col gap-0.5 border-t border-uf-border pt-2">
+        <dt className="uf-eyebrow flex flex-col gap-0.5">
+          <span>{motion.name}</span>
+          <span className="text-uf-muted">over {span.name}</span>
+        </dt>
+        <dd className="m-0 mono text-base text-uf-fg">
+          <span className="tabular-nums text-uf-accent">{formatMagnitude(inAu)}</span> au
+        </dd>
+        <dd className="m-0 mono text-base text-uf-fg">
+          <span className="tabular-nums text-uf-accent">{formatMagnitude(inLy)}</span> light-years
+        </dd>
+      </dl>
 
       <div className="flex flex-col gap-1.5 rounded-md border border-uf-border bg-uf-card p-4">
         <div className="flex items-baseline justify-between">
