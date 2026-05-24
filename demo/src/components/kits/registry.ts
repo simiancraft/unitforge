@@ -53,13 +53,13 @@ export interface KitEntry {
 // "empty registry" branch becomes unreachable at the type layer.
 export const KITS: readonly [KitEntry, ...KitEntry[]] = [
   { meta: forgeMeta, Screen: ForgeScreen },
+  { meta: astronomyMeta, Screen: AstronomyScreen },
   { meta: geometryMeta, Screen: GeometryScreen },
   { meta: dataStorageMeta, Screen: DataStorageScreen },
   { meta: cookingMeta, Screen: CookingScreen },
   { meta: massMeta, Screen: MassScreen },
   { meta: temperatureMeta, Screen: TemperatureScreen },
   { meta: antiquityMeta, Screen: AntiquityScreen },
-  { meta: astronomyMeta, Screen: AstronomyScreen },
 ];
 
 /** Look up a kit by its id; returns undefined if no match. */
