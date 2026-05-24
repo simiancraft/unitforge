@@ -4,11 +4,18 @@
 // glow layer, planets on inclined orbits with thin orbital rings, and
 // an ArcRotateCamera that slowly orbits the whole thing.
 //
-// It is bench-reactive. The `zoom` prop (0..1, derived from which unit
-// the bench is set to: kilometer → 0, gigaparsec → 1) dollies the
-// camera out, so picking a larger unit literally pulls you back through
-// space until the system shrinks to a point in the nebula. Page scroll
-// tilts the camera, so reading the sections feels like drifting.
+// It is bench-reactive on three channels:
+//   • `zoom`  (0..1, from the bench's `from` unit: km → 0, Gpc → 1)
+//     dollies the camera out, so picking a larger unit literally pulls
+//     you back through space until the system shrinks to a point.
+//   • `focus` (integer, from the bench's `to` unit) flies the camera
+//     over to a celestial body: there is one body per unit, index 0 the
+//     star and 1..n the planets, so retargeting the unit re-aims the
+//     camera and animates the move.
+//   • `orbit` (0..1, from the bench value slider) sweeps the camera's
+//     angle around whichever body it is focused on.
+// Page scroll drives the orbital spin speed of the rings and the
+// planets riding them, so scrolling the page winds the system up.
 //
 // BabylonJS is statically imported, matching the geometry and data-
 // storage kits that already pull it into the bundle for their 3D
@@ -35,9 +42,15 @@ import { useEffect, useRef } from 'react';
 
 interface SolarSystemBackdropProps {
   inline?: boolean;
-  /** 0..1 zoom signal from the bench's selected unit (km → 0, Gpc → 1).
+  /** 0..1 zoom signal from the bench's `from` unit (km → 0, Gpc → 1).
    *  Larger units dolly the camera farther out. */
   zoom?: number;
+  /** Index of the body the camera focuses on, from the bench's `to`
+   *  unit. 0 is the star; 1..n are the planets, clamped into range. */
+  focus?: number;
+  /** 0..1 sweep from the bench value slider; walks the camera's orbit
+   *  angle around its focused body. */
+  orbit?: number;
 }
 
 // Instant, asset-free nebula wash shown under the canvas while the
@@ -48,17 +61,28 @@ const NEBULA_GRADIENT =
   'radial-gradient(80% 80% at 50% 50%, rgba(80,40,120,0.20), transparent 75%),' +
   'var(--uf-bg)';
 
-export function SolarSystemBackdrop({ inline = false, zoom = 0.35 }: SolarSystemBackdropProps) {
+export function SolarSystemBackdrop({
+  inline = false,
+  zoom = 0.35,
+  focus = 0,
+  orbit = 0,
+}: SolarSystemBackdropProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Live signal refs so bench changes reach the render loop without
+  // tearing down the engine. Updated every render, read every frame.
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
+  const orbitRef = useRef(orbit);
+  orbitRef.current = orbit;
 
   useEffect(() => {
     if (inline) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const dispose = buildScene(canvas, zoomRef);
+    const dispose = buildScene(canvas, { zoomRef, focusRef, orbitRef });
     return dispose;
   }, [inline]);
 
@@ -86,6 +110,10 @@ interface PlanetSpec {
   color: [number, number, number];
 }
 
+// One planet per non-star unit. With the star at index 0 this gives the
+// camera exactly as many focus targets as the bench has units (the unit
+// catalog is pinned at ten by a demo-invariants test); keep the counts
+// in step if either side changes.
 const PLANETS: readonly PlanetSpec[] = [
   { orbit: 3.2, size: 0.32, speed: 0.42, inclination: 0.04, phase: 0.0, color: [0.7, 0.5, 0.35] },
   { orbit: 4.8, size: 0.5, speed: 0.3, inclination: -0.09, phase: 1.1, color: [0.4, 0.6, 0.85] },
@@ -100,6 +128,16 @@ const PLANETS: readonly PlanetSpec[] = [
     phase: 5.0,
     color: [0.6, 0.55, 0.85],
   },
+  { orbit: 19.5, size: 0.62, speed: 0.052, inclination: 0.1, phase: 1.8, color: [0.5, 0.7, 0.6] },
+  {
+    orbit: 24.0,
+    size: 0.48,
+    speed: 0.038,
+    inclination: -0.2,
+    phase: 4.2,
+    color: [0.82, 0.6, 0.45],
+  },
+  { orbit: 29.0, size: 0.28, speed: 0.028, inclination: 0.22, phase: 0.3, color: [0.7, 0.78, 0.9] },
 ];
 
 const NEBULA_VERT = `
@@ -160,7 +198,14 @@ void main(){
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-function buildScene(canvas: HTMLCanvasElement, zoomRef: { current: number }): () => void {
+interface SceneSignals {
+  zoomRef: { current: number };
+  focusRef: { current: number };
+  orbitRef: { current: number };
+}
+
+function buildScene(canvas: HTMLCanvasElement, signals: SceneSignals): () => void {
+  const { zoomRef, focusRef, orbitRef } = signals;
   const reduce =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -230,11 +275,35 @@ function buildScene(canvas: HTMLCanvasElement, zoomRef: { current: number }): ()
     return { mesh, spec, angle: spec.phase };
   });
 
-  // Camera radius for a zoom signal: exponential so each unit step is a
-  // visible dolly, from tight on the system (near) to deep field (far).
+  // Camera radius for the zoom signal: exponential so each unit step is
+  // a visible dolly, from tight on the system (near) to deep field (far).
   const NEAR = 16;
   const FAR = 900;
   const radiusFor = (z: number) => NEAR * (FAR / NEAR) ** clamp01(z);
+
+  // The camera focuses on a body by mutating its target vector in place;
+  // setTarget stores this exact reference (allowSamePosition forces the
+  // store even though it equals the constructor's zero target), so every
+  // later lerp moves the focus without recomputing the orbit angles we
+  // drive ourselves.
+  const camTarget = new Vector3(0, 0, 0);
+  camera.setTarget(camTarget, false, true);
+
+  // Bench value slider → camera orbit angle (alpha) around the focus.
+  const ALPHA_BASE = 1.2;
+  const ALPHA_SWEEP = Math.PI * 1.5;
+
+  // Page scroll → spin speed: orbital motion scales from a slow base at
+  // the top of the page up to several times that when fully scrolled.
+  const SPIN_BASE = 0.4;
+  const SPIN_GAIN = 2.6;
+
+  // World position of focus body `i`: 0 is the star at the origin, 1..n
+  // index the planets; anything else falls back to the star.
+  const focusPosition = (i: number): Vector3 => {
+    const p = planets[i - 1];
+    return p ? p.mesh.position : Vector3.Zero();
+  };
 
   let scrollFraction = 0;
   const onScroll = () => {
@@ -252,42 +321,28 @@ function buildScene(canvas: HTMLCanvasElement, zoomRef: { current: number }): ()
     const dt = engine.getDeltaTime() / 1000;
     elapsed += dt;
 
-    // Camera: lerp radius toward the zoom target, drift alpha (auto-
-    // orbit), tilt beta with scroll. Motion deltas are gated under
-    // reduced-motion; the user-driven zoom/scroll targets are not.
+    // Planets ride their rings; page scroll scales how fast they spin.
+    // Under reduced motion the angle holds at its phase so nothing
+    // turns, but positions are still written so the system is populated.
+    const spin = SPIN_BASE + scrollFraction * SPIN_GAIN;
+    for (const p of planets) {
+      if (!reduce) p.angle += dt * p.spec.speed * spin;
+      const r = p.spec.orbit;
+      const x = r * Math.cos(p.angle);
+      const zf = r * Math.sin(p.angle);
+      p.mesh.position.set(x, zf * Math.sin(p.spec.inclination), zf * Math.cos(p.spec.inclination));
+    }
+    nebulaMat.setFloat('iTime', reduce ? 0 : elapsed);
+
+    // Camera: focus lerps toward the selected body (this both animates
+    // the subject change and tracks the body as it orbits); alpha
+    // follows the slider sweep; radius follows the zoom unit. These are
+    // responses to bench input, so they run regardless of reduced motion.
+    Vector3.LerpToRef(camTarget, focusPosition(focusRef.current), Math.min(1, dt * 3), camTarget);
+    const targetAlpha = ALPHA_BASE + clamp01(orbitRef.current) * ALPHA_SWEEP;
+    camera.alpha += (targetAlpha - camera.alpha) * Math.min(1, dt * 4);
     const targetRadius = radiusFor(zoomRef.current);
     camera.radius += (targetRadius - camera.radius) * Math.min(1, dt * 2.5);
-    if (!reduce) camera.alpha += dt * 0.035;
-    const targetBeta = 1.2 - scrollFraction * 0.7;
-    camera.beta += (targetBeta - camera.beta) * Math.min(1, dt * 3);
-
-    if (!reduce) {
-      nebulaMat.setFloat('iTime', elapsed);
-      for (const p of planets) {
-        p.angle += dt * p.spec.speed;
-        const r = p.spec.orbit;
-        const x = r * Math.cos(p.angle);
-        const zf = r * Math.sin(p.angle);
-        p.mesh.position.set(
-          x,
-          zf * Math.sin(p.spec.inclination),
-          zf * Math.cos(p.spec.inclination),
-        );
-      }
-    } else {
-      // Place planets once at their phase so the system isn't empty.
-      for (const p of planets) {
-        const r = p.spec.orbit;
-        const x = r * Math.cos(p.angle);
-        const zf = r * Math.sin(p.angle);
-        p.mesh.position.set(
-          x,
-          zf * Math.sin(p.spec.inclination),
-          zf * Math.cos(p.spec.inclination),
-        );
-      }
-      nebulaMat.setFloat('iTime', 0);
-    }
 
     scene.render();
   };
