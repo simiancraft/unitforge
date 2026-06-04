@@ -1,8 +1,10 @@
-// The capstone: re-express both heights, and their delta, in a chosen
-// ancient length unit. Reuses the page bench's 17-unit catalog; each row
-// is a real forge(inch, <ancient>) call. Personal-scale units (cubits,
+// The capstone, and the reason this is an antiquity demo: re-express
+// both heights, and their delta, in a chosen ancient length unit. Reuses
+// the page bench's 17-unit catalog; each row is a real forge(inch,
+// <ancient>) call. The two people's values are large and coloured to
+// their side; the difference stays small. Personal-scale units (cubits,
 // feet, palms) read sensibly; the distance units (stadion, mille passus)
-// will read near zero, which is its own small lesson.
+// read near zero, which is its own small lesson.
 
 import { forge } from 'unitforge';
 import { inch } from 'unitforge/kits/antiquity';
@@ -17,17 +19,19 @@ function Row({
   value,
   symbol,
   dot,
-  muted,
+  valueColor,
 }: {
   label: string;
   value: string;
   symbol: string;
   dot?: string;
-  muted?: boolean;
+  /** When set, the value is rendered large and in this colour (a person row). */
+  valueColor?: string;
 }) {
+  const big = Boolean(valueColor);
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className={`flex items-center gap-2 text-sm ${muted ? 'text-uf-muted' : 'text-uf-fg'}`}>
+      <span className={`flex items-center gap-2 text-sm ${big ? 'text-uf-fg' : 'text-uf-muted'}`}>
         {dot ? (
           <span className="inline-block size-2 rounded-full" style={{ backgroundColor: dot }} />
         ) : (
@@ -35,8 +39,11 @@ function Row({
         )}
         {label}
       </span>
-      <span className="mono tabular-nums text-sm text-uf-fg">
-        {value} <span className="text-uf-muted">{symbol}</span>
+      <span
+        className={`mono tabular-nums ${big ? 'text-2xl' : 'text-sm text-uf-muted'}`}
+        style={valueColor ? { color: valueColor } : undefined}
+      >
+        {value} <span className="text-sm text-uf-muted">{symbol}</span>
       </span>
     </div>
   );
@@ -72,20 +79,22 @@ export function AncientReadout({
           onChange={onUnit}
         />
       </div>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         <Row
           label={subject.label}
           value={formatMagnitude(s)}
           symbol={unit.symbol}
           dot="var(--uf-accent)"
+          valueColor="var(--uf-accent)"
         />
         <Row
           label={reference.label}
           value={formatMagnitude(r)}
           symbol={unit.symbol}
           dot="var(--uf-accent-2)"
+          valueColor="var(--uf-accent-2)"
         />
-        <Row label="difference" value={deltaText} symbol={unit.symbol} muted />
+        <Row label="difference" value={deltaText} symbol={unit.symbol} />
       </div>
     </div>
   );

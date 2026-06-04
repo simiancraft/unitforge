@@ -1,13 +1,10 @@
 // The center reading between the two pickers: the subject's height as a
-// percentage of the reference's, plus the signed inch delta. Left is
-// always the subject ("your CEO"), right the reference.
+// percentage of the reference's. Each name is coloured to its side
+// (subject = accent, reference = accent-2) so it reads which name is
+// which figure. The absolute height difference is shown on the ruler
+// itself (the delta arrow), not repeated here.
 
 import type { ResolvedSide } from '../stature-model.js';
-
-/** Inches without trailing-zero noise: `14`, `14.5`. */
-function inches(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(1);
-}
 
 export function ComparisonReadout({
   subject,
@@ -18,17 +15,19 @@ export function ComparisonReadout({
 }) {
   const percent =
     reference.heightInches > 0 ? (subject.heightInches / reference.heightInches) * 100 : 0;
-  const delta = subject.heightInches - reference.heightInches;
-  const deltaText = `${delta >= 0 ? '+' : '−'}${inches(Math.abs(delta))} in`;
 
   return (
     <div className="flex flex-col items-center justify-center gap-0.5 text-center">
-      <span className="text-xs text-uf-muted">{subject.label} is</span>
+      <span className="text-sm font-semibold" style={{ color: 'var(--uf-accent)' }}>
+        {subject.label}
+      </span>
       <span className="mono text-3xl font-semibold tabular-nums text-uf-fg md:text-4xl">
         {Math.round(percent)}%
       </span>
-      <span className="text-xs text-uf-muted">the height of {reference.label}</span>
-      <span className="mono mt-1 text-xs tabular-nums text-uf-muted">{deltaText}</span>
+      <span className="text-xs text-uf-muted">the height of</span>
+      <span className="text-sm font-semibold" style={{ color: 'var(--uf-accent-2)' }}>
+        {reference.label}
+      </span>
     </div>
   );
 }

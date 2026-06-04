@@ -36,7 +36,7 @@ export const FIGURES: readonly Figure[] = [
     role: 'Simiancraft',
     heightInches: 66,
     kind: 'exec',
-    badge: '🧙',
+    badge: '🐵',
   },
   { id: 'jack-ma', name: 'Jack Ma', role: 'Alibaba', heightInches: 64, kind: 'exec' },
   { id: 'mark-zuckerberg', name: 'Mark Zuckerberg', role: 'Meta', heightInches: 67, kind: 'exec' },

@@ -1,10 +1,15 @@
 // The plain human glyph. Used for the reference stand-ins parked at the
-// 5/6/7 ft marks on the stature ruler. `fill` is lifted to a prop
-// (default `currentColor`) so the caller colours it via a wrapping
-// `color`; `preserveAspectRatio="none"` lets the ruler stretch it
-// vertically to a height without widening it (height-only scaling).
+// 5/6/7 ft marks on the stature ruler. The viewBox is cropped to the
+// figure's bounding box (the source art is a square with side margins),
+// so the element box hugs the person and the ruler can scale it
+// uniformly (natural proportions) by setting width = height * ASPECT.
+// `fill` is lifted to a prop (default `currentColor`) so the caller
+// colours it via a wrapping `color`.
 
 import type { SVGProps } from 'react';
+
+/** width / height of the cropped viewBox; the ruler keeps figures proportional. */
+export const FIGURE_GLYPH_ASPECT = 23.2 / 53.6;
 
 interface FigureGlyphProps extends SVGProps<SVGSVGElement> {
   fill?: string;
@@ -14,8 +19,7 @@ export function FigureGlyph({ fill = 'currentColor', ...props }: FigureGlyphProp
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 53.545 53.545"
-      preserveAspectRatio="none"
+      viewBox="15.2 0 23.2 53.6"
       fill={fill}
       aria-hidden="true"
       {...props}

@@ -1,10 +1,14 @@
 // The "executive" human glyph (a figure with a little tie). Used for the
-// two selected people on the stature ruler. Like FigureGlyph, `fill` is
-// lifted to a prop (default `currentColor`) so each side colour-codes via
-// a wrapping `color`, and `preserveAspectRatio="none"` lets the ruler
-// stretch it vertically to a height (height-only scaling).
+// two selected people on the stature ruler. Like FigureGlyph, the viewBox
+// is cropped to the figure's bounding box so the element box hugs the
+// person and the ruler scales it uniformly (natural proportions) via
+// width = height * ASPECT. `fill` is lifted to a prop (default
+// `currentColor`) so each side colour-codes via a wrapping `color`.
 
 import type { SVGProps } from 'react';
+
+/** width / height of the cropped viewBox; the ruler keeps figures proportional. */
+export const EXEC_GLYPH_ASPECT = 210 / 520;
 
 interface ExecGlyphProps extends SVGProps<SVGSVGElement> {
   fill?: string;
@@ -14,8 +18,7 @@ export function ExecGlyph({ fill = 'currentColor', ...props }: ExecGlyphProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 512 512"
-      preserveAspectRatio="none"
+      viewBox="151 -7 210 520"
       fill={fill}
       aria-hidden="true"
       {...props}

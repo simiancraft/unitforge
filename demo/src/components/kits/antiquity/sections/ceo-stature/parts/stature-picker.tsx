@@ -17,6 +17,8 @@ interface StaturePickerProps {
   onChange: (next: SideState) => void;
   /** Side accent (a CSS color), drives the trigger ring and slider. */
   accent: string;
+  /** Text for the shortcut button that jumps to custom mode. */
+  customCtaLabel: string;
 }
 
 function FigureRow({ figure }: { figure: Figure }) {
@@ -46,20 +48,33 @@ function FigureItem({ figure }: { figure: Figure }) {
   );
 }
 
-export function StaturePicker({ label, side, onChange, accent }: StaturePickerProps) {
+export function StaturePicker({
+  label,
+  side,
+  onChange,
+  accent,
+  customCtaLabel,
+}: StaturePickerProps) {
   const labelId = useId();
   const value = side.mode === 'preset' ? side.figureId : CUSTOM;
 
+  const customName = side.mode === 'custom' ? side.name : '';
+
   const handleSelect = (next: string) => {
     if (next === CUSTOM) {
-      onChange({ mode: 'custom', inches: resolveSide(side).heightInches });
+      onChange({ mode: 'custom', inches: resolveSide(side).heightInches, name: customName });
     } else {
       onChange({ mode: 'preset', figureId: next });
     }
   };
 
   const handleSlider = (e: ChangeEvent<HTMLInputElement>) => {
-    onChange({ mode: 'custom', inches: Number(e.target.value) });
+    onChange({ mode: 'custom', inches: Number(e.target.value), name: customName });
+  };
+
+  const handleName = (e: ChangeEvent<HTMLInputElement>) => {
+    const inches = side.mode === 'custom' ? side.inches : resolveSide(side).heightInches;
+    onChange({ mode: 'custom', inches, name: e.target.value });
   };
 
   const selected = side.mode === 'preset' ? resolveSide(side) : null;
@@ -73,7 +88,7 @@ export function StaturePicker({ label, side, onChange, accent }: StaturePickerPr
       <Select.Root value={value} onValueChange={handleSelect}>
         <Select.Trigger
           aria-labelledby={labelId}
-          className="flex items-center justify-between gap-2 rounded border border-uf-border bg-uf-card px-2 py-1.5 text-sm outline-none focus-visible:ring-1"
+          className="flex w-full items-center justify-between gap-2 rounded border border-uf-border bg-uf-card px-2 py-1.5 text-sm outline-none focus-visible:ring-1"
           style={{ '--tw-ring-color': accent } as CSSProperties}
         >
           <Select.Value>
@@ -131,8 +146,27 @@ export function StaturePicker({ label, side, onChange, accent }: StaturePickerPr
         </Select.Portal>
       </Select.Root>
 
+      {side.mode === 'preset' ? (
+        <button
+          type="button"
+          onClick={() => handleSelect(CUSTOM)}
+          className="self-start text-xs text-uf-muted underline decoration-dotted underline-offset-2 outline-none hover:text-uf-fg focus-visible:text-uf-fg"
+        >
+          {customCtaLabel}
+        </button>
+      ) : null}
+
       {side.mode === 'custom' ? (
-        <div className="mt-1 flex flex-col gap-1">
+        <div className="mt-1 flex flex-col gap-2">
+          <input
+            type="text"
+            value={side.name}
+            onChange={handleName}
+            placeholder="name (optional)"
+            aria-label={`${label} name`}
+            className="w-full rounded border border-uf-border bg-uf-card px-2 py-1.5 text-sm text-uf-fg outline-none placeholder:text-uf-muted focus-visible:ring-1"
+            style={{ '--tw-ring-color': accent } as CSSProperties}
+          />
           <input
             type="range"
             min={STATURE_MIN_IN}

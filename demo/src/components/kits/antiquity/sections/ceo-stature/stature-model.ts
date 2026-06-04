@@ -7,8 +7,12 @@ import { forge } from 'unitforge';
 import { centimeter, foot, inch } from 'unitforge/kits/antiquity';
 import { FIGURES } from './figures.js';
 
-/** One side of the comparison: a chosen preset, or a free-entered height. */
-export type SideState = { mode: 'preset'; figureId: string } | { mode: 'custom'; inches: number };
+/** One side of the comparison: a chosen preset, or a free-entered height
+ *  with an optional typed-in name (so a custom figure can be labelled on
+ *  the ruler, e.g. your actual CEO). */
+export type SideState =
+  | { mode: 'preset'; figureId: string }
+  | { mode: 'custom'; inches: number; name: string };
 
 export interface ResolvedSide {
   /** Primary label (figure name, or "custom height"). */
@@ -44,7 +48,7 @@ export function cm(inches: number): string {
 export function resolveSide(side: SideState): ResolvedSide {
   if (side.mode === 'custom') {
     return {
-      label: 'custom height',
+      label: side.name.trim() || 'custom height',
       sublabel: ftIn(side.inches),
       heightInches: side.inches,
     };

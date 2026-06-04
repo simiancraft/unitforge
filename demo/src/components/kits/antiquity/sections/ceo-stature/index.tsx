@@ -12,7 +12,7 @@
 
 import { Ruler } from 'lucide-react';
 import { forge } from 'unitforge';
-import { inch } from 'unitforge/kits/antiquity';
+import { centimeter, inch } from 'unitforge/kits/antiquity';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { formatMagnitude, toJsName } from '~/lib/format.js';
 import { findById } from '~/lib/units.js';
@@ -22,12 +22,24 @@ import { AncientReadout } from './parts/ancient-readout.js';
 import { ComparisonReadout } from './parts/comparison-readout.js';
 import { StaturePicker } from './parts/stature-picker.js';
 import { StatureRuler } from './parts/stature-ruler.js';
+import { ftIn, type ResolvedSide } from './stature-model.js';
 import { useStatureGauge } from './use-stature-gauge.js';
 
-function buildCode(unitId: string, subjectInches: number): string {
+const inchToCm = forge(inch, centimeter);
+
+// Three forge lines: each person's height into centimeters (commented
+// with who they are), then the subject's height into the chosen ancient
+// unit. The whole point of the section in one snippet.
+function buildCode(subject: ResolvedSide, reference: ResolvedSide, unitId: string): string {
   const unit = findById(ANTIQUITY_LENGTH_BENCH, unitId);
-  const result = forge(inch, unit)(subjectInches);
-  return `forge(inch, ${toJsName(unit.id)})(${formatMagnitude(subjectInches)}); // ${formatMagnitude(result)} ${unit.symbol}`;
+  const ancient = forge(inch, unit);
+  const line = (s: ResolvedSide) =>
+    `forge(inch, centimeter)(${s.heightInches}); // ${s.label}, ${ftIn(s.heightInches)} = ${inchToCm(s.heightInches).toFixed(1)} cm`;
+  return [
+    line(subject),
+    line(reference),
+    `forge(inch, ${toJsName(unit.id)})(${subject.heightInches}); // in ancient units = ${formatMagnitude(ancient(subject.heightInches))} ${unit.symbol}`,
+  ].join('\n');
 }
 
 export function CeoStature() {
@@ -56,12 +68,13 @@ export function CeoStature() {
           interactionZone={
             <div className="flex flex-col gap-5">
               <StatureRuler subject={g.resolvedSubject} reference={g.resolvedReference} />
-              <div className="grid items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
+              <div className="grid items-start gap-4 sm:grid-cols-[1fr_13rem_1fr]">
                 <StaturePicker
                   label="your CEO"
                   side={g.subject}
                   onChange={g.setSubject}
                   accent="var(--uf-accent)"
+                  customCtaLabel="custom CEO"
                 />
                 <ComparisonReadout subject={g.resolvedSubject} reference={g.resolvedReference} />
                 <StaturePicker
@@ -69,6 +82,7 @@ export function CeoStature() {
                   side={g.reference}
                   onChange={g.setReference}
                   accent="var(--uf-accent-2)"
+                  customCtaLabel="custom person"
                 />
               </div>
               <AncientReadout
@@ -79,7 +93,9 @@ export function CeoStature() {
               />
             </div>
           }
-          codeZone={<CodeBlock code={buildCode(g.ancientUnitId, g.resolvedSubject.heightInches)} />}
+          codeZone={
+            <CodeBlock code={buildCode(g.resolvedSubject, g.resolvedReference, g.ancientUnitId)} />
+          }
         />
       }
       notesZone={
