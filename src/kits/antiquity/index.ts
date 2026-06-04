@@ -36,7 +36,7 @@
 // Benchmarking anchors from foundational kits (re-exported for
 // consumer convenience; JS identity preserved). The list grows when
 // a new JSDoc benchmarking phrase needs an anchor that isn't here.
-export { foot, inch, meter, statuteMile } from '../length/units.js';
+export { centimeter, foot, inch, meter, statuteMile } from '../length/units.js';
 export { kilogram, pound } from '../mass/units.js';
 export { liter } from '../volume/units.js';
 export * from './china.js';

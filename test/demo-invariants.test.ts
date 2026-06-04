@@ -26,6 +26,13 @@
 
 import { describe, expect, it } from 'bun:test';
 import {
+  DEFAULT_REFERENCE_ID,
+  DEFAULT_SUBJECT_ID,
+  FIGURES,
+  STATURE_MAX_IN,
+  STATURE_MIN_IN,
+} from '../demo/src/components/kits/antiquity/sections/ceo-stature/figures.js';
+import {
   ANTIQUITY_LENGTH_BENCH,
   ANTIQUITY_LENGTH_BENCH_IDS,
 } from '../demo/src/components/kits/antiquity/units.js';
@@ -190,5 +197,30 @@ describe('demo invariants: comparison + recipe ORDER joints', () => {
     expect(orderMatch, 'recipe-machine ORDER array not found').toBeTruthy();
     const count = (orderMatch?.[1] ?? '').split(',').filter((s) => s.trim().length > 0).length;
     expect(count).toBe(6);
+  });
+});
+
+describe('demo invariants: ceo-stature figures catalog', () => {
+  it('figure ids are unique', () => {
+    const ids = FIGURES.map((f) => f.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('every reported height sits within the ruler/slider domain', () => {
+    for (const f of FIGURES) {
+      expect(f.heightInches).toBeGreaterThanOrEqual(STATURE_MIN_IN);
+      expect(f.heightInches).toBeLessThanOrEqual(STATURE_MAX_IN);
+    }
+  });
+
+  it('every kind is exec or leader', () => {
+    for (const f of FIGURES) {
+      expect(['exec', 'leader']).toContain(f.kind);
+    }
+  });
+
+  it('default subject and reference ids resolve to figures', () => {
+    expect(FIGURES.some((f) => f.id === DEFAULT_SUBJECT_ID)).toBe(true);
+    expect(FIGURES.some((f) => f.id === DEFAULT_REFERENCE_ID)).toBe(true);
   });
 });

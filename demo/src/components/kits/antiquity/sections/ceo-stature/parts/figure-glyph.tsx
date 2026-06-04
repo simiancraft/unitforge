@@ -1,0 +1,31 @@
+// The plain human glyph. Used for the reference stand-ins parked at the
+// 5/6/7 ft marks on the stature ruler. The viewBox is cropped to the
+// figure's bounding box (the source art is a square with side margins),
+// so the element box hugs the person and the ruler can scale it
+// uniformly (natural proportions) by setting width = height * ASPECT.
+// `fill` is lifted to a prop (default `currentColor`) so the caller
+// colours it via a wrapping `color`.
+
+import type { SVGProps } from 'react';
+
+/** width / height of the cropped viewBox; the ruler keeps figures proportional. */
+export const FIGURE_GLYPH_ASPECT = 23.2 / 53.6;
+
+interface FigureGlyphProps extends SVGProps<SVGSVGElement> {
+  fill?: string;
+}
+
+export function FigureGlyph({ fill = 'currentColor', ...props }: FigureGlyphProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="15.2 0 23.2 53.6"
+      fill={fill}
+      aria-hidden="true"
+      {...props}
+    >
+      <circle cx={26.686} cy={4.507} r={4.507} />
+      <path d="M28.256 11.163a8.205 8.205 0 0 0-3.447.042c-7.493.878-9.926 9.551-9.239 16.164.298 2.859 4.805 2.889 4.504 0-.25-2.41-.143-6.047 1.138-8.632v9.425c0 .111.011.215.016.322-.003.051-.015.094-.015.146 0 7.479-.013 14.955-.322 22.428-.137 3.322 5.014 3.309 5.15 0 .242-5.857.303-11.717.317-17.578.244.016.488.016.732.002.015 5.861.074 11.721.314 17.576.137 3.309 5.288 3.322 5.15 0-.309-7.473-.32-14.949-.32-22.428 0-.232-.031-.443-.078-.646-.007-3.247-.131-6.497-.093-9.742 1.534 2.597 1.674 6.558 1.408 9.125-.302 2.887 4.206 2.858 4.504 0 .703-6.75-1.847-15.648-9.719-16.204z" />
+    </svg>
+  );
+}

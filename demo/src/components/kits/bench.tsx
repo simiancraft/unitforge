@@ -15,7 +15,7 @@ import { ArrowRight } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import type { Dimension, Unit } from 'unitforge';
 import { formatMagnitude } from '~/lib/format.js';
-import { round1 } from '~/lib/math.js';
+import { roundToStep } from '~/lib/math.js';
 import { CodeLine } from '../ui/code-block.js';
 import { UnitPicker } from '../ui/unit-picker.js';
 import { computeBenchValues } from './compute-bench-values.js';
@@ -58,8 +58,10 @@ export function Bench<D extends Dimension>({
 
   // Round at the input boundary so the rendered code-snippet doesn't
   // pick up floating-point drift from the slider (e.g. 0.30000000000004).
+  // Snap to the slider's own step precision so a 0.01-step unit (inch,
+  // cm) keeps its hundredths instead of being flattened to tenths.
   const handleValue = (e: ChangeEvent<HTMLInputElement>) => {
-    const next = round1(Number(e.target.value));
+    const next = roundToStep(Number(e.target.value), step);
     if (Number.isFinite(next)) onChange({ ...state, value: next });
   };
 
