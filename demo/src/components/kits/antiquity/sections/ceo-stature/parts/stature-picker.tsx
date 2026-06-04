@@ -78,10 +78,9 @@ export function StaturePicker({ label, side, onChange, accent }: StaturePickerPr
         >
           <Select.Value>
             {selected ? (
-              <span className="flex items-baseline gap-2">
+              <span className="flex min-w-0 items-baseline gap-2">
                 {selected.badge ? <span aria-hidden>{selected.badge}</span> : null}
-                <span className="font-semibold text-uf-fg">{selected.label}</span>
-                <span className="text-xs text-uf-muted">{selected.sublabel}</span>
+                <span className="truncate font-semibold text-uf-fg">{selected.label}</span>
               </span>
             ) : (
               <span className="font-semibold text-uf-fg">custom height</span>

@@ -5,7 +5,6 @@
 
 import { forge } from 'unitforge';
 import { centimeter, foot, inch } from 'unitforge/kits/antiquity';
-import { formatMagnitude } from '~/lib/format.js';
 import { FIGURES } from './figures.js';
 
 /** One side of the comparison: a chosen preset, or a free-entered height. */
@@ -38,7 +37,7 @@ export function ftIn(inches: number): string {
 
 /** Inches → `175.3 cm`. */
 export function cm(inches: number): string {
-  return `${formatMagnitude(inchToCentimeter(inches))} cm`;
+  return `${inchToCentimeter(inches).toFixed(1)} cm`;
 }
 
 /** Resolve a side's state into render-ready labels + a height. */

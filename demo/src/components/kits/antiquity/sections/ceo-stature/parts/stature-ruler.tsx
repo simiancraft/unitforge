@@ -12,7 +12,7 @@ import { ExecGlyph } from './exec-glyph.js';
 import { FigureGlyph } from './figure-glyph.js';
 
 const VIS_H = 230; // px height of the tallest renderable figure (7'6")
-const GLYPH_W = 26; // fixed glyph width; only height scales
+const GLYPH_W = 50; // fixed glyph width; only height scales
 const TOP_PAD = 30; // headroom for the per-figure height tag + badge
 const BASE = 24; // space below the baseline for the foot-mark labels
 const MARKS = [60, 72, 84]; // 5, 6, 7 ft, in inches
@@ -31,10 +31,10 @@ function StandIn({ inches }: { inches: number }) {
       style={{
         left: `${xPct(inches)}%`,
         bottom: BASE,
-        width: GLYPH_W - 2,
+        width: GLYPH_W - 6,
         height: inches * pxPerIn,
         transform: 'translateX(-50%)',
-        opacity: 0.22,
+        opacity: 0.3,
         zIndex: 0,
       }}
     />
