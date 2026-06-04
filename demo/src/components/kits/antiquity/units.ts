@@ -22,17 +22,19 @@ import { LENGTH, MASS, VOLUME } from 'unitforge/dimensions';
 import {
   bathHebrew,
   cattyHan,
+  // modern anchors (re-exported by the kit barrel; JS identity preserved)
+  centimeter,
   chiHan,
   commonCubitHebrew,
   debenEgypt,
   denariusAugustan,
   drachmaAttic,
   ephahHebrew,
-  // modern anchors (re-exported by the kit barrel; JS identity preserved)
   foot,
   gallonWineEnglish,
   heqatEgypt,
   hogsheadWineEnglish,
+  inch,
   kenJapan,
   kilogram,
   kushMesopotamia,
@@ -188,6 +190,8 @@ export function anchorsFor(dimension: Dimension): readonly AntiquityUnit[] {
  *  this is the bench's from/to option set, those are the translator's
  *  modern-equivalent targets. */
 export const ANTIQUITY_LENGTH_BENCH: readonly Unit<'length', number>[] = [
+  centimeter,
+  inch,
   palmEgypt,
   pousAttic,
   pesRomanus,
@@ -212,6 +216,8 @@ export const ANTIQUITY_LENGTH_BENCH: readonly Unit<'length', number>[] = [
  *  would widen; the typed bounds Record depends on the narrowed union.
  *  Pinned to the runtime bench array by a demo-invariants test. */
 export const ANTIQUITY_LENGTH_BENCH_IDS = [
+  'centimeter',
+  'inch',
   'palm-egypt',
   'pous-attic',
   'pes-romanus',
@@ -245,6 +251,8 @@ export interface SliderBounds {
  *  personal-scale lengths (cubit, foot, shaku) read well at 1–100; the
  *  long-distance units (stadion, mille passus, ri) at 1–50. */
 export const ANTIQUITY_LENGTH_BOUNDS: Record<AntiquityLengthId, SliderBounds> = {
+  centimeter: { min: 1, max: 300, step: 0.01, init: 170 },
+  inch: { min: 1, max: 120, step: 0.01, init: 67 },
   'palm-egypt': { min: 1, max: 100, step: 1, init: 10 },
   'pous-attic': { min: 1, max: 500, step: 1, init: 100 },
   'pes-romanus': { min: 1, max: 5000, step: 1, init: 100 },
@@ -259,8 +267,8 @@ export const ANTIQUITY_LENGTH_BOUNDS: Record<AntiquityLengthId, SliderBounds> = 
   'stadion-olympic': { min: 1, max: 50, step: 1, init: 1 },
   'mille-passus-romanus': { min: 1, max: 50, step: 1, init: 1 },
   'ri-japan-edo': { min: 1, max: 20, step: 1, init: 1 },
-  foot: { min: 1, max: 5000, step: 1, init: 100 },
-  meter: { min: 1, max: 2000, step: 1, init: 100 },
+  foot: { min: 1, max: 5000, step: 0.01, init: 100 },
+  meter: { min: 1, max: 2000, step: 0.01, init: 100 },
   'statute-mile': { min: 0.1, max: 50, step: 0.1, init: 1 },
 };
 
