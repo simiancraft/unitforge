@@ -1,6 +1,6 @@
 {
   "name": "unitforge",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "description": "Type-safe unit conversion and units of measure for TypeScript. Forge anything measurable, not just physics: three primitives (defineUnit, defineConversion, forge) compose into typed conversions for any domain you import or invent, with kits for geometry, cooking, astronomy, data storage, and antiquity.",
   "keywords": [
     "units",

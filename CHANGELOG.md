@@ -1,3 +1,19 @@
+## [3.3.2](https://github.com/simiancraft/unitforge/compare/v3.3.1...v3.3.2) (2026-06-12)
+
+
+### Bug Fixes
+
+* **demo:** correct antiquity facts, a11y, and backdrop render cost ([#45](https://github.com/simiancraft/unitforge/issues/45)) ([d1dd2cf](https://github.com/simiancraft/unitforge/commit/d1dd2cf41da5e3bea75c1ea202231ce844003658))
+
+
+### Features
+
+* **demo:** add antiquity kit demo screen ([#44](https://github.com/simiancraft/unitforge/issues/44)) ([83296c3](https://github.com/simiancraft/unitforge/commit/83296c3ac3b042cd872efa111ac4007a553a1fbf))
+* **demo:** add astronomy kit demo with a live BabylonJS solar system ([#47](https://github.com/simiancraft/unitforge/issues/47)) ([b045897](https://github.com/simiancraft/unitforge/commit/b045897d41efcee90c330e678d827d4ff2d26bba))
+* **demo:** add spoon-math comparator (pinch and dash) to the cooking demo ([#48](https://github.com/simiancraft/unitforge/issues/48)) ([ea35395](https://github.com/simiancraft/unitforge/commit/ea3539584109fdd859d591c550867030f2ae307f))
+* **demo:** add temperature kit demo screen ([#43](https://github.com/simiancraft/unitforge/issues/43)) ([eca96a5](https://github.com/simiancraft/unitforge/commit/eca96a56c15bd3a6b53e0c71b243721def450c21)), closes [#30](https://github.com/simiancraft/unitforge/issues/30)
+* **demo:** add the CEO-stature demo and antiquity bench precision ([#49](https://github.com/simiancraft/unitforge/issues/49)) ([81b3288](https://github.com/simiancraft/unitforge/commit/81b32886f8499ea38a3b273f0799ea03932dd255))
+
 ## [3.3.1](https://github.com/simiancraft/unitforge/compare/v3.3.0...v3.3.1) (2026-05-19)
 
 
