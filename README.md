@@ -24,7 +24,7 @@
 
 # unitforge
 
-**One Coke ≈ 9.75 sugar cubes.** A units library that does cross-dimensional conversion and catches dimension mismatches at compile time. Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import.
+**One Coke ≈ 9.75 sugar cubes.** A type-safe unit conversion library for TypeScript: units of measure for any domain, cross-dimensional conversion, and dimension mismatches caught at compile time. Three primitives (`defineUnit`, `defineConversion`, `forge`) work against any unit and any dimension you import or invent.
 
 ## Kits
 
