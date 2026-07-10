@@ -13,7 +13,6 @@
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
     }
