@@ -34,7 +34,7 @@ jobs:
 
       # Build before typecheck and test:
       #   - test/demo-invariants.test.ts imports from `../demo/src/...`;
-      #     tsgo follows the import and pulls those demo files in, which
+      #     tsc follows the import and pulls those demo files in, which
       #     in turn require `unitforge` (the root package) to resolve via
       #     dist/. Without dist/ first, typecheck reports demo errors.
       #   - test/subpathExports.test.ts verifies the package.json `exports`
@@ -51,7 +51,7 @@ jobs:
         working-directory: ./demo
         run: bun install --no-frozen-lockfile
 
-      - name: Typecheck (tsgo)
+      - name: Typecheck (tsc)
         run: bun run typecheck
 
       - name: Package hygiene (publint + attw)
