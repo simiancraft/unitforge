@@ -1,3 +1,10 @@
+## [3.3.3](https://github.com/simiancraft/unitforge/compare/v3.3.2...v3.3.3) (2026-07-29)
+
+
+### Bug Fixes
+
+* **ci:** drop --exclude-mail, removed in lychee 0.24 ([#60](https://github.com/simiancraft/unitforge/issues/60)) ([3447eb4](https://github.com/simiancraft/unitforge/commit/3447eb4f1adc014eb2877f857f426824cb47f997))
+
 ## [3.3.2](https://github.com/simiancraft/unitforge/compare/v3.3.1...v3.3.2) (2026-06-12)
 
 
