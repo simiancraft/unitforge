@@ -28,6 +28,8 @@ const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   'gruvbox-dark-medium': () => import('shiki/themes/gruvbox-dark-medium.mjs'),
   'catppuccin-latte': () => import('shiki/themes/catppuccin-latte.mjs'),
   poimandres: () => import('shiki/themes/poimandres.mjs'),
+  'everforest-light': () => import('shiki/themes/everforest-light.mjs'),
+  'everforest-dark': () => import('shiki/themes/everforest-dark.mjs'),
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;

@@ -16,7 +16,8 @@ export type KitId =
   | 'mass'
   | 'temperature'
   | 'antiquity'
-  | 'astronomy';
+  | 'astronomy'
+  | 'inventory';
 
 export type ThemeVariant = 'dark' | 'light';
 
@@ -135,6 +136,18 @@ export const THEMES: Record<ThemeId, ThemeRecipe> = {
     kit: 'astronomy',
     variant: 'dark',
     shikiTheme: 'poimandres',
+  },
+  'inventory-light': {
+    id: 'inventory-light',
+    kit: 'inventory',
+    variant: 'light',
+    shikiTheme: 'everforest-light',
+  },
+  'inventory-dark': {
+    id: 'inventory-dark',
+    kit: 'inventory',
+    variant: 'dark',
+    shikiTheme: 'everforest-dark',
   },
 };
 
