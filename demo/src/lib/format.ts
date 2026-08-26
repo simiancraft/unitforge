@@ -63,3 +63,21 @@ export function formatBytesShort(bytes: number): string {
   if (scaled >= 10) return `${scaled.toFixed(1)} ${symbol}`;
   return `${scaled.toFixed(2)} ${symbol}`;
 }
+
+/**
+ * Whole-piece formatter for COUNT readouts. `formatMagnitude` is tuned
+ * for continuous magnitudes and pads to three decimals below 1000, so
+ * it renders 12 ingots as "12.000". Discrete quantities want the
+ * opposite: no decimals, thousands separators once the numbers get
+ * warehouse-sized.
+ *
+ * Non-integers are passed through with a single decimal rather than
+ * silently rounded. A COUNT value that is not whole means a `compute`
+ * body forgot to floor, and hiding that in the readout would hide the
+ * exact bug the inventory kit exists to prevent.
+ */
+export function formatCount(n: number): string {
+  if (!Number.isFinite(n)) return String(n);
+  if (Number.isInteger(n)) return n.toLocaleString('en-US');
+  return n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
