@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { ANGLE, AREA, LENGTH, VOLUME } from '../../src/dimensions.js';
 import { forge, ValidationError } from '../../src/index.js';
+import { dozen } from '../../src/kits/count/index.js';
 import {
   acre,
   angleFromRadiusAndArcLength,
@@ -19,6 +20,7 @@ import {
   areaFromParallelogramBaseAndHeight,
   areaFromRectangleLengthAndWidth,
   areaFromRegularPolygonApothemAndPerimeter,
+  areaFromRegularPolygonSidesAndLength,
   areaFromRhombusDiagonals,
   areaFromSectorRadiusAndAngle,
   areaFromSquareSide,
@@ -46,6 +48,7 @@ import {
   diagonalOfRectangleFromLengthAndWidth,
   diagonalOfSquareFromSide,
   distanceBetweenPoints,
+  each,
   fathom,
   foot,
   gradian,
@@ -68,6 +71,7 @@ import {
   perimeterOfEquilateralTriangleFromSide,
   perimeterOfParallelogramFromBaseAndSide,
   perimeterOfRectangleFromLengthAndWidth,
+  perimeterOfRegularPolygonFromSidesAndLength,
   perimeterOfRhombusFromSide,
   perimeterOfSquareFromSide,
   perimeterOfTrapezoidFromSides,
@@ -1533,5 +1537,82 @@ describe('geometry/units: ANGLE', () => {
     it('forges 1 turn to 360°', () => {
       expect(forge(turn, degree)(1)).toBeCloseTo(360, 12);
     });
+  });
+});
+
+describe('kits/geometry: regular polygon from side count', () => {
+  const area = forge({ sides: each, sideLength: meter }, squareMeter, {
+    via: areaFromRegularPolygonSidesAndLength,
+  });
+  const perimeter = forge({ sides: each, sideLength: meter }, meter, {
+    via: perimeterOfRegularPolygonFromSidesAndLength,
+  });
+
+  it('a unit square has area 1', () => {
+    expect(area({ sides: 4, sideLength: 1 })).toBeCloseTo(1, 12);
+  });
+
+  it('an equilateral triangle of side 1 has area sqrt(3)/4', () => {
+    expect(area({ sides: 3, sideLength: 1 })).toBeCloseTo(Math.sqrt(3) / 4, 12);
+  });
+
+  it('a regular hexagon of side 1 has area 3*sqrt(3)/2', () => {
+    expect(area({ sides: 6, sideLength: 1 })).toBeCloseTo((3 * Math.sqrt(3)) / 2, 12);
+  });
+
+  it('agrees with the apothem form, which is the same area by another route', () => {
+    const viaApothem = forge({ apothem: meter, perimeter: meter }, squareMeter, {
+      via: areaFromRegularPolygonApothemAndPerimeter,
+    });
+    for (const n of [3, 4, 5, 6, 8, 12]) {
+      const s = 2.5;
+      const apothem = s / (2 * Math.tan(Math.PI / n));
+      expect(area({ sides: n, sideLength: s })).toBeCloseTo(
+        viaApothem({ apothem, perimeter: n * s }),
+        9,
+      );
+    }
+  });
+
+  it('as the side count grows the area approaches the circumscribing circle', () => {
+    // A regular n-gon with circumradius 1 tends to pi as n grows.
+    const n = 100000;
+    const s = 2 * Math.sin(Math.PI / n);
+    expect(area({ sides: n, sideLength: s })).toBeCloseTo(Math.PI, 6);
+  });
+
+  it('perimeter is n * s', () => {
+    expect(perimeter({ sides: 6, sideLength: 2.5 })).toBeCloseTo(15, 12);
+  });
+
+  it('the side count may be given in any COUNT unit', () => {
+    // A dodecagon counted by the dozen is the same dodecagon. This is
+    // why the validators cannot test `sides >= 3`: they see the raw 1.
+    const byDozen = forge({ sides: dozen, sideLength: meter }, squareMeter, {
+      via: areaFromRegularPolygonSidesAndLength,
+    });
+    expect(byDozen({ sides: 1, sideLength: 1 })).toBeCloseTo(
+      area({ sides: 12, sideLength: 1 }),
+      12,
+    );
+  });
+
+  it('side length may be given in any LENGTH unit', () => {
+    const byCentimeter = forge({ sides: each, sideLength: centimeter }, squareMeter, {
+      via: areaFromRegularPolygonSidesAndLength,
+    });
+    expect(byCentimeter({ sides: 4, sideLength: 100 })).toBeCloseTo(1, 12);
+  });
+
+  it('a zero side length gives zero area and zero perimeter', () => {
+    expect(area({ sides: 6, sideLength: 0 })).toBe(0);
+    expect(perimeter({ sides: 6, sideLength: 0 })).toBe(0);
+  });
+
+  it('rejects negative and non-finite inputs', () => {
+    expect(() => area({ sides: 0, sideLength: 1 })).toThrow(ValidationError);
+    expect(() => area({ sides: -3, sideLength: 1 })).toThrow(ValidationError);
+    expect(() => area({ sides: Number.NaN, sideLength: 1 })).toThrow(ValidationError);
+    expect(() => area({ sides: 4, sideLength: -1 })).toThrow(ValidationError);
   });
 });

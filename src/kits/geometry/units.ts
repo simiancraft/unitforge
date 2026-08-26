@@ -17,6 +17,13 @@
 import { defineUnit } from '../../define.js';
 import { ANGLE, AREA } from '../../dimensions.js';
 
+// ─── COUNT (re-exported from kits/count) ─────────────────────────────
+// Only `each` is re-exported. The polygon side-count derivations need a
+// COUNT unit to name their input, and `each` is the base; a caller who
+// wants to count sides by the dozen imports it from kits/count.
+
+export { each } from '../count/units.js';
+
 // ─── LENGTH (re-exported from kits/length; single source of truth) ───
 
 export {
