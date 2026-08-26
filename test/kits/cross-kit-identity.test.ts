@@ -16,7 +16,9 @@ import { forge } from '../../src/index.js';
 
 import * as astronomy from '../../src/kits/astronomy/index.js';
 import * as cooking from '../../src/kits/cooking/index.js';
+import * as count from '../../src/kits/count/index.js';
 import * as geometry from '../../src/kits/geometry/index.js';
+import * as inventory from '../../src/kits/inventory/index.js';
 import * as length from '../../src/kits/length/index.js';
 import * as mass from '../../src/kits/mass/index.js';
 import * as temperature from '../../src/kits/temperature/index.js';
@@ -72,6 +74,22 @@ describe('cross-kit JS identity (structural)', () => {
     expectIdentityForSharedKeys('astronomy', astronomy, 'length', length);
   });
 
+  it('inventory re-exports from count preserve JS identity', () => {
+    expectIdentityForSharedKeys('inventory', inventory, 'count', count);
+  });
+
+  it('inventory re-exports from length preserve JS identity', () => {
+    expectIdentityForSharedKeys('inventory', inventory, 'length', length);
+  });
+
+  it('inventory re-exports from mass preserve JS identity', () => {
+    expectIdentityForSharedKeys('inventory', inventory, 'mass', mass);
+  });
+
+  it('inventory re-exports from volume preserve JS identity', () => {
+    expectIdentityForSharedKeys('inventory', inventory, 'volume', volume);
+  });
+
   it('cooking.milliliter === geometry.milliliter (transitive cross-domain)', () => {
     expect(cooking.milliliter).toBe(geometry.milliliter);
   });
@@ -84,6 +102,14 @@ describe('forge across identity-preserved units is the identity converter', () =
 
   it('forge(geometry.meter, length.meter)(3.14) === 3.14', () => {
     expect(forge(geometry.meter, length.meter)(3.14)).toBe(3.14);
+  });
+
+  it('forge(inventory.each, count.each)(7) === 7', () => {
+    expect(forge(inventory.each, count.each)(7)).toBe(7);
+  });
+
+  it('inventory.gram === cooking.gram (both route to the mass atom)', () => {
+    expect(inventory.gram).toBe(cooking.gram);
   });
 
   it('forge(cooking.cupUs, geometry.milliliter)(2.5) routes via the same VOLUME atoms', () => {
