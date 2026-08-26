@@ -260,7 +260,9 @@ The demo registers a kit in **three places**. Forget one and the kit silently do
 
 4. **Register theme in `theme/recipes.ts`.** Extend `KitId` to include `'<kit>'`; add `'<kit>-dark'` and `'<kit>-light'` entries in `THEMES`. Both variants are mandatory; the completeness check enforces it.
 
-5. **Theme CSS.** In `<kit>.css`, add `[data-theme='<kit>-dark']` and `[data-theme='<kit>-light']` blocks defining the `--uf-*` variable cascade. Import the CSS at the top of the kit's `index.tsx`.
+5. **Register the shiki themes in `lib/highlighter.ts`.** Each recipe's `shikiTheme` must have a matching loader in `THEME_LOADERS`. Reusing a theme another kit already loads needs nothing; naming a new one and skipping this step throws `Unknown shiki theme: '<name>'` at runtime, the first time a code block renders on that page. Nothing catches it at compile time, and the kit looks fine until you scroll to a `<CodeBlock>`.
+
+6. **Theme CSS.** In `<kit>.css`, add `[data-theme='<kit>-dark']` and `[data-theme='<kit>-light']` blocks defining the `--uf-*` variable cascade. Import the CSS at the top of the kit's `index.tsx`.
 
    Cascade variables every theme must set (defaults inherit from `demo/src/index.css` if you omit one, but each kit should set its own for visual coherence):
 
@@ -278,9 +280,9 @@ The demo registers a kit in **three places**. Forget one and the kit silently do
 
    The non-kit-specific vars (`--uf-sans`, `--uf-mono`, `--uf-display`, `--uf-brand`) come from `demo/src/index.css` and do not need to be redeclared per kit unless you want to override them.
 
-6. **Backdrop preview** (optional). If the kit appears on the home grid, define a `previewBg` in `meta` returning a tiny version of the backdrop for the navigation card.
+7. **Backdrop preview** (optional). If the kit appears on the home grid, define a `previewBg` in `meta` returning a tiny version of the backdrop for the navigation card.
 
-After these six steps the kit is reachable, themed, and previewed. Smoke-test by running `bun run demo` and navigating to `#/<kit>`.
+After these seven steps the kit is reachable, themed, and previewed. Smoke-test by running `bun run demo` and navigating to `#/<kit>`.
 
 ## Adding a section to an existing kit
 
@@ -372,7 +374,7 @@ When in doubt: look at what files changed. If `src/` is touched and the scope is
 - **Divisor validators must reject zero, not just negatives.** `x / 0` is `Infinity`, which denormalizes to garbage and is then written to the memo cache, so one bad call keeps returning a bad answer.
 - **Duplicate `base: true`**: two units in the same dimension with `base: true` is silent runtime ambiguity. The library has no compile-time guard. The test suite is the only thing that catches this; assert `base: true` on the canonical unit and nowhere else.
 - **Reserved prototype-pollution keys**: `defineUnit` and `defineConversion` route inputs through `safeCopy`, which throws if the spec contains the keys `__proto__`, `constructor`, or `prototype`. Don't pick these as `id`s, even for invented dimensions. The `RESERVED_PROTO_KEYS` constant in `src/lib/safeCopy.ts` is the canonical list; it is internal, not re-exported on the public barrel.
-- **Kit registration is 3 files**: `kits/<kit>/`, `registry.ts`, `theme/recipes.ts`. The TypeScript `KitId` union catches some omissions but not all.
+- **Kit registration is 4 files**: `kits/<kit>/`, `registry.ts`, `theme/recipes.ts`, and `lib/highlighter.ts` (only when the kit names a shiki theme no other kit loads). The TypeScript `KitId` union catches some omissions but not all; the highlighter one it cannot see at all.
 - **`Select.ItemText` drops `className`**: if you ever extend `UnitPicker`, the way to hide the item text without losing Radix type-ahead is to wrap `<Select.ItemText>` in an `sr-only` span, not pass the className to it.
 - **`Unit<D, T>` structural typing**: the demo's `UnitPicker` only requires `{ id, label, symbol }`. Adding a property to `Unit` in the lib won't break anything in the demo; removing `id`, `label`, or `symbol` will. Treat those three as a stability contract.
 - **react-compiler bailouts** on Radix internals are expected and harmless; the bailout reporter will flag them but they live inside Radix, not the kit's component bodies.
@@ -384,4 +386,4 @@ When in doubt: look at what files changed. If `src/` is touched and the scope is
 - [AGENTS.md](./AGENTS.md): orientation for agents and contributors.
 - [CONTRIBUTING.md](./CONTRIBUTING.md): local setup, commands, commit conventions.
 - [llms.txt](./llms.txt): condensed agent reference.
-- Existing kits (foundational: `src/kits/length/`, `src/kits/volume/`, `src/kits/mass/`, `src/kits/temperature/`, `src/kits/data-storage/`, `src/kits/count/`; composition: `src/kits/geometry/`, `src/kits/cooking/`, `src/kits/astronomy/`, `src/kits/antiquity/`, `src/kits/inventory/`; demo surface: `demo/src/components/kits/geometry/`) are the canonical examples; read them when in doubt.
+- Existing kits (foundational: `src/kits/length/`, `src/kits/volume/`, `src/kits/mass/`, `src/kits/temperature/`, `src/kits/data-storage/`, `src/kits/count/`; composition: `src/kits/geometry/`, `src/kits/cooking/`, `src/kits/astronomy/`, `src/kits/antiquity/`, `src/kits/inventory/`; demo surface: `demo/src/components/kits/geometry/`, `demo/src/components/kits/inventory/`) are the canonical examples; read them when in doubt.
