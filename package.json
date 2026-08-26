@@ -27,6 +27,9 @@
     "astronomy",
     "antiquity",
     "gamedev",
+    "inventory",
+    "manufacturing",
+    "crafting",
     "tree-shakeable"
   ],
   "author": "the-simian <info@simiancraft.com>",

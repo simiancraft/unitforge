@@ -36,6 +36,7 @@
 - Quote the Hubble constant in km/s/Mpc and have the type system catch the dimension mismatch when you cross it with anything else?
 - Explain to a confused user why their 1 TB drive shows up as 931 GB?
 - Define a `'sugar'` dimension in four lines and convert Coke cans to sugar cubes?
+- Work out that a 69 kg sack of green coffee roasts down to 170 retail bags and 160 g that has nowhere to go, or that 10 iron ore makes 3 ingots and leaves one ore waiting for company?
 
 The kits below cover all of those. The API is composable: a unit from one kit converts cleanly against a unit from another because every cross-kit re-export resolves to the same `Unit` instance. Build your own for anything else (game state, lab assays, factions, the in-universe currency of your favorite RPG).
 
@@ -47,8 +48,11 @@ The kits below cover all of those. The API is composable: a unit from one kit co
 - [**`astronomy`**](https://simiancraft.github.io/unitforge/#/astronomy): solar-system to cosmological distance (au, ly, pc, kpc/Mpc/Gpc, light-second through light-hour) per IAU 2012 / 2015 resolutions. Demo flies you through a live BabylonJS solar system, then turns H0 into the age of the universe, distances into light-travel time, interstellar trips into generations of tortoises, and the Sun into a grain of sand.
 - [**`antiquity`**](https://simiancraft.github.io/unitforge/#/antiquity): ~90 atoms across 8 civilizations (Egyptian, Mesopotamian, Greek, Roman, Hebrew, Chinese, Japanese, and pre-1835 English). Classics translation, numismatic mass, archaeological analysis. Not for clinical or commercial use; reach for it when you're reading Herodotus. Demo includes the rulers-of-empire length comparator, the coin scale, and a "how tall is your CEO?" height comparator that reads a modern height back in ancient cubits.
 
+- **`inventory`**: manufacturing, supply-chain, and crafting. Bulk stock into whole pieces with the leftover handed back, kerf-aware cutting, the how-much-do-I-buy inverse, and bills of materials gated by the scarcest component. The only kit that ships no units at all, which is its argument: the units already existed, and what was missing was the places a quantity gets destroyed on purpose.
+
 **Atomic building blocks** (use directly when no domain kit fits, or compose your own kit on top):
 
+- **`count`**: discrete pieces. each, pair, dozen, gross, great gross, ream. Packaging units are deliberately yours, not ours: a case-pack is a fact about your product, not a convention.
 - **`length`**: SI + customary + nautical (nmi) + crystallographic (Å).
 - **`volume`**: SI cubic + liter family + cubic imperial + gallon/quart/pint/fl-oz US+UK + spoons + every cup variant a cookbook author has named.
 - [**`mass`**](https://simiancraft.github.io/unitforge/#/mass): SI + US customary + Asian regional (jin PRC 500 g, jin HK 600 g, Singapore catty 604.79 g). Demo includes the three-jins regional comparator and a real-things mass anchor across 12 orders of magnitude.

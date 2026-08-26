@@ -62,7 +62,7 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
    - Add it to `src/dimensions.ts` as `export const X = 'x' as const;` with a JSDoc canonical-base-unit note.
    - Append it to the `DIMENSIONS` tuple at the bottom of that file. The type union picks it up.
    - Dimensions are part of the public API; do not rename after release.
-   - If you only need existing dimensions (LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE), skip this step.
+   - If you only need existing dimensions (LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE, COUNT), skip this step.
 
 2. **Create the kit directory.** `src/kits/<kit>/` with three files:
    - `units.ts`: every unit as a named export.
@@ -121,6 +121,22 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
    The `validate` map is optional, per-input, and aggregating: each validator returns `true` (pass) or a `string` error message (fail). A call with multiple bad inputs yields one `ValidationError` carrying one `ValidationFailure` per rejected input. Validators run on the values *as the consumer supplied them*, not the base-normalized form, so `length must be >= 0` reads naturally regardless of input unit.
 
    Cross-kit conversions: a conversion that crosses two kits' dimensions (rare) lives in the more derived kit, alongside that kit's units. There is no shared `conversions/` directory; co-location keeps subpath tree-shake correct.
+
+4a. **Discreteness, lossiness, and where recipes live.** The rule, in one line:
+
+   > **Units must round-trip. Recipes do not have to.**
+
+   A `Unit`'s `toBase` / `fromBase` must stay linear (or affine) and reversible. `forge` composes them in both directions, and `test/fuzz/forge.test.ts` fuzzes the round trip, so a unit that floors, clamps, or applies a yield rate will fail the suite and misreport in the inverse direction even if it does not. A `defineConversion`'s `compute` is under no such obligation: it is the only place in the library where a quantity may be destroyed on purpose.
+
+   Anything lossy therefore belongs in a `compute`: a floor, a yield loss, a scrap rate, a kerf, a minimum over the scarcest of several inputs. `src/kits/inventory/` is the worked example and ships no units at all, on purpose.
+
+   Three consequences that are easy to get wrong:
+
+   - **`precision` rounds; it does not floor.** `roundIfNumber` in `src/lib/memoize.ts` is `Math.round`-based, so `precision: 0` turns 2.7 into 3. It is a display-layer control and never a substitute for making a count whole. Floor inside `compute`.
+   - **`compute` runs on base-normalized values, so exact quotients are not exact.** A 12-inch board cut into 1-inch pieces reaches `compute` as `0.3048 / 0.0254`, which evaluates to `11.999999999999998`. A naive `Math.floor` there ships an off-by-one to every caller who measures in inches. Snap to the nearest integer within a relative tolerance first, then floor; `wholePieces` in `src/kits/inventory/conversions.ts` is the reference implementation. Clamp derived remainders at zero for the same reason.
+   - **Encoding a rate into a unit's `toBase` is the `butterBlockEu250g` anti-pattern**, already flagged as architectural debt at `src/kits/cooking/units.ts`. If the factor is a recipe rather than a scale, it is a conversion.
+
+   The one legitimate exception is a unit whose factor genuinely *is* a fixed scale in a domain that owns it (`hdMovie` as a DATA unit, an in-universe currency where 1 gold is 10 silver). The test is invertibility: if converting back is meaningful and lossless, it is a unit; if converting back is nonsense, it is a recipe.
 
 5. **Barrel.** `src/kits/<kit>/index.ts` is just:
    ```ts
@@ -344,13 +360,16 @@ Quick reference for commit subjects:
 | Lib bug fix | `fix: ...` or `fix(api): ...` |
 | Lib breaking API change | `feat(api)!: ...` plus `BREAKING CHANGE:` footer in the body |
 | Bundled lib + demo change | Unbundle if you can. If you can't, use the lib's scope and add `BREAKING CHANGE:` if applicable; do NOT scope the bundled commit `(demo)`. |
-| Docs touching `README.md`, `EXTENDING.md`, `AGENTS.md`, `llms.txt` | `docs: ...` (always filtered from release as a non-feature, non-fix change) |
+| Docs touching `README.md`, `EXTENDING.md`, `AGENTS.md`, `llms.txt` | `docs: ...` (`.releaserc.json` maps `docs` to a **patch** release, so this does publish; only `(demo)`-scoped commits are filtered) |
 
 When in doubt: look at what files changed. If `src/` is touched and the scope is `(demo)`, that's a bug; rewrite the subject before pushing.
 
 ## Gotchas (the load-bearing things that aren't obvious)
 
 - **Tree-shake regression**: any `CallExpression` inside a `defineUnit` spec literal defeats per-export tree-shaking. Use inline closures, not `...linear(...)`, for kit units.
+- **Floors on base-normalized values are off by one.** Exactly-divisible inputs in the caller's units often are not exactly divisible in base: `(12 * 0.0254) / (1 * 0.0254)` is `11.999999999999998`. Any `compute` that floors must snap to the nearest integer within a relative tolerance first. See `wholePieces` in `src/kits/inventory/conversions.ts`.
+- **Validators cannot check magnitude or integrality.** They run on the raw caller-supplied value, before base normalization, so `sides >= 3` rejects a valid dodecagon passed as `1` in `dozen`. Sign and finiteness are safe (every unit has a positive linear scale); thresholds and whole-number checks are not. Document the domain in JSDoc instead, as `areaFromRegularPolygonSidesAndLength` does.
+- **Divisor validators must reject zero, not just negatives.** `x / 0` is `Infinity`, which denormalizes to garbage and is then written to the memo cache, so one bad call keeps returning a bad answer.
 - **Duplicate `base: true`**: two units in the same dimension with `base: true` is silent runtime ambiguity. The library has no compile-time guard. The test suite is the only thing that catches this; assert `base: true` on the canonical unit and nowhere else.
 - **Reserved prototype-pollution keys**: `defineUnit` and `defineConversion` route inputs through `safeCopy`, which throws if the spec contains the keys `__proto__`, `constructor`, or `prototype`. Don't pick these as `id`s, even for invented dimensions. The `RESERVED_PROTO_KEYS` constant in `src/lib/safeCopy.ts` is the canonical list; it is internal, not re-exported on the public barrel.
 - **Kit registration is 3 files**: `kits/<kit>/`, `registry.ts`, `theme/recipes.ts`. The TypeScript `KitId` union catches some omissions but not all.
@@ -365,4 +384,4 @@ When in doubt: look at what files changed. If `src/` is touched and the scope is
 - [AGENTS.md](./AGENTS.md): orientation for agents and contributors.
 - [CONTRIBUTING.md](./CONTRIBUTING.md): local setup, commands, commit conventions.
 - [llms.txt](./llms.txt): condensed agent reference.
-- Existing kits (foundational: `src/kits/length/`, `src/kits/volume/`, `src/kits/mass/`, `src/kits/temperature/`, `src/kits/data-storage/`; composition: `src/kits/geometry/`, `src/kits/cooking/`, `src/kits/astronomy/`, `src/kits/antiquity/`; demo surface: `demo/src/components/kits/geometry/`) are the canonical examples; read them when in doubt.
+- Existing kits (foundational: `src/kits/length/`, `src/kits/volume/`, `src/kits/mass/`, `src/kits/temperature/`, `src/kits/data-storage/`, `src/kits/count/`; composition: `src/kits/geometry/`, `src/kits/cooking/`, `src/kits/astronomy/`, `src/kits/antiquity/`, `src/kits/inventory/`; demo surface: `demo/src/components/kits/geometry/`) are the canonical examples; read them when in doubt.
