@@ -100,6 +100,30 @@ export const MASS = 'mass' as const;
 export const TEMPERATURE = 'temperature' as const;
 
 /**
+ * Number of discrete things. Canonical base unit: **each**.
+ *
+ * Conventional units: each (base), pair, dozen, gross, great gross, ream.
+ * Every unit is a whole-piece multiple of `each`, so the dimension is
+ * dimensionless in the physical sense; what it carries is the *grouping
+ * convention* a trade counts in. A gross of pencils and 144 pencils are
+ * the same quantity written two ways, and a purchase order that confuses
+ * them is off by 143.
+ *
+ * COUNT exists so that "how many pieces" is a first-class dimensional
+ * answer rather than a bare number floating outside the type system.
+ * Cross-domain: manufacturing (bulk stock cut into pieces), inventory
+ * (case-pack and pallet math), geometry (a polygon's side count), game
+ * state (crafting recipes and item stacks).
+ *
+ * Discreteness is NOT enforced by the dimension. A `Unit`'s `toBase` /
+ * `fromBase` must stay reversible, so nothing in the unit boundary may
+ * floor. Flooring belongs in a `defineConversion`'s `compute`; see
+ * `kits/inventory`. `forge`'s `precision` option rounds, it does not
+ * floor, so `precision: 0` is not a substitute (it turns 2.7 into 3).
+ */
+export const COUNT = 'count' as const;
+
+/**
  * The single source of truth for the set of built-in dimensions. The
  * `Dimension` type derives from this tuple, so adding a dimension here is
  * what makes it appear in IDE autocomplete at `defineUnit({ dimension: | })`
@@ -112,7 +136,7 @@ export const TEMPERATURE = 'temperature' as const;
  * forgetting the tuple is "no autocomplete for the new dimension"; visible
  * the first time anyone tries to use it.
  */
-export const DIMENSIONS = [LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE] as const;
+export const DIMENSIONS = [LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE, COUNT] as const;
 
 /**
  * Dimension identifier. Built-in literals (`LENGTH`, `AREA`, ...) preserve
