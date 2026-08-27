@@ -5,7 +5,8 @@
 // painting 480 nodes.
 //
 // Named Organ extraction: pure sink, primitive prop surface (count,
-// glyph key, tone), so React can memo it across slider drags.
+// glyph key, tone). Not memoized; the chassis hoists the section subtree
+// instead, so a bench drag never reaches this component.
 
 import { cn } from '~/lib/cn.js';
 import { formatCount } from '~/lib/format.js';

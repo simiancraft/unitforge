@@ -75,7 +75,7 @@ export const INVENTORY_BOUNDS: Record<InventoryUnitId, SliderBounds> = {
   each: { min: 1, max: 500, step: 1, init: 144 },
   pair: { min: 1, max: 250, step: 1, init: 24 },
   dozen: { min: 1, max: 144, step: 1, init: 12 },
-  gross: { min: 1, max: 48, step: 1, init: 1 },
+  gross: { min: 1, max: 48, step: 1, init: 12 },
   ream: { min: 1, max: 40, step: 1, init: 1 },
   'great-gross': { min: 1, max: 12, step: 1, init: 1 },
 };

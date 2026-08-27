@@ -52,6 +52,10 @@ import {
   glyphFor,
 } from '../demo/src/components/kits/inventory/parts/glyph-slots.js';
 import {
+  ROASTERY_SEED,
+  runRoastery,
+} from '../demo/src/components/kits/inventory/roastery-model.js';
+import {
   COLA_PACKAGINGS,
   LOGS_PER_PLANK,
   ORE_PER_INGOT,
@@ -61,6 +65,7 @@ import {
   SHIELD_BOM,
   SKU_BOM,
   SMELT_LINES,
+  WORKBENCH_SEED,
 } from '../demo/src/components/kits/inventory/stock.js';
 import {
   INVENTORY_ALL_UNITS,
@@ -73,6 +78,8 @@ import {
   TEMPERATURE_ALL_UNITS,
   TEMPERATURE_UNIT_IDS,
 } from '../demo/src/components/kits/temperature/units.js';
+import { THEMES } from '../demo/src/components/theme/recipes.js';
+import { SHIKI_THEME_NAMES } from '../demo/src/lib/highlighter.js';
 
 describe('demo invariants: cooking units catalog', () => {
   it('COOKING_UNIT_IDS covers every id in COOKING_ALL_UNITS', () => {
@@ -365,13 +372,18 @@ describe('demo invariants: inventory recipe constants', () => {
     // The section's intro copy states this: at 14 ingots and 11 planks
     // the planks look scarcer and the ingots are what actually stop you.
     // If the BOM rates change, that sentence silently becomes false.
-    const ingot = SHIELD_BOM.find((l) => l.id === 'ingot');
-    const plank = SHIELD_BOM.find((l) => l.id === 'plank');
-    expect(ingot?.perAssembly).toBe(3);
-    expect(plank?.perAssembly).toBe(2);
-    expect(Math.floor(14 / 3)).toBe(4);
-    expect(Math.floor(11 / 2)).toBe(5);
-    expect(Math.min(4, 5)).toBe(4); // ingots bind, despite 14 > 11
+    // Computed from the seed the section actually renders, so retuning
+    // WORKBENCH_SEED or SHIELD_BOM fails here rather than in the prose.
+    const capacity = Object.fromEntries(
+      SHIELD_BOM.map((l) => [
+        l.id,
+        Math.floor((WORKBENCH_SEED[l.id as keyof typeof WORKBENCH_SEED] ?? 0) / l.perAssembly),
+      ]),
+    );
+    expect(WORKBENCH_SEED).toEqual({ ingot: 14, plank: 11 });
+    expect(capacity).toEqual({ ingot: 4, plank: 5 });
+    expect(WORKBENCH_SEED.ingot).toBeGreaterThan(WORKBENCH_SEED.plank); // the fuller bin...
+    expect(capacity.ingot).toBeLessThan(capacity.plank as number); // ...is the one that binds
   });
 });
 
@@ -428,12 +440,30 @@ describe('demo invariants: roastery yields', () => {
     // bare arithmetic so a change to RETAIL_BAG_G or to the medium
     // retained fraction fails a test rather than quietly making the
     // header copy wrong.
-    const medium = roastLevelFor('medium');
-    expect(medium.retained).toBe(0.84);
+    // Run through the page's own model (sack -> roast -> bag-up), not
+    // bare arithmetic, so the README and header copy are pinned to what
+    // the section really computes, `precision: 6` included.
+    const model = runRoastery(1, roastLevelFor('medium'), ROASTERY_SEED);
     expect(RETAIL_BAG_G).toBe(340);
-    const roastedG = 69 * medium.retained * 1000;
-    const bags = Math.floor(roastedG / RETAIL_BAG_G);
-    expect(bags).toBe(170);
-    expect(roastedG - bags * RETAIL_BAG_G).toBeCloseTo(160, 6);
+    expect(model.greenKg).toBe(69);
+    expect(model.bags).toBe(170);
+    expect(model.strandedG).toBe(160);
+  });
+
+  it('the roastery seed opens with a packaging line binding, not the coffee', () => {
+    const model = runRoastery(1, roastLevelFor('medium'), ROASTERY_SEED);
+    const binding = model.gates.filter((g) => g.capacity === model.skus).map((g) => g.id);
+    expect(binding).toEqual(['label']);
+    expect(model.skus).toBe(160);
+  });
+});
+
+describe('demo invariants: shiki theme loaders', () => {
+  it('every recipe names a shiki theme the highlighter can load', () => {
+    // Otherwise the page looks fine until the first <CodeBlock> renders
+    // and throws `Unknown shiki theme`.
+    for (const theme of Object.values(THEMES)) {
+      expect(SHIKI_THEME_NAMES).toContain(theme.shikiTheme);
+    }
   });
 });

@@ -32,6 +32,11 @@ const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   'everforest-dark': () => import('shiki/themes/everforest-dark.mjs'),
 };
 
+/** Every shiki theme name a recipe may reference. Exported so the
+ *  demo-invariants test can pin `THEMES[*].shikiTheme` to this table,
+ *  which is otherwise only checked at runtime, on the first code block. */
+export const SHIKI_THEME_NAMES: readonly string[] = Object.keys(THEME_LOADERS);
+
 let highlighterPromise: Promise<Highlighter> | null = null;
 const loadedThemes = new Set<string>();
 // Bounded so a long session of slider drags can't accumulate ~MB of

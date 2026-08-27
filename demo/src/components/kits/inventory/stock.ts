@@ -89,6 +89,12 @@ export const SHIELD_BOM: readonly BomLine[] = [
   { id: 'plank', label: 'oak planks', perAssembly: 2 },
 ];
 
+/** The workbench's opening stock. Chosen so the fuller bin is the one
+ *  that binds: 14 ingots at 3 per shield allow 4, 11 planks at 2 per
+ *  shield allow 5. The section's intro states these numbers, and
+ *  test/demo-invariants.test.ts recomputes the gate from this seed. */
+export const WORKBENCH_SEED: Record<'ingot' | 'plank', number> = { ingot: 14, plank: 11 };
+
 /** Slider ceilings for the workbench's component stocks, keyed by BOM
  *  line id. Generous enough that either line can be made the binding
  *  constraint by dragging. */

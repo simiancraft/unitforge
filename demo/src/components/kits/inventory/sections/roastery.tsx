@@ -11,20 +11,14 @@
 //   kilograms -> retail bags   is the floor, with the strand shown
 //   bag + label + valve        is the shield's bill of materials
 //
-// The one new library surface is `piecesAndRemainderFromBulkMass`: a
-// conversion with an OBJECT output, returning the piece count and the
+// The one new library surface is
+// `piecesAndRemainderFromBulkMassAndPieceMass`: a conversion with an
+// OBJECT output, returning the piece count and the
 // stranded mass together, because computing them separately invites the
 // two to disagree.
 
 import { Coffee } from 'lucide-react';
 import { useState } from 'react';
-import { forge } from 'unitforge';
-import { each } from 'unitforge/kits/count';
-import {
-  assembliesFromComponentsAndPerAssembly,
-  piecesAndRemainderFromBulkMass,
-} from 'unitforge/kits/inventory';
-import { gram, kilogram } from 'unitforge/kits/mass';
 import { CodeBlock } from '~/components/ui/code-block.js';
 import { Result } from '~/components/ui/result.js';
 import { Slider } from '~/components/ui/slider.js';
@@ -34,79 +28,24 @@ import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout
 import { GateRow } from '../parts/gate-row.js';
 import { GlyphRow } from '../parts/glyph-row.js';
 import {
-  greenSack,
+  ROASTERY_SEED,
+  type RoasteryModel,
+  runRoastery,
+  type StockByLine,
+} from '../roastery-model.js';
+import {
   RETAIL_BAG_G,
   ROAST_LEVELS,
   ROASTERY_MAX_STOCK,
   type RoastLevel,
-  roastedMassFromGreen,
   roastLevelFor,
   SKU_BOM,
 } from '../stock.js';
 
-// Module-scope converters; see the note in smelter.tsx.
-const roast = forge({ greenMass: kilogram, retained: each }, kilogram, {
-  via: roastedMassFromGreen,
-});
-
-const bagUp = forge(
-  { bulkMass: kilogram, pieceMass: gram },
-  { pieces: each, remainder: gram },
-  // `precision` cleans the remainder, which is a subtraction of two
-  // base-normalized floats (159.99999999999659 g unrounded). It rounds
-  // and never floors, so it cannot touch the piece count.
-  { via: piecesAndRemainderFromBulkMass, precision: 6 },
-);
-
-const capacityOf = forge({ components: each, perAssembly: each }, each, {
-  via: assembliesFromComponentsAndPerAssembly,
-});
-
-type StockByLine = Record<string, number>;
-
-const INITIAL_STOCK: StockByLine = { bag: 200, label: 160, valve: 200 };
-
-interface RoasteryModel {
-  greenKg: number;
-  roastedKg: number;
-  bags: number;
-  strandedG: number;
-  gates: Array<{ id: string; label: string; stock: number; perAssembly: number; capacity: number }>;
-  skus: number;
-}
-
-function runRoastery(sacks: number, level: RoastLevel, stock: StockByLine): RoasteryModel {
-  const greenKg = forge(greenSack, kilogram)(sacks);
-  const roastedKg = roast({ greenMass: greenKg, retained: level.retained });
-  const { pieces: bags, remainder: strandedG } = bagUp({
-    bulkMass: roastedKg,
-    pieceMass: RETAIL_BAG_G,
-  });
-
-  // The bill of materials gates on the packaging components AND on the
-  // coffee itself. Folding the bag count in as one more line keeps the
-  // rule uniform: the yield is the minimum across everything the SKU
-  // needs, and roasted coffee is one of those things.
-  const gates = SKU_BOM.map((line) => {
-    const onHand = stock[line.id] ?? 0;
-    return {
-      id: line.id,
-      label: line.label,
-      stock: onHand,
-      perAssembly: line.perAssembly,
-      capacity: capacityOf({ components: onHand, perAssembly: line.perAssembly }),
-    };
-  });
-
-  const skus = gates.reduce((low, g) => Math.min(low, g.capacity), bags);
-
-  return { greenKg, roastedKg, bags, strandedG, gates, skus };
-}
-
 export function Roastery() {
   const [sacks, setSacks] = useState(1);
   const [levelId, setLevelId] = useState<RoastLevel['id']>('medium');
-  const [stock, setStock] = useState<StockByLine>(INITIAL_STOCK);
+  const [stock, setStock] = useState<StockByLine>(ROASTERY_SEED);
 
   const level = roastLevelFor(levelId);
   const model = runRoastery(sacks, level, stock);
@@ -155,6 +94,7 @@ export function Roastery() {
               sacks={sacks}
               level={level}
               model={model}
+              stock={stock}
               onSacksChange={setSacks}
               onStockChange={setLine}
             />
@@ -177,6 +117,9 @@ interface RoasteryWidgetProps {
   sacks: number;
   level: RoastLevel;
   model: RoasteryModel;
+  /** Controlled slider state, bound directly rather than read back out
+   *  of the derived model. */
+  stock: StockByLine;
   onSacksChange: (n: number) => void;
   onStockChange: (id: string, next: number) => void;
 }
@@ -185,6 +128,7 @@ function RoasteryWidget({
   sacks,
   level,
   model,
+  stock,
   onSacksChange,
   onStockChange,
 }: RoasteryWidgetProps) {
@@ -224,7 +168,7 @@ function RoasteryWidget({
           <Slider
             key={line.id}
             label={`${line.label} in the bin`}
-            value={model.gates.find((g) => g.id === line.id)?.stock ?? 0}
+            value={stock[line.id] ?? 0}
             min={0}
             max={ROASTERY_MAX_STOCK}
             step={5}
@@ -237,19 +181,11 @@ function RoasteryWidget({
 
       <div className="flex flex-col gap-2">
         <span className="uf-eyebrow">what gates the SKU</span>
-        <GateRow
-          label="roasted coffee"
-          glyph="bean"
-          stock={model.bags}
-          perAssembly={1}
-          capacity={model.bags}
-          binding={model.bags === model.skus}
-        />
         {model.gates.map((g) => (
           <GateRow
             key={g.id}
             label={g.label}
-            glyph={g.id}
+            glyph={g.glyph}
             stock={g.stock}
             perAssembly={g.perAssembly}
             capacity={g.capacity}
@@ -272,7 +208,7 @@ function buildCode(sacks: number, level: RoastLevel, model: RoasteryModel): stri
   return `import { defineConversion, defineUnit, forge } from 'unitforge';
 import { COUNT, MASS } from 'unitforge/dimensions';
 import { each } from 'unitforge/kits/count';
-import { piecesAndRemainderFromBulkMass } from 'unitforge/kits/inventory';
+import { piecesAndRemainderFromBulkMassAndPieceMass } from 'unitforge/kits/inventory';
 import { gram, kilogram } from 'unitforge/kits/mass';
 
 // Packaging as a unit, in MASS this time. Still reversible.
@@ -304,7 +240,7 @@ const roastedKg = forge({ greenMass: kilogram, retained: each }, kilogram, {
 const { pieces, remainder } = forge(
   { bulkMass: kilogram, pieceMass: gram },
   { pieces: each, remainder: gram },
-  { via: piecesAndRemainderFromBulkMass, precision: 6 },
+  { via: piecesAndRemainderFromBulkMassAndPieceMass, precision: 6 },
 )({ bulkMass: roastedKg, pieceMass: ${RETAIL_BAG_G} });
 // pieces    === ${formatCount(model.bags)}
 // remainder === ${formatMagnitude(model.strandedG)} g

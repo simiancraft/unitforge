@@ -25,14 +25,26 @@ import { CasePack } from './sections/case-pack.js';
 import { Roastery } from './sections/roastery.js';
 import { Smelter } from './sections/smelter.js';
 import { Workbench } from './sections/workbench.js';
-import { INVENTORY_ALL_UNITS, inventoryBoundsFor } from './units.js';
+import { INVENTORY_ALL_UNITS, INVENTORY_BOUNDS, inventoryBoundsFor } from './units.js';
 import './inventory.css';
+
+// The sections own their state and never read the bench, so the subtree
+// is hoisted to a stable element: a bench drag re-renders the chassis
+// and the backdrop, not four sections' worth of glyph rows.
+const SECTIONS = (
+  <>
+    <Smelter />
+    <Workbench />
+    <CasePack />
+    <Roastery />
+  </>
+);
 
 export function InventoryScreen() {
   const [bench, setBench] = useState<BenchState>({
     fromId: 'gross',
     toId: 'dozen',
-    value: 1,
+    value: INVENTORY_BOUNDS.gross.init,
   });
   const benchBounds = inventoryBoundsFor(bench.fromId);
   const fromUnit = findById(INVENTORY_ALL_UNITS, bench.fromId);
@@ -84,16 +96,10 @@ export function InventoryScreen() {
             `forge(${toJsName(findById(INVENTORY_ALL_UNITS, s.fromId).id)}, ${toJsName(findById(INVENTORY_ALL_UNITS, s.toId).id)})(${formatCount(s.value)}); // ${formatCount(r)}`
           }
           label="forge bench · inventory"
+          format={formatCount}
         />
       }
-      sectionsZone={
-        <>
-          <Smelter />
-          <Workbench />
-          <CasePack />
-          <Roastery />
-        </>
-      }
+      sectionsZone={SECTIONS}
     />
   );
 }

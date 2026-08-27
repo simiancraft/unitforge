@@ -23,7 +23,7 @@ import { formatCount } from '~/lib/format.js';
 import { SectionHeader, SectionLayout, WidgetLayout } from '../../section-layout.js';
 import { GateRow } from '../parts/gate-row.js';
 import { GlyphRow } from '../parts/glyph-row.js';
-import { type BomLine, SHIELD_BOM, WORKBENCH_MAX_STOCK } from '../stock.js';
+import { type BomLine, SHIELD_BOM, WORKBENCH_MAX_STOCK, WORKBENCH_SEED } from '../stock.js';
 
 // One converter for the page; see the note in smelter.tsx.
 const capacityOf = forge({ components: each, perAssembly: each }, each, {
@@ -31,8 +31,6 @@ const capacityOf = forge({ components: each, perAssembly: each }, each, {
 });
 
 type StockByLine = Record<string, number>;
-
-const INITIAL_STOCK: StockByLine = { ingot: 14, plank: 11 };
 
 interface GateResult {
   line: BomLine;
@@ -62,7 +60,7 @@ function gate(bom: readonly BomLine[], stock: StockByLine) {
 }
 
 export function Workbench() {
-  const [stock, setStock] = useState<StockByLine>(INITIAL_STOCK);
+  const [stock, setStock] = useState<StockByLine>(WORKBENCH_SEED);
   const { rows, assemblies } = gate(SHIELD_BOM, stock);
 
   const setLine = (id: string, next: number) => {
@@ -92,7 +90,12 @@ export function Workbench() {
       widgetZone={
         <WidgetLayout
           interactionZone={
-            <WorkbenchWidget rows={rows} assemblies={assemblies} onStockChange={setLine} />
+            <WorkbenchWidget
+              rows={rows}
+              stock={stock}
+              assemblies={assemblies}
+              onStockChange={setLine}
+            />
           }
           codeZone={<CodeBlock code={buildCode(rows, assemblies)} />}
         />
@@ -109,11 +112,14 @@ export function Workbench() {
 
 interface WorkbenchWidgetProps {
   rows: GateResult[];
+  /** The controlled slider state; bound directly rather than read back
+   *  out of the derived rows. */
+  stock: StockByLine;
   assemblies: number;
   onStockChange: (id: string, next: number) => void;
 }
 
-function WorkbenchWidget({ rows, assemblies, onStockChange }: WorkbenchWidgetProps) {
+function WorkbenchWidget({ rows, stock, assemblies, onStockChange }: WorkbenchWidgetProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3">
@@ -121,7 +127,7 @@ function WorkbenchWidget({ rows, assemblies, onStockChange }: WorkbenchWidgetPro
           <Slider
             key={row.line.id}
             label={`${row.line.label} on hand`}
-            value={row.stock}
+            value={stock[row.line.id] ?? 0}
             min={0}
             max={WORKBENCH_MAX_STOCK}
             step={1}

@@ -18,8 +18,8 @@
 
 [data-theme="inventory-light"] {
   /* Manila stock card. Kraft ground with oxblood stamp ink. Contrast
-   * against bg #ede4d3: accent #7a2e2a clears 7.4:1 AA Large; accent-2
-   * olive #4d5320 clears 5.9:1 AA body. */
+   * against bg #ede4d3: accent #7a2e2a is 7.4:1 (AAA body); accent-2
+   * olive #4d5320 is 6.5:1 (AA body, AAA large). */
   --uf-bg: #ede4d3;
   --uf-fg: #2b2620;
   --uf-muted: #6b6152;
@@ -59,11 +59,10 @@
  * survives prefers-reduced-motion untouched. The single ambient effect
  * is a slow brightness drift on the lit bins' fill, which reads as shop
  * lighting rather than as animation; it is the only thing behind the
- * guard.
+ * guard. No transition on the same property: a running animation owns
+ * `opacity`, so a transition there would only ever fire under reduced
+ * motion, which is the opposite of the intent.
  */
-.inventory-bin-fill {
-  transition: opacity 200ms ease-out;
-}
 
 @media (prefers-reduced-motion: no-preference) {
   .inventory-bin-fill {

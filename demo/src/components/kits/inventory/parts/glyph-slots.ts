@@ -1,5 +1,5 @@
 // Glyph table for the inventory page. Every countable thing on the page
-// (ore, logs, ingots, planks, shields, sacks, bags, labels, valves,
+// (ore, logs, ingots, planks, shields, beans, bags, labels, valves,
 // cans) resolves to a lucide icon through this one lookup, so a section
 // can render "N of X" without importing an icon per material.
 //
@@ -29,7 +29,6 @@ export const GLYPH_KEYS = [
   'ingot',
   'plank',
   'shield',
-  'sack',
   'bean',
   'bag',
   'label',
@@ -45,7 +44,6 @@ export const GLYPHS: Record<GlyphKey, LucideIcon> = {
   ingot: Box,
   plank: Package,
   shield: Shield,
-  sack: Package,
   bean: Sprout,
   bag: Package,
   label: Tag,

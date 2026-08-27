@@ -37,6 +37,11 @@ interface BenchProps<D extends Dimension> {
   /** Short code-block snippet shown under the controls; receives the live values. */
   codeFor: (s: BenchState, result: number) => string;
   label?: string;
+  /** Readout formatter for the slider value and the result. Defaults to
+   *  `formatMagnitude` (three decimals), which suits continuous
+   *  dimensions; a discrete dimension (COUNT) passes `formatCount` so
+   *  the bench never prints "12.000 dz". */
+  format?: (n: number) => string;
 }
 
 export function Bench<D extends Dimension>({
@@ -48,6 +53,7 @@ export function Bench<D extends Dimension>({
   step,
   codeFor,
   label = 'forge bench',
+  format = formatMagnitude,
 }: BenchProps<D>) {
   const { fromUnit, toUnit, result } = computeBenchValues({
     fromId: state.fromId,
@@ -104,17 +110,17 @@ export function Bench<D extends Dimension>({
           onChange={handleValue}
           className="flex-1 accent-uf-accent"
           aria-label={`value in ${fromUnit.label}`}
-          aria-valuetext={`${formatMagnitude(state.value)} ${fromUnit.label}`}
+          aria-valuetext={`${format(state.value)} ${fromUnit.label}`}
         />
         <div className="mono whitespace-nowrap text-xl tabular-nums text-uf-accent md:text-2xl">
-          {formatMagnitude(state.value)} {fromUnit.symbol}
+          {format(state.value)} {fromUnit.symbol}
         </div>
       </div>
 
       <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-uf-border pt-3">
         <span className="uf-eyebrow">result</span>
         <span className="mono text-2xl tabular-nums text-uf-fg md:text-3xl">
-          {formatMagnitude(result)} <span className="text-uf-muted">{toUnit.symbol}</span>
+          {format(result)} <span className="text-uf-muted">{toUnit.symbol}</span>
         </span>
       </div>
 
