@@ -39,7 +39,12 @@ export function forge<
   T = number,
 >(
   from: ForgeInput<Inputs, T>,
-  to: ForgeOutput<Output, T>,
+  // `NoInfer`: without it `Output` collects candidates from both `to` and
+  // `via`, and because `Dimension` includes `(string & {})` TS unions
+  // them instead of erroring, so `forge({...}, meter, { via: <COUNT
+  // conversion> })` compiled and returned a piece count labelled as a
+  // length. Inferring `Output` from `via` alone makes `to` checkable.
+  to: ForgeOutput<NoInfer<Output>, T>,
   config: {
     via: Conversion<Inputs, Output, T>;
     validate?: ValidatorMap<Inputs, T>;
