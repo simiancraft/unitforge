@@ -46,6 +46,16 @@ describe('kits/inventory: the floating-point floor', () => {
     expect(cut({ stockLength: 2.999, pieceLength: 1 })).toBe(2);
   });
 
+  it('the snap tolerance is narrow: a real shortfall of one part in ten million still floors', () => {
+    const cut = forge({ stockLength: meter, pieceLength: meter }, each, {
+      via: piecesFromStockLengthAndPieceLength,
+    });
+    // 1e-7 relative sits far outside the 1e-9 tolerance: an honest 999.
+    expect(cut({ stockLength: 1000 - 1e-4, pieceLength: 1 })).toBe(999);
+    // 1e-12 relative sits inside it: float noise, snapped to 1000.
+    expect(cut({ stockLength: 1000 - 1e-9, pieceLength: 1 })).toBe(1000);
+  });
+
   it('holds across scales and unit systems', () => {
     const cut = forge({ stockLength: inch, pieceLength: inch }, each, {
       via: piecesFromStockLengthAndPieceLength,

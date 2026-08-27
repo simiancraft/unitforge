@@ -52,9 +52,10 @@ const roast = forge({ greenMass: kilogram, retained: each }, kilogram, {
 const bagUp = forge(
   { bulkMass: kilogram, pieceMass: gram },
   { pieces: each, remainder: gram },
-  {
-    via: piecesAndRemainderFromBulkMass,
-  },
+  // `precision` cleans the remainder, which is a subtraction of two
+  // base-normalized floats (159.99999999999659 g unrounded). It rounds
+  // and never floors, so it cannot touch the piece count.
+  { via: piecesAndRemainderFromBulkMass, precision: 6 },
 );
 
 const capacityOf = forge({ components: each, perAssembly: each }, each, {
@@ -303,7 +304,7 @@ const roastedKg = forge({ greenMass: kilogram, retained: each }, kilogram, {
 const { pieces, remainder } = forge(
   { bulkMass: kilogram, pieceMass: gram },
   { pieces: each, remainder: gram },
-  { via: piecesAndRemainderFromBulkMass },
+  { via: piecesAndRemainderFromBulkMass, precision: 6 },
 )({ bulkMass: roastedKg, pieceMass: ${RETAIL_BAG_G} });
 // pieces    === ${formatCount(model.bags)}
 // remainder === ${formatMagnitude(model.strandedG)} g

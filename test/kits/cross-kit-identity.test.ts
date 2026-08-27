@@ -74,6 +74,10 @@ describe('cross-kit JS identity (structural)', () => {
     expectIdentityForSharedKeys('astronomy', astronomy, 'length', length);
   });
 
+  it('geometry re-exports from count preserve JS identity', () => {
+    expectIdentityForSharedKeys('geometry', geometry, 'count', count);
+  });
+
   it('inventory re-exports from count preserve JS identity', () => {
     expectIdentityForSharedKeys('inventory', inventory, 'count', count);
   });
