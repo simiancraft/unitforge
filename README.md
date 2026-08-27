@@ -42,7 +42,7 @@ The kits below cover all of those. The API is composable: a unit from one kit co
 
 **Domain kits** (each link runs live against the built package):
 
-- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): shape math; 40+ derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment) over LENGTH + VOLUME + AREA + ANGLE.
+- [**`geometry`**](https://simiancraft.github.io/unitforge/#/geometry): shape math; 40+ derivations (rectangle, triangle, ellipse, annulus, sphere, cylinder, polar↔cartesian, sector, segment) over LENGTH + VOLUME + AREA + ANGLE. Regular polygons take their side count as a COUNT input, so `1` in `dozen` is a dodecagon.
 - [**`cooking`**](https://simiancraft.github.io/unitforge/#/cooking): recipe scaling across US/UK/metric cup variants; cooking-tradition packaging (stick of butter, EU butter block, dash, pinch); heat descriptors. Demo includes the soda-vs-sugar comparator.
 - [**`data-storage`**](https://simiancraft.github.io/unitforge/#/data-storage): bytes (decimal and IEC binary), bits; the GB-vs-GiB and Gbit-vs-MB confusion you keep explaining.
 - [**`astronomy`**](https://simiancraft.github.io/unitforge/#/astronomy): solar-system to cosmological distance (au, ly, pc, kpc/Mpc/Gpc, light-second through light-hour) per IAU 2012 / 2015 resolutions. Demo flies you through a live BabylonJS solar system, then turns H0 into the age of the universe, distances into light-travel time, interstellar trips into generations of tortoises, and the Sun into a grain of sand.
