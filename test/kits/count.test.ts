@@ -4,6 +4,21 @@ import { dozen, each, greatGross, gross, pair, ream } from '../../src/kits/count
 
 const all = [each, pair, dozen, gross, greatGross, ream];
 
+describe('kits/count: public identity', () => {
+  // ids, labels, and symbols are public API; a drift here is a breaking
+  // change for anyone keying a UI or a lookup table on them.
+  it('pins the id / label / symbol triple of every unit', () => {
+    expect(all.map((u) => [u.id, u.label, u.symbol])).toEqual([
+      ['each', 'Each', 'ea'],
+      ['pair', 'Pair', 'pr'],
+      ['dozen', 'Dozen', 'dz'],
+      ['gross', 'Gross', 'gr'],
+      ['great-gross', 'Great Gross', 'ggr'],
+      ['ream', 'Ream', 'rm'],
+    ]);
+  });
+});
+
 describe('kits/count: per-unit shape', () => {
   for (const u of all) {
     it(`${u.id}: id, label, symbol, dimension all populated`, () => {

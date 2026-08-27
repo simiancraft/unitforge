@@ -13,7 +13,9 @@
 //   Units must round-trip. Recipes do not have to.
 //
 // Naming follows kits/geometry: `<output>From<Inputs>` when the output
-// dimension differs from the inputs. Forms whose name begins
+// dimension differs from the inputs, with every input named. LENGTH bulk
+// is `stock` in both directions (a bar of stock, cut or bought); MASS and
+// VOLUME bulk is `bulk`. Forms whose name begins
 // `piecesAndRemainder` return an object so the offcut comes back in the
 // same call; forms that return a bare count discard it, which is the
 // right shape when the caller genuinely does not want the leftover.
@@ -42,6 +44,14 @@ import { AREA, COUNT, LENGTH, MASS, VOLUME } from '../../dimensions.js';
 // problem, not a counting problem.
 const INTEGER_SNAP_TOLERANCE = 1e-9;
 
+// Absolute ceiling on the snap window. A purely relative window grows
+// with the quotient and passes 0.5 at 5e8 pieces, at which point every
+// fractional quotient rounds to nearest and the floor this kit promises
+// silently becomes a round. A tonne of milligram tablets is 1e9 pieces,
+// so that range is reachable. Capped, the window is never wider than a
+// millionth of a piece.
+const INTEGER_SNAP_WINDOW_MAX = 1e-6;
+
 /**
  * Whole pieces of size `piece` obtainable from `bulk`, both in base units.
  *
@@ -56,9 +66,8 @@ const INTEGER_SNAP_TOLERANCE = 1e-9;
 function wholePieces(bulk: number, piece: number): number {
   const quotient = bulk / piece;
   const nearest = Math.round(quotient);
-  return Math.abs(quotient - nearest) <= Math.abs(quotient) * INTEGER_SNAP_TOLERANCE
-    ? nearest
-    : Math.floor(quotient);
+  const window = Math.min(Math.abs(quotient) * INTEGER_SNAP_TOLERANCE, INTEGER_SNAP_WINDOW_MAX);
+  return Math.abs(quotient - nearest) <= window ? nearest : Math.floor(quotient);
 }
 
 /**
@@ -88,10 +97,13 @@ function leftover(bulk: number, piece: number, pieces: number): number {
 /**
  * Cross-dimensional: whole pieces of `pieceLength` cut from `stockLength`.
  *
- * The offcut is discarded. Use `piecesAndRemainderFromStockLength` when
+ * The offcut is discarded. Use `piecesAndRemainderFromStockLengthAndPieceLength` when
  * you need it back.
  *
  * @example
+ *   import { forge } from 'unitforge';
+ *   import { each, foot, inch, piecesFromStockLengthAndPieceLength } from 'unitforge/kits/inventory';
+ *
  *   const cuts = forge(
  *     { stockLength: foot, pieceLength: inch },
  *     each,
@@ -116,7 +128,7 @@ export const piecesFromStockLengthAndPieceLength = /*#__PURE__*/ defineConversio
  * comes back in the LENGTH dimension (a real offcut you can measure),
  * not as a fraction of a piece.
  */
-export const piecesAndRemainderFromStockLength = /*#__PURE__*/ defineConversion({
+export const piecesAndRemainderFromStockLengthAndPieceLength = /*#__PURE__*/ defineConversion({
   inputs: { stockLength: LENGTH, pieceLength: LENGTH },
   output: { pieces: COUNT, remainder: LENGTH },
   validate: {
@@ -186,14 +198,19 @@ export const piecesFromBulkMassAndPieceMass = /*#__PURE__*/ defineConversion({
  * clean up a remainder but cannot make a piece count whole.
  *
  * @example
+ *   import { forge } from 'unitforge';
+ *   import {
+ *     each, gram, kilogram, piecesAndRemainderFromBulkMassAndPieceMass,
+ *   } from 'unitforge/kits/inventory';
+ *
  *   const bag = forge(
  *     { bulkMass: kilogram, pieceMass: gram },
  *     { pieces: each, remainder: gram },
- *     { via: piecesAndRemainderFromBulkMass, precision: 6 },
+ *     { via: piecesAndRemainderFromBulkMassAndPieceMass, precision: 6 },
  *   );
  *   bag({ bulkMass: 57.96, pieceMass: 340 }); // { pieces: 170, remainder: 160 }
  */
-export const piecesAndRemainderFromBulkMass = /*#__PURE__*/ defineConversion({
+export const piecesAndRemainderFromBulkMassAndPieceMass = /*#__PURE__*/ defineConversion({
   inputs: { bulkMass: MASS, pieceMass: MASS },
   output: { pieces: COUNT, remainder: MASS },
   validate: {
@@ -229,7 +246,7 @@ export const piecesFromBulkVolumeAndPieceVolume = /*#__PURE__*/ defineConversion
  * fills 300 bottles at 750 mL exactly; a 230 L one fills 306 and leaves
  * 0.5 L with nowhere to go.
  */
-export const piecesAndRemainderFromBulkVolume = /*#__PURE__*/ defineConversion({
+export const piecesAndRemainderFromBulkVolumeAndPieceVolume = /*#__PURE__*/ defineConversion({
   inputs: { bulkVolume: VOLUME, pieceVolume: VOLUME },
   output: { pieces: COUNT, remainder: VOLUME },
   validate: {
@@ -266,6 +283,10 @@ export const piecesAndRemainderFromBulkVolume = /*#__PURE__*/ defineConversion({
  * dimensions, cut along each axis with
  * `piecesFromStockLengthAndPieceLength` and multiply; that answer is
  * achievable, if not always optimal.
+ *
+ * AREA units are not re-exported by this kit; import `squareMeter`,
+ * `squareFoot`, or `squareInch` from `unitforge/kits/geometry`, where
+ * the AREA atoms currently live.
  */
 export const maxPiecesFromSheetAreaAndPieceArea = /*#__PURE__*/ defineConversion({
   inputs: { sheetArea: AREA, pieceArea: AREA },
@@ -284,8 +305,10 @@ export const maxPiecesFromSheetAreaAndPieceArea = /*#__PURE__*/ defineConversion
 // deliberately do not add scrap or safety stock; those are business
 // policy, not arithmetic.
 
-/** Cross-dimensional: stock length needed for `pieces` at `pieceLength`. Ignores kerf. */
-export const bulkLengthFromPiecesAndPieceLength = /*#__PURE__*/ defineConversion({
+/** Cross-dimensional: stock length needed for `pieces` at `pieceLength`.
+ *  Ignores kerf, so it understates the buy length by `(pieces - 1) * kerf`
+ *  on a saw; add that at the call site when it matters. */
+export const stockLengthFromPiecesAndPieceLength = /*#__PURE__*/ defineConversion({
   inputs: { pieces: COUNT, pieceLength: LENGTH },
   output: LENGTH,
   validate: {
@@ -331,6 +354,9 @@ export const bulkVolumeFromPiecesAndPieceVolume = /*#__PURE__*/ defineConversion
  * site and needs no library surface:
  *
  * @example
+ *   import { forge } from 'unitforge';
+ *   import { assembliesFromComponentsAndPerAssembly, each } from 'unitforge/kits/inventory';
+ *
  *   const per = forge(
  *     { components: each, perAssembly: each },
  *     each,

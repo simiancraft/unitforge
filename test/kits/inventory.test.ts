@@ -4,21 +4,21 @@ import { dozen, each, gross } from '../../src/kits/count/index.js';
 import { squareMeter } from '../../src/kits/geometry/index.js';
 import {
   assembliesFromComponentsAndPerAssembly,
-  bulkLengthFromPiecesAndPieceLength,
   bulkMassFromPiecesAndPieceMass,
   bulkVolumeFromPiecesAndPieceVolume,
   componentsFromAssembliesAndPerAssembly,
   maxPiecesFromSheetAreaAndPieceArea,
-  piecesAndRemainderFromBulkMass,
-  piecesAndRemainderFromBulkVolume,
-  piecesAndRemainderFromStockLength,
+  piecesAndRemainderFromBulkMassAndPieceMass,
+  piecesAndRemainderFromBulkVolumeAndPieceVolume,
+  piecesAndRemainderFromStockLengthAndPieceLength,
   piecesFromBulkMassAndPieceMass,
   piecesFromBulkVolumeAndPieceVolume,
   piecesFromStockLengthAndPieceLength,
   piecesFromStockLengthPieceLengthAndKerf,
+  stockLengthFromPiecesAndPieceLength,
 } from '../../src/kits/inventory/index.js';
 import { foot, inch, meter, millimeter } from '../../src/kits/length/index.js';
-import { gram, kilogram } from '../../src/kits/mass/index.js';
+import { gram, kilogram, milligram } from '../../src/kits/mass/index.js';
 import { liter, milliliter } from '../../src/kits/volume/index.js';
 
 describe('kits/inventory: the floating-point floor', () => {
@@ -56,6 +56,19 @@ describe('kits/inventory: the floating-point floor', () => {
     expect(cut({ stockLength: 1000 - 1e-9, pieceLength: 1 })).toBe(1000);
   });
 
+  it('the snap window is capped, so huge counts still floor', () => {
+    // A relative-only window passes 0.5 at 5e8 pieces and turns the floor
+    // into a round. A tonne of 1 mg tablets is 1e9 pieces, and .6 of a
+    // tablet must not become a whole one.
+    const pills = forge({ bulkMass: milligram, pieceMass: milligram }, each, {
+      via: piecesFromBulkMassAndPieceMass,
+    });
+    expect(pills({ bulkMass: 1e9 + 0.6, pieceMass: 1 })).toBe(1e9);
+    expect(pills({ bulkMass: 6e8 + 0.6, pieceMass: 1 })).toBe(6e8);
+    // An exact huge quotient still snaps rather than landing one low.
+    expect(pills({ bulkMass: 1e9, pieceMass: 1 })).toBe(1e9);
+  });
+
   it('holds across scales and unit systems', () => {
     const cut = forge({ stockLength: inch, pieceLength: inch }, each, {
       via: piecesFromStockLengthAndPieceLength,
@@ -78,7 +91,7 @@ describe('kits/inventory: LENGTH bulk into pieces', () => {
     const cut = forge(
       { stockLength: meter, pieceLength: meter },
       { pieces: each, remainder: meter },
-      { via: piecesAndRemainderFromStockLength },
+      { via: piecesAndRemainderFromStockLengthAndPieceLength },
     );
     expect(cut({ stockLength: 3.7, pieceLength: 1 })).toEqual({
       pieces: 3,
@@ -90,7 +103,7 @@ describe('kits/inventory: LENGTH bulk into pieces', () => {
     const cut = forge(
       { stockLength: inch, pieceLength: inch },
       { pieces: each, remainder: inch },
-      { via: piecesAndRemainderFromStockLength },
+      { via: piecesAndRemainderFromStockLengthAndPieceLength },
     );
     const { pieces, remainder } = cut({ stockLength: 12, pieceLength: 1 });
     expect(pieces).toBe(12);
@@ -140,7 +153,7 @@ describe('kits/inventory: MASS bulk into pieces', () => {
     const bag = forge(
       { bulkMass: kilogram, pieceMass: gram },
       { pieces: each, remainder: gram },
-      { via: piecesAndRemainderFromBulkMass, precision: 6 },
+      { via: piecesAndRemainderFromBulkMassAndPieceMass, precision: 6 },
     );
     expect(bag({ bulkMass: 57.96, pieceMass: 340 })).toEqual({
       pieces: 170,
@@ -152,7 +165,7 @@ describe('kits/inventory: MASS bulk into pieces', () => {
     const bag = forge(
       { bulkMass: kilogram, pieceMass: gram },
       { pieces: each, remainder: gram },
-      { via: piecesAndRemainderFromBulkMass },
+      { via: piecesAndRemainderFromBulkMassAndPieceMass },
     );
     const { pieces, remainder } = bag({ bulkMass: 57.96, pieceMass: 340 });
     expect(pieces).toBe(170);
@@ -173,7 +186,7 @@ describe('kits/inventory: VOLUME bulk into pieces', () => {
     const bottle = forge(
       { bulkVolume: liter, pieceVolume: milliliter },
       { pieces: each, remainder: liter },
-      { via: piecesAndRemainderFromBulkVolume, precision: 9 },
+      { via: piecesAndRemainderFromBulkVolumeAndPieceVolume, precision: 9 },
     );
     expect(bottle({ bulkVolume: 230, pieceVolume: 750 })).toEqual({
       pieces: 306,
@@ -205,7 +218,7 @@ describe('kits/inventory: AREA is an upper bound, not a yield', () => {
 describe('kits/inventory: pieces back into bulk (exact, no loss)', () => {
   it('length: 6 pieces at 14 in needs 84 in of stock', () => {
     const need = forge({ pieces: each, pieceLength: inch }, inch, {
-      via: bulkLengthFromPiecesAndPieceLength,
+      via: stockLengthFromPiecesAndPieceLength,
     });
     expect(need({ pieces: 6, pieceLength: 14 })).toBeCloseTo(84, 9);
   });

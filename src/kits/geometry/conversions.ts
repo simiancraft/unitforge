@@ -291,7 +291,7 @@ export const areaFromCircularSegmentRadiusAndAngle = /*#__PURE__*/ defineConvers
  * (base units). Works for any n-sided regular polygon; the side count
  * is implicit in the apothem-to-perimeter ratio.
  *
- * See `areaFromRegularPolygonSidesAndLength` for the side-count form,
+ * See `areaFromRegularPolygonSideCountAndSideLength` for the side-count form,
  * which is the same area reached from the measurements you are more
  * likely to have.
  */
@@ -310,8 +310,11 @@ export const areaFromRegularPolygonApothemAndPerimeter = /*#__PURE__*/ defineCon
  * length. A = (n · s²) / (4 · tan(π / n)), in base units.
  *
  * The side-count form the apothem version above could not offer until
- * the library shipped a COUNT dimension. `sides` is COUNT, so a caller
- * may pass 12 in `each` or 1 in `dozen` and get the same dodecagon.
+ * the library shipped a COUNT dimension. `sideCount` is COUNT, so a caller
+ * may pass 12 in `each` or 1 in `dozen` (import `dozen` from
+ * `unitforge/kits/count`; geometry re-exports only `each`) and get the
+ * same dodecagon. Named `sideCount` rather than `sides` because the
+ * triangle forms in this file already use "sides" for side *lengths*.
  *
  * Domain: n >= 3. Fewer than three sides does not enclose an area, and
  * the formula says so in the least useful way available: n = 2 gives a
@@ -319,8 +322,8 @@ export const areaFromRegularPolygonApothemAndPerimeter = /*#__PURE__*/ defineCon
  *
  * That domain is documented rather than validated, and the reason is
  * worth knowing before you add the check yourself. Validators run on the
- * raw caller-supplied value, BEFORE base normalization. A `sides >= 3`
- * test would therefore reject `{ sides: 1 }` in `dozen`, which is a
+ * raw caller-supplied value, BEFORE base normalization. A `sideCount >= 3`
+ * test would therefore reject `{ sideCount: 1 }` in `dozen`, which is a
  * perfectly good twelve-sided polygon. Sign and finiteness survive that
  * translation because every COUNT unit has a positive linear scale;
  * magnitude thresholds and integrality do not. The policy matches
@@ -331,15 +334,15 @@ export const areaFromRegularPolygonApothemAndPerimeter = /*#__PURE__*/ defineCon
  * COUNT units are not integral by construction, and a validator cannot
  * tell a genuine 3.5 from a legitimate 0.5 dozen.
  */
-export const areaFromRegularPolygonSidesAndLength = /*#__PURE__*/ defineConversion({
-  inputs: { sides: COUNT, sideLength: LENGTH },
+export const areaFromRegularPolygonSideCountAndSideLength = /*#__PURE__*/ defineConversion({
+  inputs: { sideCount: COUNT, sideLength: LENGTH },
   output: AREA,
   validate: {
-    sides: (v) => (Number.isFinite(v) && v > 0) || 'sides must be a finite value > 0',
-    sideLength: (v) => v >= 0 || 'sideLength must be >= 0',
+    sideCount: (v) => (Number.isFinite(v) && v > 0) || 'sideCount must be a finite value > 0',
+    sideLength: (v) => (Number.isFinite(v) && v >= 0) || 'sideLength must be a finite value >= 0',
   },
-  compute: ({ sides, sideLength }) =>
-    (sides * sideLength * sideLength) / (4 * Math.tan(Math.PI / sides)),
+  compute: ({ sideCount, sideLength }) =>
+    (sideCount * sideLength * sideLength) / (4 * Math.tan(Math.PI / sideCount)),
 });
 
 /**
@@ -348,16 +351,16 @@ export const areaFromRegularPolygonSidesAndLength = /*#__PURE__*/ defineConversi
  * `<noun>Of<Shape>From<Inputs>` name.
  *
  * Exact, with nothing to reject: unlike the area form, n · s is
- * meaningful for any positive n. Same COUNT-unit freedom on `sides`.
+ * meaningful for any positive n. Same COUNT-unit freedom on `sideCount`.
  */
-export const perimeterOfRegularPolygonFromSidesAndLength = /*#__PURE__*/ defineConversion({
-  inputs: { sides: COUNT, sideLength: LENGTH },
+export const perimeterOfRegularPolygonFromSideCountAndSideLength = /*#__PURE__*/ defineConversion({
+  inputs: { sideCount: COUNT, sideLength: LENGTH },
   output: LENGTH,
   validate: {
-    sides: (v) => (Number.isFinite(v) && v >= 0) || 'sides must be a finite value >= 0',
-    sideLength: (v) => v >= 0 || 'sideLength must be >= 0',
+    sideCount: (v) => (Number.isFinite(v) && v >= 0) || 'sideCount must be a finite value >= 0',
+    sideLength: (v) => (Number.isFinite(v) && v >= 0) || 'sideLength must be a finite value >= 0',
   },
-  compute: ({ sides, sideLength }) => sides * sideLength,
+  compute: ({ sideCount, sideLength }) => sideCount * sideLength,
 });
 
 // ─── VOLUME derivations ──────────────────────────────────────────────────
