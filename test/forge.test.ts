@@ -253,6 +253,18 @@ describe('forge: configuration validation', () => {
     ).toThrow(/no `via:`/);
   });
 
+  it('rejects a scalar output unit whose dimension disagrees with `via` (type-level)', () => {
+    // Regression: without `NoInfer` on the scalar cross-dimensional
+    // overload's `to`, `Output` inferred to `'length' | 'area'` from the
+    // two candidates and this compiled, returning an area labelled as a
+    // length. The runtime does not check dimensions, so the type is the
+    // only guard.
+    const wrong = () =>
+      // @ts-expect-error: `meter` is LENGTH, `via` outputs AREA
+      forge({ length: meter, width: meter }, meter, { via: areaFromRectangleLengthAndWidth });
+    expect(typeof wrong).toBe('function');
+  });
+
   it('throws on out-of-range memoize', () => {
     expect(() => forge(meter, centimeter, { memoize: -1 })).toThrow(/memoize/);
     expect(() => forge(meter, centimeter, { memoize: 1.5 })).toThrow(/memoize/);

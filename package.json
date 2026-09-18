@@ -1,7 +1,7 @@
 {
   "name": "unitforge",
   "version": "3.3.3",
-  "description": "Type-safe unit conversion and units of measure for TypeScript. Forge anything measurable, not just physics: three primitives (defineUnit, defineConversion, forge) compose into typed conversions for any domain you import or invent, with kits for geometry, cooking, astronomy, data storage, and antiquity.",
+  "description": "Type-safe unit conversion and units of measure for TypeScript. Forge anything measurable, not just physics: three primitives (defineUnit, defineConversion, forge) compose into typed conversions for any domain you import or invent, with kits for geometry, cooking, astronomy, data storage, antiquity, and inventory.",
   "keywords": [
     "units",
     "unit",
@@ -27,6 +27,9 @@
     "astronomy",
     "antiquity",
     "gamedev",
+    "inventory",
+    "manufacturing",
+    "crafting",
     "tree-shakeable"
   ],
   "author": "the-simian <info@simiancraft.com>",

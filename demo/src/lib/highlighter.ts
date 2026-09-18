@@ -28,7 +28,14 @@ const THEME_LOADERS: Record<string, () => Promise<unknown>> = {
   'gruvbox-dark-medium': () => import('shiki/themes/gruvbox-dark-medium.mjs'),
   'catppuccin-latte': () => import('shiki/themes/catppuccin-latte.mjs'),
   poimandres: () => import('shiki/themes/poimandres.mjs'),
+  'everforest-light': () => import('shiki/themes/everforest-light.mjs'),
+  'everforest-dark': () => import('shiki/themes/everforest-dark.mjs'),
 };
+
+/** Every shiki theme name a recipe may reference. Exported so the
+ *  demo-invariants test can pin `THEMES[*].shikiTheme` to this table,
+ *  which is otherwise only checked at runtime, on the first code block. */
+export const SHIKI_THEME_NAMES: readonly string[] = Object.keys(THEME_LOADERS);
 
 let highlighterPromise: Promise<Highlighter> | null = null;
 const loadedThemes = new Set<string>();

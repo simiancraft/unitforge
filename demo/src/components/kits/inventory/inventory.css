@@ -1,0 +1,81 @@
+/* Inventory theme. Two takes on the same idea (a warehouse is where
+ * continuous things become countable ones), one paper and one steel.
+ *
+ * - inventory-light → "stock card": the manila bin card stapled to the
+ *   front of a parts drawer. Kraft-tan ground, oxblood ledger ink for
+ *   the accent (the color a rubber date stamp actually leaves), olive
+ *   for secondary marks.
+ *
+ * - inventory-dark → "bin wall": galvanized steel shelving under shop
+ *   lighting. Cold gunmetal ground, verdigris on the accent (aged
+ *   copper fittings), warm brass for secondary so the "binding
+ *   constraint" highlight reads as a warning lamp rather than as more
+ *   green.
+ *
+ * Loaded eagerly by the theme provider; activated via the
+ * [data-theme='inventory-{light,dark}'] selectors.
+ */
+
+[data-theme="inventory-light"] {
+  /* Manila stock card. Kraft ground with oxblood stamp ink. Contrast
+   * against bg #ede4d3: accent #7a2e2a is 7.4:1 (AAA body); accent-2
+   * olive #4d5320 is 6.5:1 (AA body, AAA large). */
+  --uf-bg: #ede4d3;
+  --uf-fg: #2b2620;
+  --uf-muted: #6b6152;
+  --uf-accent: #7a2e2a;
+  --uf-accent-2: #4d5320;
+  --uf-card: #f7f1e4;
+  --uf-border: #c3b69c;
+  --uf-code-bg: #e2d7c0;
+
+  --uf-display: "Oswald", "Roboto Condensed", "Arial Narrow", sans-serif;
+  /* Bin-card rule lines. */
+  --uf-grid: #7a2e2a;
+  --uf-grid-faint: #7a2e2a1f;
+}
+
+[data-theme="inventory-dark"] {
+  /* Galvanized bin wall. Gunmetal ground, verdigris accent, brass for
+   * the binding-constraint highlight. */
+  --uf-bg: #12161a;
+  --uf-fg: #dfe4e2;
+  --uf-muted: #8b9694;
+  --uf-accent: #58b3a0;
+  --uf-accent-2: #d9a441;
+  --uf-card: #1b2126;
+  --uf-border: #2f3a40;
+  --uf-code-bg: #0b0e11;
+
+  --uf-display: "Oswald", "Roboto Condensed", "Arial Narrow", sans-serif;
+  /* Shelf uprights and bin edges. */
+  --uf-grid: #58b3a0;
+  --uf-grid-faint: #58b3a026;
+}
+
+/* Bin-wall motion. Everything reactive about this backdrop is
+ * state-driven (bin count, fill depth, lit count all come from bench
+ * state and are recomputed in React), so the entire reactive story
+ * survives prefers-reduced-motion untouched. The single ambient effect
+ * is a slow brightness drift on the lit bins' fill, which reads as shop
+ * lighting rather than as animation; it is the only thing behind the
+ * guard. No transition on the same property: a running animation owns
+ * `opacity`, so a transition there would only ever fire under reduced
+ * motion, which is the opposite of the intent.
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .inventory-bin-fill {
+    animation: inventory-shelf-light 9s ease-in-out infinite;
+  }
+}
+
+@keyframes inventory-shelf-light {
+  0%,
+  100% {
+    opacity: 0.14;
+  }
+  50% {
+    opacity: 0.22;
+  }
+}

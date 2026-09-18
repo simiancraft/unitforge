@@ -46,11 +46,40 @@ import {
   SODAS,
 } from '../demo/src/components/kits/cooking/sections/comparison-machine/parts/sugar-units.js';
 import { COOKING_ALL_UNITS, COOKING_UNIT_IDS } from '../demo/src/components/kits/cooking/units.js';
+import {
+  GLYPH_KEYS,
+  GLYPHS,
+  glyphFor,
+} from '../demo/src/components/kits/inventory/parts/glyph-slots.js';
+import {
+  ROASTERY_SEED,
+  runRoastery,
+} from '../demo/src/components/kits/inventory/roastery-model.js';
+import {
+  COLA_PACKAGINGS,
+  LOGS_PER_PLANK,
+  ORE_PER_INGOT,
+  RETAIL_BAG_G,
+  ROAST_LEVELS,
+  roastLevelFor,
+  SHIELD_BOM,
+  SKU_BOM,
+  SMELT_LINES,
+  WORKBENCH_SEED,
+} from '../demo/src/components/kits/inventory/stock.js';
+import {
+  INVENTORY_ALL_UNITS,
+  INVENTORY_BOUNDS,
+  INVENTORY_UNIT_IDS,
+  inventoryBoundsFor,
+} from '../demo/src/components/kits/inventory/units.js';
 import { MASS_ALL_UNITS, MASS_UNIT_IDS } from '../demo/src/components/kits/mass/units.js';
 import {
   TEMPERATURE_ALL_UNITS,
   TEMPERATURE_UNIT_IDS,
 } from '../demo/src/components/kits/temperature/units.js';
+import { THEMES } from '../demo/src/components/theme/recipes.js';
+import { SHIKI_THEME_NAMES } from '../demo/src/lib/highlighter.js';
 
 describe('demo invariants: cooking units catalog', () => {
   it('COOKING_UNIT_IDS covers every id in COOKING_ALL_UNITS', () => {
@@ -222,5 +251,219 @@ describe('demo invariants: ceo-stature figures catalog', () => {
   it('default subject and reference ids resolve to figures', () => {
     expect(FIGURES.some((f) => f.id === DEFAULT_SUBJECT_ID)).toBe(true);
     expect(FIGURES.some((f) => f.id === DEFAULT_REFERENCE_ID)).toBe(true);
+  });
+});
+
+// ── inventory kit ────────────────────────────────────────────────────
+//
+// The inventory page hand-mirrors more than the other kits do, because
+// its recipes are userland data rather than library exports: glyph keys,
+// per-assembly rates, and roast yields are all plain strings and numbers
+// that TypeScript widens. The blocks below pin the joints, plus three
+// numeric claims the page makes in prose (the binding-line surprise on
+// the workbench, and the 170-bags / 160-grams headline in the chassis
+// copy). Prose that states a number is a test assertion with worse
+// tooling; these give it the better tooling.
+
+describe('demo invariants: inventory units catalog', () => {
+  it('INVENTORY_UNIT_IDS covers every id in INVENTORY_ALL_UNITS', () => {
+    const fromArray = [...new Set(INVENTORY_ALL_UNITS.map((u) => u.id))].sort();
+    const fromUnion = [...new Set<string>(INVENTORY_UNIT_IDS)].sort();
+    expect(fromUnion).toEqual(fromArray);
+  });
+
+  it('INVENTORY_UNIT_IDS has no extra entries vs INVENTORY_ALL_UNITS', () => {
+    const fromArrayIds = INVENTORY_ALL_UNITS.map((u) => u.id);
+    for (const id of INVENTORY_UNIT_IDS) {
+      expect(fromArrayIds).toContain(id);
+    }
+  });
+
+  it('every bench unit is a COUNT unit', () => {
+    for (const unit of INVENTORY_ALL_UNITS) {
+      expect(unit.dimension).toBe('count');
+    }
+  });
+});
+
+describe('demo invariants: inventory bench bounds', () => {
+  it('the chassis bench seed resolves against the catalog', () => {
+    // InventoryScreen seeds { fromId: 'gross', toId: 'dozen' }. findById
+    // throws on a miss, so a stale seed would blank the page at mount.
+    const ids = INVENTORY_ALL_UNITS.map((u) => u.id);
+    expect(ids).toContain('gross');
+    expect(ids).toContain('dozen');
+  });
+
+  it('every catalog unit has a bounds entry', () => {
+    for (const unit of INVENTORY_ALL_UNITS) {
+      expect(INVENTORY_BOUNDS).toHaveProperty(unit.id);
+    }
+  });
+
+  it('bounds are ordered, whole-stepped, and enclose their init', () => {
+    for (const [id, b] of Object.entries(INVENTORY_BOUNDS)) {
+      expect(b.min, `${id} min < max`).toBeLessThan(b.max);
+      // COUNT is discrete; a slider that can land on 2.5 dozen would be
+      // lying about what the dimension means.
+      expect(b.step, `${id} step`).toBe(1);
+      expect(b.init, `${id} init >= min`).toBeGreaterThanOrEqual(b.min);
+      expect(b.init, `${id} init <= max`).toBeLessThanOrEqual(b.max);
+    }
+  });
+
+  it('inventoryBoundsFor falls back to each on an unknown id', () => {
+    expect(inventoryBoundsFor('not-a-unit')).toEqual(INVENTORY_BOUNDS.each);
+  });
+});
+
+describe('demo invariants: inventory glyph pool', () => {
+  it('GLYPHS has an icon for every declared key', () => {
+    for (const key of GLYPH_KEYS) {
+      expect(GLYPHS).toHaveProperty(key);
+    }
+  });
+
+  it('every glyph key a recipe references is in the pool', () => {
+    // These ids widen to `string` in the recipe data, so the Record's
+    // totality does not protect the lookup direction that matters.
+    const referenced = [
+      ...SMELT_LINES.flatMap((l) => [l.rawGlyph, l.refinedGlyph]),
+      ...SHIELD_BOM.map((l) => l.id),
+      ...SKU_BOM.map((l) => l.id),
+      'shield',
+      'can',
+      'bean',
+    ];
+    for (const key of referenced) {
+      expect(GLYPH_KEYS as readonly string[]).toContain(key);
+    }
+  });
+
+  it('glyphFor degrades rather than throwing on an unknown key', () => {
+    expect(glyphFor('not-a-glyph')).toBeDefined();
+  });
+});
+
+describe('demo invariants: inventory recipe constants', () => {
+  it('smelt ratios are whole numbers above one', () => {
+    // A ratio of 1 would make the section's whole point (the remainder)
+    // invisible, and a fractional one would not be a piece count.
+    for (const line of SMELT_LINES) {
+      expect(Number.isInteger(line.perRefined)).toBe(true);
+      expect(line.perRefined).toBeGreaterThan(1);
+    }
+  });
+
+  it('the two smelt lines differ, so one input strands two remainders', () => {
+    expect(ORE_PER_INGOT).not.toBe(LOGS_PER_PLANK);
+    const rates = SMELT_LINES.map((l) => l.perRefined);
+    expect(new Set(rates).size).toBe(rates.length);
+  });
+
+  it('every bill-of-materials line consumes a whole number of pieces', () => {
+    for (const line of [...SHIELD_BOM, ...SKU_BOM]) {
+      expect(Number.isInteger(line.perAssembly)).toBe(true);
+      expect(line.perAssembly).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('the workbench seed makes the fuller bin the binding one', () => {
+    // The section's intro copy states this: at 14 ingots and 11 planks
+    // the planks look scarcer and the ingots are what actually stop you.
+    // If the BOM rates change, that sentence silently becomes false.
+    // Computed from the seed the section actually renders, so retuning
+    // WORKBENCH_SEED or SHIELD_BOM fails here rather than in the prose.
+    const capacity = Object.fromEntries(
+      SHIELD_BOM.map((l) => [
+        l.id,
+        Math.floor((WORKBENCH_SEED[l.id as keyof typeof WORKBENCH_SEED] ?? 0) / l.perAssembly),
+      ]),
+    );
+    expect(WORKBENCH_SEED).toEqual({ ingot: 14, plank: 11 });
+    expect(capacity).toEqual({ ingot: 4, plank: 5 });
+    expect(WORKBENCH_SEED.ingot).toBeGreaterThan(WORKBENCH_SEED.plank); // the fuller bin...
+    expect(capacity.ingot).toBeLessThan(capacity.plank as number); // ...is the one that binds
+  });
+});
+
+describe('demo invariants: inventory packaging units', () => {
+  it('every packaging unit round-trips', () => {
+    // The case-pack section's claim is that a userland packaging unit is
+    // an ordinary unit. Ordinary units round-trip; this is the same
+    // invariant the library fuzzes its own units against.
+    for (const unit of COLA_PACKAGINGS) {
+      for (const v of [1, 7, 40, 0.5]) {
+        expect(unit.fromBase(unit.toBase(v))).toBeCloseTo(v, 12);
+      }
+    }
+  });
+
+  it('packaging factors are whole cans and strictly ascending', () => {
+    const factors = COLA_PACKAGINGS.map((u) => u.toBase(1));
+    expect(factors).toEqual([12, 24, 480]);
+    for (let i = 1; i < factors.length; i++) {
+      expect(factors[i]).toBeGreaterThan(factors[i - 1] as number);
+    }
+  });
+
+  it('every packaging unit is a COUNT unit with a unique id', () => {
+    const ids = COLA_PACKAGINGS.map((u) => u.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const unit of COLA_PACKAGINGS) {
+      expect(unit.dimension).toBe('count');
+    }
+  });
+});
+
+describe('demo invariants: roastery yields', () => {
+  it('roast levels retain a real fraction and darken monotonically', () => {
+    for (const level of ROAST_LEVELS) {
+      expect(level.retained).toBeGreaterThan(0);
+      expect(level.retained).toBeLessThanOrEqual(1);
+    }
+    for (let i = 1; i < ROAST_LEVELS.length; i++) {
+      // A darker roast always loses more; the section's menu depends on
+      // the order matching the labels.
+      expect(ROAST_LEVELS[i]?.retained).toBeLessThan(ROAST_LEVELS[i - 1]?.retained as number);
+    }
+  });
+
+  it('roastLevelFor falls back to the middle level on an unknown id', () => {
+    expect(roastLevelFor('medium').id).toBe('medium');
+    expect(roastLevelFor('not-a-roast')).toBe(ROAST_LEVELS[1] as (typeof ROAST_LEVELS)[number]);
+  });
+
+  it('one 69 kg sack at a medium roast yields 170 bags and strands 160 g', () => {
+    // The chassis header states these two numbers. They are what the
+    // page's fourth section computes through forge; reproduced here in
+    // bare arithmetic so a change to RETAIL_BAG_G or to the medium
+    // retained fraction fails a test rather than quietly making the
+    // header copy wrong.
+    // Run through the page's own model (sack -> roast -> bag-up), not
+    // bare arithmetic, so the README and header copy are pinned to what
+    // the section really computes, `precision: 6` included.
+    const model = runRoastery(1, roastLevelFor('medium'), ROASTERY_SEED);
+    expect(RETAIL_BAG_G).toBe(340);
+    expect(model.greenKg).toBe(69);
+    expect(model.bags).toBe(170);
+    expect(model.strandedG).toBe(160);
+  });
+
+  it('the roastery seed opens with a packaging line binding, not the coffee', () => {
+    const model = runRoastery(1, roastLevelFor('medium'), ROASTERY_SEED);
+    const binding = model.gates.filter((g) => g.capacity === model.skus).map((g) => g.id);
+    expect(binding).toEqual(['label']);
+    expect(model.skus).toBe(160);
+  });
+});
+
+describe('demo invariants: shiki theme loaders', () => {
+  it('every recipe names a shiki theme the highlighter can load', () => {
+    // Otherwise the page looks fine until the first <CodeBlock> renders
+    // and throws `Unknown shiki theme`.
+    for (const theme of Object.values(THEMES)) {
+      expect(SHIKI_THEME_NAMES).toContain(theme.shikiTheme);
+    }
   });
 });

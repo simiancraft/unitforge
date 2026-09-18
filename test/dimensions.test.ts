@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   ANGLE,
   AREA,
+  COUNT,
   DATA,
   DIMENSIONS,
   LENGTH,
@@ -39,8 +40,12 @@ describe('dimensions', () => {
     expect(TEMPERATURE).toBe('temperature');
   });
 
+  it('COUNT is the literal "count"', () => {
+    expect(COUNT).toBe('count');
+  });
+
   it('DIMENSIONS tuple lists every built-in dimension', () => {
-    expect(DIMENSIONS).toEqual([LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE]);
+    expect(DIMENSIONS).toEqual([LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE, COUNT]);
   });
 
   it('every entry in DIMENSIONS is a kebab-case identifier', () => {

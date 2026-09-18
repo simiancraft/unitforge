@@ -15,11 +15,11 @@ Three categories of kit exist; they have different authoring rules. Decide which
 
 ### Foundational kits
 
-Canonical units in a well-known dimension; one dimension per foundational kit. The base layer; domain kits re-export from these. Today: `length` (LENGTH), `volume` (VOLUME), `mass` (MASS), `temperature` (TEMPERATURE), `data-storage` (DATA). Future scope: `area` and `angle` (currently in geometry; promote when a second domain kit needs them), `time`, `electricity`, `hydro/flow`, `light`, `force-and-energy`, `velocity`, `currency`.
+Canonical units in a well-known dimension; one dimension per foundational kit. The base layer; domain kits re-export from these. Today: `length` (LENGTH), `volume` (VOLUME), `mass` (MASS), `temperature` (TEMPERATURE), `data-storage` (DATA), `count` (COUNT). Future scope: `area` and `angle` (currently in geometry; promote when a second domain kit needs them), `time`, `electricity`, `hydro/flow`, `light`, `force-and-energy`, `velocity`, `currency`.
 
 Authoring rules:
 - **Modern, in-practice only.** Foundational kits ship units a working practitioner of 2026 might reach for: SI + customary + currently-traded regional variants (PRC market jin, HK/Taiwan catty, Singapore catty). Historical and obsolete units (pre-1835 English stones, Hideyoshi-era Japanese shō, Han-dynasty chi, Roman pes, Egyptian cubit) live in `kits/antiquity`, not here. The line: if a contemporary statute, standards document, or routinely-issued commercial document uses it, it ships here; if it's strictly archival, it doesn't. Craft-tradition survival (Japanese tea-house carpentry uses kane-jaku; British pubs serve in ale firkins) does not promote a unit to foundational; statutory or commercial-invoice currency does.
-- **Canon-correct.** Every `toBase` factor matches an authoritative source (NIST, IEC 80000, ISO, BIPM, IEEE). Wrong values in a foundational kit propagate through every downstream consumer.
+- **Canon-correct.** Every `toBase` factor matches an authoritative source (NIST, IEC 80000, ISO, BIPM, IEEE), or, where no standards body owns the unit (`count`: dozen, gross, ream), the settled trade convention, stated as such in the JSDoc. Wrong values in a foundational kit propagate through every downstream consumer.
 - **Comprehensive within the modern surface.** A foundational LENGTH kit ships every modern unit a working practitioner reasonably expects; a foundational MASS kit similarly. Coverage gaps in foundationals force domain kits to invent shadow units.
 - **JSDoc cites the standard.** e.g., `/** = 0.3048 m exactly per international yard and pound agreement of 1959. */`. Include historical variance as a one-sentence aside when the variance is well-known (e.g., the 14 lb stone is post-1835; pre-1835 trade stones varied 8-16 lb).
 - **Reviewer pairing**: a domain expert (geometer, pharmacist, data-hoarder, mrp-planner, astrometrist, antiquary, color-scientist) plus the architect for surface coherence.
@@ -28,7 +28,7 @@ Authoring rules:
 
 A curated barrel for a working domain. Re-exports a tightly-scoped subset of atomic units from one or more foundational kits, plus a small number of domain-specific units and conversions. The point is to give a working professional a coherent, scoped surface, not to be canonically complete in any single dimension.
 
-Shipped today: `geometry` (LENGTH + VOLUME re-exports + AREA + ANGLE atoms defined in-place + 40+ shape derivations), `cooking` (VOLUME + MASS + TEMPERATURE re-exports + cooking-tradition packaging units + heat descriptors), `astronomy` (9 LENGTH atoms: au, ly, parsec + kpc/Mpc/Gpc + light-second/minute/hour; re-exports `meter`/`kilometer` for benchmarking), `antiquity` (Units of Antiquity; ancient and pre-modern units by civilization, with selective re-exports from foundational kits for benchmarking). Future scope tracked as issue #37: `home-construction` (the proof-test for the pattern; LENGTH + MASS + VOLUME + TEMPERATURE + future ELECTRICITY + HYDRO + LIGHT). Other proposed surfaces: `sewing` (yard + fat-quarter + seam-allowance), `real-estate` (square foot + lot acreage + price-per-sqft), `pharmacy` (mass with `microgram` redeclared as `mcg` for clinical-dosing surface), `apothecary` (grain / scruple / dram / troy ounce / troy pound; survives in modern jewelry and historical pharmaceutical contexts).
+Shipped today: `geometry` (LENGTH + VOLUME + COUNT re-exports + AREA + ANGLE atoms defined in-place + 40+ shape derivations), `cooking` (VOLUME + MASS + TEMPERATURE re-exports + cooking-tradition packaging units + heat descriptors), `astronomy` (9 LENGTH atoms: au, ly, parsec + kpc/Mpc/Gpc + light-second/minute/hour; re-exports `meter`/`kilometer` for benchmarking), `antiquity` (Units of Antiquity; ancient and pre-modern units by civilization, with selective re-exports from foundational kits for benchmarking), `inventory` (COUNT + LENGTH + MASS + VOLUME re-exports + bulk-to-piece conversions; defines no units of its own). Future scope tracked as issue #37: `home-construction` (the proof-test for the pattern; LENGTH + MASS + VOLUME + TEMPERATURE + future ELECTRICITY + HYDRO + LIGHT). Other proposed surfaces: `sewing` (yard + fat-quarter + seam-allowance), `real-estate` (square foot + lot acreage + price-per-sqft), `pharmacy` (mass with `microgram` redeclared as `mcg` for clinical-dosing surface), `apothecary` (grain / scruple / dram / troy ounce / troy pound; survives in modern jewelry and historical pharmaceutical contexts).
 
 Authoring rules:
 - **Re-export atomic units, do not redefine them.** A composition kit's barrel imports `foot` from `kits/geometry` and re-exports it. The `Unit` instance is the same JS object across both kits; `forge(home.foot, geom.foot)` is identity. Redefining `foot` in two places creates two distinct `Unit` instances that fail at runtime when consumers cross them.
@@ -62,7 +62,7 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
    - Add it to `src/dimensions.ts` as `export const X = 'x' as const;` with a JSDoc canonical-base-unit note.
    - Append it to the `DIMENSIONS` tuple at the bottom of that file. The type union picks it up.
    - Dimensions are part of the public API; do not rename after release.
-   - If you only need existing dimensions (LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE), skip this step.
+   - If you only need existing dimensions (LENGTH, AREA, VOLUME, DATA, ANGLE, MASS, TEMPERATURE, COUNT), skip this step.
 
 2. **Create the kit directory.** `src/kits/<kit>/` with three files:
    - `units.ts`: every unit as a named export.
@@ -122,6 +122,22 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
 
    Cross-kit conversions: a conversion that crosses two kits' dimensions (rare) lives in the more derived kit, alongside that kit's units. There is no shared `conversions/` directory; co-location keeps subpath tree-shake correct.
 
+4a. **Discreteness, lossiness, and where recipes live.** The rule, in one line:
+
+   > **Units must round-trip. Recipes do not have to.**
+
+   A `Unit`'s `toBase` / `fromBase` must stay linear (or affine) and reversible. `forge` composes them in both directions, and `test/fuzz/forge.test.ts` fuzzes the round trip, so a unit that floors, clamps, or applies a yield rate will fail the suite and misreport in the inverse direction even if it does not. A `defineConversion`'s `compute` is under no such obligation: it is the only place in the library where a quantity may be destroyed on purpose.
+
+   Anything lossy therefore belongs in a `compute`: a floor, a yield loss, a scrap rate, a kerf, a minimum over the scarcest of several inputs. `src/kits/inventory/` is the worked example and ships no units at all, on purpose.
+
+   Three consequences that are easy to get wrong:
+
+   - **`precision` rounds; it does not floor.** `roundIfNumber` in `src/lib/memoize.ts` is `Math.round`-based, so `precision: 0` turns 2.7 into 3. It is a display-layer control and never a substitute for making a count whole. Floor inside `compute`.
+   - **`compute` runs on base-normalized values, so exact quotients are not exact.** A 12-inch board cut into 1-inch pieces reaches `compute` as `0.3048 / 0.0254`, which evaluates to `11.999999999999998`. A naive `Math.floor` there ships an off-by-one to every caller who measures in inches. Snap to the nearest integer within a relative tolerance first, then floor; `wholePieces` in `src/kits/inventory/conversions.ts` is the reference implementation. Clamp derived remainders at zero for the same reason.
+   - **Encoding a rate into a unit's `toBase` is the `butterBlockEu250g` anti-pattern**, already flagged as architectural debt at `src/kits/cooking/units.ts`. If the factor is a recipe rather than a scale, it is a conversion.
+
+   The one legitimate exception is a unit whose factor genuinely *is* a fixed scale in a domain that owns it (`hdMovie` as a DATA unit, an in-universe currency where 1 gold is 10 silver). The test is invertibility: if converting back is meaningful and lossless, it is a unit; if converting back is nonsense, it is a recipe.
+
 5. **Barrel.** `src/kits/<kit>/index.ts` is just:
    ```ts
    export * from './conversions.js';
@@ -158,7 +174,7 @@ Goal: a new subpath import like `unitforge/kits/<kit>` that ships some units and
 
 Goal: a navigable screen at `#/<kit>` that exercises the lib kit interactively.
 
-The demo registers a kit in **three places**. Forget one and the kit silently doesn't appear, themes wrong, or breaks routing.
+The demo registers a kit in **several places** (the numbered steps below). Forget one and the kit silently doesn't appear, themes wrong, or breaks routing.
 
 1. **Kit directory.** `demo/src/components/kits/<kit>/`:
    - `index.tsx`: the Screen component + `meta` export.
@@ -244,7 +260,9 @@ The demo registers a kit in **three places**. Forget one and the kit silently do
 
 4. **Register theme in `theme/recipes.ts`.** Extend `KitId` to include `'<kit>'`; add `'<kit>-dark'` and `'<kit>-light'` entries in `THEMES`. Both variants are mandatory; the completeness check enforces it.
 
-5. **Theme CSS.** In `<kit>.css`, add `[data-theme='<kit>-dark']` and `[data-theme='<kit>-light']` blocks defining the `--uf-*` variable cascade. Import the CSS at the top of the kit's `index.tsx`.
+5. **Register the shiki themes in `lib/highlighter.ts`.** Each recipe's `shikiTheme` must have a matching loader in `THEME_LOADERS`. Reusing a theme another kit already loads needs nothing; naming a new one and skipping this step throws `Unknown shiki theme: '<name>'` at runtime, the first time a code block renders on that page. Nothing catches it at compile time, and the kit looks fine until you scroll to a `<CodeBlock>`.
+
+6. **Theme CSS.** In `<kit>.css`, add `[data-theme='<kit>-dark']` and `[data-theme='<kit>-light']` blocks defining the `--uf-*` variable cascade. Import the CSS at the top of the kit's `index.tsx`.
 
    Cascade variables every theme must set (defaults inherit from `demo/src/index.css` if you omit one, but each kit should set its own for visual coherence):
 
@@ -262,9 +280,9 @@ The demo registers a kit in **three places**. Forget one and the kit silently do
 
    The non-kit-specific vars (`--uf-sans`, `--uf-mono`, `--uf-display`, `--uf-brand`) come from `demo/src/index.css` and do not need to be redeclared per kit unless you want to override them.
 
-6. **Backdrop preview** (optional). If the kit appears on the home grid, define a `previewBg` in `meta` returning a tiny version of the backdrop for the navigation card.
+7. **Backdrop preview** (optional). If the kit appears on the home grid, define a `previewBg` in `meta` returning a tiny version of the backdrop for the navigation card.
 
-After these six steps the kit is reachable, themed, and previewed. Smoke-test by running `bun run demo` and navigating to `#/<kit>`.
+After these seven steps the kit is reachable, themed, and previewed. Smoke-test by running `bun run demo` and navigating to `#/<kit>`.
 
 ## Adding a section to an existing kit
 
@@ -344,16 +362,19 @@ Quick reference for commit subjects:
 | Lib bug fix | `fix: ...` or `fix(api): ...` |
 | Lib breaking API change | `feat(api)!: ...` plus `BREAKING CHANGE:` footer in the body |
 | Bundled lib + demo change | Unbundle if you can. If you can't, use the lib's scope and add `BREAKING CHANGE:` if applicable; do NOT scope the bundled commit `(demo)`. |
-| Docs touching `README.md`, `EXTENDING.md`, `AGENTS.md`, `llms.txt` | `docs: ...` (always filtered from release as a non-feature, non-fix change) |
+| Docs touching `README.md`, `EXTENDING.md`, `AGENTS.md`, `llms.txt` | `docs: ...` (`.releaserc.json` maps `docs` to a **patch** release, so this does publish; only `(demo)`-scoped commits are filtered) |
 
 When in doubt: look at what files changed. If `src/` is touched and the scope is `(demo)`, that's a bug; rewrite the subject before pushing.
 
 ## Gotchas (the load-bearing things that aren't obvious)
 
 - **Tree-shake regression**: any `CallExpression` inside a `defineUnit` spec literal defeats per-export tree-shaking. Use inline closures, not `...linear(...)`, for kit units.
+- **Floors on base-normalized values are off by one.** Exactly-divisible inputs in the caller's units often are not exactly divisible in base: `(12 * 0.0254) / (1 * 0.0254)` is `11.999999999999998`. Any `compute` that floors must snap to the nearest integer within a relative tolerance first. See `wholePieces` in `src/kits/inventory/conversions.ts`.
+- **Validators cannot check magnitude or integrality.** They run on the raw caller-supplied value, before base normalization, so `sides >= 3` rejects a valid dodecagon passed as `1` in `dozen`. Sign and finiteness are safe (every unit has a positive linear scale); thresholds and whole-number checks are not. Document the domain in JSDoc instead, as `areaFromRegularPolygonSideCountAndSideLength` does.
+- **Divisor validators must reject zero, not just negatives.** `x / 0` is `Infinity`, which denormalizes to garbage and is then written to the memo cache, so one bad call keeps returning a bad answer.
 - **Duplicate `base: true`**: two units in the same dimension with `base: true` is silent runtime ambiguity. The library has no compile-time guard. The test suite is the only thing that catches this; assert `base: true` on the canonical unit and nowhere else.
 - **Reserved prototype-pollution keys**: `defineUnit` and `defineConversion` route inputs through `safeCopy`, which throws if the spec contains the keys `__proto__`, `constructor`, or `prototype`. Don't pick these as `id`s, even for invented dimensions. The `RESERVED_PROTO_KEYS` constant in `src/lib/safeCopy.ts` is the canonical list; it is internal, not re-exported on the public barrel.
-- **Kit registration is 3 files**: `kits/<kit>/`, `registry.ts`, `theme/recipes.ts`. The TypeScript `KitId` union catches some omissions but not all.
+- **Kit registration is 4 files**: `kits/<kit>/`, `registry.ts`, `theme/recipes.ts`, and `lib/highlighter.ts` (only when the kit names a shiki theme no other kit loads). The TypeScript `KitId` union catches some omissions but not all; the highlighter one it cannot see at all.
 - **`Select.ItemText` drops `className`**: if you ever extend `UnitPicker`, the way to hide the item text without losing Radix type-ahead is to wrap `<Select.ItemText>` in an `sr-only` span, not pass the className to it.
 - **`Unit<D, T>` structural typing**: the demo's `UnitPicker` only requires `{ id, label, symbol }`. Adding a property to `Unit` in the lib won't break anything in the demo; removing `id`, `label`, or `symbol` will. Treat those three as a stability contract.
 - **react-compiler bailouts** on Radix internals are expected and harmless; the bailout reporter will flag them but they live inside Radix, not the kit's component bodies.
@@ -365,4 +386,4 @@ When in doubt: look at what files changed. If `src/` is touched and the scope is
 - [AGENTS.md](./AGENTS.md): orientation for agents and contributors.
 - [CONTRIBUTING.md](./CONTRIBUTING.md): local setup, commands, commit conventions.
 - [llms.txt](./llms.txt): condensed agent reference.
-- Existing kits (foundational: `src/kits/length/`, `src/kits/volume/`, `src/kits/mass/`, `src/kits/temperature/`, `src/kits/data-storage/`; composition: `src/kits/geometry/`, `src/kits/cooking/`, `src/kits/astronomy/`, `src/kits/antiquity/`; demo surface: `demo/src/components/kits/geometry/`) are the canonical examples; read them when in doubt.
+- Existing kits (foundational: `src/kits/length/`, `src/kits/volume/`, `src/kits/mass/`, `src/kits/temperature/`, `src/kits/data-storage/`, `src/kits/count/`; composition: `src/kits/geometry/`, `src/kits/cooking/`, `src/kits/astronomy/`, `src/kits/antiquity/`, `src/kits/inventory/`; demo surface: `demo/src/components/kits/geometry/`, `demo/src/components/kits/inventory/`) are the canonical examples; read them when in doubt.
